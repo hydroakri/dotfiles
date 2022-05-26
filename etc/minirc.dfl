@@ -1,0 +1,2 @@
+# 电脑产生的文件 - 使用“minicom -s”以变更参数。
+pu port             : /dev/ttyUSB0

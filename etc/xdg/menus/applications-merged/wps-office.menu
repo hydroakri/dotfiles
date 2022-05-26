@@ -1,0 +1,22 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+"http://www.freedesktop.org/standards/menu-spec/menu-1.0.dtd">
+<Menu>
+	<Name>Applications</Name>
+	<Menu>
+		<Name>金山办公</Name>
+		<Directory>wps-office.directory</Directory>
+			<Include>
+				<Filename>wps-office-wps.desktop</Filename>
+				<Filename>wps-office-et.desktop</Filename>
+				<Filename>wps-office-wpp.desktop</Filename>
+				<Filename>wps-office-pdf.desktop</Filename>
+				<Filename>wps-office-flow.desktop</Filename>
+				<Filename>wps-office-mind.desktop</Filename>
+				<Filename>wps-office-officeassistant.desktop</Filename>
+				<Filename>wps-office-uninstall.desktop</Filename>
+				<Filename>wps-office-prometheus.desktop</Filename>
+				<Filename>wps-office-official.desktop</Filename>	
+				<Filename>wps-office-ofd.desktop</Filename>
+		</Include>
+	</Menu>
+</Menu>

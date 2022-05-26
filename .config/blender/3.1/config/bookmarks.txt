@@ -1,0 +1,8 @@
+[Bookmarks]
+[Recent]
+!Home
+/home/hydroakri/
+/usr/share/fonts/nerd-fonts/
+!Videos
+/home/hydroakri/视频/
+/usr/share/fonts/adobe-source-han-sans/

@@ -1,0 +1,8 @@
+[General]
+eDP-1-0 DP-0 Height 1920x1080=436
+eDP-1-0 DP-0 Width 1920x1080=775
+eDP-1-0 Height 1920x1080=436
+eDP-1-0 Width 1920x1080=775
+
+[SystemInformation]
+CompiledSources=false

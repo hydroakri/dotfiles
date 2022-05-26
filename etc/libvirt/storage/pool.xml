@@ -1,0 +1,19 @@
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh pool-edit pool
+or other application using the libvirt API.
+-->
+
+<pool type='dir'>
+  <name>pool</name>
+  <uuid>59b8cb83-2557-4a66-b0c0-fd73fce1e77f</uuid>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/home/hydroakri/Desktop/刷机</path>
+  </target>
+</pool>

@@ -1,0 +1,27 @@
+<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd'>
+<Menu>
+ <Layout>
+  <Merge type="files"/>
+  <Filename>.desktop</Filename>
+  <Merge type="menus"/>
+  <Menuname>Office</Menuname>
+  <Menuname>Utilities</Menuname>
+  <Menuname>Internet</Menuname>
+  <Menuname>Education</Menuname>
+  <Menuname>金山办公</Menuname>
+  <Menuname>Development</Menuname>
+  <Menuname>Science</Menuname>
+  <Menuname>Settingsmenu</Menuname>
+  <Menuname>Graphics</Menuname>
+  <Menuname>System</Menuname>
+  <Menuname>Multimedia</Menuname>
+  <Menuname>Games</Menuname>
+  <Menuname>chrome-apps</Menuname>
+  <Menuname>CrossOver</Menuname>
+  <Menuname>Windows Applications</Menuname>
+  <Menuname>Applications</Menuname>
+ </Layout>
+ <Include>
+  <Filename>.desktop</Filename>
+ </Include>
+</Menu>

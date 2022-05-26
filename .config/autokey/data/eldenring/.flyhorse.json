@@ -1,0 +1,33 @@
+{
+    "type": "script",
+    "description": "flyhorse",
+    "store": {},
+    "modes": [
+        1,
+        3
+    ],
+    "usageCount": 51,
+    "prompt": false,
+    "omitTrigger": false,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [
+            "111"
+        ],
+        "backspace": false,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": true,
+        "wordChars": "[\\w]"
+    },
+    "hotkey": {
+        "modifiers": [
+            "<ctrl>"
+        ],
+        "hotKey": "/"
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    }
+}

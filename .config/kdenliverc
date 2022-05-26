@@ -1,0 +1,119 @@
+[MainWindow]
+State=AAAA/wAAAAD9AAAAAgAAAAEAAAGFAAACGPwCAAAAAfwAAAG/AAACGAAAAhgA///++gAAAAECAAAABPsAAAAKAG0AaQB4AGUAcgEAAAHwAAACCwAAAMgA///++wAAABgAZQBmAGYAZQBjAHQAXwBzAHQAYQBjAGsBAAAAAP////8AAABoAP///vsAAAASAHQAaQBtAGUAcgBlAG0AYQBwAQAAAAD/////AAACGAD///77AAAAEgBTAHUAYgB0AGkAdABsAGUAcwEAAAAA/////wAAAOYA///+AAAAAgAAB4AAAAGI/AEAAAAL+wAAABQAcwBjAHIAZQBlAG4AZwByAGEAYgAAAAAA/////wAAAIwA////+wAAABoAYQB1AGQAaQBvAHMAcABlAGMAdAByAHUAbQAAAAAA/////wAAAHIA/////AAAAAAAAAJWAAAAbwEAACj6AAAABAEAAAAF+wAAABYAcAByAG8AagBlAGMAdABfAGIAaQBuAQAAAAD/////AAAARgD////7AAAAHgB0AHIAYQBuAHMAaQB0AGkAbwBuAF8AbABpAHMAdAEAAAAA/////wAAAAAA////+wAAABYAZQBmAGYAZQBjAHQAXwBsAGkAcwB0AQAAAAD/////AAAAAAD////7AAAAHgBjAGwAaQBwAF8AcAByAG8AcABlAHIAdABpAGUAcwEAAAAA/////wAAAEQA////+wAAABgAdQBuAGQAbwBfAGgAaQBzAHQAbwByAHkBAAAAAP////8AAABGAP////wAAAJcAAACkAAAAWkBAAAo+gAAAAACAAAAAvsAAAAYAGMAbABpAHAAXwBtAG8AbgBpAHQAbwByAQAAAEQAAAHNAAAAxwD///77AAAADgBsAGkAYgByAGEAcgB5AQAAAAD/////AAAAfAD///78AAAE8gAAAo4AAAFpAQAAKPoAAAAAAgAAAAP7AAAAHgBwAHIAbwBqAGUAYwB0AF8AbQBvAG4AaQB0AG8AcgEAAAC/AAABLAAAAMcA///++wAAABAAdABlAHgAdABlAGQAaQB0AQAAAAD/////AAABiAD///77AAAAGABuAG8AdABlAHMAXwB3AGkAZABnAGUAdAEAAAAA/////wAAAHYA///++wAAABYAdgBlAGMAdABvAHIAcwBjAG8AcABlAAAAAAD/////AAABLwD////7AAAAEAB3AGEAdgBlAGYAbwByAG0AAAAAAP////8AAACUAP////sAAAAUAHIAZwBiAF8AcABhAHIAYQBkAGUAAAAAAP////8AAAClAP////sAAAASAGgAaQBzAHQAbwBnAHIAYQBtAAAAAAD/////AAABPgD////7AAAAEABiAGkAbgBfAGMAbABpAHAAAAAE/wAAAoEAAAIFAP////sAAAAeAG8AbgBsAGkAbgBlAHIAZQBzAG8AdQByAGMAZQBzAAAAAAD/////AAABQQD///8AAAX1AAACGAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAAAAABgAZQB4AHQAcgBhAFQAbwBvAGwAQgBhAHIAAAAAAP////8AAAAAAAAAAA==
+ToolBarsMovable=Disabled
+XWAYLAND0 Height 1920x1080=1160
+XWAYLAND0 Width 1920x1080=1910
+XWAYLAND0 XPosition 1920x1080=5
+XWAYLAND0 YPosition 1920x1080=66
+eDP-1-0 DP-0 Height 1920x1080=1074
+eDP-1-0 DP-0 Width 1920x1080=1717
+eDP-1-0 DP-0 Window-Maximized 1920x1080=true
+eDP-1-0 DP-0 XPosition 1920x1080=196
+eDP-1-0 DP-0 YPosition 1920x1080=1398
+eDP-1-0 Height 1920x1080=1160
+eDP-1-0 Width 1920x1080=1910
+eDP-1-0 XPosition 1920x1080=6
+eDP-1-0 YPosition 1920x1080=66
+
+[OnlineResources]
+provider=Freesound
+zoom=7
+
+[Recent Dirs]
+KdenliveClipFolder[$e]=$HOME/视频,$HOME/文档
+KdenliveProjectsFolder[$e]=$HOME/视频,$HOME/文档
+
+[Recent Files]
+File1[$e]=$HOME/视频/involution.kdenlive
+Name1[$e]=involution.kdenlive
+
+[Scope_Histogram]
+autoRefresh=true
+bEnabled=true
+gEnabled=true
+logScale=false
+rEnabled=true
+realtime=false
+rec601=false
+sEnabled=false
+yEnabled=true
+
+[Scope_RGB Parade]
+autoRefresh=true
+axis=false
+gradref=false
+paintmode=0
+realtime=false
+
+[Scope_Vectorscope]
+75PBox=false
+autoRefresh=true
+axis=false
+backgroundmode=0
+colorspace_ypbpr=false
+gain=1
+iqlines=false
+paintmode=0
+realtime=false
+
+[Scope_Waveform]
+autoRefresh=true
+paintmode=0
+realtime=false
+rec601=false
+
+[UiSettings]
+ColorScheme=默认
+ColorSchemePath=
+
+[bin]
+treeviewheaders=AAAA/wAAAAAAAAABAAAAAAAAAAABAAAAAAAAAAAAAAAI/gAAAAcAAAAHAAAATAAAAAYAAAA9AAAABQAAAHMAAAAEAAAATQAAAAMAAABNAAAAAgAAAE0AAAABAAAATQAAAisAAAAIAQEAAQAAAAAAAAAAAAAAAGT/////AAAAgQAAAAAAAAAIAAACKwAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAD6AAAAABN
+
+[capture]
+decklink_capturedevice=4294967295
+decklink_extension=mov
+decklink_parameters=vcodec=dnxhd vb=145000k acodec=pcm_s16le threads=%threads
+defaultaudiocapture=0
+grab_extension=mov
+grab_parameters=-crf 25 -vcodec libx264 -preset veryfast -threads 0
+v4l_extension=mpg
+v4l_parameters=qscale=4 ab=192k vcodec=mpeg2video acodec=mp2 threads=%threads
+
+[env]
+defaultimageapp=/usr/bin/gimp
+defaultprojectfolder[$e]=$HOME/视频
+ffmpegpath[$e]=/usr/bin/ffmpeg
+ffplaypath[$e]=/usr/bin/ffplay
+ffprobepath[$e]=/usr/bin/ffprobe
+mltpath[$e]=/usr/share/mlt-7/profiles
+proxythreads=15
+rendererpath[$e]=/usr/bin/melt-7
+
+[misc]
+tabposition=3
+
+[project]
+enableproxy=true
+externalProxyProfile=./;GL;.LRV;./;GX;.MP4
+nvencEnabled=true
+
+[sdl]
+blackmagic_output_device=-1
+
+[settings]
+dialogSize=1024,806
+
+[shuttle]
+shuttlebuttons=button0=monitor_pause
+
+[timeline]
+trackheight=69
+
+[unmanaged]
+default_profile=atsc_1080p_25
+monitor_audio=false
+producerslist=avformat,avformat-novalidate,abnormal,color,colour,consumer,hold,loader,melt,melt_file,noise,timewarp,tone,decklink,frei0r.ising0r,frei0r.lissajous0r,frei0r.nois0r,frei0r.onecol0r,frei0r.partik0l,frei0r.plasma,frei0r.test_pat_B,frei0r.test_pat_C,frei0r.test_pat_G,frei0r.test_pat_I,frei0r.test_pat_L,frei0r.test_pat_R,pango,pixbuf,framebuffer,blipflash,count,pgm,qimage,qtext,kdenlivetitle,vorbis,xml,xml-string,xml-nogl
+widgetstyle=Fusion
+
+[version]
+version=21.12.3

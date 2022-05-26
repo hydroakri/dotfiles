@@ -1,0 +1,11 @@
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh nwfilter-edit allow-incoming-ipv6
+or other application using the libvirt API.
+-->
+
+<filter name='allow-incoming-ipv6' chain='ipv6' priority='-600'>
+  <uuid>aa1f0583-7d4a-4229-a11e-e2ab01fb9ecf</uuid>
+  <rule action='accept' direction='in' priority='500'/>
+</filter>

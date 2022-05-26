@@ -1,0 +1,13 @@
+2022/05/22-12:24:33.501 1531 Reusing MANIFEST /home/hydroakri/.config/GeoGebra/Local Storage/leveldb/MANIFEST-000001
+2022/05/22-12:24:33.501 1531 Recovering log #10
+2022/05/22-12:24:33.502 1531 Level-0 table #12: started
+2022/05/22-12:24:33.509 1531 Level-0 table #12: 78525 bytes OK
+2022/05/22-12:24:33.510 1531 Delete type=0 #10
+2022/05/22-12:24:33.510 152e Compacting 4@0 + 0@1 files
+2022/05/22-12:24:33.513 152e Generated table #14@0: 5 keys, 78565 bytes
+2022/05/22-12:24:33.513 152e Compacted 4@0 + 0@1 files => 78565 bytes
+2022/05/22-12:24:33.514 152e compacted to: files[ 0 1 0 0 0 0 0 ]
+2022/05/22-12:24:33.514 152e Delete type=2 #3
+2022/05/22-12:24:33.514 152e Delete type=2 #6
+2022/05/22-12:24:33.514 152e Delete type=2 #9
+2022/05/22-12:24:33.514 152e Delete type=2 #12

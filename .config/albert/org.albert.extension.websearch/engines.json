@@ -1,0 +1,26 @@
+[
+    {
+        "iconPath": ":google",
+        "name": "Google",
+        "trigger": "gg ",
+        "url": "https://www.google.com/search?q=%s"
+    },
+    {
+        "iconPath": ":github",
+        "name": "GitHub",
+        "trigger": "gh ",
+        "url": "https://github.com/search?utf8=✓&q=%s"
+    },
+    {
+        "iconPath": ":wolfram",
+        "name": "Wolfram Alpha",
+        "trigger": "=",
+        "url": "https://www.wolframalpha.com/input/?i=%s"
+    },
+    {
+        "iconPath": "/home/hydroakri/.config/albert/org.albert.extension.websearch/{16986159-9f62-4e92-9e6e-1a4ed1cdbf8d}.",
+        "name": "bing",
+        "trigger": " ",
+        "url": "https://www.bing.com/search?form=MOZLBR&pc=MOZI&q=%s"
+    }
+]

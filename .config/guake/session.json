@@ -1,0 +1,38 @@
+{
+    "schema_version": 2,
+    "timestamp": 1649328716,
+    "workspace": {
+        "0": [
+            [
+                {
+                    "panes": [
+                        {
+                            "type": "dual_v",
+                            "directory": null
+                        },
+                        {
+                            "type": "term",
+                            "directory": "/home/hydroakri",
+                            "custom_colors": {
+                                "fg_color": null,
+                                "bg_color": null,
+                                "palette": null
+                            }
+                        },
+                        {
+                            "type": "term",
+                            "directory": "/home/hydroakri",
+                            "custom_colors": {
+                                "fg_color": null,
+                                "bg_color": null,
+                                "palette": null
+                            }
+                        }
+                    ],
+                    "label": "hydroakri@omen:~/.config",
+                    "custom_label_set": false
+                }
+            ]
+        ]
+    }
+}

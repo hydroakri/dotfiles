@@ -1,0 +1,11 @@
+[Devices][/org/freedesktop/UDisks2/block_devices/nvme0n1p1]
+EverMounted=true
+Icon=drive-harddisk
+LastNameSeen=primary
+LastSeenMounted=true
+
+[Devices][/org/freedesktop/UDisks2/block_devices/nvme0n1p2]
+EverMounted=true
+Icon=drive-harddisk-root
+LastNameSeen=primary
+LastSeenMounted=true

@@ -1,0 +1,16 @@
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh nwfilter-edit allow-dhcpv6
+or other application using the libvirt API.
+-->
+
+<filter name='allow-dhcpv6' chain='ipv6' priority='-600'>
+  <uuid>6e1c6f45-fe0f-4e0a-ab88-d0d412edb969</uuid>
+  <rule action='accept' direction='out' priority='100'>
+    <ipv6 srcipaddr='fe80::' srcipmask='10' dstipaddr='ff02::1:2' protocol='udp' srcportstart='546' dstportstart='547'/>
+  </rule>
+  <rule action='accept' direction='in' priority='100'>
+    <ipv6 protocol='udp' srcportstart='547' dstportstart='546'/>
+  </rule>
+</filter>

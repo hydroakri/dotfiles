@@ -1,0 +1,27 @@
+[connection]
+id=OnePlus 9R_8855
+uuid=5f8547d5-de2b-43f8-82ed-b127fd3c3451
+type=wifi
+interface-name=wlo1
+permissions=
+timestamp=1645260833
+
+[wifi]
+mac-address-blacklist=
+mode=infrastructure
+ssid=OnePlus 9R_8855
+
+[wifi-security]
+key-mgmt=sae
+psk=00000000
+
+[ipv4]
+dns-search=
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+dns-search=
+method=auto
+
+[proxy]

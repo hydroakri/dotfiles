@@ -1,0 +1,41 @@
+{
+  "local_storage": {
+    "simple_input_history_net_search_url": [
+      "https://google.com/search?q={q}"
+    ]
+  },
+  "main_window_geometry": {
+    "__class__": "bytearray",
+    "__value__": "AdnQywADAAAAAAJvAAAAYAAABO4AAANRAAACbwAAAIIAAATuAAADUQAAAAAAAAAAB4AAAAJvAAAAggAABO4AAANR"
+  },
+  "main_window_state": {
+    "__class__": "bytearray",
+    "__value__": "AAAA/wAAAAH9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAvsAAAAQAHQAbwBjAC0AZABvAGMAawAAAAAA/////wAAALAA////+wAAABYAcwBlAGEAcgBjAGgALQBkAG8AYwBrAAAAAAD/////AAAAxgD///8AAAABAAAAAAAAAAD8AgAAAAT7AAAAFgBsAG8AbwBrAHUAcAAtAGQAbwBjAGsAAAAAAP////8AAACuAP////sAAAAcAGIAbwBvAGsAbQBhAHIAawBzAC0AZABvAGMAawAAAAAA/////wAAATsA////+wAAABwAaQBuAHMAcABlAGMAdABvAHIALQBkAG8AYwBrAAAAAAD/////AAAAHQD////7AAAAHgBoAGkAZwBoAGwAaQBnAGgAdABzAC0AZABvAGMAawAAAAAA/////wAAAREA////AAACgAAAAtAAAAAEAAAABAAAAAgAAAAI/AAAAAEAAAAAAAAAAQAAAB4AYQBjAHQAaQBvAG4AcwBfAHQAbwBvAGwAYgBhAHICAAAAAP////8AAAAAAAAAAA=="
+  },
+  "old_prefs_migrated": true,
+  "session_data": {
+    "base_font_size": 31,
+    "controls_help_shown_count": 2,
+    "current_color_scheme": "system",
+    "hide_tooltips": null,
+    "paged_pixel_scroll_threshold": 30,
+    "paged_wheel_scrolls_by_screen": false,
+    "standalone_font_settings": {
+      "mono_family": "等距更紗黑體 CL",
+      "sans_family": "思源黑体 CN",
+      "serif_family": "思源宋体 CN"
+    },
+    "standalone_misc_settings": {},
+    "standalone_recently_opened": [
+      {
+        "authors": [
+          "(奥) 里尔克"
+        ],
+        "key": "/home/hydroakri/Desktop/DOCUMENTS/学习/诗集/里尔克诗集.epub",
+        "pathtoebook": "/home/hydroakri/Desktop/DOCUMENTS/学习/诗集/里尔克诗集.epub",
+        "timestamp": "2022-02-10T15:27:40.659Z",
+        "title": "里尔克诗选"
+      }
+    ]
+  }
+}

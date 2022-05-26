@@ -1,0 +1,25 @@
+[General]
+Version=201
+ViewPropsTimestamp=2022,4,23,17,29,49.755
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[KPropertiesDialog]
+eDP-1-0 DP-0 Height 1920x1080=600
+eDP-1-0 DP-0 Width 1920x1080=565
+
+[MainWindow]
+MenuBar=Disabled
+ToolBarsMovable=Disabled
+eDP-1-0 DP-0 Height 1920x1080=858
+eDP-1-0 DP-0 Width 1920x1080=1399
+eDP-1-0 DP-0 XPosition 1920x1080=5
+eDP-1-0 DP-0 YPosition 1920x1080=56
+eDP-1-0 XPosition 1920x1080=491
+eDP-1-0 YPosition 1920x1080=152
+
+[Open-with settings]
+CompletionMode=1
+History=d,dol,do

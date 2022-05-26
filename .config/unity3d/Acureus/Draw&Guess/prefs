@@ -1,0 +1,27 @@
+<unity_prefs version_major="1" version_minor="1">
+	<pref name="Language" type="int">2</pref>
+	<pref name="ScreenX" type="int">1600</pref>
+	<pref name="ScreenY" type="int">900</pref>
+	<pref name="Screenmanager Fullscreen mode" type="int">3</pref>
+	<pref name="Screenmanager Fullscreen mode Default" type="int">1</pref>
+	<pref name="Screenmanager Resolution Height" type="int">900</pref>
+	<pref name="Screenmanager Resolution Height Default" type="int">1080</pref>
+	<pref name="Screenmanager Resolution Use Native" type="int">0</pref>
+	<pref name="Screenmanager Resolution Use Native Default" type="int">1</pref>
+	<pref name="Screenmanager Resolution Width" type="int">1600</pref>
+	<pref name="Screenmanager Resolution Width Default" type="int">1920</pref>
+	<pref name="UnitySelectMonitor" type="int">0</pref>
+	<pref name="autoscreenshot" type="int">0</pref>
+	<pref name="colormode" type="int">0</pref>
+	<pref name="fastmode" type="int">1</pref>
+	<pref name="full" type="int">0</pref>
+	<pref name="gametimemode" type="int">0</pref>
+	<pref name="musicVol" type="float">1</pref>
+	<pref name="nakama.authToken.76561198256940663" type="string">ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SjFhV1FpT2lKbE9UYzVOalE1T0MxaU1ERXdMVFJpTlRjdE9URmhOeTAyTnpZM05tTmlOMlJoWmpNaUxDSjFjMjRpT2lJM05qVTJNVEU1T0RJMU5qazBNRFkyTXlQbHZLRG51N1RrdUxybXNMam92NXpsbHB6bXJLTG90YUlpTENKbGVIQWlPakUyTkRVMU16WTRNVEI5LlptVmdQS1N1MTNRdnhNSnR5YlJraGVfT2prRzJxdFFnZ0xzUXpGY1BRYzA=</pref>
+	<pref name="nakama.refreshToken.76561198256940663" type="string">ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SjFhV1FpT2lKbE9UYzVOalE1T0MxaU1ERXdMVFJpTlRjdE9URmhOeTAyTnpZM05tTmlOMlJoWmpNaUxDSjFjMjRpT2lJM05qVTJNVEU1T0RJMU5qazBNRFkyTXlQbHZLRG51N1RrdUxybXNMam92NXpsbHB6bXJLTG90YUlpTENKbGVIQWlPakUyTkRVMU16WTRNVEI5Lm4tLU4tcTRGdlhZczk1R3FhaGxVbllrLVVFMERrVUNwVF9HYWJGRWJhelE=</pref>
+	<pref name="soundVol" type="float">1</pref>
+	<pref name="specialstroke" type="int">0</pref>
+	<pref name="thickbrush" type="int">0</pref>
+	<pref name="unity.player_session_count" type="string">NA==</pref>
+	<pref name="unity.player_sessionid" type="string">OTAyODkzMzkxNDgwNTE3MDAzMA==</pref>
+</unity_prefs>

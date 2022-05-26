@@ -1,0 +1,2 @@
+#Get user access for using Galaxy USB3 cameras
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2ba2", MODE:="0666", TAG+="uaccess", TAG+="udev-acl"

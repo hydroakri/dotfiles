@@ -1,0 +1,2 @@
+{"$$indexCreated":{"fieldName":"author","unique":false,"sparse":false}}
+{"$$indexCreated":{"fieldName":"title","unique":false,"sparse":false}}

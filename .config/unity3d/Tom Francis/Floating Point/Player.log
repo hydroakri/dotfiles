@@ -1,0 +1,22 @@
+
+(Floating Point.x86:5800): Gtk-WARNING **: 08:50:16.680: Unable to locate theme engine in module_path: "adwaita",
+/home/hydroakri/.themes/vimix-dark-doder/gtk-2.0/main.rc:805: error: unexpected identifier 'direction', expected character '}'
+
+(Floating Point.x86:5800): Gtk-WARNING **: 08:50:16.687: Unable to locate theme engine in module_path: "adwaita",
+/home/hydroakri/.themes/vimix-dark-doder/gtk-2.0/hacks.rc:28: error: invalid string constant "normal_entry", expected valid string constant
+Preloaded type GtkListStore
+Preloaded type GtkWindow
+Preloaded type GtkVBox
+Preloaded type GtkImage
+Preloaded type GtkNotebook
+Preloaded type GtkHBox
+Preloaded type GtkFrame
+Preloaded type GtkAlignment
+Preloaded type GtkTreeView
+Preloaded type GtkLabel
+Preloaded type GtkCheckButton
+Preloaded type GtkScrolledWindow
+Couldn't find OnScreenSelectorQuit in main module; checking child
+Couldn't find OnScreenSelectorOK in main module; checking child
+Couldn't find OnScreenSelectorQuit in main module; checking child
+Couldn't find OnInputListRowActivated in main module; checking child

@@ -1,0 +1,18 @@
+# GIMP user context
+
+(tool "gimp-scale-tool")
+(paint-info "gimp-paintbrush")
+(foreground (color-rgb 0.46000000000000002 0.29846333333333336 0.26220000000000004))
+(background (color-rgb 0 0 0))
+(opacity 0.98999999999999999)
+(paint-mode merge)
+(brush "2. Hardness 100")
+(dynamics "Dynamics Off")
+(mybrush "100% Opaque")
+(pattern "Pine")
+(gradient "前景到背景（RGB）")
+(palette "颜色历史")
+(font "Standard")
+(tool-preset "Core Pointer")
+
+# end of user context

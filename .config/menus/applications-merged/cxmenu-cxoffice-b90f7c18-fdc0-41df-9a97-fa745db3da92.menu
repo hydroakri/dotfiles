@@ -1,0 +1,25 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>Windows Applications</Name>
+    <Directory>cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-3ii0rqp.directory</Directory>
+    <Include>
+      <Category>X-cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-3ii0rqp</Category>
+    </Include>
+    <Menu>
+      <Name>GOG.com</Name>
+      <Directory>cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-2kgpb14.directory</Directory>
+      <Include>
+        <Category>X-cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-2kgpb14</Category>
+      </Include>
+      <Menu>
+        <Name>Cuphead</Name>
+        <Directory>cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-17htida.directory</Directory>
+        <Include>
+          <Category>X-cxmenu-cxoffice-b90f7c18-fdc0-41df-9a97-fa745db3da92-17htida</Category>
+        </Include>
+      </Menu>
+    </Menu>
+  </Menu>
+</Menu>

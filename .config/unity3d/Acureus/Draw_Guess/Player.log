@@ -1,0 +1,704 @@
+Mono path[0] = '/home/hydroakri/.local/share/Steam/steamapps/common/Draw & Guess/Draw&Guess_Data/Managed'
+Mono config path = '/home/hydroakri/.local/share/Steam/steamapps/common/Draw & Guess/Draw&Guess_Data/MonoBleedingEdge/etc'
+Preloaded 'libsteam_api64.so'
+Display 0 '0': 1920x1080 (primary device).
+Loading player data from /home/hydroakri/.local/share/Steam/steamapps/common/Draw & Guess/Draw&Guess_Data/data.unity3d
+Desktop is 1920 x 1080 @ 144 Hz
+Initialize engine version: 2020.3.23f1 (c5d91304a876)
+[Subsystems] Discovering subsystems at path /home/hydroakri/.local/share/Steam/steamapps/common/Draw & Guess/Draw&Guess_Data/UnitySubsystems
+GfxDevice: creating device client; threaded=1
+Renderer: NVIDIA GeForce RTX 3060 Laptop GPU/PCIe/SSE2
+Vendor:   NVIDIA Corporation
+Version:  4.5.0 NVIDIA 510.54
+GLES:     0
+ GL_AMD_multi_draw_indirect GL_AMD_seamless_cubemap_per_texture GL_AMD_vertex_shader_viewport_index GL_AMD_vertex_shader_layer GL_ARB_arrays_of_arrays GL_ARB_base_instance GL_ARB_bindless_texture GL_ARB_blend_func_extended GL_ARB_buffer_storage GL_ARB_clear_buffer_object GL_ARB_clear_texture GL_ARB_clip_control GL_ARB_color_buffer_float GL_ARB_compressed_texture_pixel_storage GL_ARB_conservative_depth GL_ARB_compute_shader GL_ARB_compute_variable_group_size GL_ARB_conditional_render_inverted GL_ARB_copy_buffer GL_ARB_copy_image GL_ARB_cull_distance GL_ARB_debug_output GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_depth_texture GL_ARB_derivative_control GL_ARB_direct_state_access GL_ARB_draw_buffers GL_ARB_draw_buffers_blend GL_ARB_draw_indirect GL_ARB_draw_elements_base_vertex GL_ARB_draw_instanced GL_ARB_enhanced_layouts GL_ARB_ES2_compatibility GL_ARB_ES3_compatibility GL_ARB_ES3_1_compatibility GL_ARB_ES3_2_compatibility GL_ARB_explicit_attrib_location GL_ARB_explicit_uniform_location GL_ARB_fragmen
+t_coord_conventions GL_ARB_fragment_layer_viewport GL_ARB_fragment_program GL_ARB_fragment_program_shadow GL_ARB_fragment_shader GL_ARB_fragment_shader_interlock GL_ARB_framebuffer_no_attachments GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_geometry_shader4 GL_ARB_get_program_binary GL_ARB_get_texture_sub_image GL_ARB_gl_spirv GL_ARB_gpu_shader5 GL_ARB_gpu_shader_fp64 GL_ARB_gpu_shader_int64 GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_imaging GL_ARB_indirect_parameters GL_ARB_instanced_arrays GL_ARB_internalformat_query GL_ARB_internalformat_query2 GL_ARB_invalidate_subdata GL_ARB_map_buffer_alignment GL_ARB_map_buffer_range GL_ARB_multi_bind GL_ARB_multi_draw_indirect GL_ARB_multisample GL_ARB_multitexture GL_ARB_occlusion_query GL_ARB_occlusion_query2 GL_ARB_parallel_shader_compile GL_ARB_pipeline_statistics_query GL_ARB_pixel_buffer_object GL_ARB_point_parameters GL_ARB_point_sprite GL_ARB_polygon_offset_clamp GL_ARB_post_depth_coverage GL_ARB_program_interface_query GL_ARB_provoki
+ng_vertex GL_ARB_query_buffer_object GL_ARB_robust_buffer_access_behavior GL_ARB_robustness GL_ARB_sample_locations GL_ARB_sample_shading GL_ARB_sampler_objects GL_ARB_seamless_cube_map GL_ARB_seamless_cubemap_per_texture GL_ARB_separate_shader_objects GL_ARB_shader_atomic_counter_ops GL_ARB_shader_atomic_counters GL_ARB_shader_ballot GL_ARB_shader_bit_encoding GL_ARB_shader_clock GL_ARB_shader_draw_parameters GL_ARB_shader_group_vote GL_ARB_shader_image_load_store GL_ARB_shader_image_size GL_ARB_shader_objects GL_ARB_shader_precision GL_ARB_shader_storage_buffer_object GL_ARB_shader_subroutine GL_ARB_shader_texture_image_samples GL_ARB_shader_texture_lod GL_ARB_shading_language_100 GL_ARB_shader_viewport_layer_array GL_ARB_shading_language_420pack GL_ARB_shading_language_include GL_ARB_shading_language_packing GL_ARB_shadow GL_ARB_sparse_buffer GL_ARB_sparse_texture GL_ARB_sparse_texture2 GL_ARB_sparse_texture_clamp GL_ARB_spirv_extensions GL_ARB_stencil_texturing GL_ARB_sync GL_ARB_tessellation_shader GL_A
+RB_texture_barrier GL_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_object_rgb32 GL_ARB_texture_buffer_range GL_ARB_texture_compression GL_ARB_texture_compression_bptc GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map GL_ARB_texture_cube_map_array GL_ARB_texture_env_add GL_ARB_texture_env_combine GL_ARB_texture_env_crossbar GL_ARB_texture_env_dot3 GL_ARB_texture_filter_anisotropic GL_ARB_texture_filter_minmax GL_ARB_texture_float GL_ARB_texture_gather GL_ARB_texture_mirror_clamp_to_edge GL_ARB_texture_mirrored_repeat GL_ARB_texture_multisample GL_ARB_texture_non_power_of_two GL_ARB_texture_query_levels GL_ARB_texture_query_lod GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_texture_rgb10_a2ui GL_ARB_texture_stencil8 GL_ARB_texture_storage GL_ARB_texture_storage_multisample GL_ARB_texture_swizzle GL_ARB_texture_view GL_ARB_timer_query GL_ARB_transform_feedback2 GL_ARB_transform_feedback3 GL_ARB_transform_feedback_instanced GL_ARB_transform_feedback_overflow_query GL_ARB_t
+ranspose_matrix GL_ARB_uniform_buffer_object GL_ARB_vertex_array_bgra GL_ARB_vertex_array_object GL_ARB_vertex_attrib_64bit GL_ARB_vertex_attrib_binding GL_ARB_vertex_buffer_object GL_ARB_vertex_program GL_ARB_vertex_shader GL_ARB_vertex_type_10f_11f_11f_rev GL_ARB_vertex_type_2_10_10_10_rev GL_ARB_viewport_array GL_ARB_window_pos GL_ATI_draw_buffers GL_ATI_texture_float GL_ATI_texture_mirror_once GL_S3_s3tc GL_EXT_texture_env_add GL_EXT_abgr GL_EXT_bgra GL_EXT_bindable_uniform GL_EXT_blend_color GL_EXT_blend_equation_separate GL_EXT_blend_func_separate GL_EXT_blend_minmax GL_EXT_blend_subtract GL_EXT_compiled_vertex_array GL_EXT_Cg_shader GL_EXT_depth_bounds_test GL_EXT_direct_state_access GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_draw_range_elements GL_EXT_fog_coord GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXTX_framebuffer_mixed_formats GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_geometry_shader4 GL_EXT_gpu_program_parameters 
+GL_EXT_gpu_shader4 GL_EXT_multi_draw_arrays GL_EXT_multiview_texture_multisample GL_EXT_multiview_timer_query GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_packed_pixels GL_EXT_pixel_buffer_object GL_EXT_point_parameters GL_EXT_polygon_offset_clamp GL_EXT_post_depth_coverage GL_EXT_provoking_vertex GL_EXT_raster_multisample GL_EXT_rescale_normal GL_EXT_secondary_color GL_EXT_separate_shader_objects GL_EXT_separate_specular_color GL_EXT_shader_image_load_formatted GL_EXT_shader_image_load_store GL_EXT_shader_integer_mix GL_EXT_shadow_funcs GL_EXT_sparse_texture2 GL_EXT_stencil_two_side GL_EXT_stencil_wrap GL_EXT_texture3D GL_EXT_texture_array GL_EXT_texture_buffer_object GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_latc GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_cube_map GL_EXT_texture_edge_clamp GL_EXT_texture_env_combine GL_EXT_texture_env_dot3 GL_EXT_texture_filter_anisotropic GL_EXT_texture_filter_minmax GL_EXT_texture_integer GL_EXT_texture_lod G
+L_EXT_texture_lod_bias GL_EXT_texture_mirror_clamp GL_EXT_texture_object GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_sRGB GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_decode GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback2 GL_EXT_vertex_array GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_EXT_window_rectangles GL_EXT_import_sync_object GL_NV_robustness_video_memory_purge GL_IBM_rasterpos_clip GL_IBM_texture_mirrored_repeat GL_KHR_context_flush_control GL_KHR_debug GL_EXT_memory_object GL_EXT_memory_object_fd GL_NV_memory_object_sparse GL_KHR_parallel_shader_compile GL_KHR_no_error GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_EXT_semaphore GL_EXT_semaphore_fd GL_NV_timeline_semaphore GL_KHR_shader_subgroup GL_KTX_buffer_region GL_NV_alpha_to_coverage_dither_control GL_NV_bindless_multi_draw_indirect GL_NV_bindless_multi_draw_indirect_count GL_NV_bindless_texture GL_NV_blend_equation_advanced GL_NV_blend_equation_advanced
+_coherent GL_NVX_blend_equation_advanced_multi_draw_buffers GL_NV_blend_minmax_factor GL_NV_blend_square GL_NV_clip_space_w_scaling GL_NV_command_list GL_NV_compute_program5 GL_NV_compute_shader_derivatives GL_NV_conditional_render GL_NV_conservative_raster GL_NV_conservative_raster_dilate GL_NV_conservative_raster_pre_snap GL_NV_conservative_raster_pre_snap_triangles GL_NV_conservative_raster_underestimation GL_NV_copy_depth_to_color GL_NV_copy_image GL_NV_depth_buffer_float GL_NV_depth_clamp GL_NV_draw_texture GL_NV_draw_vulkan_image GL_NV_ES1_1_compatibility GL_NV_ES3_1_compatibility GL_NV_explicit_multisample GL_NV_feature_query GL_NV_fence GL_NV_fill_rectangle GL_NV_float_buffer GL_NV_fog_distance GL_NV_fragment_coverage_to_color GL_NV_fragment_program GL_NV_fragment_program_option GL_NV_fragment_program2 GL_NV_fragment_shader_barycentric GL_NV_fragment_shader_interlock GL_NV_framebuffer_mixed_samples GL_NV_framebuffer_multisample_coverage GL_NV_geometry_shader4 GL_NV_geometry_shader_passthrough GL_NV_g
+pu_program4 GL_NV_internalformat_sample_query GL_NV_gpu_program4_1 GL_NV_gpu_program5 GL_NV_gpu_program5_mem_extended GL_NV_gpu_program_fp64 GL_NV_gpu_shader5 GL_NV_half_float GL_NV_light_max_exponent GL_NV_memory_attachment GL_NV_mesh_shader GL_NV_multisample_coverage GL_NV_multisample_filter_hint GL_NV_occlusion_query GL_NV_packed_depth_stencil GL_NV_parameter_buffer_object GL_NV_parameter_buffer_object2 GL_NV_path_rendering GL_NV_path_rendering_shared_edge GL_NV_pixel_data_range GL_NV_point_sprite GL_NV_primitive_restart GL_NV_primitive_shading_rate GL_NV_query_resource GL_NV_query_resource_tag GL_NV_register_combiners GL_NV_register_combiners2 GL_NV_representative_fragment_test GL_NV_sample_locations GL_NV_sample_mask_override_coverage GL_NV_scissor_exclusive GL_NV_shader_atomic_counters GL_NV_shader_atomic_float GL_NV_shader_atomic_float64 GL_NV_shader_atomic_fp16_vector GL_NV_shader_atomic_int64 GL_NV_shader_buffer_load GL_NV_shader_storage_buffer_object GL_NV_shader_subgroup_partitioned GL_NV_shader_t
+exture_footprint GL_NV_shading_rate_image GL_NV_stereo_view_rendering GL_NV_texgen_reflection GL_NV_texture_barrier GL_NV_texture_compression_vtc GL_NV_texture_dirty_tile_map GL_NV_texture_env_combine4 GL_NV_texture_multisample GL_NV_texture_rectangle GL_NV_texture_rectangle_compressed GL_NV_texture_shader GL_NV_texture_shader2 GL_NV_texture_shader3 GL_NV_transform_feedback GL_NV_transform_feedback2 GL_NV_uniform_buffer_unified_memory GL_NV_vdpau_interop GL_NV_vdpau_interop2 GL_NV_vertex_array_range GL_NV_vertex_array_range2 GL_NV_vertex_attrib_integer_64bit GL_NV_vertex_buffer_unified_memory GL_NV_vertex_program GL_NV_vertex_program1_1 GL_NV_vertex_program2 GL_NV_vertex_program2_option GL_NV_vertex_program3 GL_NV_viewport_array2 GL_NV_viewport_swizzle GL_NVX_conditional_render GL_NV_gpu_multicast GL_NVX_progress_fence GL_NVX_gpu_memory_info GL_NVX_nvenc_interop GL_NV_shader_thread_group GL_NV_shader_thread_shuffle GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_OVR_multiview GL_OVR
+_multiview2 GL_SGIS_generate_mipmap GL_SGIS_texture_lod GL_SGIX_depth_texture GL_SGIX_shadow GL_SUN_slice_accum
+OPENGL LOG: Creating OpenGL 4.5 graphics device ; Context level  <OpenGL 4.5> ; Context handle 39471992
+Begin MonoManager ReloadAssembly
+- Completed reload, in  0.068 seconds
+Default vsync count 0
+requesting resize 1600 x 900
+resizing window to 1600 x 900
+Desktop is 1920 x 1080 @ 144 Hz
+UnloadTime: 0.454532 ms
+0
+Fallback handler could not load library /home/hydroakri/.local/share/Steam/steamapps/common/Draw & Guess/Draw&Guess_Data/Mono/libsteam_api
+[S_API] SteamAPI_Init(): Loaded '/home/hydroakri/.local/share/Steam/linux64/steamclient.so' OK.
+Setting breakpad minidump AppID = 1483870
+SteamInternal_SetMinidumpSteamID:  Caching Steam ID:  76561198256940663 [API loaded no]
+Mirror | mirror-networking.com | discord.gg/N9QVxbM
+Loaded 1003 words for English
+Loaded 1528 words for German
+Loaded 669 words for SChinese
+Loaded 2522 words for Japanese
+Loaded 1734 words for French
+Loaded 1208 words for Spanish
+Loaded 445 words for Korean
+Loaded 496 words for Russian
+Loaded 618 words for Slovak
+Loaded 459 words for Italian
+Loaded 669 words for TChinese
+requesting resize 1600 x 900
+resizing window to 1600 x 900
+Desktop is 1920 x 1080 @ 144 Hz
+Launching in global mode
+Trying to get platform Id
+Got Platform Id [PlatformId Name: 我永远喜欢赢, Id:76561198256940663, Platform: WindowsPlayer]
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Logged into Playfab with id 8ACC3F8298BC3323
+Logging into Nakama
+[NakamaClient] Connecting to Nakama Host 40.80.93.140:7350
+[NakamaClient] Authing with [PlatformId Name: 我永远喜欢赢, Id:76561198256940663, Platform: WindowsPlayer]
+[NakamaClient] Nakama Session: Session(AuthToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlOTc5NjQ5OC1iMDEwLTRiNTctOTFhNy02NzY3NmNiN2RhZjMiLCJ1c24iOiI3NjU2MTE5ODI1Njk0MDY2MyPlvKDnu7TkuLrmsLjov5zllpzmrKLotaIiLCJleHAiOjE2NDU1MzY4MTB9.ZmVgPKSu13QvxMJtybRkhe_OjkG2qtQggLsQzFcPQc0', Created=False, CreateTime=55, ExpireTime=1645536810, RefreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJlOTc5NjQ5OC1iMDEwLTRiNTctOTFhNy02NzY3NmNiN2RhZjMiLCJ1c24iOiI3NjU2MTE5ODI1Njk0MDY2MyPlvKDnu7TkuLrmsLjov5zllpzmrKLotaIiLCJleHAiOjE2NDU1MzY4MTB9.n--N-q4FvXYs95GqahlUnYk-UE0DkUCpT_GabFEbazQ, RefreshExpireTime=1645536810, Variables={}, Username='76561198256940663#张维为永远喜欢赢', UserId='e9796498-b010-4b57-91a7-67676cb7daf3')
+[NakamaClient] Nakama Username updated
+Logged into Nakama
+Unloading 8 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 6.637027 ms
+
+Unloading 84 unused Assets to reduce memory usage. Loaded Objects now: 4151.
+Total: 18.089836 ms (FindLiveObjects: 0.235572 ms CreateObjectMapping: 0.069190 ms MarkObjects: 17.482657 ms  DeleteObjects: 0.301977 ms)
+
+[LoadTest] Joining Match
+[NakamaClient] Socket Connected
+[NakamaClient] Created Match 95197019-f25f-494a-a594-f51bebfcb86b.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 5.486941 ms
+Destroying duplicate reconnect manager
+Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.
+
+Unloading 27 unused Assets to reduce memory usage. Loaded Objects now: 4644.
+Total: 43.826873 ms (FindLiveObjects: 0.398457 ms CreateObjectMapping: 0.259687 ms MarkObjects: 42.986166 ms  DeleteObjects: 0.181551 ms)
+
+[LoadTest] Leaving Match
+requesting resize 1600 x 900
+resizing window to 1600 x 900
+Desktop is 1920 x 1080 @ 144 Hz
+FollowInvite 109775240968514119
+Preferring unencrypted.
+Registered reconnect id 76561198194528790
+Starting as Client. Connecting to 76561198194528790
+Starting client [SteamSockets], target address 76561198194528790.
+Connection state changed: k_ESteamNetworkingConnectionState_Connecting - 
+Connection state changed: k_ESteamNetworkingConnectionState_FindingRoute - 
+Connection established.
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.835311 ms
+[LoadTest] Joining Match
+FinishLoadScene: resuming handlers after scene was loading.
+Finished loading scene in client-only mode.
+
+Unloading 57 unused Assets to reduce memory usage. Loaded Objects now: 4660.
+Total: 24.420258 ms (FindLiveObjects: 0.432531 ms CreateObjectMapping: 0.193182 ms MarkObjects: 23.649954 ms  DeleteObjects: 0.143549 ms)
+
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+[NakamaClient] Socket Connected
+[NakamaClient] Created Match 5241ccc5-607c-40da-a14a-8d3d1c0a75fb.
+Register no longer needed: Successfully connected
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+Left Steam Lobby
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+UnloadTime: 5.217034 ms
+FinishLoadScene: resuming handlers after scene was loading.
+Finished loading scene in client-only mode.
+
+Unloading 24 unused Assets to reduce memory usage. Loaded Objects now: 3899.
+Total: 27.273418 ms (FindLiveObjects: 0.139682 ms CreateObjectMapping: 0.065854 ms MarkObjects: 26.795672 ms  DeleteObjects: 0.271639 ms)
+
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+EndWaitForReconnect
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Server announced disconnect: True
+Connection was closed by peer, Disconnected by server
+Sending Disconnect message
+Cleaning up
+ReconnectManager reset; no game is running.
+EndWaitForReconnect
+Transport shut down - was client.
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.494096 ms
+Destroying duplicate reconnect manager
+Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.
+
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 5283.
+Total: 48.934612 ms (FindLiveObjects: 0.464171 ms CreateObjectMapping: 0.205836 ms MarkObjects: 48.183253 ms  DeleteObjects: 0.080721 ms)
+
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.383545 ms
+Destroying duplicate reconnect manager
+Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 5348.
+Total: 34.854656 ms (FindLiveObjects: 0.183604 ms CreateObjectMapping: 0.062888 ms MarkObjects: 34.598757 ms  DeleteObjects: 0.009097 ms)
+
+[LoadTest] Leaving Match
+FinishLoadScene: resuming handlers after scene was loading.
+requesting resize 1600 x 900
+resizing window to 1600 x 900
+Desktop is 1920 x 1080 @ 144 Hz
+Sending Lobby Service Req
+FollowInvite 109775240968654617
+Preferring unencrypted.
+Registered reconnect id 76561198194528790
+Starting as Client. Connecting to 76561198194528790
+Starting client [SteamSockets], target address 76561198194528790.
+Connection state changed: k_ESteamNetworkingConnectionState_Connecting - 
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Connection state changed: k_ESteamNetworkingConnectionState_FindingRoute - 
+Connection established.
+1 received before connection was established. Processing now.
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.375325 ms
+[LoadTest] Joining Match
+FinishLoadScene: resuming handlers after scene was loading.
+Finished loading scene in client-only mode.
+
+Unloading 57 unused Assets to reduce memory usage. Loaded Objects now: 5253.
+Total: 76.240923 ms (FindLiveObjects: 0.427041 ms CreateObjectMapping: 0.232026 ms MarkObjects: 75.472121 ms  DeleteObjects: 0.108905 ms)
+
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+[NakamaClient] Socket Connected
+[NakamaClient] Created Match 560568c0-4518-4ef1-a1b6-757577bbb1e6.
+Register no longer needed: Successfully connected
+DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Register no longer needed: Successfully connected
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+Left Steam Lobby
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while its new parent 'Avatars' is being destroyed
+GameObjects can not be made active when they are being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+Cannot set the parent of the GameObject 'LobbyAvatar(Clone)' while it is being destroyed.
+GameObjects can not be made active when they are being destroyed.
+UnloadTime: 6.637378 ms
+FinishLoadScene: resuming handlers after scene was loading.
+Finished loading scene in client-only mode.
+
+Unloading 24 unused Assets to reduce memory usage. Loaded Objects now: 4434.
+Total: 54.495702 ms (FindLiveObjects: 0.357481 ms CreateObjectMapping: 0.301245 ms MarkObjects: 53.636340 ms  DeleteObjects: 0.200096 ms)
+
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+EndWaitForReconnect
+Sending Lobby Service Req
+EndWaitForReconnect
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+EndWaitForReconnect
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Archived image.
+Sending Lobby Service Req
+Server announced disconnect: True
+Server announced disconnect: False
+Server announced disconnect: False
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+The header Accept-Encoding is managed automatically, setting it may have no effect or result in unexpected behavior.
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Sending Lobby Service Req
+Server announced disconnect: True
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 10.511404 ms
+FinishLoadScene: resuming handlers after scene was loading.
+Finished loading scene in client-only mode.
+
+Unloading 7 unused Assets to reduce memory usage. Loaded Objects now: 5218.
+Total: 64.065669 ms (FindLiveObjects: 0.381205 ms CreateObjectMapping: 0.205736 ms MarkObjects: 63.426982 ms  DeleteObjects: 0.051046 ms)
+
+Register no longer needed: Successfully connected
+Register no longer needed: Successfully connected
+Connection was closed by peer, Disconnected by server
+Sending Disconnect message
+Send issue: k_EResultInvalidParam
+Connection to server was lost.
+Cleaning up
+ReconnectManager reset; no game is running.
+EndWaitForReconnect
+EndWaitForReconnect
+Transport shut down - was client.
+Disconnected.
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.697829 ms
+Destroying duplicate reconnect manager
+Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.
+
+Unloading 21 unused Assets to reduce memory usage. Loaded Objects now: 5319.
+Total: 65.456828 ms (FindLiveObjects: 0.385893 ms CreateObjectMapping: 0.218941 ms MarkObjects: 64.783315 ms  DeleteObjects: 0.067526 ms)
+
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.648702 ms
+Destroying duplicate reconnect manager
+Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 5384.
+Total: 26.677521 ms (FindLiveObjects: 0.189705 ms CreateObjectMapping: 0.072727 ms MarkObjects: 26.391735 ms  DeleteObjects: 0.022552 ms)
+
+[LoadTest] Leaving Match
+FinishLoadScene: resuming handlers after scene was loading.
+requesting resize 1600 x 900
+resizing window to 1600 x 900
+Desktop is 1920 x 1080 @ 144 Hz
+Sending Lobby Service Req
+Setting up 8 worker threads for Enlighten.
+  Thread -> id: 7f5a5d7fd640 -> priority: 1 
+  Thread -> id: 7f5a5cffc640 -> priority: 1 
+  Thread -> id: 7f5a0bfff640 -> priority: 1 
+  Thread -> id: 7f5a0b7fe640 -> priority: 1 
+  Thread -> id: 7f5a0affd640 -> priority: 1 
+  Thread -> id: 7f5a0a7fc640 -> priority: 1 
+  Thread -> id: 7f5a09ffb640 -> priority: 1 
+  Thread -> id: 7f5a097fa640 -> priority: 1 

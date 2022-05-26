@@ -1,0 +1,94 @@
+{
+	"info": {
+		"relation": {
+			"group": 0,
+			"priority": 1
+		},
+		"category": {
+			"hosts": [
+				".edu",
+				".idv"
+			],
+			"schemes": [
+				"ftps",
+				"magnet"
+			],
+			"file-exts": [
+				"torrent",
+				"metalink"
+			],
+			"active-limit": 3,
+			"finished-limit": 300,
+			"recycled-limit": 300
+		},
+		"common": {
+			"name": "新建 0",
+			"folder": "\/home\/hydroakri",
+			"connect-timeout": 15,
+			"transmit-timeout": 30,
+			"retry-delay": 6,
+			"retry-limit": 99,
+			"retry-count": 0,
+			"max-connections": 1,
+			"max-upload-speed": 0,
+			"max-download-speed": 0,
+			"timestamp": 1
+		}
+	},
+	"children": [
+		{
+			"info": {
+				"relation": {
+					"group": 33,
+					"priority": 1
+				},
+				"log": {
+					"added-time": 1645590255,
+					"completed-time": 0,
+					"messages": [
+						{
+							"string": "不支持的方案(协议)。",
+							"type": 3,
+							"time": 1645590255
+						}
+					]
+				},
+				"http": {
+					"redirection-limit": 30
+				},
+				"proxy": {
+					"port": 80,
+					"type": 0
+				},
+				"common": {
+					"name": "2022-01-28-raspios-bullseye-arm64.zip.torrent",
+					"uri": "\/home\/hydroakri\/.config\/uGet\/attachment\/2022-01-28-raspios-bullseye-arm64.zip.torrent",
+					"folder": "\/home\/hydroakri\/下载",
+					"connect-timeout": 15,
+					"transmit-timeout": 30,
+					"retry-delay": 6,
+					"retry-limit": 99,
+					"retry-count": 0,
+					"max-connections": 1,
+					"max-upload-speed": 0,
+					"max-download-speed": 0,
+					"timestamp": 1
+				},
+				"files": {
+					"list": [
+						{
+							"path": "\/home\/hydroakri\/.config\/uGet\/attachment\/2022-01-28-raspios-bullseye-arm64.zip.torrent",
+							"type": 2,
+							"state": 0,
+							"total": 0,
+							"complete": 0
+						}
+					]
+				}
+			},
+			"children": [
+			]
+		}
+	]
+}
+

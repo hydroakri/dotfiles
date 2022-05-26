@@ -1,0 +1,32 @@
+root:x:0:0::/root:/bin/bash
+bin:x:1:1::/:/usr/bin/nologin
+daemon:x:2:2::/:/usr/bin/nologin
+mail:x:8:12::/var/spool/mail:/usr/bin/nologin
+ftp:x:14:11::/srv/ftp:/usr/bin/nologin
+http:x:33:33::/srv/http:/usr/bin/nologin
+nobody:x:65534:65534:Nobody:/:/usr/bin/nologin
+dbus:x:81:81:System Message Bus:/:/usr/bin/nologin
+systemd-coredump:x:981:981:systemd Core Dumper:/:/usr/bin/nologin
+systemd-network:x:980:980:systemd Network Management:/:/usr/bin/nologin
+systemd-oom:x:979:979:systemd Userspace OOM Killer:/:/usr/bin/nologin
+systemd-journal-remote:x:978:978:systemd Journal Remote:/:/usr/bin/nologin
+systemd-resolve:x:977:977:systemd Resolver:/:/usr/bin/nologin
+systemd-timesync:x:976:976:systemd Time Synchronization:/:/usr/bin/nologin
+uuidd:x:68:68::/:/usr/bin/nologin
+avahi:x:975:975:Avahi mDNS/DNS-SD daemon:/:/usr/bin/nologin
+hydroakri:x:1000:1000::/home/hydroakri:/usr/bin/zsh
+nvidia-persistenced:x:143:143:NVIDIA Persistence Daemon:/:/usr/bin/nologin
+git:x:974:974:git daemon user:/:/usr/bin/git-shell
+geoclue:x:973:973:Geoinformation service:/var/lib/geoclue:/usr/bin/nologin
+polkitd:x:102:102:PolicyKit daemon:/:/usr/bin/nologin
+usbmux:x:140:140:usbmux user:/:/usr/bin/nologin
+colord:x:972:972:Color management daemon:/var/lib/colord:/usr/bin/nologin
+amule:x:971:971:aMule Client:/var/lib/amule:/usr/bin/nologin
+dnsmasq:x:969:969:dnsmasq daemon:/:/usr/bin/nologin
+gdm:x:120:120:Gnome Display Manager:/var/lib/gdm:/usr/bin/nologin
+tss:x:967:967:tss user for tpm2:/:/usr/bin/nologin
+brltty:x:965:965:Braille Device Daemon:/var/lib/brltty:/usr/bin/nologin
+libvirt-qemu:x:964:964:Libvirt QEMU user:/:/usr/bin/nologin
+saned:x:963:963:SANE daemon user:/:/usr/bin/nologin
+sddm:x:962:962:Simple Desktop Display Manager:/var/lib/sddm:/usr/bin/nologin
+lightdm:x:961:961:Light Display Manager:/var/lib/lightdm:/usr/bin/nologin

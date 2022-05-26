@@ -1,0 +1,22 @@
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+# /dev/nvme0n1p2
+UUID=c11778a7-09ac-47ec-be63-a5435052c5b5	/         	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=256,subvol=/@	0 0
+
+# /dev/nvme0n1p1
+UUID=3C70-D22E      	/boot     	vfat      	rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro	0 2
+
+# /dev/nvme0n1p2
+UUID=c11778a7-09ac-47ec-be63-a5435052c5b5	/.snapshots	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=260,subvol=/@.snapshots	0 0
+
+# /dev/nvme0n1p2
+UUID=c11778a7-09ac-47ec-be63-a5435052c5b5	/home     	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=257,subvol=/@home	0 0
+
+# /dev/nvme0n1p2
+UUID=c11778a7-09ac-47ec-be63-a5435052c5b5	/var/cache/pacman/pkg	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=259,subvol=/@pkg	0 0
+
+# /dev/nvme0n1p2
+UUID=c11778a7-09ac-47ec-be63-a5435052c5b5	/var/log  	btrfs     	rw,relatime,ssd,space_cache=v2,subvolid=258,subvol=/@log	0 0
+

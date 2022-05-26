@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<channel name="xfce4-panel" version="1.0">
+  <property name="configver" type="int" value="2"/>
+  <property name="panels" type="array">
+    <value type="int" value="1"/>
+    <property name="dark-mode" type="bool" value="true"/>
+    <property name="panel-1" type="empty">
+      <property name="position" type="string" value="p=10;x=954;y=1062"/>
+      <property name="length" type="uint" value="1"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="icon-size" type="uint" value="24"/>
+      <property name="size" type="uint" value="46"/>
+      <property name="plugin-ids" type="array">
+        <value type="int" value="2"/>
+        <value type="int" value="3"/>
+        <value type="int" value="6"/>
+        <value type="int" value="1"/>
+        <value type="int" value="5"/>
+      </property>
+      <property name="nrows" type="uint" value="1"/>
+      <property name="background-style" type="uint" value="1"/>
+      <property name="background-rgba" type="array">
+        <value type="double" value="0.141176"/>
+        <value type="double" value="0.121569"/>
+        <value type="double" value="0.192157"/>
+        <value type="double" value="0.798658"/>
+      </property>
+      <property name="enter-opacity" type="uint" value="100"/>
+      <property name="leave-opacity" type="uint" value="100"/>
+      <property name="autohide-behavior" type="uint" value="1"/>
+      <property name="span-monitors" type="bool" value="true"/>
+      <property name="output-name" type="string" value="Primary"/>
+      <property name="mode" type="uint" value="0"/>
+      <property name="disable-struts" type="bool" value="false"/>
+    </property>
+  </property>
+  <property name="plugins" type="empty">
+    <property name="plugin-6" type="string" value="systray">
+      <property name="square-icons" type="bool" value="true"/>
+      <property name="known-legacy-items" type="array">
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (42%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (56%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (59%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (58%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (49%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (60%)"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (43%)"/>
+        <value type="string" value="pulseaudio system tray"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (44%)"/>
+        <value type="string" value="guake"/>
+        <value type="string" value="pasystray"/>
+        <value type="string" value="wi-fi 网络连接“nbut-wlan”已激活：nbut-wlan (71%)"/>
+        <value type="string" value="cfw"/>
+        <value type="string" value="网络管理器小程序"/>
+        <value type="string" value="kupfer.py"/>
+        <value type="string" value="fcitx5 tray window"/>
+      </property>
+      <property name="known-items" type="array">
+        <value type="string" value="flameshot"/>
+        <value type="string" value="TelegramDesktop"/>
+        <value type="string" value="Cider1"/>
+        <value type="string" value="netease-cloud-music"/>
+        <value type="string" value="steam"/>
+        <value type="string" value="icalingua1"/>
+        <value type="string" value="virt-manager"/>
+        <value type="string" value="blueman"/>
+        <value type="string" value="albert"/>
+        <value type="string" value="baidunetdisk1"/>
+        <value type="string" value="stacer"/>
+        <value type="string" value="Fcitx"/>
+        <value type="string" value="Clash for Windows1"/>
+      </property>
+      <property name="single-row" type="bool" value="true"/>
+      <property name="symbolic-icons" type="bool" value="true"/>
+      <property name="icon-size" type="int" value="0"/>
+      <property name="hide-new-items" type="bool" value="false"/>
+      <property name="menu-is-primary" type="bool" value="false"/>
+    </property>
+    <property name="plugin-8" type="string" value="pulseaudio">
+      <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
+      <property name="show-notifications" type="bool" value="true"/>
+    </property>
+    <property name="plugin-1" type="string" value="power-manager-plugin"/>
+    <property name="plugin-5" type="string" value="clock">
+      <property name="mode" type="uint" value="2"/>
+      <property name="fuzziness" type="uint" value="0"/>
+      <property name="digital-format" type="string" value="%_H:%M "/>
+      <property name="tooltip-format" type="string" value="%A %d %B %Y"/>
+      <property name="show-seconds" type="bool" value="true"/>
+    </property>
+    <property name="plugin-2" type="string" value="tasklist">
+      <property name="flat-buttons" type="bool" value="true"/>
+      <property name="middle-click" type="uint" value="1"/>
+      <property name="include-all-workspaces" type="bool" value="true"/>
+      <property name="show-wireframes" type="bool" value="false"/>
+      <property name="show-labels" type="bool" value="false"/>
+      <property name="show-handle" type="bool" value="false"/>
+      <property name="grouping" type="uint" value="0"/>
+      <property name="switch-workspace-on-unminimize" type="bool" value="true"/>
+      <property name="show-only-minimized" type="bool" value="false"/>
+    </property>
+    <property name="plugin-3" type="string" value="separator">
+      <property name="style" type="uint" value="1"/>
+      <property name="expand" type="bool" value="true"/>
+    </property>
+  </property>
+</channel>

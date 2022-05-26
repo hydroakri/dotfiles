@@ -1,0 +1,12 @@
+~/.screenlayout/multihead.sh &
+~/Pictures/bg/setbg.sh &
+picom &
+tint2 &
+dunst &
+fcitx5 &
+mate-power-manager &
+nm-applet &
+pasystray &
+cfw &
+blueman-applet &
+edges --topleft skippy-xd

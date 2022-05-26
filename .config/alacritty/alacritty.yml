@@ -1,0 +1,107 @@
+# Dracula theme for Alacritty
+# https://draculatheme.com/alacritty
+#
+# Color palette
+# https://spec.draculatheme.com
+#
+# Template
+# https://github.com/alacritty/alacritty/blob/master/alacritty.yml
+
+colors:
+  primary:
+    background: '#282a36'
+    foreground: '#f8f8f2'
+    bright_foreground: '#ffffff'
+  cursor:
+    text: CellBackground
+    cursor: CellForeground
+  vi_mode_cursor:
+    text: CellBackground
+    cursor: CellForeground
+  search:
+    matches:
+      foreground: '#44475a'
+      background: '#50fa7b'
+    focused_match:
+      foreground: '#44475a'
+      background: '#ffb86c'
+    bar:
+      background: '#282a36'
+      foreground: '#f8f8f2'
+  hints:
+    start:
+      foreground: '#282a36'
+      background: '#f1fa8c'
+    end:
+      foreground: '#f1fa8c'
+      background: '#282a36'
+  line_indicator:
+    foreground: None
+    background: None
+  selection:
+    text: CellForeground
+    background: '#44475a'
+  normal:
+    black: '#21222c'
+    red: '#ff5555'
+    green: '#50fa7b'
+    yellow: '#f1fa8c'
+    blue: '#bd93f9'
+    magenta: '#ff79c6'
+    cyan: '#8be9fd'
+    white: '#f8f8f2'
+  bright:
+    black: '#6272a4'
+    red: '#ff6e6e'
+    green: '#69ff94'
+    yellow: '#ffffa5'
+    blue: '#d6acff'
+    magenta: '#ff92df'
+    cyan: '#a4ffff'
+    white: '#ffffff'
+
+# 设置字体
+font:
+  normal:
+    family: "Sarasa Mono SC"
+    style: Regular
+  bold:
+    family: "Sarasa Mono SC"
+    style: Bold
+  italic:
+    family: "Sarasa Mono SC"
+    style: Italic
+  bold_italic:
+    family: "Sarasa Mono SC"
+    style: Bold Italic
+
+  # 字大小
+  size: 14.0
+
+  offset:
+    x: 0
+    y: 0
+  glyph_offset:
+    x: 0
+    y: 0
+
+window:
+  padding:
+    x: 2
+    y: 2
+
+scrolling:
+# 回滚缓冲区中的最大行数,指定“0”将禁用滚动。
+  history: 10000
+
+  # 滚动行数
+
+  multiplier: 10
+
+# 如果为‘true’，则使用亮色变体绘制粗体文本。
+draw_bold_text_with_bright_colors: true
+
+
+  # 輸入中文的bug
+key_bindings:
+  - { key: Back, action:  ReceiveChar}

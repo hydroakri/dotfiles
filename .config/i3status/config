@@ -1,0 +1,37 @@
+general {
+  output_format = "i3bar"
+  colors = true
+  color_good = "#50FA7B"
+  color_degraded = "#F1FA8C"
+  color_bad = "#FF5555"
+}
+
+
+order += "load"
+order += "memory"
+order += "cpu_usage"
+order += "tztime local"
+order += "battery all"
+
+load {
+        format = "近一分钟CPU进程数:%1min"
+}
+
+battery all {
+        format = "⚡%percentage %remaining"
+}
+
+
+memory {
+        format = "已使用 %used"
+        threshold_degraded = "1G"
+        format_degraded = "MEMORY < %available"
+}
+
+cpu_usage {
+        format = "总使用率: %usage"
+}
+
+tztime local {
+        format = "%m月%d日 %H:%M:%S"
+}

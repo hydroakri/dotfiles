@@ -1,0 +1,17 @@
+_last_cache_cleaned_ver="1.16.2"
+color_cursors=yes
+encountered_terrain_list="Ce, Ch, Chr, Chw, Ct, Cvr, Ds^Es, Ds, Dt, Ft, Gd^Es, Gd^Fms, Gd, Gg^Efm, Gg^Fet, Gg^Fms, Gg^Fp, Gg^Vct, Gg^Ve, Gg^Vh, Gg, Gll^Efm, Gll^Em, Gll^Es, Gll^Fds, Gll^Fms, Gll^Fp, Gll, Gs^Edb, Gs^Eff, Gs^Efm, Gs^Em, Gs^Fds, Gs^Fms, Gs^Fp, Gs^Vc, Gs^Ve, Gs^Vh, Gs^Vhcr, Gs^Vl, Gs^Wm, Gs, Gt, Hh^Fds, Hh^Fms, Hh^Fp, Hh^Vhh, Hh, Ht, Ke, Kh, Khr, Kvr, Mm^Xm, Mm, Mt, Rd, Re^Edb, Re^Eff, Re^Em, Re^Es, Re^Fms, Re^Gvs, Re^Vct, Re^Vh, Re^Vhhr, Re, Rp, Ss, St, Vt, Wdt, Wo^Bw\, Wo^Bw|, Wo, Wst, Ww^Bsb|, Ww^Bw/, Ww^Bw\, Ww^Bw|, Ww^Ewf, Ww, Wwf^Es, Wwf, Wwg^Ewf, Wwg, Xt"
+encountered_units="Bowman,Dark Adept,Dark Sorcerer,Elder Mage,Elvish Fighter,Elvish Rider,Elvish Scout,Fighter,Fighteress,Footpad,Ghoul,Horseman,Knight,Quintain,Red Mage,Spearman,Vampire Bat,Walking Corpse"
+grid=no
+maximized=yes
+scroll_threshold=10
+sp_modifications=""
+tile_size=72
+turbo=no
+turbo_speed=2
+xresolution=1920
+yresolution=1080
+[completed_campaigns]
+[/completed_campaigns]
+[history]
+[/history]

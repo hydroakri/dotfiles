@@ -1,0 +1,7 @@
+[Defaults]
+Profile=默认
+
+[PROFILE_默认]
+EmailClient[$e]=emacsclient-mail.desktop
+ServerType=
+TerminalClient=false

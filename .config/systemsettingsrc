@@ -1,0 +1,32 @@
+[FileDialogSize]
+eDP-1-0 DP-0 Height 1920x1080=786
+eDP-1-0 DP-0 Width 1920x1080=1354
+
+[KFileDialog Settings]
+Recent Files[$e]=195495_Kp9ryqPS_2.png,file:$HOME/Desktop/DOCUMENTS/娱乐/艺术/KvcwB9pL_50666550_610f805cb2b07f1128554a1a8de0e375277f1137_610f805c3b421367d4f4445b8b1dbf1ed84d081d.jpg,file:$HOME/Desktop/DOCUMENTS/娱乐/自我娱乐/头像/195495_Kp9ryqPS_2.png
+Recent URLs[$e]=file:$HOME/Desktop/DOCUMENTS/娱乐/自我娱乐/头像/,file:$HOME/Desktop/DOCUMENTS/娱乐/艺术/
+detailViewIconSize=16
+
+[MainWindow]
+MenuBar=Disabled
+State=AAAA/wAAAAD9AAAAAAAABZQAAAPMAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAWAG0AYQBpAG4AVABvAG8AbABCAGEAcgAAAAAA/////wAAAAAAAAAA
+ToolBarsMovable=Disabled
+eDP-1-0 DP-0 Height 1920x1080=972
+eDP-1-0 DP-0 Width 1920x1080=1428
+eDP-1-0 DP-0 XPosition 1920x1080=5
+eDP-1-0 DP-0 YPosition 1920x1080=1108
+eDP-1-0 Height 1920x1080=940
+eDP-1-0 Width 1920x1080=1428
+eDP-1-0 XPosition 1920x1080=161
+eDP-1-0 YPosition 1920x1080=89
+eDP-1-1 DP-0 Height 1920x1080=972
+eDP-1-1 DP-0 Width 1920x1080=1428
+eDP-1-1 DP-0 XPosition 1920x1080=5
+eDP-1-1 DP-0 YPosition 1920x1080=1138
+
+[Open-with settings]
+CompletionMode=1
+History=dolp
+
+[UiSettings]
+ColorScheme=默认

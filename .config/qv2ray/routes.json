@@ -1,0 +1,22 @@
+{
+    "itwrimvcqfsm": {
+        "routeConfig": {
+            "domainMatcher": "mph",
+            "domainStrategy": "AsIs",
+            "domains": {
+            },
+            "ips": {
+            }
+        }
+    },
+    "svfaiozacahq": {
+        "routeConfig": {
+            "domainMatcher": "mph",
+            "domainStrategy": "AsIs",
+            "domains": {
+            },
+            "ips": {
+            }
+        }
+    }
+}

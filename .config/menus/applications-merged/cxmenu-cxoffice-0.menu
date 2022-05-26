@@ -1,0 +1,11 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<Menu>
+  <Name>Applications</Name>
+  <Menu>
+    <Name>CrossOver</Name>
+    <Directory>cxmenu-cxoffice-0-29ra4ke.directory</Directory>
+    <Include>
+      <Category>X-cxmenu-cxoffice-0-29ra4ke</Category>
+    </Include>
+  </Menu>
+</Menu>

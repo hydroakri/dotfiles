@@ -1,0 +1,168 @@
+{
+    "api": {
+        "services": [
+            "ReflectionService",
+            "HandlerService",
+            "LoggerService",
+            "StatsService"
+        ],
+        "tag": "QV2RAY_API"
+    },
+    "dns": {
+        "servers": [
+            "1.1.1.1",
+            "8.8.8.8",
+            "8.8.4.4"
+        ]
+    },
+    "fakedns": {
+        "ipPool": "198.18.0.0/15",
+        "poolSize": 65535
+    },
+    "inbounds": [
+        {
+            "listen": "127.0.0.1",
+            "port": 11245,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "127.0.0.1"
+            },
+            "sniffing": {
+            },
+            "tag": "QV2RAY_API_INBOUND"
+        },
+        {
+            "listen": "127.0.0.1",
+            "port": 7890,
+            "protocol": "http",
+            "settings": {
+                "allowTransparent": true,
+                "timeout": 300
+            },
+            "sniffing": {
+            },
+            "tag": "http_IN"
+        },
+        {
+            "listen": "127.0.0.1",
+            "port": 1089,
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "ip": "127.0.0.1",
+                "udp": true
+            },
+            "sniffing": {
+            },
+            "tag": "socks_IN"
+        }
+    ],
+    "log": {
+        "loglevel": "warning"
+    },
+    "outbounds": [
+        {
+            "protocol": "vmess",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "4f38f6b4-bed0-40e9-aad8-72a2bc218407.zj.node.touhou.place",
+                        "port": 8204,
+                        "users": [
+                            {
+                                "id": "c4766fef-ccbe-11eb-8aa6-f23c91d8700f",
+                                "security": "aes-128-gcm"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "ws",
+                "security": "tls",
+                "tlsSettings": {
+                    "disableSystemRoot": false,
+                    "serverName": "0300fb7f-47ae-403c-b42e-5c5f69a3f4ba.jp.node.touhou.place"
+                },
+                "wsSettings": {
+                    "headers": {
+                        "Host": "0300fb7f-47ae-403c-b42e-5c5f69a3f4ba.jp.node.touhou.place"
+                    },
+                    "path": "/ws"
+                },
+                "xtlsSettings": {
+                    "disableSystemRoot": false
+                }
+            },
+            "tag": "PROXY"
+        },
+        {
+            "protocol": "freedom",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "domainStrategy": "AsIs",
+                "redirect": ":0"
+            },
+            "streamSettings": {
+            },
+            "tag": "DIRECT"
+        },
+        {
+            "protocol": "blackhole",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "response": {
+                    "type": "none"
+                }
+            },
+            "streamSettings": {
+            },
+            "tag": "BLACKHOLE"
+        }
+    ],
+    "policy": {
+        "system": {
+            "statsInboundDownlink": true,
+            "statsInboundUplink": true,
+            "statsOutboundDownlink": true,
+            "statsOutboundUplink": true
+        }
+    },
+    "routing": {
+        "domainMatcher": "mph",
+        "domainStrategy": "AsIs",
+        "rules": [
+            {
+                "inboundTag": [
+                    "QV2RAY_API_INBOUND"
+                ],
+                "outboundTag": "QV2RAY_API",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "geoip:private"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            },
+            {
+                "ip": [
+                    "geoip:cn"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            },
+            {
+                "domain": [
+                    "geosite:cn"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            }
+        ]
+    },
+    "stats": {
+    }
+}

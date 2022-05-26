@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=0.9.4
+Type=Application
+Name=xwinwrap
+Comment=
+Exec=sh -c "sleep 5 && xwinwrap -g 1920x1080 -ni -s -nf -b -un -ov -fdt -argb -- mpv -wid WID --ao=null --loop=inf --stop-screensaver=no Videos/WLOP\\ Aeolian3\\ by\\ Eliza\\ Final.mp4"
+OnlyShowIn=XFCE;
+RunHook=0
+StartupNotify=false
+Terminal=false
+Hidden=true
+

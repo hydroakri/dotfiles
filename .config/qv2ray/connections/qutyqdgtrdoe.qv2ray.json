@@ -1,0 +1,42 @@
+{
+    "outbounds": [
+        {
+            "mux": {
+            },
+            "protocol": "vmess",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "dcd0a341-43f5-4258-97ec-a1ed2ba50173.gz.node.touhou.place",
+                        "port": 8803,
+                        "users": [
+                            {
+                                "id": "c4766fef-ccbe-11eb-8aa6-f23c91d8700f",
+                                "security": "aes-128-gcm"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "ws",
+                "security": "tls",
+                "tlsSettings": {
+                    "disableSystemRoot": false,
+                    "serverName": "71b9ce6a-e230-4cb5-8cb4-7f8eaa64fb19.de.node.touhou.place"
+                },
+                "wsSettings": {
+                    "headers": {
+                        "Host": "71b9ce6a-e230-4cb5-8cb4-7f8eaa64fb19.de.node.touhou.place"
+                    },
+                    "path": "/ws"
+                },
+                "xtlsSettings": {
+                    "disableSystemRoot": false
+                }
+            },
+            "tag": "PROXY"
+        }
+    ]
+}

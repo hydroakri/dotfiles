@@ -1,0 +1,18 @@
+扩展 "XFIG Input" 加载失败,原因为 无法满足其中一个依赖项.
+Dependency:
+	type: executable
+	位置: 路径
+	字符串: fig2dev
+
+扩展 "LaTeX (pdflatex)" 加载失败,原因为 无法满足其中一个依赖项.
+Dependency:
+	type: executable
+	位置: 路径
+	字符串: pdflatex
+
+扩展 "Export to PDF via Scribus" 加载失败,原因为 无法满足其中一个依赖项.
+Dependency:
+	type: executable
+	位置: 路径
+	字符串: scribus
+

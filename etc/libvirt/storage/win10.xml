@@ -1,0 +1,19 @@
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh pool-edit win10
+or other application using the libvirt API.
+-->
+
+<pool type='dir'>
+  <name>win10</name>
+  <uuid>2de61923-7fc4-43e0-8f79-d9d2486656be</uuid>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/home/hydroakri/win10</path>
+  </target>
+</pool>

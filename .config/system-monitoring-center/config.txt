@@ -1,0 +1,84 @@
+[General - General]
+reset_all_settings_with_new_release = 2
+update_interval = 0.75
+chart_data_history = 150
+default_main_tab = 0
+performance_tab_default_sub_tab = 0
+performance_summary_on_the_headerbar = 1
+remember_last_opened_tabs_on_application_start = 0
+chart_background_color_all_charts = [0.0, 0.0, 0.0, 0.0]
+remember_last_selected_hardware = 0
+remember_window_size = [0, 0, 0, 0]
+
+[General - Floating Summary]
+show_floating_summary = 0
+floating_summary_window_transparency = 0.6
+floating_summary_data_shown = [0, 1]
+
+[Performance Tab - CPU]
+chart_line_color_cpu_percent = [0.29, 0.78, 0.0, 1.0]
+show_cpu_usage_per_core = 0
+performance_cpu_usage_percent_precision = 3
+selected_cpu_core = 
+
+[Performance Tab - RAM]
+chart_line_color_ram_swap_percent = [0.27, 0.49, 1.0, 1.0]
+performance_ram_swap_data_precision = 1
+performance_ram_swap_data_unit = 0
+
+[Performance Tab - Disk]
+chart_line_color_disk_speed_usage = [1.0, 0.44, 0.17, 1.0]
+performance_disk_speed_data_precision = 1
+performance_disk_usage_data_precision = 1
+performance_disk_speed_data_unit = 0
+performance_disk_usage_data_unit = 0
+plot_disk_read_speed = 1
+plot_disk_write_speed = 1
+selected_disk = 
+
+[Performance Tab - Network]
+chart_line_color_network_speed_data = [0.56, 0.3, 0.78, 1.0]
+performance_network_speed_data_precision = 1
+performance_network_data_data_precision = 2
+performance_network_speed_data_unit = 0
+performance_network_data_data_unit = 0
+plot_network_download_speed = 1
+plot_network_upload_speed = 1
+selected_network_card = 
+
+[Performance Tab - GPU]
+chart_line_color_fps = [1.0, 0.09, 0.09, 1.0]
+selected_gpu = 
+
+[Processes Tab]
+show_processes_of_all_users = 1
+show_processes_as_tree = 0
+show_tree_lines = 0
+processes_cpu_usage_percent_precision = 0
+processes_ram_swap_data_precision = 1
+processes_ram_swap_data_unit = 0
+processes_disk_speed_data_precision = 1
+processes_disk_usage_data_precision = 1
+processes_disk_speed_data_unit = 0
+processes_disk_usage_data_unit = 0
+warn_before_stopping_processes = 1
+processes_treeview_columns_shown = [0, 1, 2, 4, 5, 10, 11]
+processes_data_row_sorting_column = 11
+processes_data_row_sorting_order = 1
+processes_data_column_order = [0, 1, 2, 3, 3, 4, 6, 7, 8, 9, 5, 6, 12, 13, 14, 15, 16, 17]
+processes_data_column_widths = [269, 56, 91, -1, 71, 162, -1, -1, -1, -1, 183, 376, -1, -1, -1, -1, -1, -1]
+
+[Users Tab]
+users_treeview_columns_shown = [0, 2, 3, 5, 7, 12, 13]
+users_data_row_sorting_column = 0
+users_data_row_sorting_order = 0
+users_data_column_order = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+users_data_column_widths = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+
+[Services Tab]
+services_treeview_columns_shown = [0, 1, 2, 3, 4, 5, 6, 7]
+services_data_row_sorting_column = 0
+services_data_row_sorting_order = 0
+services_data_column_order = [0, 1, 2, 3, 4, 5, 6, 7]
+services_data_column_widths = [-1, -1, -1, -1, -1, -1, -1, -1]
+

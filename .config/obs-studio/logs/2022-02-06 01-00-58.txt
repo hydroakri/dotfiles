@@ -1,0 +1,162 @@
+01时00分58秒.743: CPU Name: AMD Ryzen 7 5800H with Radeon Graphics
+01时00分58秒.743: CPU Speed: 1200.000MHz
+01时00分58秒.744: Physical Cores: 8, Logical Cores: 16
+01时00分58秒.744: Physical Memory: 15402MB Total, 13142MB Free
+01时00分58秒.744: Kernel Version: Linux 5.16.5-zen1-1-zen
+01时00分58秒.744: Distribution: "Arch Linux" Unknown
+01时00分58秒.744: Session Type: tty
+01时00分58秒.744: Window System: X11.0, Vendor: The X.Org Foundation, Version: 1.21.1
+01时00分58秒.745: Portable mode: false
+01时00分58秒.766: OBS 27.1.3-3 (linux)
+01时00分58秒.766: ---------------------------------
+01时00分58秒.766: ---------------------------------
+01时00分58秒.766: audio settings reset:
+01时00分58秒.766: 	samples per sec: 48000
+01时00分58秒.766: 	speakers:        2
+01时00分58秒.769: ---------------------------------
+01时00分58秒.769: Initializing OpenGL...
+01时00分58秒.827: Loading up OpenGL on adapter NVIDIA Corporation NVIDIA GeForce RTX 3060 Laptop GPU/PCIe/SSE2
+01时00分58秒.827: OpenGL loaded successfully, version 3.3.0 NVIDIA 510.47.03, shading language 3.30 NVIDIA via Cg compiler
+01时00分58秒.868: ---------------------------------
+01时00分58秒.868: video settings reset:
+01时00分58秒.868: 	base resolution:   1920x1080
+01时00分58秒.868: 	output resolution: 1280x720
+01时00分58秒.868: 	downscale filter:  Bicubic
+01时00分58秒.868: 	fps:               30/1
+01时00分58秒.868: 	format:            NV12
+01时00分58秒.868: 	YUV mode:          709/Partial
+01时00分58秒.868: NV12 texture support not available
+01时00分58秒.869: Audio monitoring device:
+01时00分58秒.869: 	name: 默认
+01时00分58秒.869: 	id: default
+01时00分58秒.869: ---------------------------------
+01时00分58秒.871: Failed to load 'en-US' text for module: 'decklink-captions.so'
+01时00分58秒.872: Failed to load 'en-US' text for module: 'decklink-ouput-ui.so'
+01时00分58秒.934: A DeckLink iterator could not be created.  The DeckLink drivers may not be installed
+01时00分58秒.934: No blackmagic support
+01时00分58秒.944: v4l2loopback not installed, virtual camera disabled
+01时00分58秒.975: NVENC supported
+01时00分58秒.975: FFMPEG VAAPI supported
+01时00分59秒.012: os_dlopen(/usr//lib/obs-plugins/sndio.so->/usr//lib/obs-plugins/sndio.so): libsndio.so.7: 无法打开共享对象文件: 没有那个文件或目录
+01时00分59秒.012: 
+01时00分59秒.013: Module '/usr//lib/obs-plugins/sndio.so' not loaded
+01时00分59秒.015: ---------------------------------
+01时00分59秒.015:   Loaded Modules:
+01时00分59秒.015:     text-freetype2.so
+01时00分59秒.015:     rtmp-services.so
+01时00分59秒.015:     obs-x264.so
+01时00分59秒.015:     obs-transitions.so
+01时00分59秒.015:     obs-outputs.so
+01时00分59秒.015:     obs-libfdk.so
+01时00分59秒.015:     obs-filters.so
+01时00分59秒.015:     obs-ffmpeg.so
+01时00分59秒.015:     linux-v4l2.so
+01时00分59秒.015:     linux-pulseaudio.so
+01时00分59秒.015:     linux-jack.so
+01时00分59秒.015:     linux-decklink.so
+01时00分59秒.015:     linux-capture.so
+01时00分59秒.015:     linux-alsa.so
+01时00分59秒.015:     image-source.so
+01时00分59秒.015:     frontend-tools.so
+01时00分59秒.015:     decklink-ouput-ui.so
+01时00分59秒.015:     decklink-captions.so
+01时00分59秒.015: ---------------------------------
+01时00分59秒.015: ==== Startup complete ===============================================
+01时00分59秒.017: No scene file found, creating default scene
+01时00分59秒.018: All scene data cleared
+01时00分59秒.018: ------------------------------------------------
+01时00分59秒.026: pulse-input: Server name: 'PulseAudio (on PipeWire 0.3.45) 15.0.0'
+01时00分59秒.027: pulse-input: Audio format: s32le, 48000 Hz, 2 channels
+01时00分59秒.027: pulse-input: Started recording from 'alsa_output.pci-0000_06_00.6.HiFi__hw_Generic__sink.monitor'
+01时00分59秒.028: pulse-input: Server name: 'PulseAudio (on PipeWire 0.3.45) 15.0.0'
+01时00分59秒.028: pulse-input: Audio format: s32le, 48000 Hz, 2 channels
+01时00分59秒.029: pulse-input: Started recording from 'alsa_input.pci-0000_06_00.6.HiFi__hw_acp__source'
+01时00分59秒.029: Switched to scene '场景'
+01时00分59秒.029: Failed to glob scene collections
+01时00分59秒.677: adding 21 milliseconds of audio buffering, total audio buffering is now 21 milliseconds (source: 桌面音频)
+01时00分59秒.677: 
+01时01分00秒.447: [rtmp-services plugin] Successfully updated file 'services.json' (version 188)
+01时01分00秒.447: [rtmp-services plugin] Successfully updated package (version 188)
+01时01分04秒.125: [twitch ingest update] Remote update of URL "https://ingest.twitch.tv/ingests" failed: OpenSSL SSL_connect: 连接被对方重设 in connection to ingest.twitch.tv:443 
+01时01分13秒.620: Switched to Preview/Program mode
+01时01分13秒.620: ------------------------------------------------
+01时01分15秒.852: Switched to scene '场景'
+01时01分15秒.856: Switched to regular Preview mode
+01时01分15秒.856: ------------------------------------------------
+01时02分04秒.460: ==== Shutting down ==================================================
+01时02分04秒.461: pulse-input: Stopped recording from 'alsa_output.pci-0000_06_00.6.HiFi__hw_Generic__sink.monitor'
+01时02分04秒.461: pulse-input: Got 3060 packets with 3136512 frames
+01时02分04秒.461: pulse-input: Stopped recording from 'alsa_input.pci-0000_06_00.6.HiFi__hw_acp__source'
+01时02分04秒.462: pulse-input: Got 3062 packets with 3135488 frames
+01时02分04秒.462: All scene data cleared
+01时02分04秒.462: ------------------------------------------------
+01时02分04秒.467: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27428
+01时02分04秒.467: Failed to make context current.
+01时02分04秒.469: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27430
+01时02分04秒.469: Failed to make context current.
+01时02分04秒.469: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27432
+01时02分04秒.469: Failed to make context current.
+01时02分04秒.469: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27434
+01时02分04秒.469: Failed to make context current.
+01时02分04秒.469: Failed to fetch parent window geometry!
+01时02分04秒.471: X Error: BadDrawable (invalid Pixmap or Window parameter), Major opcode: 152, Minor opcode: BadLength (poly request too large or internal Xlib length error), Serial: 27436
+01时02分04秒.471: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: BadAlloc (insufficient resources for operation), Serial: 27437
+01时02分04秒.471: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27439
+01时02分04秒.471: Failed to make context current.
+01时02分04秒.471: X Error: GLXBadDrawable, Major opcode: 152, Minor opcode: 26, Serial: 27441
+01时02分04秒.471: Failed to make context current.
+01时02分04秒.557: [Scripting] Total detached callbacks: 0
+01时02分04秒.557: Freeing OBS context data
+01时02分04秒.571: == Profiler Results =============================
+01时02分04秒.571: run_program_init: 496.787 ms
+01时02分04秒.571:  ┣OBSApp::AppInit: 4.875 ms
+01时02分04秒.571:  ┃ ┗OBSApp::InitLocale: 2.875 ms
+01时02分04秒.571:  ┗OBSApp::OBSInit: 385.486 ms
+01时02分04秒.571:    ┣obs_startup: 12.933 ms
+01时02分04秒.571:    ┗OBSBasic::OBSInit: 351.255 ms
+01时02分04秒.571:      ┣OBSBasic::InitBasicConfig: 0.244 ms
+01时02分04秒.571:      ┣OBSBasic::ResetAudio: 0.184 ms
+01时02分04秒.571:      ┣OBSBasic::ResetVideo: 102.208 ms
+01时02分04秒.571:      ┣OBSBasic::InitOBSCallbacks: 0.014 ms
+01时02分04秒.571:      ┣OBSBasic::InitHotkeys: 0.071 ms
+01时02分04秒.571:      ┣obs_load_all_modules: 145.872 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(decklink-captions.so): 0.04 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(decklink-ouput-ui.so): 0.489 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(frontend-tools.so): 50.863 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(image-source.so): 0.007 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-alsa.so): 0.002 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-capture.so): 0.469 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-decklink.so): 0.142 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-jack.so): 0.002 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-pulseaudio.so): 0.002 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(linux-v4l2.so): 5.445 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-ffmpeg.so): 14.605 ms
+01时02分04秒.571:      ┃ ┃ ┗nvenc_check: 14.433 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-filters.so): 0.038 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-libfdk.so): 0.006 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-outputs.so): 0.002 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-transitions.so): 0.01 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(obs-x264.so): 0.002 ms
+01时02分04秒.571:      ┃ ┣obs_init_module(rtmp-services.so): 0.135 ms
+01时02分04秒.571:      ┃ ┗obs_init_module(text-freetype2.so): 0.02 ms
+01时02分04秒.571:      ┣OBSBasic::ResetOutputs: 0.105 ms
+01时02分04秒.571:      ┣OBSBasic::CreateHotkeys: 0.049 ms
+01时02分04秒.571:      ┣OBSBasic::InitService: 0.799 ms
+01时02分04秒.571:      ┣OBSBasic::InitPrimitives: 0.196 ms
+01时02分04秒.571:      ┗OBSBasic::Load: 11.432 ms
+01时02分04秒.571: obs_hotkey_thread(25 ms): min=0.111 ms, median=0.864 ms, max=6.674 ms, 99th percentile=1.655 ms, 100% below 25 ms
+01时02分04秒.571: audio_thread(Audio): min=0.003 ms, median=0.089 ms, max=0.326 ms, 99th percentile=0.202 ms
+01时02分04秒.571: obs_graphics_thread(33.3333 ms): min=0.436 ms, median=2.092 ms, max=66.501 ms, 99th percentile=3.873 ms, 99.9492% below 33.333 ms
+01时02分04秒.571:  ┣tick_sources: min=0.003 ms, median=0.014 ms, max=0.12 ms, 99th percentile=0.037 ms
+01时02分04秒.571:  ┣output_frame: min=0.083 ms, median=0.494 ms, max=7.837 ms, 99th percentile=1.039 ms
+01时02分04秒.571:  ┃ ┗gs_context(video->graphics): min=0.081 ms, median=0.49 ms, max=7.834 ms, 99th percentile=1.034 ms
+01时02分04秒.571:  ┃   ┣render_video: min=0.025 ms, median=0.145 ms, max=5.597 ms, 99th percentile=0.257 ms
+01时02分04秒.571:  ┃   ┃ ┗render_main_texture: min=0.013 ms, median=0.121 ms, max=5.55 ms, 99th percentile=0.217 ms
+01时02分04秒.571:  ┃   ┗gs_flush: min=0.002 ms, median=0.032 ms, max=0.121 ms, 99th percentile=0.077 ms
+01时02分04秒.571:  ┗render_displays: min=0.066 ms, median=0.967 ms, max=64.035 ms, 99th percentile=2.448 ms
+01时02分04秒.571: =================================================
+01时02分04秒.571: == Profiler Time Between Calls ==================
+01时02分04秒.571: obs_hotkey_thread(25 ms): min=25.195 ms, median=26.012 ms, max=31.749 ms, 11.8437% within ±2% of 25 ms (0% lower, 88.1563% higher)
+01时02分04秒.571: obs_graphics_thread(33.3333 ms): min=0.74 ms, median=33.334 ms, max=66.511 ms, 99.5937% within ±2% of 33.333 ms (0.253936% lower, 0.152362% higher)
+01时02分04秒.571: =================================================
+01时02分04秒.590: Number of memory leaks: 1

@@ -1,0 +1,8 @@
+[General]
+ColorScheme=Dracula
+
+[Icons]
+Theme=candy-icons
+
+[KDE]
+widgetStyle=Breeze
