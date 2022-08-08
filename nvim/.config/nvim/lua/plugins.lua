@@ -2,10 +2,10 @@ return require('packer').startup(function(use)
 
   -- Packer can manage itself
   use 'wbthomason/packer.nvim'
-  
+
   -- theme
   use {'dracula/vim', as = 'dracula'}
-  
+
   -- telescope
   use 'BurntSushi/ripgrep'
   use {
@@ -27,17 +27,17 @@ return require('packer').startup(function(use)
 
   -- lualine.nvim 
   use {
-  'nvim-lualine/lualine.nvim',
-  requires = { 'kyazdani42/nvim-web-devicons', opt = true }
-}
+    'nvim-lualine/lualine.nvim',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+  }
 
   -- treesitter
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
 
   -- toggleterm
   use {"akinsho/toggleterm.nvim", tag = 'v2.*', config = function()
-  require("toggleterm").setup()
-end}
+    require("toggleterm").setup()
+  end}
 
   -- which-key.nvim
   use {
@@ -45,10 +45,10 @@ end}
     config = function()
       require("which-key").setup {
         icons = {
-    breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
-    separator = "※ ", -- symbol used between a key and it's label
-    group = "+", -- symbol prepended to a group
-  },
+          breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
+          separator = "※ ", -- symbol used between a key and it's label
+          group = "+", -- symbol prepended to a group
+        },
         -- your configuration comes here
         -- or leave it empty to use the default settings
         -- refer to the configuration section below
@@ -70,14 +70,19 @@ end}
   use 'simrat39/symbols-outline.nvim'
 
   -- dashboard
-  use 'mhinz/vim-startify'
+  use {
+    'goolord/alpha-nvim',
+    config = function ()
+      require'alpha'.setup(require'alpha.themes.dashboard'.config)
+    end
+  }
 
   -- markdown preview
   use({
     "iamcco/markdown-preview.nvim",
     run = function() vim.fn["mkdp#util#install"]() end,
-    })
--------------------improve experience
+  })
+  -------------------improve experience
   -- blank line 
   use "lukas-reineke/indent-blankline.nvim"
   -- smooth scrool

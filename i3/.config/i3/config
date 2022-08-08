@@ -185,7 +185,7 @@ exec_always --no-startup-id nm-applet
 exec_always --no-startup-id pasystray
 exec_always --no-startup-id blueman-applet
 exec --no-startup-id fcitx5
-exec --no-startup-id feh --bg-fill --no-fehbg ~/Downloads/wave.jpg
+exec --no-startup-id feh --bg-fill --no-fehbg ~/Pictures/bg.jpg
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 gaps inner 8
