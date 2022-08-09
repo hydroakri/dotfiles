@@ -4,7 +4,7 @@ vim.g.maplocalleader = " "
 
 -- 保存本地变量
 local map = vim.api.nvim_set_keymap
-local opt = { noremap = true, silent = false }
+local opt = { noremap = true, silent = true }
 -- 之后就可以这样映射按键了
 -- map('模式','按键','映射为XX',opt)
 
@@ -38,5 +38,5 @@ map('t', "<Esc>", "<C-\\><C-n>", opt)
 -- tagbar
 map('n', "<Leader>o", ":SymbolsOutline<CR>", opt)
 
-
-
+-- trouble
+map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)

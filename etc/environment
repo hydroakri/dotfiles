@@ -17,4 +17,4 @@ GBM_BACKEND=nvidia-drm
 __GLX_VENDOR_LIBRARY_NAME=nvidia
 
 #for obs on wayland(to use pipewire screen capture)
-QT_QPA_PLATFORM=wayland
+#QT_QPA_PLATFORM=wayland

@@ -11,6 +11,7 @@ lua require('plug-conf/nvim-treesitter')
 lua require('plug-conf/lualine')
 lua require('plug-conf/telescope')
 lua require('plug-conf/alpha-nvim')
+lua require('plug-conf/trouble')
 " lsp
 lua require('lsp/nvim-lspconfig')
 lua require('lsp/mason')
