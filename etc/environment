@@ -1,0 +1,20 @@
+#
+# This file is parsed by pam_env module
+#
+# Syntax: simple "KEY=VAL" pairs on separate lines
+#
+#
+
+#for fcitx5
+GTK_IM_MODULE=fcitx
+QT_IM_MODULE=fcitx
+XMODIFIERS=@im=fcitx
+SDL_IM_MODULE=fcitx
+GLFW_IM_MODULE=ibus
+
+#for nvidia on wayland(to use GBM api)
+GBM_BACKEND=nvidia-drm
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+
+#for obs on wayland(to use pipewire screen capture)
+QT_QPA_PLATFORM=wayland
