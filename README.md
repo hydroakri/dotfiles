@@ -1,7 +1,7 @@
 
 ##### Easy-to-extend dotfiles that reside in the original configuration and have reasonable defaults
 I'm a lazy person, I'm often annoyed by the amount of scripts and scattered files that I can find to configure, so I created this repository so that you can apply the programs you want to take effect as you need. I try to make each application or module as easy to copy as possible by default
-
+![](./preview.png)
 # Installation
 first make sure you have installed the `stow`  
 I use `stow` for unified file management
