@@ -18,7 +18,6 @@ lua require('lsp/mason')
 lua require('lsp/languages')
 
 set clipboard=unnamedplus
-set guifont=Sarasa\ Mono\ SC\ Nerd:14
 set background=dark
 colorscheme dracula
 

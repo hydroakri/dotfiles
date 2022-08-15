@@ -30,7 +30,7 @@ vim.o.incsearch = true
 -- 使用增强状态栏后不再需要 vim 的模式提示
 vim.o.showmode = false
 -- 命令行高为2，提供足够的显示空间
---vim.o.cmdheight = 1 
+vim.o.cmdheight = 1
 -- 当文件被外部程序修改时，自动加载
 vim.o.autoread = true
 vim.bo.autoread = true
@@ -55,3 +55,30 @@ vim.opt.termguicolors = true
 vim.o.list = true
 vim.o.listchars = "space:⋅"
 vim.o.listchars = "tab:=="
+
+
+-- font
+vim.g.gui_font_default_size = 10
+vim.g.gui_font_size = vim.g.gui_font_default_size
+vim.g.gui_font_face = "Sarasa Mono SC Nerd"
+
+RefreshGuiFont = function()
+  vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
+end
+
+ResizeGuiFont = function(delta)
+  vim.g.gui_font_size = vim.g.gui_font_size + delta
+  RefreshGuiFont()
+end
+
+ResetGuiFont = function()
+  vim.g.gui_font_size = vim.g.gui_font_default_size
+  RefreshGuiFont()
+end
+-- Call function on startup to set default value
+ResetGuiFont()
+
+-- Keymaps
+local opts = { noremap = true, silent = true }
+vim.keymap.set({'n', 'i'}, "<C-=>", function() ResizeGuiFont(1)  end, opts)
+vim.keymap.set({'n', 'i'}, "<C-->", function() ResizeGuiFont(-1) end, opts)
