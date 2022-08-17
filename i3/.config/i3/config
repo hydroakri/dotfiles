@@ -180,10 +180,11 @@ exec --no-startup-id fcitx5
 exec --no-startup-id feh --bg-fill --no-fehbg ~/Pictures/bg.jpg
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
 bindsym $mod+Return exec --no-startup-id alacritty
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+bindsym F9 exec --no-startup-id polybar
+bindsym F10 exec --no-startup-id killall polybar
 
-gaps inner 8
-gaps outer 8
+gaps inner 4
+gaps outer 4
 default_border pixel 2
 hide_edge_borders smart
 #-------------------------------------------------#
