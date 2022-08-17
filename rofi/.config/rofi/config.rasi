@@ -1,11 +1,24 @@
-/*Dracula theme based on the Purple official rofi theme*/
+/** nord theme
+    foreground: #81a1c1;
+    background-color: #2E3440;
+    active-background: #3B4252;
+    urgent-background: #ff5555;
+ **/
+
+/** dracula theme
+    foreground: #81a1c1;
+    background-color: #2E3440;
+    active-background: #3B4252;
+    urgent-background: #ff5555;
+ **/
 
 * {
-    font: "FiraCode Nerd Font Medium 14";
-    foreground: #f8f8f2;
-    background-color: #282a36;
-    active-background: #6272a4;
+    font: "Noto Sans CJK 14";
+    foreground: #81a1c1;
+    background-color: #2E3440;
+    active-background: #3B4252;
     urgent-background: #ff5555;
+
     selected-background: @active-background;
     selected-urgent-background: @urgent-background;
     selected-active-background: @active-background;
