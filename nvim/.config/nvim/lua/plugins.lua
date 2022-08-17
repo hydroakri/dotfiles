@@ -5,7 +5,7 @@ return require('packer').startup(function(use)
 
   -- theme
   use {'dracula/vim', as = 'dracula'}
-  use 'shaunsingh/nord.nvim'
+  use 'rmehri01/onenord.nvim'
 
   -- telescope
   use 'BurntSushi/ripgrep'
