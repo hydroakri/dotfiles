@@ -66,6 +66,9 @@ return require('packer').startup(function(use)
   use { 'ms-jpq/coq.artifacts', branch = 'artifacts'}
   use { 'ms-jpq/coq.thirdparty', branch = '3p'}
 
+  -- code runner
+  use { 'CRAG666/code_runner.nvim', requires = 'nvim-lua/plenary.nvim' }
+
   -- lsp plugins
   -- symbol outline
   use 'simrat39/symbols-outline.nvim'

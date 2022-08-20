@@ -21,7 +21,7 @@ map("n", "<Leader>l", "<C-w>l", opt)
 -- Telescope
 map("n", "<Leader>ff", ":Telescope fd hidden=true<CR>", opt)
 map("n", "<Leader>fh", ":Telescope oldfiles<CR>", opt)
-map("n", "<leader>g", ":Telescope live_grep<CR>", opt)
+map("n", "<leader>g", ":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>", opt)
 
 -- nvimTree
 map('n', '<Leader>t', ':NvimTreeFindFileToggle<CR>', opt)
@@ -40,3 +40,12 @@ map('n', "<Leader>o", ":SymbolsOutline<CR>", opt)
 
 -- trouble
 map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
+
+-- coderunner
+vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rf', ':RunFile<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rft', ':RunFile tab<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rp', ':RunProject<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>rc', ':RunClose<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>crf', ':CRFiletype<CR>', { noremap = true, silent = false })
+vim.keymap.set('n', '<leader>crp', ':CRProjects<CR>', { noremap = true, silent = false })

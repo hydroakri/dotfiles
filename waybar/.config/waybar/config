@@ -1,9 +1,9 @@
 {
     "layer": "top",
     "height": 36,
-    "margin-left": 8,
-    "margin-right": 8,
-    "margin-top": 8,
+    "margin-left": 0,
+    "margin-right": 0,
+    "margin-top": 0,
     "margin-bottom": 0,
     "spacing": 2,
     "modules-left": ["sway/workspaces", "sway/mode"],

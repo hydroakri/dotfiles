@@ -182,6 +182,7 @@ bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-them
 bindsym $mod+Return exec --no-startup-id alacritty
 bindsym F9 exec --no-startup-id polybar
 bindsym F10 exec --no-startup-id killall polybar
+bindsym $mod+q exec --no-startup-id "xset dpms force off" 
 
 gaps inner 4
 gaps outer 4
