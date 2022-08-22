@@ -20,4 +20,4 @@ lua require('lsp/languages')
 
 set clipboard=unnamedplus
 set background=dark
-colorscheme onenord
+colorscheme catppuccin

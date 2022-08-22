@@ -5,7 +5,7 @@ return require('packer').startup(function(use)
 
   -- theme
   use {'dracula/vim', as = 'dracula'}
-  use 'rmehri01/onenord.nvim'
+  use { "catppuccin/nvim", as = "catppuccin" }
 
   -- telescope
   use 'BurntSushi/ripgrep'
@@ -108,9 +108,17 @@ return require('packer').startup(function(use)
   requires = "kyazdani42/nvim-web-devicons",
   config = function()
     require("trouble").setup {
-      -- your configuration comes here
       -- or leave it empty to use the default settings
-      -- refer to the configuration section below
+    }
+  end
+}
+  -- easymotion
+  use {
+  "ggandor/leap.nvim",
+  requires = "tpope/vim-repeat",
+  config = function()
+    require("leap").set_default_keymaps{
+      -- or leave it empty to use the default settings
     }
   end
 }
