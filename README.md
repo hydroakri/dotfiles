@@ -1,10 +1,16 @@
-
-##### Easy-to-extend dotfiles that reside in the original configuration and have reasonable defaults
+# Easy-to-extend dotfiles with reasonable defaults
 I'm a lazy person, I'm often annoyed by the amount of scripts and scattered files that I can find to configure, so I created this repository so that you can apply the programs you want to take effect as you need. I try to make each application or module as easy to copy as possible by default
 ![](./preview.png)
 # Installation
 first make sure you have installed the `stow`  
 I use `stow` for unified file management
+
+## For Chinese users
+You can use ssh to speed up git clone
+```
+git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+```
+
 ```
 sudo apt install stow # for ubuntu
 sudo pacman -S stow  # for archlinux
@@ -40,7 +46,7 @@ stow polybar
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
 | themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)                 |
-|   setting manager   |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman)   |
+|   setting manager   |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome   |
 
 
 
