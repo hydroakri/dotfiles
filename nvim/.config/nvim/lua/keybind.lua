@@ -21,7 +21,8 @@ map("n", "<Leader>l", "<C-w>l", opt)
 -- Telescope
 map("n", "<Leader>ff", ":Telescope fd hidden=true<CR>", opt)
 map("n", "<Leader>fh", ":Telescope oldfiles<CR>", opt)
-map("n", "<leader>g", ":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>", opt)
+map("n", "<leader>gb", ":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>", opt)
+map("n", "<Leader>gg", ":Telescope live_grep hidden=true<CR>", opt)
 
 -- nvimTree
 map('n', '<Leader>t', ':NvimTreeFindFileToggle<CR>', opt)

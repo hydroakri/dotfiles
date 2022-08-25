@@ -289,35 +289,19 @@
     per_monitor_dpi = false
 
 #dracula
-#[urgency_low]
-#    background = "#282a36AE"
-#    foreground = "#6272a4"
-#    timeout = 10
-#[urgency_normal]
-#    background = "#282a36AE"
-#    foreground = "#bd93f9"
-#    timeout = 10
-#[urgency_critical]
-#    background = "#ff5555A0"
-#    foreground = "#f8f8f2"
-#    frame_color = "#ff5555"
-#    timeout = 0
-
-#NORD
 [urgency_low]
-	background  = "#2E3440"
-	foreground  = "#D8DEE9"
-	timeout     = 4
-	frame_color = "#A3BE8C"
+    background = "#282a36AE"
+    foreground = "#6272a4"
+    timeout = 10
 [urgency_normal]
-	background = "#2E3440"
-	foreground = "#D8DEE9"
-	timeout = 4
+    background = "#282a36AE"
+    foreground = "#bd93f9"
+    timeout = 10
 [urgency_critical]
-	background = "#2E3440"
-	foreground = "#D8DEE9"
-	frame_color="#f07178"
-	timeout = 0
+    background = "#ff5555A0"
+    foreground = "#f8f8f2"
+    frame_color = "#ff5555"
+    timeout = 0
 
 
 # Every section that isn't one of the above is interpreted as a rules to

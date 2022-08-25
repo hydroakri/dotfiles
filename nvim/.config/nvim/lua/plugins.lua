@@ -71,7 +71,13 @@ return require('packer').startup(function(use)
 
   -- lsp plugins
   -- symbol outline
-  use 'simrat39/symbols-outline.nvim'
+  use {
+  'simrat39/symbols-outline.nvim',
+  config = function ()
+    require("symbols-outline").setup()
+  end
+  }
+
 
   -- dashboard
   use {
