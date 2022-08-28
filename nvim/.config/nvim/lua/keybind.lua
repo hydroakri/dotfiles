@@ -21,15 +21,15 @@ map("n", "<Leader>l", "<C-w>l", opt)
 -- Telescope
 map("n", "<Leader>ff", ":Telescope fd hidden=true<CR>", opt)
 map("n", "<Leader>fh", ":Telescope oldfiles<CR>", opt)
-map("n", "<leader>gb", ":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>", opt)
-map("n", "<Leader>gg", ":Telescope live_grep hidden=true<CR>", opt)
+map("n", "<leader>g", ":Telescope live_grep<CR>", opt)
 
 -- nvimTree
 map('n', '<Leader>t', ':NvimTreeFindFileToggle<CR>', opt)
 
 -- bufferline 左右切换
 -- map("n", "<A-h>", ":BufferLineCyclePrev<CR>", opt)
-map("n", "<Tab>", ":BufferLineCycleNext<CR>", opt)
+map("n", "<S-j>", ":BufferLineCyclePrev<CR>", opt)
+map("n", "<S-k>", ":BufferLineCycleNext<CR>", opt)
 map("n", "<Leader>bc", ":BufferLinePickClose<CR>", opt)
 
 -- toggleterm
@@ -41,6 +41,10 @@ map('n', "<Leader>o", ":SymbolsOutline<CR>", opt)
 
 -- trouble
 map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
+
+-- Session manager
+map('n', "<Leader>sl", ":SessionManager load_session<CR>", opt)
+map('n', "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
 
 -- coderunner
 vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })

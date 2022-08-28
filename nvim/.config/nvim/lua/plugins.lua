@@ -40,6 +40,9 @@ return require('packer').startup(function(use)
     require("toggleterm").setup()
   end}
 
+  -- session manager
+  use 'Shatur/neovim-session-manager'
+
   -- which-key.nvim
   use {
     "folke/which-key.nvim",
@@ -72,12 +75,11 @@ return require('packer').startup(function(use)
   -- lsp plugins
   -- symbol outline
   use {
-  'simrat39/symbols-outline.nvim',
-  config = function ()
-    require("symbols-outline").setup()
-  end
+    'simrat39/symbols-outline.nvim',
+    config = function ()
+      require("symbols-outline").setup()
+    end
   }
-
 
   -- dashboard
   use {
@@ -110,22 +112,41 @@ return require('packer').startup(function(use)
 
   -- showing diagnostics
   use {
-  "folke/trouble.nvim",
-  requires = "kyazdani42/nvim-web-devicons",
-  config = function()
-    require("trouble").setup {
-      -- or leave it empty to use the default settings
-    }
-  end
-}
+    "folke/trouble.nvim",
+    requires = "kyazdani42/nvim-web-devicons",
+    config = function()
+      require("trouble").setup {
+        -- or leave it empty to use the default settings
+      }
+    end
+  }
   -- easymotion
   use {
-  "ggandor/leap.nvim",
-  requires = "tpope/vim-repeat",
-  config = function()
-    require("leap").set_default_keymaps{
-      -- or leave it empty to use the default settings
-    }
-  end
-}
+    "ggandor/leap.nvim",
+    requires = "tpope/vim-repeat",
+    config = function()
+      require("leap").set_default_keymaps{
+        -- or leave it empty to use the default settings
+      }
+    end
+  }
+  -- rainbow parentheses
+  use {
+    "p00f/nvim-ts-rainbow",
+    config = function()
+      require("nvim-treesitter.configs").setup {
+        highlight = {
+          -- ...
+        },
+        rainbow = {
+          enable = true,
+          -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
+          extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+          max_file_lines = nil, -- Do not enable for files with more than n lines, int
+          -- colors = {}, -- table of hex strings
+          -- termcolors = {} -- table of colour name strings
+        }
+      }
+    end
+  }
 end)

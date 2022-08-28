@@ -43,18 +43,5 @@ lspconfig.pyright.setup {
   },
 }
 
-lspconfig.ccls.setup {
-  on_attach = on_attach,
-  flags = lsp_flags,
-  capabilities = capabilities,
-  init_options = {
-    compilationDatabaseDirectory = "build";
-    index = {
-      threads = 0;
-    };
-    clang = {
-      excludeArgs = { "-frounding-math"} ;
-    };
-  }
+lspconfig.clangd.setup {
 }
-
