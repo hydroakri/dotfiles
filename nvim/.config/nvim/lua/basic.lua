@@ -58,7 +58,7 @@ vim.o.listchars = "tab:=="
 
 
 -- font
-vim.g.gui_font_default_size = 10
+vim.g.gui_font_default_size = 14
 vim.g.gui_font_size = vim.g.gui_font_default_size
 vim.g.gui_font_face = "Sarasa Mono SC Nerd"
 

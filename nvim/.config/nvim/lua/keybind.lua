@@ -34,7 +34,7 @@ map("n", "<Leader>bc", ":BufferLinePickClose<CR>", opt)
 
 -- toggleterm
 map('n', ".", ":ToggleTerm direction=float<CR>", opt)
-map('t', "<Esc>", "<C-\\><C-n>", opt)
+map('t', "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
 
 -- tagbar
 map('n', "<Leader>o", ":SymbolsOutline<CR>", opt)

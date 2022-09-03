@@ -125,8 +125,7 @@ exec --no-startup-id fcitx5
 output * bg ~/Pictures/bg.jpg fill
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
 bindsym $mod+Return exec --no-startup-id alacritty
-bindsym F9 exec --no-startup-id waybar
-bindsym F10 exec --no-startup-id killall waybar
+exec_always --no-startup-id waybar
 bindsym $mod+Tab workspace next
 
 gaps inner 4

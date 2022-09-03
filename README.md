@@ -31,7 +31,7 @@ stow polybar
 |         Bar         |     [polybar](https://github.com/polybar/polybar),[waybar](https://github.com/Alexays/Waybar)|
 |     Compositor      |     [picom-jonaburg-git](https://github.com/jonaburg/picom)                                  |
 |      Launcher       |     [rofi](https://github.com/davatorium/rofi)                                           |
-|  Wallpaper Setter   |     [feh](https://feh.finalrewind.org/)                                              |
+|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)                                              |
 |     Web Browser     |     [edge](https://aur.archlinux.org/packages/microsoft-edge-stable-bin)                      |
 |      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/)                                      |
 |        Shell        |     [fish](https://www.fishshell.com)                                            |
@@ -46,7 +46,7 @@ stow polybar
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
 | themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)                 |
-|   setting manager   |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome   |
+|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen|
 
 
 
