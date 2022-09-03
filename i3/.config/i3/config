@@ -21,7 +21,7 @@ font pango:Noto Sans CJK 14
 
 #NORD
 # class                 border  backgr. text    indicator
-client.focused          #81a1c1 #81a1c1 #ffffff #ff79c6
+client.focused          #ff79c6 #ff79c6 #ffffff #ff79c6
 client.unfocused        #2e3440 #1f222d #888888 #1f222d
 client.focused_inactive #2e3440 #1f222d #888888 #1f222d
 client.placeholder      #2e3440 #1f222d #888888 #1f222d
@@ -170,9 +170,13 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
+##X11
+exec_always --no-startup-id autorandr horizontal
+exec_always --no-startup-id nitrogen --restore
+exec_always --no-startup-id polybar
+exec_always --no-startup-id picom -b
+bindsym $mod+q exec --no-startup-id "xset dpms force off" 
 #自定义
-exec --no-startup-id autorandr horizontal
-exec --no-startup-id picom -b
 exec --no-startup-id dunst
 exec --no-startup-id pasystray
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
@@ -180,11 +184,8 @@ exec_always --no-startup-id nm-applet
 exec_always --no-startup-id autotiling
 exec_always --no-startup-id blueman-applet
 exec --no-startup-id fcitx5
-exec --no-startup-id nitrogen --restore
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
 bindsym $mod+Return exec --no-startup-id alacritty
-exec_always --no-startup-id polybar
-bindsym $mod+q exec --no-startup-id "xset dpms force off" 
 bindsym $mod+Tab workspace next
 
 gaps inner 4

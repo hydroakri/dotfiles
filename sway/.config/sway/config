@@ -114,6 +114,9 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
+#wayland
+output * bg ~/Pictures/bg.jpg fill
+exec_always --no-startup-id waybar
 #DIY
 exec --no-startup-id dunst
 exec --no-startup-id pasystray
@@ -122,10 +125,8 @@ exec_always --no-startup-id nm-applet
 exec_always --no-startup-id autotiling
 exec_always --no-startup-id blueman-applet
 exec --no-startup-id fcitx5
-output * bg ~/Pictures/bg.jpg fill
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
 bindsym $mod+Return exec --no-startup-id alacritty
-exec_always --no-startup-id waybar
 bindsym $mod+Tab workspace next
 
 gaps inner 4
