@@ -115,13 +115,11 @@ bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
 #wayland
-output * bg ~/Pictures/bg.jpg fill
+output * bg ~/PICTURES/bg.jpg fill
 exec_always --no-startup-id waybar
 #DIY
 exec --no-startup-id dunst
-exec --no-startup-id pasystray
-exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-exec_always --no-startup-id nm-applet
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 
 exec_always --no-startup-id autotiling
 exec_always --no-startup-id blueman-applet
 exec --no-startup-id fcitx5
@@ -129,10 +127,10 @@ bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-them
 bindsym $mod+Return exec --no-startup-id alacritty
 bindsym $mod+Tab workspace next
 
-gaps inner 4
-gaps outer 4
+gaps inner 2
+gaps outer 2
 default_border pixel 2
-hide_edge_borders smart
+hide_edge_borders both
 # enable toupad support
 input type:touchpad {
     tap enabled

@@ -45,12 +45,5 @@ map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
 -- Session manager
 map('n', "<Leader>sl", ":SessionManager load_session<CR>", opt)
 map('n', "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
+map('n', "<Leader>sd", ":SessionManager delete_session<CR>", opt)
 
--- coderunner
-vim.keymap.set('n', '<leader>r', ':RunCode<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rf', ':RunFile<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rft', ':RunFile tab<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rp', ':RunProject<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>rc', ':RunClose<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>crf', ':CRFiletype<CR>', { noremap = true, silent = false })
-vim.keymap.set('n', '<leader>crp', ':CRProjects<CR>', { noremap = true, silent = false })

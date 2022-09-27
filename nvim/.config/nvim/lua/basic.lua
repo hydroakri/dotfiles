@@ -11,6 +11,11 @@ vim.wo.relativenumber = true
 vim.wo.cursorline = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
+-- 右侧参考线，超过表示代码太长了，考虑换行
+-- vim.wo.colorcolumn = "80"
+-- 缩进2个空格等于一个Tab
+vim.o.tabstop = 4
+vim.bo.tabstop = 4
 -- >> << 时移动长度
 vim.o.shiftwidth = 2
 vim.bo.shiftwidth = 2
@@ -35,8 +40,8 @@ vim.o.cmdheight = 1
 vim.o.autoread = true
 vim.bo.autoread = true
 -- 禁止折行
-vim.o.wrap = false
-vim.wo.wrap = false
+vim.o.wrap = true
+vim.wo.wrap = true
 -- 允许隐藏被修改过的buffer
 vim.o.hidden = true
 -- 鼠标支持

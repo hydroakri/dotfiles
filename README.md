@@ -45,8 +45,8 @@ stow polybar
 |   system monitor    |     [btop](https://github.com/aristocratos/btop)                                |
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
-| themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)                 |
-|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen|
+| themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  qt5ct               |
+|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol|
 
 
 

@@ -5,16 +5,23 @@
 #
 #
 
-#for fcitx5
+##for fcitx5
 GTK_IM_MODULE=fcitx
 QT_IM_MODULE=fcitx
 XMODIFIERS=@im=fcitx
 SDL_IM_MODULE=fcitx
 GLFW_IM_MODULE=ibus
-
-#for nvidia on wayland(to use GBM api)
+#
+##for nvidia on wayland(to use GBM api)
 GBM_BACKEND=nvidia-drm
 __GLX_VENDOR_LIBRARY_NAME=nvidia
+#enable nvidia vertical sync
+__GL_SYNC_TO_VBLANK=1
 
 #for obs on wayland(to use pipewire screen capture)
-#QT_QPA_PLATFORM=wayland
+QT_QPA_PLATFORM=wayland
+DESKTOP_SESSION=gnome
+MOZ_ENABLE_WAYLAND=1
+
+#FOR SWAY
+WLR_NO_HARDWARE_CURSORS=1

@@ -64,28 +64,34 @@ return require('packer').startup(function(use)
   use {'neovim/nvim-lspconfig'}
   use { 'williamboman/mason.nvim' }
 
+  -- lspsaga(beautify)
+  use({
+    "glepnir/lspsaga.nvim",
+    branch = "main",
+    config = function()
+        local saga = require("lspsaga")
+
+        saga.init_lsp_saga({
+            -- your configuration
+        })
+    end,
+})
+
+  -- dap
+  use 'mfussenegger/nvim-dap'
+
   ---- 补全插件
   use { 'ms-jpq/coq_nvim', branch = 'coq'}
   use { 'ms-jpq/coq.artifacts', branch = 'artifacts'}
   use { 'ms-jpq/coq.thirdparty', branch = '3p'}
 
-  -- code runner
-  use { 'CRAG666/code_runner.nvim', requires = 'nvim-lua/plenary.nvim' }
-
   -- lsp plugins
+
   -- symbol outline
   use {
     'simrat39/symbols-outline.nvim',
     config = function ()
       require("symbols-outline").setup()
-    end
-  }
-
-  -- dashboard
-  use {
-    'goolord/alpha-nvim',
-    config = function ()
-      require'alpha'.setup(require'alpha.themes.dashboard'.config)
     end
   }
 
