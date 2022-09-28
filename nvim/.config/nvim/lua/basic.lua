@@ -17,8 +17,8 @@ vim.wo.signcolumn = "yes"
 vim.o.tabstop = 4
 vim.bo.tabstop = 4
 -- >> << 时移动长度
-vim.o.shiftwidth = 2
-vim.bo.shiftwidth = 2
+vim.o.shiftwidth = 4
+vim.bo.shiftwidth = 4
 -- 新行对齐当前行，空格替代tab
 vim.o.expandtab = true
 vim.bo.expandtab = true
@@ -68,17 +68,17 @@ vim.g.gui_font_size = vim.g.gui_font_default_size
 vim.g.gui_font_face = "Sarasa Mono SC Nerd"
 
 RefreshGuiFont = function()
-  vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
+    vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
 end
 
 ResizeGuiFont = function(delta)
-  vim.g.gui_font_size = vim.g.gui_font_size + delta
-  RefreshGuiFont()
+    vim.g.gui_font_size = vim.g.gui_font_size + delta
+    RefreshGuiFont()
 end
 
 ResetGuiFont = function()
-  vim.g.gui_font_size = vim.g.gui_font_default_size
-  RefreshGuiFont()
+    vim.g.gui_font_size = vim.g.gui_font_default_size
+    RefreshGuiFont()
 end
 -- Call function on startup to set default value
 ResetGuiFont()
@@ -86,3 +86,4 @@ ResetGuiFont()
 local opts = { noremap = true, silent = true }
 vim.keymap.set({'n', 'i'}, "<C-=>", function() ResizeGuiFont(1)  end, opts)
 vim.keymap.set({'n', 'i'}, "<C-->", function() ResizeGuiFont(-1) end, opts)
+
