@@ -78,9 +78,13 @@ return require('packer').startup(function(use)
     -- dap
     use 'mfussenegger/nvim-dap'
     -- 显示运行时的变量值
-    use 'theHamsta/nvim-dap-virtual-text'
+    use {
+        'theHamsta/nvim-dap-virtual-text',
+        config = function ()
+            require("nvim-dap-virtual-text").setup()
+        end
+    }
     use 'rcarriga/nvim-dap-ui'
-    use 'nvim-telescope/telescope-dap.nvim'
 
     ---- 补全插件
     use { 'ms-jpq/coq_nvim', branch = 'coq'}
