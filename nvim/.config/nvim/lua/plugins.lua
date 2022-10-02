@@ -4,7 +4,7 @@ return require('packer').startup(function(use)
     use 'wbthomason/packer.nvim'
 
     -- theme
-    use {'dracula/vim', as = 'dracula'}
+    use 'Mofiqul/dracula.nvim'
     use { "catppuccin/nvim", as = "catppuccin" }
 
     -- telescope
