@@ -23,6 +23,7 @@ map("n", "<Leader>q", "<C-w>q", opt)
 map("n", "<Leader>ff", ":Telescope fd hidden=true<CR>", opt)
 map("n", "<Leader>fh", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>g", ":Telescope live_grep<CR>", opt)
+map("n", "<leader>t", ":Telescope<CR>", opt)
 
 -- nvimTree
 map('n', 't', ':NvimTreeFindFileToggle<CR>', opt)
