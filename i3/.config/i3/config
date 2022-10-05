@@ -177,6 +177,7 @@ exec --no-startup-id sleep 1 && polybar
 bindsym $mod+q exec --no-startup-id "xset dpms force off" 
 exec_always --no-startup-id nm-applet
 exec --no-startup-id pasystray
+exec --no-startup-id picom
 #自定义
 exec --no-startup-id dunst
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 
@@ -187,10 +188,13 @@ bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-them
 bindsym $mod+Return exec alacritty
 bindsym $mod+Tab workspace next
 
-gaps inner 2
-gaps outer 2
-default_border pixel 2
+gaps inner 4
+gaps outer 4
+default_border none
+default_floating_border none
 hide_edge_borders both
+for_window [class="Alacritty"] border none
+for_window [class="neovide"] border none
 
 #-------------------------------------------------#
 # Control volume,monitor brightness,media players #
