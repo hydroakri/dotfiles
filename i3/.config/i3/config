@@ -188,8 +188,8 @@ bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-them
 bindsym $mod+Return exec alacritty
 bindsym $mod+Tab workspace next
 
-gaps inner 4
-gaps outer 4
+gaps inner 20
+gaps outer 0
 default_border none
 default_floating_border none
 hide_edge_borders both

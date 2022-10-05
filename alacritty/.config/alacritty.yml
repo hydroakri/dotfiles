@@ -23,7 +23,7 @@ font:
     family: Sarasa Mono SC Nerd
     style: Bold Italic
 
-  size: 14
+  size: 10
 
 #dracula
 colors:
