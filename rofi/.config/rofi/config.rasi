@@ -141,39 +141,39 @@ button selected {
 }
 #element.normal.normal {
     background-color: @bg;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.normal.urgent {
     background-color: @bg;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.normal.active {
     background-color: @bg;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.selected.normal {
     background-color: @text-alt;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.selected.urgent {
     background-color: @text-alt;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.selected.active {
     background-color: @text-alt;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.alternate.normal {
     background-color: @background-color;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.alternate.urgent {
     background-color: @bg;
-    text-color:       @fg;
+    text-color:       @text;
 }
 #element.alternate.active {
     background-color: @bg;
-    text-color:       @fg;
+    text-color:       @text;
 }
 element-text, element-icon {
     background-color: inherit;

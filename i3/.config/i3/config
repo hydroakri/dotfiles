@@ -190,12 +190,12 @@ bindsym $mod+Tab workspace next
 
 gaps inner 20
 gaps outer 0
-default_border pixel 0
-default_floating_border pixel 0
-hide_edge_borders both
-for_window [class="Alacritty"] border none
-for_window [class="neovide"] border none
-bindsym $mod+n border none
+for_window [class="^.*"] border none
+#default_border none
+#default_floating_border none
+#hide_edge_borders both
+#smart_borders on
+#bindsym $mod+n border none
 
 #-------------------------------------------------#
 # Control volume,monitor brightness,media players #
