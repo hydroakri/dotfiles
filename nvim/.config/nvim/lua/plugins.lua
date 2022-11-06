@@ -123,7 +123,7 @@ return require('packer').startup(function(use)
     use 'terryma/vim-multiple-cursors'
 
     -- same to vscode's sticky scroll
-    use 'wellle/context.vim'
+    -- use 'wellle/context.vim'
 
     -- 括号补全
     use 'jiangmiao/auto-pairs'

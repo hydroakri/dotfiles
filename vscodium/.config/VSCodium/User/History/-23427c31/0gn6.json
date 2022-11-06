@@ -1,0 +1,26 @@
+{
+    "workbench.colorTheme": "Dracula",
+    "editor.fontFamily": "'Sarasa Mono SC Nerd'",
+    "editor.cursorStyle": "block",
+    "[cpp]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
+    "workbench.iconTheme": "material-icon-theme",
+    "window.zoomLevel": 1,
+    "editor.stickyScroll.enabled": true,
+    "files.autoSave": "afterDelay",
+    "editor.codeActionsOnSave": {}
+    //vim config
+    "vim.leader": "<space>",
+    "vim.normalModeKeyBindings": [
+        {
+            "before": [
+                "<leader>",
+                "<C-r>"
+            ],
+            "commands": [
+                "workbench.action.toggleSidebarVisibility",
+            ],
+        },
+    ],
+}

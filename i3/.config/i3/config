@@ -66,7 +66,7 @@ floating_modifier $mod
 # bindsym $mod+Return exec alacritty
 
 # kill focused window
-bindsym $mod+Shift+q kill
+bindsym $mod+q kill
 
 # start dmenu (a program launcher)
 # bindsym $mod+d exec --no-startup-id dmenu_run
@@ -178,6 +178,7 @@ bindsym $mod+q exec --no-startup-id "xset dpms force off"
 exec_always --no-startup-id nm-applet
 exec --no-startup-id pasystray
 exec --no-startup-id picom
+exec_always --no-startup-id xfce4-clipman
 #自定义
 exec --no-startup-id dunst
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 

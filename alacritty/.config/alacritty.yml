@@ -23,7 +23,7 @@ font:
     family: Sarasa Mono SC Nerd
     style: Bold Italic
 
-  size: 10
+  size: 14
 
 #dracula
 colors:
@@ -44,7 +44,7 @@ colors:
     focused_match:
       foreground: '#44475a'
       background: '#ffb86c'
-    bar:
+    colors.footer_bar:
       background: '#282a36'
       foreground: '#f8f8f2'
   hints:

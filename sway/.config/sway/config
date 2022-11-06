@@ -17,7 +17,7 @@ exec --no-startup-id dex --autostart --environment i3
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 floating_modifier $mod
-bindsym $mod+Shift+q kill
+bindsym $mod+q kill
 
 
 # change focus
