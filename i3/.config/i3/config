@@ -174,7 +174,7 @@ bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 exec --no-startup-id autorandr horizontal
 exec --no-startup-id sleep 1 && nitrogen --restore
 exec --no-startup-id sleep 1 && polybar
-bindsym $mod+q exec --no-startup-id "xset dpms force off" 
+bindsym $mod+z exec --no-startup-id "xset dpms force off" 
 exec_always --no-startup-id nm-applet
 exec --no-startup-id pasystray
 exec --no-startup-id picom

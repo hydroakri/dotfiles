@@ -116,7 +116,7 @@ bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 
 #wayland
 output * bg ~/PICTURES/bg.jpg fill
-exec_always --no-startup-id waybar
+exec --no-startup-id waybar
 #DIY
 exec --no-startup-id dunst
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 
@@ -127,10 +127,15 @@ bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-them
 bindsym $mod+Return exec --no-startup-id alacritty
 bindsym $mod+Tab workspace next
 
-gaps inner 2
-gaps outer 2
-default_border pixel 2
+gaps inner 20
+gaps outer 0
+for_window [class="^.*"] border none
+default_border none
+default_floating_border none
 hide_edge_borders both
+smart_borders on
+#bindsym $mod+n border none
+
 # enable toupad support
 input type:touchpad {
   tap enabled

@@ -38,8 +38,7 @@
                             "items": [
                                 {
                                     "id": "workbench.action.reopenClosedEditor",
-                                    "label": "重新打开已关闭的编辑器(&&R)",
-                                    "enabled": false
+                                    "label": "重新打开已关闭的编辑器(&&R)"
                                 },
                                 {
                                     "id": "vscode.menubar.separator"
@@ -183,11 +182,13 @@
                     },
                     {
                         "id": "workbench.action.files.save",
-                        "label": "保存(&&S)"
+                        "label": "保存(&&S)",
+                        "enabled": false
                     },
                     {
                         "id": "workbench.action.files.saveAs",
-                        "label": "另存为(&&A)..."
+                        "label": "另存为(&&A)...",
+                        "enabled": false
                     },
                     {
                         "id": "saveAll",
@@ -279,11 +280,13 @@
                     },
                     {
                         "id": "workbench.action.files.revert",
-                        "label": "还原文件(&&V)"
+                        "label": "还原文件(&&V)",
+                        "enabled": false
                     },
                     {
                         "id": "workbench.action.closeActiveEditor",
-                        "label": "关闭编辑器(&&C)"
+                        "label": "关闭编辑器(&&C)",
+                        "enabled": false
                     },
                     {
                         "id": "workbench.action.closeWindow",
@@ -328,11 +331,13 @@
                     },
                     {
                         "id": "actions.find",
-                        "label": "&&Find"
+                        "label": "&&Find",
+                        "enabled": false
                     },
                     {
                         "id": "editor.action.startFindReplaceAction",
-                        "label": "&&Replace"
+                        "label": "&&Replace",
+                        "enabled": false
                     },
                     {
                         "id": "vscode.menubar.separator"
@@ -479,7 +484,8 @@
                                 },
                                 {
                                     "id": "workbench.action.toggleSidebarVisibility",
-                                    "label": "显示侧栏(&&S)"
+                                    "label": "显示侧栏(&&S)",
+                                    "checked": true
                                 },
                                 {
                                     "id": "workbench.action.toggleAuxiliaryBar",
@@ -551,6 +557,29 @@
                                             }
                                         ]
                                     }
+                                },
+                                {
+                                    "id": "vscode.menubar.separator"
+                                },
+                                {
+                                    "id": "editor.action.toggleMinimap",
+                                    "label": "&&Minimap",
+                                    "checked": true
+                                },
+                                {
+                                    "id": "breadcrumbs.toggle",
+                                    "label": "&&Breadcrumbs",
+                                    "checked": true
+                                },
+                                {
+                                    "id": "editor.action.toggleRenderWhitespace",
+                                    "label": "呈现空格(&&R)",
+                                    "checked": true
+                                },
+                                {
+                                    "id": "editor.action.toggleRenderControlCharacter",
+                                    "label": "呈现控制字符(&&C)",
+                                    "checked": true
                                 },
                                 {
                                     "id": "vscode.menubar.separator"
@@ -690,27 +719,8 @@
                     },
                     {
                         "id": "editor.action.toggleWordWrap",
-                        "label": "切换自动换行(&&W)"
-                    },
-                    {
-                        "id": "editor.action.toggleMinimap",
-                        "label": "&&Minimap",
-                        "checked": true
-                    },
-                    {
-                        "id": "breadcrumbs.toggle",
-                        "label": "&&Breadcrumbs",
-                        "checked": true
-                    },
-                    {
-                        "id": "editor.action.toggleRenderWhitespace",
-                        "label": "呈现空格(&&R)",
-                        "checked": true
-                    },
-                    {
-                        "id": "editor.action.toggleRenderControlCharacter",
-                        "label": "呈现控制字符(&&C)",
-                        "checked": true
+                        "label": "切换自动换行(&&W)",
+                        "enabled": false
                     },
                     {
                         "id": "editor.action.toggleStickyScroll",
@@ -723,7 +733,8 @@
                 "items": [
                     {
                         "id": "workbench.action.navigateBack",
-                        "label": "&&Back"
+                        "label": "&&Back",
+                        "enabled": false
                     },
                     {
                         "id": "workbench.action.navigateForward",
@@ -1050,8 +1061,7 @@
                     },
                     {
                         "id": "workbench.action.terminal.split",
-                        "label": "&&Split Terminal",
-                        "enabled": false
+                        "label": "&&Split Terminal"
                     },
                     {
                         "id": "vscode.menubar.separator"
@@ -1123,7 +1133,7 @@
                     },
                     {
                         "id": "update.showCurrentReleaseNotes",
-                        "label": "发行说明(&&R)"
+                        "label": "Show &&Release Notes"
                     },
                     {
                         "id": "vscode.menubar.separator"
@@ -1240,8 +1250,8 @@
                 "userSettingsLabel": "ctrl+k ctrl+t"
             },
             "workbench.action.closeActiveEditor": {
-                "label": "Ctrl+W",
-                "userSettingsLabel": "ctrl+w"
+                "label": "Alt+Q",
+                "userSettingsLabel": "alt+q"
             },
             "workbench.action.closeWindow": {
                 "label": "Alt+F4",
@@ -1328,12 +1338,12 @@
                 "userSettingsLabel": "alt+down"
             },
             "editor.action.insertCursorAbove": {
-                "label": "Ctrl+Shift+Up",
-                "userSettingsLabel": "ctrl+shift+up"
+                "label": "Shift+Alt+Up",
+                "userSettingsLabel": "shift+alt+up"
             },
             "editor.action.insertCursorBelow": {
-                "label": "Ctrl+Shift+Down",
-                "userSettingsLabel": "ctrl+shift+down"
+                "label": "Shift+Alt+Down",
+                "userSettingsLabel": "shift+alt+down"
             },
             "editor.action.insertCursorAtEndOfEachLineSelected": {
                 "label": "Shift+Alt+I",
@@ -1365,8 +1375,8 @@
                 "userSettingsLabel": "ctrl+b"
             },
             "workbench.action.togglePanel": {
-                "label": "Ctrl+J",
-                "userSettingsLabel": "ctrl+j"
+                "label": "Alt+.",
+                "userSettingsLabel": "alt+."
             },
             "workbench.action.zoomIn": {
                 "label": "Ctrl+=",
@@ -1407,8 +1417,8 @@
                 "userSettingsLabel": "ctrl+shift+d"
             },
             "workbench.actions.view.problems": {
-                "label": "Ctrl+Shift+M",
-                "userSettingsLabel": "ctrl+shift+m"
+                "label": "Alt+X",
+                "userSettingsLabel": "alt+x"
             },
             "workbench.action.output.toggleOutput": {
                 "label": "Ctrl+K Ctrl+H",
@@ -1441,12 +1451,12 @@
                 "userSettingsLabel": "ctrl+k ctrl+q"
             },
             "workbench.action.nextEditor": {
-                "label": "Ctrl+PageDown",
-                "userSettingsLabel": "ctrl+pagedown"
+                "label": "Alt+K",
+                "userSettingsLabel": "alt+k"
             },
             "workbench.action.previousEditor": {
-                "label": "Ctrl+PageUp",
-                "userSettingsLabel": "ctrl+pageup"
+                "label": "Alt+J",
+                "userSettingsLabel": "alt+j"
             },
             "workbench.action.nextEditorInGroup": {
                 "label": "Ctrl+K Ctrl+PageDown",
@@ -1499,8 +1509,8 @@
                 "userSettingsLabel": "ctrl+k ctrl+down"
             },
             "workbench.action.quickOpen": {
-                "label": "Ctrl+P",
-                "userSettingsLabel": "ctrl+p"
+                "label": "Alt+F",
+                "userSettingsLabel": "alt+f"
             },
             "workbench.action.showAllSymbols": {
                 "label": "Ctrl+T",
@@ -1628,7 +1638,7 @@
             "editorPartMinWidth": 220,
             "titleBarHeight": 0,
             "activityBarWidth": 48,
-            "sideBarWidth": 0,
+            "sideBarWidth": 170,
             "statusBarHeight": 22,
             "windowBorder": false
         }
@@ -1638,10 +1648,10 @@
             "backupPath": "/home/hydroakri/.config/VSCodium/Backups/1667635353047",
             "uiState": {
                 "mode": 1,
-                "x": 0,
-                "y": 0,
-                "width": 1920,
-                "height": 1080
+                "x": 20,
+                "y": 57,
+                "width": 1880,
+                "height": 1003
             }
         },
         "openedWindows": []

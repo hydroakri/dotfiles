@@ -62,13 +62,5 @@
     {
         "key": "shift+alt+k",
         "command": "workbench.action.nextPanelView"
-    },
-    {
-        "key": "alt+q",
-        "command": "workbench.action.closeActiveEditor"
-    },
-    {
-        "key": "ctrl+w",
-        "command": "-workbench.action.closeActiveEditor"
     }
 ]

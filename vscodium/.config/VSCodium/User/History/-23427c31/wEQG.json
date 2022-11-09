@@ -7,6 +7,10 @@
     "workbench.iconTheme": "material-icon-theme",
     "editor.stickyScroll.enabled": true,
     "files.autoSave": "afterDelay",
+    "editor.codeActionsOnSave": {
+    
+    
+    },
     //vim config
     "vim.leader": "<space>",
     "vim.normalModeKeyBindings": [
@@ -58,5 +62,4 @@
     "editor.minimap.renderCharacters": false,
     "vim.cursorStylePerMode.insert": "line-thin",
     "vim.easymotion": true,
-    "indentRainbow.indicatorStyle": "light",
 }

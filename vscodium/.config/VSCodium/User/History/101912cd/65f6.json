@@ -1,6 +1,10 @@
 // 将键绑定放在此文件中以覆盖默认值auto[]
 [
     {
+        "key": "ctrl+shift+w",
+        "command": "-workbench.action.closeWindow"
+    },
+    {
         "key": "alt+f",
         "command": "workbench.action.quickOpen"
     },
@@ -50,25 +54,5 @@
         "key": "alt+k",
         "command": "-keybindings.editor.recordSearchKeys",
         "when": "inKeybindings && inKeybindingsSearch"
-    },
-    {
-        "key": "alt+k",
-        "command": "workbench.action.nextEditor"
-    },
-    {
-        "key": "ctrl+pagedown",
-        "command": "-workbench.action.nextEditor"
-    },
-    {
-        "key": "shift+alt+k",
-        "command": "workbench.action.nextPanelView"
-    },
-    {
-        "key": "alt+q",
-        "command": "workbench.action.closeActiveEditor"
-    },
-    {
-        "key": "ctrl+w",
-        "command": "-workbench.action.closeActiveEditor"
     }
 ]
