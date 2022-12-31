@@ -124,7 +124,7 @@ exec_always --no-startup-id autotiling
 exec_always --no-startup-id blueman-applet
 exec --no-startup-id fcitx5
 bindsym $mod+d exec --no-startup-id rofi -combi-modi drun -show combi -icon-theme "Numix Squire" -show-icons
-bindsym $mod+Return exec --no-startup-id alacritty
+bindsym $mod+Return exec --no-startup-id kitty
 bindsym $mod+Tab workspace next
 
 gaps inner 20
