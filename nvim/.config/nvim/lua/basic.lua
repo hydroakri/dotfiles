@@ -63,9 +63,9 @@ vim.o.listchars = "tab:=="
 
 
 -- font
-vim.g.gui_font_default_size = 14
-vim.g.gui_font_size = vim.g.gui_font_default_size
-vim.g.gui_font_face = "Sarasa Mono SC Nerd"
+vim.g.gui_font_default_size = 16
+--vim.g.gui_font_size = vim.g.gui_font_default_size
+vim.g.gui_font_face = "Sarasa Term SC"
 
 RefreshGuiFont = function()
     vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)

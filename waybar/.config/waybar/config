@@ -1,50 +1,90 @@
 {
     "layer": "top",
-    "height": 36,
-    "margin-left": 0,
-    "margin-right": 0,
-    "margin-top": 0,
-    "margin-bottom": 0,
-    "spacing": 2,
-    "modules-left": ["sway/workspaces", "sway/mode"],
-    "modules-center": ["sway/window"],
-    "modules-right": ["backlight", "pulseaudio", "battery", "clock", "tray"],
-    "sway/window": {
-        "max-length": 50
-    },
-    "backlight": {
-        // "device": "amdgpu_bl1",
-        "format": "{percent}% {icon}",
-        "format-icons": ["", "", "", "", "", "", "", "", ""]
-    },
-    "battery": {
-        "format": "{capacity}% {icon}",
-        "format-icons": ["", "", "", "", ""]
-    },
-    "tray": {
-        // "icon-size": 21,
-        "spacing": 10
-    },
-    "pulseaudio": {
-        // "scroll-step": 1, // %, can be a float
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
+        "height": 36,
+        "margin-left": 0,
+        "margin-right": 0,
+        "margin-top": 0,
+        "margin-bottom": 0,
+        "spacing": 2,
+        "modules-left": ["wlr/workspaces", "clock","backlight", "battery"],
+        "modules-center": ["wlr/taskbar"],
+        "modules-right": ["tray"],
+
+        "wlr/workspaces": {
+            "format": "{icon}",
+            "on-click": "activate",
+            "format-icons": {
+                "1": "",
+                "2": "",
+                "3": "",
+                "4": "",
+                "5": "",
+                "urgent": "",
+                "active": "",
+                "default": ""
+            },
+            "sort-by-number": true
         },
-        "on-click": "pavucontrol"
-    },
-    "clock": {
-        "format-alt": "{:%a, %d. %b  %H:%M}"
-    }
+
+        "wlr/taskbar": {
+            "format": "{icon}",
+            "icon-size": 32,
+            "icon-theme": "Papirus",
+            "tooltip-format": "{title}",
+            "on-click": "activate",
+            "on-click-middle": "close",
+            "ignore-list": [
+                "Alacritty"
+            ],
+            "app_ids-mapping": {
+                "firefoxdeveloperedition": "firefox-developer-edition"
+            }
+        },
+
+            "backlight": {
+                // "device": "amdgpu_bl1",
+                "format": "{percent}% {icon}",
+                "format-icons": ["", "", "", "", "", "", "", "", ""]
+            },
+
+            "battery": {
+                "format": "{capacity}% {icon}",
+                "format-icons": ["", "", "", "", ""]
+            },
+
+            "tray": {
+                // "icon-size": 21,
+                "spacing": 10
+            },
+
+            "pulseaudio": {
+                // "scroll-step": 1, // %, can be a float
+                "format": "{volume}% {icon} {format_source}",
+                "format-bluetooth": "{volume}% {icon} {format_source}",
+                "format-bluetooth-muted": " {icon} {format_source}",
+                "format-muted": " {format_source}",
+                "format-source": "{volume}% ",
+                "format-source-muted": "",
+                "format-icons": {
+                    "headphone": "",
+                    "hands-free": "",
+                    "headset": "",
+                    "phone": "",
+                    "portable": "",
+                    "car": "",
+                    "default": ["", "", ""]
+                },
+                "on-click": "pavucontrol"
+            },
+
+            "clock": {
+                "calendar-weeks-pos": "right",
+                "today-format": "<span color='#ff6699'><b><u>{}</u></b></span>",
+                "format-calendar": "<span color='#ecc6d9'><b>{}</b></span>",
+                "format-calendar-weeks": "<span color='#99ffdd'><b>W{:%U}</b></span>",
+                "format-calendar-weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+                "on-scroll": {
+                    "clendar": 1
+                }
+            }
 }

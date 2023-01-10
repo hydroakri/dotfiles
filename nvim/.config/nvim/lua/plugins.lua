@@ -6,6 +6,7 @@ return require('packer').startup(function(use)
     -- theme
     use 'Mofiqul/dracula.nvim'
     use { "catppuccin/nvim", as = "catppuccin" }
+    use 'overcache/NeoSolarized'
 
     -- telescope
     use 'BurntSushi/ripgrep'

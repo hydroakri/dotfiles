@@ -1,6 +1,5 @@
 {
-    "editor.fontFamily": "'IBM Plex Mono'",
-    "editor.cursorStyle": "block",
+    "editor.fontFamily": "'Sarasa Term SC Semibold','Cascadia Code'",
     "[cpp]": {
         "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
     },
@@ -51,10 +50,8 @@
             "commands": ["workbench.action.quickOpen",],
         },
     ],
-    "workbench.colorTheme": "Catppuccin Frappé",
     "editor.minimap.size": "fill",
     "editor.minimap.showSlider": "always",
-    "window.zoomLevel": 1,
     "editor.minimap.renderCharacters": false,
     "vim.cursorStylePerMode.insert": "line-thin",
     "vim.easymotion": true,
@@ -68,4 +65,12 @@
     "leetcode.hint.commandShortcut": false,
     "editor.fontLigatures": true,
     "workbench.editor.untitled.hint": "hidden",
+    "scm.inputFontSize": 14,
+    "editor.inlayHints.fontFamily": "'IBM Plex Mono Text'",
+    "editor.codeActionsOnSave": {
+    
+    },
+    "workbench.colorTheme": "Better Solarized Dark Italics",
+    "window.zoomLevel": 2,
+    
 }

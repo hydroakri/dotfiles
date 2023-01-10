@@ -3,8 +3,8 @@
 echo "----------------------------------"
 echo "please enter your choise:"
 echo "(0) X11"
-echo "(1) single wayland screen"
-echo "(2) extend wayland screen"
+echo "(1) gnome wayland"
+echo "(2) gnome ex wayland"
 echo "(3) hyprland"
 echo "(4) hyprland ex"
 echo "(5) plasma-x11"
@@ -20,10 +20,10 @@ case $input in
     exec startx;;
     1)
     sleep 1
-    WLR_DRM_DEVICES=/dev/dri/card0:/dev/drm/card1 sway --unsupported-gpu;;
+    WLR_DRM_DEVICES=/dev/dri/card0:/dev/drm/card1 gnome-shell --wayland;;
     2)
     sleep 1
-    WLR_DRM_DEVICES=/dev/dri/card1:/dev/drm/card0 sway --unsupported-gpu;;
+    WLR_DRM_DEVICES=/dev/dri/card1:/dev/drm/card0 gnome-shell --replace --wayland;;
     3)
     sleep 1
     WLR_DRM_DEVICES=/dev/dri/card0:/dev/drm/card1 Hyprland;;
