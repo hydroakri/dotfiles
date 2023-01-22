@@ -6,7 +6,6 @@ return require('packer').startup(function(use)
     -- theme
     use 'Mofiqul/dracula.nvim'
     use { "catppuccin/nvim", as = "catppuccin" }
-    use 'overcache/NeoSolarized'
 
     -- telescope
     use 'BurntSushi/ripgrep'
@@ -17,27 +16,27 @@ return require('packer').startup(function(use)
 
     -- nvim-tree  
     use {
-        'kyazdani42/nvim-tree.lua',
+        'nvim-tree/nvim-tree.lua',
         requires = {
-            'kyazdani42/nvim-web-devicons', -- for file icons
+            'nvim-tree/nvim-web-devicons', -- for file icons
         },
         tag = 'nightly' -- updated every week
     }
 
     -- using packer.nvim
-    use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-devicons'}
+    use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'nvim-tree/nvim-web-devicons'}
 
     -- lualine.nvim 
     use {
         'nvim-lualine/lualine.nvim',
-        requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
     }
 
     -- treesitter
     use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
 
     -- toggleterm
-    use {"akinsho/toggleterm.nvim", tag = 'v2.*', config = function()
+    use {"akinsho/toggleterm.nvim", tag = 'v3.*', config = function()
         require("toggleterm").setup()
     end}
 
@@ -62,19 +61,6 @@ return require('packer').startup(function(use)
     -- lspconfig
     use {'neovim/nvim-lspconfig'}
     use { 'williamboman/mason.nvim' }
-
-    -- lspsaga(beautify)
-    use({
-        "glepnir/lspsaga.nvim",
-        branch = "main",
-        config = function()
-            local saga = require("lspsaga")
-
-            saga.init_lsp_saga({
-                -- your configuration
-            })
-        end,
-    })
 
     -- dap
     use 'mfussenegger/nvim-dap'
@@ -135,7 +121,7 @@ return require('packer').startup(function(use)
     -- showing diagnostics 显示报错
     use {
         "folke/trouble.nvim",
-        requires = "kyazdani42/nvim-web-devicons",
+        requires = "nvim-tree/nvim-web-devicons",
         config = function()
             require("trouble").setup {
                 -- or leave it empty to use the default settings

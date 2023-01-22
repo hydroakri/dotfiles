@@ -60,6 +60,8 @@ vim.opt.termguicolors = true
 vim.o.list = true
 vim.o.listchars = "space:⋅"
 vim.o.listchars = "tab:=="
+vim.opt.clipboard = unnamedplus
+vim.cmd.colorscheme "dracula"
 
 
 -- font
