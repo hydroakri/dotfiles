@@ -169,5 +169,5 @@
         "workbench.colorTheme": "Dracula",
         "editor.fontWeight": "500",
         "workbench.activityBar.visible": false,
-        "window.zoomLevel": 1,
+        "window.zoomLevel": 2,
     }

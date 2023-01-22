@@ -7,7 +7,7 @@ return {
             harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
         },
         {
-            family = "冬青黑体简体中文",
+            family = "PingFang SC Medium",
             harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
         },
         {
