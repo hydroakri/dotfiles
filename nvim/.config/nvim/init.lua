@@ -74,7 +74,7 @@ vim.opt.termguicolors = true
 vim.o.list = true
 vim.o.listchars = "space:⋅"
 vim.o.listchars = "tab:=="
-vim.opt.clipboard = unnamedplus
+vim.opt.clipboard = unnamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 
 
@@ -154,7 +154,6 @@ map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
 map('n', "<Leader>sl", ":SessionManager load_session<CR>", opt)
 map('n', "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
 map('n', "<Leader>sd", ":SessionManager delete_session<CR>", opt)
-
 -- debug
 map("n", "<leader>db", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
 map("n", "<leader>dB", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
@@ -214,13 +213,56 @@ require("pears").setup()
 require("neoscroll").setup()
 require("toggleterm").setup()
 require("symbols-outline").setup()
-require('lualine').setup()
 require('nvim-tree').setup()
 require('telescope').setup()
 require("trouble").setup()
 require('treesitter-context').setup()
 require('gitsigns').setup()
 require('noice').setup()
+require('lualine').setup{
+    options = {
+    icons_enabled = true,
+    theme = 'auto',
+    component_separators = { left = '', right = '' },
+    -- section_separators = { left = '', right = ''},
+    section_separators = { left = '', right = '' },
+    -- component_separators = { left = '', right = ''},
+    -- component_separators = { left = '', right = ''},
+    -- section_separators = { left = '', right = ''},
+    disabled_filetypes = {
+      statusline = {},
+      winbar = {},
+    },
+    ignore_focus = {},
+    always_divide_middle = true,
+    globalstatus = false,
+    refresh = {
+      statusline = 1000,
+      tabline = 1000,
+      winbar = 1000,
+    }
+  },
+  sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_c = {'filename'},
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
+  },
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = {'filename'},
+    lualine_x = {'location'},
+    lualine_y = {},
+    lualine_z = {}
+  },
+  tabline = {},
+  winbar = {},
+  inactive_winbar = {},
+  extensions = {}
+}
 require("indent_blankline").setup {
     -- for example, context is off by default, use this to turn it on
     show_current_context = true,
@@ -265,9 +307,6 @@ require("mason").setup{}
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
 require("lspconfig").sumneko_lua.setup {
     require("coq").lsp_ensure_capabilities,
-    on_attach = on_attach,
-    flags = lsp_flags,
-    capabilities = capabilities,
     settings = {
         Lua = {
             runtime = {
@@ -288,9 +327,6 @@ require("lspconfig").sumneko_lua.setup {
 
 
 require("lspconfig").pyright.setup {
-    on_attach = on_attach,
-    flags = lsp_flags,
-    capabilities = capabilities,
     settings = {
         python = {
             analysis = {
@@ -305,9 +341,7 @@ require("lspconfig").pyright.setup {
 
 require'lspconfig'.clangd.setup{
     filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
-    capabilities = copy_capabilities,
     single_file_support = true,
-    on_attach = custom_attach,
     cmd = {
         "clangd",
         "--background-index",
