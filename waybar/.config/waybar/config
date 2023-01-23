@@ -1,6 +1,6 @@
 {
     "layer": "top",
-        "height": 36,
+        "height": 28,
         "margin-left": 0,
         "margin-right": 0,
         "margin-top": 0,
@@ -28,7 +28,7 @@
 
         "wlr/taskbar": {
             "format": "{icon}",
-            "icon-size": 32,
+            "icon-size": 22,
             "icon-theme": "Papirus",
             "tooltip-format": "{title}",
             "on-click": "activate",

@@ -27,16 +27,16 @@ stow polybar
 
 |       Program       |                                                             Name                                                              |
 | :-----------------: | :---------------------------------------------------------------------------------------------------------------------------: |
-|    Window Manger    |     [i3wm](https://i3wm.org/),[sway](https://github.com/swaywm/sway)                                                              |
+|    Window Manger    |     [i3wm](https://i3wm.org/),[sway](https://github.com/swaywm/sway)   [hyprland](https://wiki.hyprland.org/)                                                           |
 |         Bar         |     [polybar](https://github.com/polybar/polybar),[waybar](https://github.com/Alexays/Waybar)|
 |     Compositor      |     [picom-jonaburg-git](https://github.com/jonaburg/picom)                                  |
-|      Launcher       |     [rofi](https://github.com/davatorium/rofi)                                           |
-|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)                                              |
+|      Launcher       |     [rofi](https://github.com/davatorium/rofi)   [rofi for wayland](https://github.com/lbonn/rofi)                                        |
+|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)    swaybg                                          |
 |     Web Browser     |     [edge](https://aur.archlinux.org/packages/microsoft-edge-stable-bin)                      |
-|      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/)                                      |
+|      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/) [wezterm](https://wezfurlong.org/)                                     |
 |        Shell        |     [fish](https://www.fishshell.com)                                            |
 |     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide))                                     |
-| Notification daemon |     [dunst](https://dunst-project.org/)                                              |
+| Notification daemon |     [dunst](https://dunst-project.org/) [mako](https://github.com/sqlalchemy/mako)                                             |
 |        Fetch        |     [fastfetch](https://github.com/LinusDierheimer/fastfetch)                                 |
 |       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava        |
 |        misc         |     [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep), [ranger(require w3m)](https://github.com/ranger/ranger), [scrcpy](https://github.com/Genymobile/scrcpy), [stow](https://www.gnu.org/software/stow/), [tlp](https://linrunner.de/tlp/index.html), [lazygit](https://github.com/jesseduffield/lazygit) [zellij](https://github.com/zellij-org/zellij)|
@@ -45,8 +45,8 @@ stow polybar
 |   system monitor    |     [btop](https://github.com/aristocratos/btop)                                |
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
-| themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  qt5ct               |
-|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol|
+| themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  [qt5ct](https://github.com/desktop-app/qt5ct)  [gradience](https://github.com/GradienceTeam/Gradience)               |
+|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol fontweak dconf |
 
 
 

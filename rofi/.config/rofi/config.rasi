@@ -10,7 +10,7 @@
 
 configuration {
   terminal: "alacritty";
-  font: "Noto Sans CJK 14";
+  font: "PingFang SC Medium 14";
   icon-theme: "Papirus";
   modi: "combi,window,drun,ssh";
   Combi-modi: "drun,window";
