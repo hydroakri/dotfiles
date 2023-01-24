@@ -6,24 +6,13 @@
         "margin-top": 0,
         "margin-bottom": 0,
         "spacing": 2,
-        "modules-left": ["wlr/workspaces", "clock","backlight", "battery"],
-        "modules-center": ["wlr/taskbar"],
-        "modules-right": ["tray"],
+        "modules-left": ["wlr/taskbar","wlr/workspaces", "custom/cava-internal"],
+        "modules-center": ["clock"],
+        "modules-right": ["backlight", "battery", "tray"],
 
         "wlr/workspaces": {
             "format": "{icon}",
             "on-click": "activate",
-            "format-icons": {
-                "1": "",
-                "2": "",
-                "3": "",
-                "4": "",
-                "5": "",
-                "urgent": "",
-                "active": "",
-                "default": ""
-            },
-            "sort-by-number": true
         },
 
         "wlr/taskbar": {
@@ -41,50 +30,59 @@
             }
         },
 
-            "backlight": {
-                // "device": "amdgpu_bl1",
-                "format": "{percent}% {icon}",
-                "format-icons": ["", "", "", "", "", "", "", "", ""]
+        "custom/cava-internal": {
+            "exec": "sleep 1s && cava -p ~/.config/cava/conf_for_bar | sed -u 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'",
+            "tooltip": false
             },
 
-            "battery": {
-                "format": "{capacity}% {icon}",
-                "format-icons": ["", "", "", "", ""]
-            },
+        "backlight": {
+            // "device": "amdgpu_bl1",
+            "format": "{percent}% {icon}",
+            "format-icons": ["", "", "", "", "", "", "", "", ""]
+        },
 
-            "tray": {
-                // "icon-size": 21,
-                "spacing": 10
-            },
+        "battery": {
+            "interval": 10,
+          "states": {
+            "warning": 20,
+            "critical": 10,
+          },
+          "format": "{icon} {capacity}%",
+          "format-icons": [ "", "", "", "", "", "", "", "", "", ],
+          "format-full": "{icon} {capacity}%",
+          "format-charging": " {capacity}%",
+          "tooltip": false,
+        },
 
-            "pulseaudio": {
-                // "scroll-step": 1, // %, can be a float
-                "format": "{volume}% {icon} {format_source}",
-                "format-bluetooth": "{volume}% {icon} {format_source}",
-                "format-bluetooth-muted": " {icon} {format_source}",
-                "format-muted": " {format_source}",
-                "format-source": "{volume}% ",
-                "format-source-muted": "",
-                "format-icons": {
-                    "headphone": "",
-                    "hands-free": "",
-                    "headset": "",
-                    "phone": "",
-                    "portable": "",
-                    "car": "",
-                    "default": ["", "", ""]
-                },
-                "on-click": "pavucontrol"
-            },
+        "tray": {
+            // "icon-size": 21,
+            "spacing": 10
+        },
 
-            "clock": {
-                "calendar-weeks-pos": "right",
-                "today-format": "<span color='#ff6699'><b><u>{}</u></b></span>",
-                "format-calendar": "<span color='#ecc6d9'><b>{}</b></span>",
-                "format-calendar-weeks": "<span color='#99ffdd'><b>W{:%U}</b></span>",
-                "format-calendar-weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-                "on-scroll": {
-                    "clendar": 1
-                }
-            }
+        "pulseaudio": {
+            // "scroll-step": 1, // %, can be a float
+            "format": "{volume}% {icon} {format_source}",
+            "format-bluetooth": "{volume}% {icon} {format_source}",
+            "format-bluetooth-muted": " {icon} {format_source}",
+            "format-muted": " {format_source}",
+            "format-source": "{volume}% ",
+            "format-source-muted": "",
+            "format-icons": {
+                "headphone": "",
+                "hands-free": "",
+                "headset": "",
+                "phone": "",
+                "portable": "",
+                "car": "",
+                "default": ["", "", ""]
+            },
+            "on-click": "pavucontrol"
+        },
+
+        "clock": {
+            "interval" : 1, 
+            "format" : "{:%I:%M %p  %A %b %d}", 
+            "tooltip" : true, 
+            "tooltip-format" : "<tt>{calendar}</tt>",
+        }
 }

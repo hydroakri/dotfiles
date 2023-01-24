@@ -199,6 +199,7 @@ require("lazy").setup({
     { 'norcalli/nvim-colorizer.lua' },
     { 'lewis6991/gitsigns.nvim' },
     { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim','rcarriga/nvim-notify'} },
+    { 'lambdalisue/suda.vim' },
 
 })
 
