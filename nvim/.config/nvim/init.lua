@@ -200,6 +200,7 @@ require("lazy").setup({
     { 'lewis6991/gitsigns.nvim' },
     { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim','rcarriga/nvim-notify'} },
     { 'lambdalisue/suda.vim' },
+    {"ziontee113/color-picker.nvim"}
 
 })
 
@@ -215,11 +216,32 @@ require("neoscroll").setup()
 require("toggleterm").setup()
 require("symbols-outline").setup()
 require('nvim-tree').setup()
-require('telescope').setup()
 require("trouble").setup()
 require('treesitter-context').setup()
 require('gitsigns').setup()
 require('noice').setup()
+require("color-picker").setup()
+
+local telescopeConfig = require("telescope.config")
+-- Clone the default Telescope configuration
+local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
+-- I want to search in hidden/dot files.
+table.insert(vimgrep_arguments, "--hidden")
+-- I don't want to search in the `.git` directory.
+table.insert(vimgrep_arguments, "--glob")
+table.insert(vimgrep_arguments, "!**/.git/*")
+require('telescope').setup{
+    defaults = {
+        -- `hidden = true` is not supported in text grep commands.
+        vimgrep_arguments = vimgrep_arguments,
+    },
+    pickers = {
+        find_files = {
+            find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+        },
+    },
+}
+
 require('lualine').setup{
     options = {
     icons_enabled = true,

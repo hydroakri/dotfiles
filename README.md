@@ -38,7 +38,7 @@ stow polybar
 |     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide))                                     |
 | Notification daemon |     [dunst](https://dunst-project.org/) [mako](https://github.com/sqlalchemy/mako)                                             |
 |        Fetch        |     [fastfetch](https://github.com/LinusDierheimer/fastfetch)                                 |
-|       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava        |
+|       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava [playerctl](https://github.com/altdesktop/playerctl)       |
 |        misc         |     [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep), [ranger(require w3m)](https://github.com/ranger/ranger), [scrcpy](https://github.com/Genymobile/scrcpy), [stow](https://www.gnu.org/software/stow/), [tlp](https://linrunner.de/tlp/index.html), [lazygit](https://github.com/jesseduffield/lazygit) [zellij](https://github.com/zellij-org/zellij)|
 |       fonts         |     [awesome-terminal-fonts](https://archlinux.org/packages/community/any/awesome-terminal-fonts/), [nerd-fonts-sarasa-mono](https://aur.archlinux.org/packages/nerd-fonts-sarasa-mono), [noto-fonts-cjk](https://archlinux.org/packages/extra/any/noto-fonts-cjk/), [ttf-font-awesome](https://archlinux.org/packages/community/any/ttf-font-awesome/)      |
 |   Chinese Input     |     sudo pacman -Sy fcitx5 fcitx5-chinese-addons fcitx5-configtool fcitx5-gtk fcitx5-rime fcitx5-qt                                |
@@ -46,7 +46,7 @@ stow polybar
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
 | themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  [qt5ct](https://github.com/desktop-app/qt5ct)  [gradience](https://github.com/GradienceTeam/Gradience)               |
-|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol fontweak dconf |
+|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol fontweak dconf powermangement:lxqt-powermanagement|
 
 
 

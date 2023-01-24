@@ -7,10 +7,6 @@ return {
             harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
         },
         {
-            family = "PingFang SC Medium",
-            harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
-        },
-        {
             family = "Source Han Sans CN Medium",
             harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
         },
