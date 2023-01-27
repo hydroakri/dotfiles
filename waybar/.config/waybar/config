@@ -6,7 +6,7 @@
         "margin-top": 0,
         "margin-bottom": 0,
         "spacing": 2,
-        "modules-left": ["custom/launcher", "mpris", "custom/cava"],
+        "modules-left": ["custom/launcher",  "custom/cava"],
         "modules-center": ["wlr/taskbar","wlr/workspaces"],
         "modules-right": ["cpu","memory","backlight", "battery", "tray", "clock"],
         
@@ -18,8 +18,8 @@
 
         "mpris": {
             "max-length": 10,
-            "format": "{player_icon} {length} {title} - {artist}",
-            "format-paused": "{status_icon} <i>{dynamic}</i>",
+            "format": "{player_icon} {title} - {artist}",
+            "format-paused": "{status_icon} <i>{title} - {artist}</i>",
             "player-icons": {
                 "default": "▶",
                 "mpv": "🎵"
@@ -39,7 +39,8 @@
         "memory": {
             "interval": 30,
             "format": " {}%",
-            "max-length": 10
+            "max-length": 10,
+            "on-click": "swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "wlr/workspaces": {
