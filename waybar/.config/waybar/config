@@ -1,14 +1,25 @@
-{
+[{
     "layer": "top",
-        "height": 28,
+    "position": "bottom",
         "margin-left": 0,
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "spacing": 2,
-        "modules-left": ["custom/launcher",  "custom/cava"],
+        "modules-left": ["custom/launcher","pulseaudio","backlight", "battery",],
         "modules-center": ["wlr/taskbar","wlr/workspaces"],
-        "modules-right": ["cpu","memory","backlight", "battery", "tray", "clock"],
+        "modules-right": ["tray", "clock"],
+
+        "pulseaudio": {
+            "format": "{volume}% {icon}",
+            "format-bluetooth": "{volume}% {icon}",
+            "format-muted": "",
+            "format-icons": {
+                "default": ["", ""]
+            },
+            "scroll-step": 1,
+            "on-click": "pavucontrol",
+            "ignored-sinks": ["Easy Effects Sink"]
+        },
         
         "custom/launcher":{
             "format": "  ",
@@ -40,7 +51,6 @@
             "interval": 30,
             "format": " {}%",
             "max-length": 10,
-            "on-click": "swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "wlr/workspaces": {
@@ -71,7 +81,9 @@
         "backlight": {
             // "device": "amdgpu_bl1",
             "format": "{percent}% {icon}",
-            "format-icons": ["", "", "", "", "", "", "", "", ""]
+            "format-icons": ["", "", "", "", "", "", "", "", ""],
+            "on-scroll-up": "brightnessctl set 5%+",
+            "on-scroll-down": "brightnessctl set 5%-",
         },
 
         "battery": {
@@ -85,6 +97,7 @@
           "format-full": "{icon} {capacity}%",
           "format-charging": " {capacity}%",
           "tooltip": false,
+          "on-click": "swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "tray": {
@@ -118,4 +131,32 @@
             "tooltip" : true, 
             "tooltip-format" : "<tt>{calendar}</tt>",
         }
-}
+},
+{
+    "layer": "bottom",
+    "spacing": 2,
+    "position": "top",
+    "modules-left": ["hyprland/window"],
+    "modules-center": ["mpris","custom/cava"],
+    "custom/cava": {
+        "exec": "sleep 1s && cava -p ~/.config/cava/conf_for_bar | sed -u 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'",
+        "tooltip": false
+    },
+    "hyprland/window": {
+        "format": "👉 {}",
+    },
+
+    "mpris": {
+        "max-length": 10,
+        "format": "{player_icon} {dynamic}",
+        "format-paused": "{status_icon}<i>{dynamic}</i>",
+        "player-icons": {
+            "default": "▶",
+            "mpv": "🎵"
+        },
+        "status-icons": {
+            "paused": "⏸"
+        },
+        "ignored-players": ["firefox"]
+    }
+}]
