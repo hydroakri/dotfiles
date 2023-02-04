@@ -1,251 +1,118 @@
 * {
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     font-family: Source Han Sans CN Medium, Montserrat, Roboto, Helvetica, Arial, sans-serif;
     font-size: 16px;
+    font-weight: bold;
     min-height: 10px;
 
 }
 
-
 window#waybar {
     background: transparent;
 }
-
-window#waybar.hidden {
-    opacity: 0.2;
+window > box {
+    /* margin-left: 5px; */
+    /* margin-right: 5px; */
+    /* margin-top: 5px; */
+    background-color: rgb(30, 30, 46);
 }
-
-#window {
-    margin-top: 6px;
-    padding-left: 10px;
-    padding-right: 10px;
-    border-radius: 10px;
-    transition: none;
-    color: transparent;
-    background: transparent;
+#workspaces {
+    padding-left: 0px;
+    padding-right: 4px;
 }
-#tags {
-    margin-top: 6px;
-    margin-left: 12px;
-    font-size: 4px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    background: #161320;
-    transition: none;
+#workspaces button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
-
-#tags button {
-    transition: none;
-    color: #B5E8E0;
-    background: transparent;
-    font-size: 16px;
-    border-radius: 2px;
+#workspaces button.active {
+    background-color: rgb(181, 232, 224);
+    color: rgb(26, 24, 38);
 }
-
-#tags button.occupied {
-    transition: none;
-    color: #F28FAD;
-    background: transparent;
-    font-size: 4px;
+#workspaces button.urgent {
+    color: rgb(26, 24, 38);
 }
-
-#tags button.focused {
-    color: #ABE9B3;
-    border-top: 2px solid #ABE9B3;
-    border-bottom: 2px solid #ABE9B3;
+#workspaces button:hover {
+    background-color: rgb(248, 189, 150);
+    color: rgb(26, 24, 38);
 }
-
-#tags button:hover {
-    transition: none;
-    box-shadow: inherit;
-    text-shadow: inherit;
-    color: #FAE3B0;
-    border-color: #E8A2AF;
-    color: #E8A2AF;
+tooltip {
+    background: rgb(48, 45, 65);
 }
-
-#tags button.focused:hover {
-    color: #E8A2AF;
+tooltip label {
+    color: rgb(217, 224, 238);
 }
-
-#network {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #bd93f9;
-}
-
-#pulseaudio {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #1A1826;
-    background: #FAE3B0;
-}
-
-#battery {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #B5E8E0;
-}
-
-#battery.charging, #battery.plugged {
-    color: #161320;
-    background-color: #B5E8E0;
-}
-
-#battery.critical:not(.charging) {
-    background-color: #B5E8E0;
-    color: #161320;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
-@keyframes blink {
-to {
-    background-color: #BF616A;
-    color: #B5E8E0;
-}
-}
-
-
 #custom-launcher {
-    font-size: 24px;
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 5px;
-    border-radius: 10px;
-    transition: none;
-    color: #89DCEB;
-    background: #343a40;
-}
-
-#mpris {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #a5d8ff;
-}
-
-#custom-cava {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #99e9f2;
-}
-
-#taskbar {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #96f2d7;
-}
-
-#cpu {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    margin-bottom: 0px;
-    padding-right: 10px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #b2f2bb;
-}
-
-#memory {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    margin-bottom: 0px;
-    padding-right: 10px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #faa2c1;
-}
-
-#backlight {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #eebeff;
-}
-
-#custom-power {
     font-size: 20px;
-    margin-top: 6px;
-    margin-left: 8px;
-    margin-right: 8px;
-    padding-left: 10px;
-    padding-right: 5px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #bac8ff;
+    padding-left: 8px;
+    padding-right: 6px;
+    color: #7ebae4;
 }
-
-#tray {
-    margin-top: 6px;
-    margin-left: 8px;
+#mode, #clock, #memory, #temperature,#cpu,#mpd, #custom-wall, #temperature, #backlight, #pulseaudio, #network, #battery, #custom-powermenu, #custom-cava-internal {
     padding-left: 10px;
-    margin-bottom: 0px;
     padding-right: 10px;
-    border-radius: 10px;
-    transition: none;
-    color: #B5E8E0;
-    background: #a5d8ff;
 }
-
+/* #mode { */
+/* 	margin-left: 10px; */
+/* 	background-color: rgb(248, 189, 150); */
+/*     color: rgb(26, 24, 38); */
+/* } */
+#memory {
+    color: rgb(181, 232, 224);
+}
+#cpu {
+    color: rgb(245, 194, 231);
+}
 #clock {
-    margin-top: 6px;
-    margin-left: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 0px;
-    border-radius: 10px;
-    transition: none;
-    color: #161320;
-    background: #d0ebff;
+    color: rgb(217, 224, 238);
 }
+/* #idle_inhibitor {
+color: rgb(221, 182, 242);
+}*/
+#custom-wall {
+    color: rgb(221, 182, 242);
+}
+#temperature {
+    color: rgb(150, 205, 251);
+}
+#backlight {
+    color: rgb(248, 189, 150);
+}
+#pulseaudio {
+    color: rgb(245, 224, 220);
+}
+#network {
+    color: #ABE9B3;
+}
+#network.disconnected {
+    color: rgb(255, 255, 255);
+}
+#battery.charging, #battery.full, #battery.discharging {
+    color: rgb(250, 227, 176);
+}
+#battery.critical:not(.charging) {
+    color: rgb(242, 143, 173);
+}
+#custom-powermenu {
+    color: rgb(242, 143, 173);
+}
+#tray {
+    padding-right: 8px;
+    padding-left: 10px;
+}
+#mpd.paused {
+    color: #414868;
+    font-style: italic;
+}
+#mpd.stopped {
+    background: transparent;
+}
+#mpd {
+    color: #c0caf5;
+}
+#custom-cava-internal{
+    font-family: "Hack Nerd Font" ;
+}
+

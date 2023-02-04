@@ -77,7 +77,6 @@ vim.o.listchars = "tab:=="
 vim.opt.clipboard = unnamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 
-
 -- font
 vim.g.gui_font_default_size = 14
 --vim.g.gui_font_size = vim.g.gui_font_default_size
@@ -200,7 +199,9 @@ require("lazy").setup({
     { 'lewis6991/gitsigns.nvim' },
     { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim','rcarriga/nvim-notify'} },
     { 'lambdalisue/suda.vim' },
-    {"ziontee113/color-picker.nvim"}
+    { "ziontee113/color-picker.nvim" },
+    { 'numToStr/Comment.nvim' },
+    { 'nvim-telescope/telescope-fzf-native.nvim', build='make' },
 
 })
 
@@ -221,6 +222,7 @@ require('treesitter-context').setup()
 require('gitsigns').setup()
 require('noice').setup()
 require("color-picker").setup()
+require('Comment').setup()
 
 local telescopeConfig = require("telescope.config")
 -- Clone the default Telescope configuration
@@ -231,6 +233,15 @@ table.insert(vimgrep_arguments, "--hidden")
 table.insert(vimgrep_arguments, "--glob")
 table.insert(vimgrep_arguments, "!**/.git/*")
 require('telescope').setup{
+    extensions = {
+        fzf = {
+            fuzzy = true,                    -- false will only do exact matching
+            override_generic_sorter = true,  -- override the generic sorter
+            override_file_sorter = true,     -- override the file sorter
+            case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+            -- the default case_mode is "smart_case"
+        }
+    },
     defaults = {
         -- `hidden = true` is not supported in text grep commands.
         vimgrep_arguments = vimgrep_arguments,
@@ -246,9 +257,11 @@ require('lualine').setup{
     options = {
     icons_enabled = true,
     theme = 'auto',
-    component_separators = { left = '', right = '' },
+    component_separators = { left = '', right = '' },
+    section_separators = { left = ' ', right = ' '},
+    -- component_separators = { left = '', right = '' },
     -- section_separators = { left = '', right = ''},
-    section_separators = { left = '', right = '' },
+    -- section_separators = { left = '', right = '' },
     -- component_separators = { left = '', right = ''},
     -- component_separators = { left = '', right = ''},
     -- section_separators = { left = '', right = ''},
