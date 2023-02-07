@@ -1,25 +1,14 @@
-/*
- * ROFI Dracula One (Dark Variant)
- *
- * Based on Dracula Theme. (https://draculatheme.com/contribute)
- *
- * Author: Berkcan Ucan <berkcan@vivaldi.net> (bw3u)
- * GitHub: @bw3u
- *
- */
-
 configuration {
   terminal: "alacritty";
   font: "Source Han Sans CN Medium 14";
   icon-theme: "Papirus";
-  modi: "combi,window,drun,ssh";
+  modi: "combi,window,drun";
   Combi-modi: "drun,window";
   show-icons: true;
   combi-hide-mode-prefix: true;
-  display-drun: "🔎 Run";
-  display-window: "🪟 Window";
-  display-combi: "🌎 Combi";
-  display-ssh: "📡 ssh";
+  display-combi: "   Combi ";
+  display-drun: "   Run ";
+  display-window: " 﩯  Window";
   drun-show-actions: true;
   drun-display-format: "{name}";
   disable-history: false;
@@ -30,23 +19,29 @@ configuration {
 }
 
 * {
-  black:      #1b2229;
-  red:        #ff5555;
-  green:      #50fa7b;
-  yellow:     #f1fa8c;
-  blue:       #51afef;
-  magenta:    #c678dd;
-  cyan:       #8be9fd;
-  emphasis:   #2257a0;
-  text:       #bbc2cf;
-  text-alt:   #6272a4;
-  fg:         #f8f8f2;
-  bg:         #282a36dd;
 
-  input-bg: #44475a;
-  input-bg-alt: #3f444a;
-  background-color: transparent;
-  highlight: bold #f1fa8c;
+  /* mocha */
+  red:        #d20f39;
+  cyan:       #89b4fa;
+  emphasis:   #cdd6f4;
+  text:       #6c7086;
+  text-alt:   #cdd6f4;
+  bg:         #1e1e2e;
+  input-bg: #1e1e2e;
+  input-bg-alt: #1e1e2e;
+  background-color: #1e1e2e;
+  
+  /* latte */
+  /* red:        #d20f39; */
+  /* cyan:       #1e66f5; */
+  /* emphasis:   #9ca0b0; */
+  /* text:       #4c4f69; */
+  /* text-alt:   #9ca0b0; */
+  /* bg:         #eff1f5; */
+  /* input-bg: #eff1f5; */
+  /* input-bg-alt: #eff1f5; */
+  /* background-color: #eff1f5; */
+
 }
 
 window {

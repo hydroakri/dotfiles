@@ -1,11 +1,22 @@
 font=Source Han Sans CN Medium 14
 default-timeout=3000
-# Colors
 
-background-color=#303446
-text-color=#c6d0f5
-border-color=#8caaee
-progress-color=over #414559
+# mocha
+
+background-color=#1e1e2e
+text-color=#cdd6f4
+border-color=#89b4fa
+progress-color=over #313244
 
 [urgency=high]
-border-color=#ef9f76
+border-color=#fab387
+
+#latte
+
+# background-color=#eff1f5
+# text-color=#4c4f69
+# border-color=#1e66f5
+# progress-color=over #ccd0da
+#
+# [urgency=high]
+# border-color=#fe640b

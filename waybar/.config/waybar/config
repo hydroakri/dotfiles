@@ -6,7 +6,7 @@
         "margin-top": 0,
         "margin-bottom": 0,
         "modules-left": ["custom/launcher","wlr/taskbar","hyprland/window"],
-        "modules-center": ["mpris","custom/cava","wlr/workspaces"],
+        "modules-center": ["custom/mpris","custom/cava","wlr/workspaces"],
         "modules-right": ["tray","backlight", "battery", "clock"],
 
         "pulseaudio": {
@@ -25,6 +25,13 @@
             "format": "  ",
             "on-click": "rofi -combi-modi drun -show combi -icon-theme 'Papirus' -show-icons",
             "on-click-right": "killall rofi"
+        },
+
+        "custom/mpris":{
+            "format": "⏯",
+            "on-click": "playerctl play-pause",
+            "on-click-right": "playerctl next",
+            "on-click-middle": "playerctl previous",
         },
 
         "mpris": {
