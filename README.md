@@ -27,15 +27,15 @@ stow polybar
 
 |       Program       |                                                             Name                                                              |
 | :-----------------: | :---------------------------------------------------------------------------------------------------------------------------: |
-|    Window Manger    |     [i3wm](https://i3wm.org/),[sway](https://github.com/swaywm/sway)   [hyprland](https://wiki.hyprland.org/)                                                           |
+|    Window Manger    |     [i3wm](https://i3wm.org/),[sway](https://github.com/swaywm/sway)   [hyprland](https://wiki.hyprland.org/)|
 |         Bar         |     [polybar](https://github.com/polybar/polybar),[waybar](https://github.com/Alexays/Waybar)|
-|     Compositor      |     [picom-jonaburg-git](https://github.com/jonaburg/picom)                                  |
-|      Launcher       |     [rofi](https://github.com/davatorium/rofi)   [rofi for wayland](https://github.com/lbonn/rofi)                                        |
-|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)    swaybg                                          |
-|     Web Browser     |     [edge](https://aur.archlinux.org/packages/microsoft-edge-stable-bin)                      |
-|      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/) [wezterm](https://wezfurlong.org/)                                     |
-|        Shell        |     [fish](https://www.fishshell.com)                                            |
-|     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide))                                     |
+|     Compositor      |     [picom-jonaburg-git](https://github.com/jonaburg/picom)|
+|      Launcher       |     [rofi](https://github.com/davatorium/rofi)   [rofi for wayland](https://github.com/lbonn/rofi)|
+|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)    swaybg|
+|     Web Browser     |     [edge](https://aur.archlinux.org/packages/microsoft-edge-stable-bin)|
+|      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/) [wezterm](https://wezfurlong.org/)|
+|        Shell        |     [fish](https://www.fishshell.com)|
+|     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide)) |
 | Notification daemon |     [dunst](https://dunst-project.org/) [mako](https://github.com/sqlalchemy/mako)                                             |
 |        Fetch        |     [fastfetch](https://github.com/LinusDierheimer/fastfetch)                                 |
 |       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava [playerctl](https://github.com/altdesktop/playerctl)       |

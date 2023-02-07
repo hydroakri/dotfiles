@@ -12,6 +12,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+--
 -- utf8
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = 'utf-8'
@@ -23,6 +24,7 @@ vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
 vim.wo.cursorline = true
+vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -56,6 +58,8 @@ vim.bo.autoread = true
 -- 禁止折行
 vim.o.wrap = true
 vim.wo.wrap = true
+vim.wo.linebreak = true
+vim.wo.list = false -- extra option I set in addition to the ones in your question
 -- 允许隐藏被修改过的buffer
 vim.o.hidden = true
 -- 鼠标支持
@@ -202,10 +206,12 @@ require("lazy").setup({
     { "ziontee113/color-picker.nvim" },
     { 'numToStr/Comment.nvim' },
     { 'nvim-telescope/telescope-fzf-native.nvim', build='make' },
+    { 'sindrets/diffview.nvim' },
+    { 'lewis6991/satellite.nvim' },
 
 })
 
-vim.cmd.colorscheme "dracula"
+vim.cmd.colorscheme "catppuccin-mocha"
 
 
 -- plugins config
@@ -223,6 +229,7 @@ require('gitsigns').setup()
 require('noice').setup()
 require("color-picker").setup()
 require('Comment').setup()
+require('satellite').setup()
 
 local telescopeConfig = require("telescope.config")
 -- Clone the default Telescope configuration

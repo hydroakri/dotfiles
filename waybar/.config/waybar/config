@@ -7,7 +7,7 @@
         "margin-bottom": 0,
         "modules-left": ["custom/launcher","wlr/taskbar","hyprland/window"],
         "modules-center": ["mpris","custom/cava","wlr/workspaces"],
-        "modules-right": ["pulseaudio","backlight", "battery","tray", "clock"],
+        "modules-right": ["tray","backlight", "battery", "clock"],
 
         "pulseaudio": {
             "format": "{volume}% {icon}",
@@ -38,7 +38,7 @@
             "status-icons": {
                 "paused": "⏸"
             },
-            // "ignored-players": ["firefox"]
+            "ignored-players": ["firefox"]
         },
 
         "cpu": {
@@ -80,24 +80,24 @@
 
         "backlight": {
             // "device": "amdgpu_bl1",
-            "format": "{percent}% {icon}",
+            "format": "{icon}",
             "format-icons": ["", "", "", "", "", "", "", "", ""],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
+            "on-click": "killall swaybg && swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "battery": {
-            "interval": 10,
-          "states": {
-            "warning": 20,
-            "critical": 10,
-          },
-          "format": "{icon} {capacity}%",
-          "format-icons": [ "", "", "", "", "", "", "", "", "", ],
-          "format-full": "{icon} {capacity}%",
-          "format-charging": " {capacity}%",
-          "tooltip": false,
-          "on-click": "killall swaybg && swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
+            "states": {
+                "good": 95,
+                "warning": 30,
+                "critical": 20
+            },
+            "format": "{icon}  {capacity}%",
+            "format-charging": " {capacity}%",
+            "format-plugged": " {capacity}%",
+            "format-alt": "{time} {icon}",
+            "format-icons": ["", "", "", "", ""]
         },
 
         "tray": {
@@ -127,7 +127,7 @@
 
         "clock": {
             "interval" : 1, 
-            "format" : "{:%A %b %d %H:%M}", 
+            "format" : "{:%m月%d日 周%a %H:%M}", 
             "tooltip" : true, 
             "tooltip-format" : "<tt>{calendar}</tt>",
         }
