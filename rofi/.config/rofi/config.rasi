@@ -1,6 +1,6 @@
 configuration {
   terminal: "alacritty";
-  font: "Source Han Sans CN Medium 14";
+  font: "Inter Medium 14";
   icon-theme: "Papirus";
   modi: "combi,window,drun";
   Combi-modi: "drun,window";

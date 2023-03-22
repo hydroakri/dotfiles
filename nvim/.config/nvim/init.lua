@@ -82,7 +82,7 @@ vim.opt.clipboard = unnamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 
 -- font
-vim.g.gui_font_default_size = 14
+vim.g.gui_font_default_size = 16
 --vim.g.gui_font_size = vim.g.gui_font_default_size
 vim.g.gui_font_face = "FiraCode Nerd Font"
 
@@ -201,7 +201,7 @@ require("lazy").setup({
     { 'RRethy/vim-illuminate' },
     { 'norcalli/nvim-colorizer.lua' },
     { 'lewis6991/gitsigns.nvim' },
-    { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim','rcarriga/nvim-notify'} },
+    { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim',} },
     { 'lambdalisue/suda.vim' },
     { "ziontee113/color-picker.nvim" },
     { 'numToStr/Comment.nvim' },
@@ -348,7 +348,7 @@ require("mason").setup{}
 -- after local capabilities = ....
 -- start server
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
-require("lspconfig").sumneko_lua.setup {
+require("lspconfig").lua_ls.setup {
     require("coq").lsp_ensure_capabilities,
     settings = {
         Lua = {
@@ -400,17 +400,25 @@ require'lspconfig'.clangd.setup{
     },
 }
 
-require("bufferline").setup {
+require('bufferline').setup {
     options = {
-        -- 使用 nvim 内置lsp
+        indicator = {
+            style = 'underline',
+        },
         diagnostics = "nvim_lsp",
-        -- 左侧让出 nvim-tree 的位置
         offsets = {{
             filetype = "NvimTree",
             text = "File Explorer",
             highlight = "Directory",
-            text_align = "left"
-        }}
+            text_align = "left",
+            separator = true,
+        }},
+        enforce_regular_tabs = false,
+        hover = {
+            enabled = true,
+            delay = 200,
+            reveal = {'close'}
+        },
     }
 }
 

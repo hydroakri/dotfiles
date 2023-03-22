@@ -18,7 +18,7 @@
         "editor.wordBasedSuggestions": false, //关闭基于文件中单词来联想的功能（语言自带的联想就够了，开了这个会导致用vscode写MarkDown时的中文引号异常联想）
         "editor.linkedEditing": true, //html标签自动重命名（喜大普奔！终于不需要Auto Rename Tag插件了！）
         "editor.wordWrap": "on", //在文件内容溢出vscode显示区域时自动折行
-        "editor.cursorSmoothCaretAnimation": true, //让光标移动、插入变得平滑
+        "editor.cursorSmoothCaretAnimation": "on", //让光标移动、插入变得平滑
         "editor.renderControlCharacters": true, //编辑器中显示不可见的控制字符
         "editor.renderWhitespace": "boundary", //除了两个单词之间用于分隔单词的一个空格，以一个小灰点的样子使空格可见
         /*terminal*/
