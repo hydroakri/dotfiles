@@ -1,21 +1,21 @@
 -- bootstrap lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system({
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable", -- latest stable release
-        lazypath,
-    })
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
 end
 vim.opt.rtp:prepend(lazypath)
 
 --
 -- utf8
 vim.g.encoding = "UTF-8"
-vim.o.fileencoding = 'utf-8'
+vim.o.fileencoding = "utf-8"
 -- jk移动时光标下上方保留8行
 vim.o.scrolloff = 8
 vim.o.sidescrolloff = 8
@@ -80,6 +80,12 @@ vim.o.listchars = "space:⋅"
 vim.o.listchars = "tab:=="
 vim.opt.clipboard = unnamedplus --see :help clipboard
 vim.opt.cmdheight = 0
+-- 开启 Folding
+vim.wo.foldmethod = "expr"
+vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
+-- 默认不要折叠
+-- https://stackoverflow.com/questions/8316139/how-to-set-the-default-to-unfolded-when-you-open-a-file
+vim.wo.foldlevel = 99
 
 -- font
 vim.g.gui_font_default_size = 16
@@ -87,26 +93,29 @@ vim.g.gui_font_default_size = 16
 vim.g.gui_font_face = "FiraCode Nerd Font"
 
 RefreshGuiFont = function()
-    vim.opt.guifont = string.format("%s:h%s",vim.g.gui_font_face, vim.g.gui_font_size)
+	vim.opt.guifont = string.format("%s:h%s", vim.g.gui_font_face, vim.g.gui_font_size)
 end
 
 ResizeGuiFont = function(delta)
-    vim.g.gui_font_size = vim.g.gui_font_size + delta
-    RefreshGuiFont()
+	vim.g.gui_font_size = vim.g.gui_font_size + delta
+	RefreshGuiFont()
 end
 
 ResetGuiFont = function()
-    vim.g.gui_font_size = vim.g.gui_font_default_size
-    RefreshGuiFont()
+	vim.g.gui_font_size = vim.g.gui_font_default_size
+	RefreshGuiFont()
 end
 -- Call function on startup to set default value
 ResetGuiFont()
 
-
 -- Keymaps
 local opts = { noremap = true, silent = true }
-vim.keymap.set({'n', 'i'}, "<C-=>", function() ResizeGuiFont(1)  end, opts)
-vim.keymap.set({'n', 'i'}, "<C-->", function() ResizeGuiFont(-1) end, opts)
+vim.keymap.set({ "n", "i" }, "<C-=>", function()
+	ResizeGuiFont(1)
+end, opts)
+vim.keymap.set({ "n", "i" }, "<C-->", function()
+	ResizeGuiFont(-1)
+end, opts)
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -135,7 +144,7 @@ map("n", "<leader>g", ":Telescope live_grep<CR>", opt)
 map("n", "<leader>t", ":Telescope<CR>", opt)
 
 -- nvimTree
-map('n', 't', ':NvimTreeFindFileToggle<CR>', opt)
+map("n", "t", ":NvimTreeFindFileToggle<CR>", opt)
 
 -- bufferline 左右切换
 -- map("n", "<A-h>", ":BufferLineCyclePrev<CR>", opt)
@@ -144,19 +153,22 @@ map("n", "<S-k>", ":BufferLineCycleNext<CR>", opt)
 map("n", "<Leader>b", ":BufferLinePickClose<CR>", opt)
 
 -- toggleterm
-map('n', ".", ":ToggleTerm direction=float<CR>", opt)
-map('t', "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
+map("n", ".", ":ToggleTerm direction=float<CR>", opt)
+map("t", "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
 
--- tagbar
-map('n', "<Leader>o", ":SymbolsOutline<CR>", opt)
+-- outline
+map("n", "<Leader>o", ":SymbolsOutline<CR>", opt)
 
 -- trouble
-map('n', "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
+map("n", "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
+
+-- neoformat
+map("n", "<Leader>=", "<cmd>Neoformat<CR>", opt)
 
 -- Session manager
-map('n', "<Leader>sl", ":SessionManager load_session<CR>", opt)
-map('n', "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
-map('n', "<Leader>sd", ":SessionManager delete_session<CR>", opt)
+map("n", "<Leader>sl", ":SessionManager load_session<CR>", opt)
+map("n", "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
+map("n", "<Leader>sd", ":SessionManager delete_session<CR>", opt)
 -- debug
 map("n", "<leader>db", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
 map("n", "<leader>dB", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
@@ -172,64 +184,76 @@ map("n", "<F8>", "<cmd>lua require'dap'.step_out()<cr>", opt)
 
 -- install plugins
 require("lazy").setup({
-    { 'Mofiqul/dracula.nvim' },
-    { "catppuccin/nvim", name = "catppuccin" },
-    { 'nvim-telescope/telescope.nvim', version="0.1.1", dependencies='nvim-lua/plenary.nvim' },
-    { 'nvim-tree/nvim-tree.lua', version='nightly', dependencies='nvim-tree/nvim-web-devicons' },
-    { 'akinsho/bufferline.nvim', version='v3.*', dependencies='nvim-tree/nvim-web-devicons' },
-    { 'nvim-lualine/lualine.nvim' },
-    { 'nvim-treesitter/nvim-treesitter', build=':TSUpdate' },
-    { "akinsho/toggleterm.nvim", version='*' },
-    { 'Shatur/neovim-session-manager' },
-    { 'folke/which-key.nvim', config = function() vim.o.timeout = true vim.o.timeoutlen = 300 require("which-key").setup() end },
-    { 'neovim/nvim-lspconfig' },
-    { 'williamboman/mason.nvim' },
-    { 'mfussenegger/nvim-dap' },
-    { 'ms-jpq/coq_nvim', version='coq' },
-    { 'ms-jpq/coq.artifacts', version='artifacts' },
-    { 'ms-jpq/coq.thirdparty', version='3p' },
-    { 'simrat39/symbols-outline.nvim' },
-    { "iamcco/markdown-preview.nvim", build = function() vim.fn["mkdp#util#install"]() end },
-    { 'lukas-reineke/indent-blankline.nvim' },
-    { 'karb94/neoscroll.nvim' },
-    { 'mg979/vim-visual-multi', version='master' },
-    { 'nvim-treesitter/nvim-treesitter-context' },
-    { 'steelsojka/pears.nvim' },
-    { 'wellle/targets.vim' },
-    { 'folke/trouble.nvim' },
-    { 'ggandor/leap.nvim' },
-    { 'RRethy/vim-illuminate' },
-    { 'norcalli/nvim-colorizer.lua' },
-    { 'lewis6991/gitsigns.nvim' },
-    { 'folke/noice.nvim', dependencies={'MunifTanjim/nui.nvim',} },
-    { 'lambdalisue/suda.vim' },
-    { "ziontee113/color-picker.nvim" },
-    { 'numToStr/Comment.nvim' },
-    { 'nvim-telescope/telescope-fzf-native.nvim', build='make' },
-    { 'sindrets/diffview.nvim' },
-    { 'lewis6991/satellite.nvim' },
-
+	{ "catppuccin/nvim", name = "catppuccin" },
+	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
+	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "nvim-lualine/lualine.nvim" },
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+	{ "akinsho/toggleterm.nvim", version = "*" },
+	{ "Shatur/neovim-session-manager" },
+	{
+		"folke/which-key.nvim",
+		config = function()
+			vim.o.timeout = true
+			vim.o.timeoutlen = 300
+			require("which-key").setup()
+		end,
+	},
+	{ "neovim/nvim-lspconfig" },
+	{ "williamboman/mason.nvim" },
+	{ "mfussenegger/nvim-dap" },
+	{ "simrat39/symbols-outline.nvim" },
+	{
+		"iamcco/markdown-preview.nvim",
+		build = function()
+			vim.fn["mkdp#util#install"]()
+		end,
+	},
+	{ "lukas-reineke/indent-blankline.nvim" },
+	{ "karb94/neoscroll.nvim" },
+	{ "mg979/vim-visual-multi", version = "master" },
+	{ "nvim-treesitter/nvim-treesitter-context" },
+	{ "windwp/nvim-autopairs" },
+	{ "folke/trouble.nvim" },
+	{ "ggandor/leap.nvim" },
+	{ "RRethy/vim-illuminate" },
+	{ "norcalli/nvim-colorizer.lua" },
+	{ "lewis6991/gitsigns.nvim" },
+	{ "lambdalisue/suda.vim" },
+	{ "ziontee113/color-picker.nvim" },
+	{ "numToStr/Comment.nvim" },
+	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+	{ "sindrets/diffview.nvim" },
+	{ "sbdchd/neoformat" },
+	--cmp--
+	{ "hrsh7th/cmp-nvim-lsp" },
+	{ "hrsh7th/cmp-buffer" },
+	{ "hrsh7th/cmp-path" },
+	{ "hrsh7th/cmp-cmdline" },
+	{ "hrsh7th/nvim-cmp" },
+	{ "hrsh7th/cmp-vsnip" },
+	{ "hrsh7th/vim-vsnip" },
+	--cmp--
 })
 
-vim.cmd.colorscheme "catppuccin-mocha"
-
+vim.cmd.colorscheme("catppuccin-latte")
 
 -- plugins config
 require("colorizer").setup()
-require('leap').add_default_mappings()
+require("leap").add_default_mappings()
 require("trouble").setup()
-require("pears").setup()
+require("nvim-autopairs").setup()
 require("neoscroll").setup()
 require("toggleterm").setup()
 require("symbols-outline").setup()
-require('nvim-tree').setup()
+require("nvim-tree").setup()
 require("trouble").setup()
-require('treesitter-context').setup()
-require('gitsigns').setup()
-require('noice').setup()
+require("treesitter-context").setup()
+require("gitsigns").setup()
 require("color-picker").setup()
-require('Comment').setup()
-require('satellite').setup()
+require("Comment").setup()
+require("mason").setup()
 
 local telescopeConfig = require("telescope.config")
 -- Clone the default Telescope configuration
@@ -239,217 +263,269 @@ table.insert(vimgrep_arguments, "--hidden")
 -- I don't want to search in the `.git` directory.
 table.insert(vimgrep_arguments, "--glob")
 table.insert(vimgrep_arguments, "!**/.git/*")
-require('telescope').setup{
-    extensions = {
-        fzf = {
-            fuzzy = true,                    -- false will only do exact matching
-            override_generic_sorter = true,  -- override the generic sorter
-            override_file_sorter = true,     -- override the file sorter
-            case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
-            -- the default case_mode is "smart_case"
-        }
-    },
-    defaults = {
-        -- `hidden = true` is not supported in text grep commands.
-        vimgrep_arguments = vimgrep_arguments,
-    },
-    pickers = {
-        find_files = {
-            find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
-        },
-    },
-}
+require("telescope").setup({
+	extensions = {
+		fzf = {
+			fuzzy = true, -- false will only do exact matching
+			override_generic_sorter = true, -- override the generic sorter
+			override_file_sorter = true, -- override the file sorter
+			case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+			-- the default case_mode is "smart_case"
+		},
+	},
+	defaults = {
+		-- `hidden = true` is not supported in text grep commands.
+		vimgrep_arguments = vimgrep_arguments,
+	},
+	pickers = {
+		find_files = {
+			find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+		},
+	},
+})
 
-require('lualine').setup{
-    options = {
-    icons_enabled = true,
-    theme = 'auto',
-    component_separators = { left = '', right = '' },
-    section_separators = { left = ' ', right = ' '},
-    -- component_separators = { left = '', right = '' },
-    -- section_separators = { left = '', right = ''},
-    -- section_separators = { left = '', right = '' },
-    -- component_separators = { left = '', right = ''},
-    -- component_separators = { left = '', right = ''},
-    -- section_separators = { left = '', right = ''},
-    disabled_filetypes = {
-      statusline = {},
-      winbar = {},
-    },
-    ignore_focus = {},
-    always_divide_middle = true,
-    globalstatus = false,
-    refresh = {
-      statusline = 1000,
-      tabline = 1000,
-      winbar = 1000,
-    }
-  },
-  sections = {
-    lualine_a = {'mode'},
-    lualine_b = {'branch', 'diff', 'diagnostics'},
-    lualine_c = {'filename'},
-    lualine_x = {'encoding', 'fileformat', 'filetype'},
-    lualine_y = {'progress'},
-    lualine_z = {'location'}
-  },
-  inactive_sections = {
-    lualine_a = {},
-    lualine_b = {},
-    lualine_c = {'filename'},
-    lualine_x = {'location'},
-    lualine_y = {},
-    lualine_z = {}
-  },
-  tabline = {},
-  winbar = {},
-  inactive_winbar = {},
-  extensions = {}
-}
-require("indent_blankline").setup {
-    -- for example, context is off by default, use this to turn it on
-    show_current_context = true,
-    show_current_context_start = true,
-}
+require("lualine").setup({
+	options = {
+		icons_enabled = true,
+		theme = "auto",
+		component_separators = { left = "", right = "" },
+		section_separators = { left = " ", right = " " },
+		-- component_separators = { left = '', right = '' },
+		-- section_separators = { left = '', right = ''},
+		-- section_separators = { left = '', right = '' },
+		-- component_separators = { left = '', right = ''},
+		-- component_separators = { left = '', right = ''},
+		-- section_separators = { left = '', right = ''},
+		disabled_filetypes = {
+			statusline = {},
+			winbar = {},
+		},
+		ignore_focus = {},
+		always_divide_middle = true,
+		globalstatus = false,
+		refresh = {
+			statusline = 1000,
+			tabline = 1000,
+			winbar = 1000,
+		},
+	},
+	sections = {
+		lualine_a = { "mode" },
+		lualine_b = { "branch", "diff", "diagnostics" },
+		lualine_c = { "filename" },
+		lualine_x = { "encoding", "fileformat", "filetype" },
+		lualine_y = { "progress" },
+		lualine_z = { "location" },
+	},
+	inactive_sections = {
+		lualine_a = {},
+		lualine_b = {},
+		lualine_c = { "filename" },
+		lualine_x = { "location" },
+		lualine_y = {},
+		lualine_z = {},
+	},
+	tabline = {},
+	winbar = {},
+	inactive_winbar = {},
+	extensions = {},
+})
+require("indent_blankline").setup({
+	-- for example, context is off by default, use this to turn it on
+	show_current_context = true,
+	show_current_context_start = true,
+})
 -- --dap
-require('dap').adapters.cppdbg = {
-    id = 'cppdbg',
-    type = 'executable',
-    command = '/home/hydroakri/.local/share/nvim/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7',
+require("dap").adapters.cppdbg = {
+	id = "cppdbg",
+	type = "executable",
+	command = "/home/hydroakri/.local/share/nvim/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
 }
-require('dap').configurations.cpp = {
-    {
-        name = "Launch file",
-        type = "cppdbg",
-        request = "launch",
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-        cwd = '${workspaceFolder}',
-        stopAtEntry = true,
-    },
-    {
-        name = 'Attach to gdbserver :1234',
-        type = 'cppdbg',
-        request = 'launch',
-        MIMode = 'gdb',
-        miDebuggerServerAddress = 'localhost:1234',
-        miDebuggerPath = '/usr/bin/gdb',
-        cwd = '${workspaceFolder}',
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-    },
+require("dap").configurations.cpp = {
+	{
+		name = "Launch file",
+		type = "cppdbg",
+		request = "launch",
+		program = function()
+			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+		end,
+		cwd = "${workspaceFolder}",
+		stopAtEntry = true,
+	},
+	{
+		name = "Attach to gdbserver :1234",
+		type = "cppdbg",
+		request = "launch",
+		MIMode = "gdb",
+		miDebuggerServerAddress = "localhost:1234",
+		miDebuggerPath = "/usr/bin/gdb",
+		cwd = "${workspaceFolder}",
+		program = function()
+			return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+		end,
+	},
 }
 
+-- cmp config begin
+local cmp = require("cmp")
 
--- --lsp language config
-require("mason").setup{}
--- after local capabilities = ....
--- start server
+cmp.setup({
+	snippet = {
+		-- REQUIRED - you must specify a snippet engine
+		expand = function(args)
+			vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+			-- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+			-- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+			-- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+		end,
+	},
+	window = {
+		-- completion = cmp.config.window.bordered(),
+		-- documentation = cmp.config.window.bordered(),
+	},
+	mapping = cmp.mapping.preset.insert({
+		["<C-b>"] = cmp.mapping.scroll_docs(-4),
+		["<C-f>"] = cmp.mapping.scroll_docs(4),
+		["<C-Space>"] = cmp.mapping.complete(),
+		["<C-e>"] = cmp.mapping.abort(),
+		["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+	}),
+	sources = cmp.config.sources({
+		{ name = "nvim_lsp" },
+		{ name = "vsnip" }, -- For vsnip users.
+		-- { name = 'luasnip' }, -- For luasnip users.
+		-- { name = 'ultisnips' }, -- For ultisnips users.
+		-- { name = 'snippy' }, -- For snippy users.
+	}, {
+		{ name = "buffer" },
+	}),
+})
+
+-- Set configuration for specific filetype.
+cmp.setup.filetype("gitcommit", {
+	sources = cmp.config.sources({
+		{ name = "cmp_git" }, -- You can specify the `cmp_git` source if you were installed it.
+	}, {
+		{ name = "buffer" },
+	}),
+})
+
+-- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline({ "/", "?" }, {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = {
+		{ name = "buffer" },
+	},
+})
+-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline(":", {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = cmp.config.sources({
+		{ name = "path" },
+	}, {
+		{ name = "cmdline" },
+	}),
+})
+-- Set up lspconfig.
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
-require("lspconfig").lua_ls.setup {
-    require("coq").lsp_ensure_capabilities,
-    settings = {
-        Lua = {
-            runtime = {
-                version = 'LuaJIT',
-            },
-            diagnostics = {
-                globals = {"vim", "packer_bootstrap"},
-            },
-            workspace = {
-                library = vim.api.nvim_get_runtime_file("", true),
-            },
-            telemetry = {
-                enable = false,
-            },
-        },
-    },
-}
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+require("lspconfig").lua_ls.setup({
+	capabilities = capabilities,
+	settings = {
+		Lua = {
+			runtime = {
+				version = "LuaJIT",
+			},
+			diagnostics = {
+				globals = { "vim", "packer_bootstrap" },
+			},
+			workspace = {
+				library = vim.api.nvim_get_runtime_file("", true),
+			},
+			telemetry = {
+				enable = false,
+			},
+		},
+	},
+})
+require("lspconfig").pyright.setup({
+	capabilities = capabilities,
+	settings = {
+		python = {
+			analysis = {
+				autoSearchPaths = true,
+				diagnosticMode = "workspace",
+				useLibraryCodeForTypes = true,
+				typeCheckingMode = "off",
+			},
+		},
+	},
+})
+require("lspconfig").clangd.setup({
+	capabilities = capabilities,
+	filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+	single_file_support = true,
+	cmd = {
+		"clangd",
+		"--background-index",
+		"--pch-storage=memory",
+		-- You MUST set this arg ↓ to your clangd executable location (if not included)!
+		"--query-driver=/usr/bin/clang++,/usr/bin/**/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++",
+		"--clang-tidy",
+		"--all-scopes-completion",
+		"--cross-file-rename",
+		"--completion-style=detailed",
+		"--header-insertion-decorators",
+		"--header-insertion=iwyu",
+	},
+})
+-- cmp config end --
 
+require("bufferline").setup({
+	options = {
+		indicator = {
+			style = "underline",
+		},
+		diagnostics = "nvim_lsp",
+		offsets = {
+			{
+				filetype = "NvimTree",
+				text = "File Explorer",
+				highlight = "Directory",
+				text_align = "left",
+				separator = true,
+			},
+		},
+		enforce_regular_tabs = false,
+		hover = {
+			enabled = true,
+			delay = 200,
+			reveal = { "close" },
+		},
+	},
+})
 
-require("lspconfig").pyright.setup {
-    settings = {
-        python = {
-            analysis = {
-                autoSearchPaths = true,
-                diagnosticMode = "workspace",
-                useLibraryCodeForTypes = true,
-                typeCheckingMode = "off",
-            }
-        }
-    },
-}
-
-require'lspconfig'.clangd.setup{
-    filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
-    single_file_support = true,
-    cmd = {
-        "clangd",
-        "--background-index",
-        "--pch-storage=memory",
-        -- You MUST set this arg ↓ to your clangd executable location (if not included)!
-        "--query-driver=/usr/bin/clang++,/usr/bin/**/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++",
-        "--clang-tidy",
-        "--all-scopes-completion",
-        "--cross-file-rename",
-        "--completion-style=detailed",
-        "--header-insertion-decorators",
-        "--header-insertion=iwyu",
-    },
-}
-
-require('bufferline').setup {
-    options = {
-        indicator = {
-            style = 'underline',
-        },
-        diagnostics = "nvim_lsp",
-        offsets = {{
-            filetype = "NvimTree",
-            text = "File Explorer",
-            highlight = "Directory",
-            text_align = "left",
-            separator = true,
-        }},
-        enforce_regular_tabs = false,
-        hover = {
-            enabled = true,
-            delay = 200,
-            reveal = {'close'}
-        },
-    }
-}
-
-
-require'nvim-treesitter.configs'.setup {
-    -- 安装 language parser
-    -- :TSInstallInfo 命令查看支持的语言
-    ensure_installed = {"python", "cpp", "c", "html", "css", "vim", "lua", "javascript", "typescript", "tsx"},
-    -- 启用代码高亮功能
-    highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false
-    },
-    -- 启用增量选择
-    incremental_selection = {
-        enable = true,
-        keymaps = {
-            init_selection = '<CR>',
-            node_incremental = '<CR>',
-            node_decremental = '<BS>',
-            scope_incremental = '<TAB>',
-        }
-    },
-    -- 启用基于Treesitter的代码格式化(=) . NOTE: This is an experimental feature.
-    indent = {
-        enable = true
-    }
-}
--- 开启 Folding
-vim.wo.foldmethod = 'expr'
-vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
--- 默认不要折叠
--- https://stackoverflow.com/questions/8316139/how-to-set-the-default-to-unfolded-when-you-open-a-file
-vim.wo.foldlevel = 99
+require("nvim-treesitter.configs").setup({
+	-- 安装 language parser
+	-- :TSInstallInfo 命令查看支持的语言
+	ensure_installed = { "python", "cpp", "c", "html", "css", "vim", "lua", "javascript", "typescript", "tsx" },
+	-- 启用代码高亮功能
+	highlight = {
+		enable = true,
+		additional_vim_regex_highlighting = false,
+	},
+	-- 启用增量选择
+	incremental_selection = {
+		enable = true,
+		keymaps = {
+			init_selection = "<CR>",
+			node_incremental = "<CR>",
+			node_decremental = "<BS>",
+			scope_incremental = "<TAB>",
+		},
+	},
+	-- 启用基于Treesitter的代码格式化(=) . NOTE: This is an experimental feature.
+	-- indent = {
+	-- 	enable = true,
+	-- },
+})

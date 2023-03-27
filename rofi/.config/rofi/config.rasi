@@ -21,26 +21,26 @@ configuration {
 * {
 
   /* mocha */
-  red:        #d20f39;
-  cyan:       #89b4fa;
-  emphasis:   #cdd6f4;
-  text:       #6c7086;
-  text-alt:   #cdd6f4;
-  bg:         #1e1e2e;
-  input-bg: #1e1e2e;
-  input-bg-alt: #1e1e2e;
-  background-color: #1e1e2e;
-  
-  /* latte */
   /* red:        #d20f39; */
-  /* cyan:       #1e66f5; */
-  /* emphasis:   #9ca0b0; */
-  /* text:       #4c4f69; */
-  /* text-alt:   #9ca0b0; */
-  /* bg:         #eff1f5; */
-  /* input-bg: #eff1f5; */
-  /* input-bg-alt: #eff1f5; */
-  /* background-color: #eff1f5; */
+  /* cyan:       #89b4fa; */
+  /* emphasis:   #cdd6f4; */
+  /* text:       #6c7086; */
+  /* text-alt:   #cdd6f4; */
+  /* bg:         #1e1e2e; */
+  /* input-bg: #1e1e2e; */
+  /* input-bg-alt: #1e1e2e; */
+  /* background-color: #1e1e2e; */
+
+  /* latte */
+  red:        #d20f39;
+  cyan:       #1e66f5;
+  emphasis:   #9ca0b0;
+  text:       #4c4f69;
+  text-alt:   #9ca0b0;
+  bg:         #eff1f5;
+  input-bg: #eff1f5;
+  input-bg-alt: #eff1f5;
+  background-color: #eff1f5;
 
 }
 
