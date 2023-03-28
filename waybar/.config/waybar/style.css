@@ -9,12 +9,12 @@
 }
 
 /*mocha*/
-/* @define-color base   #1e1e2e; */
-/* @define-color text     #cdd6f4; */
+@define-color base   #1e1e2e;
+@define-color text     #cdd6f4;
 
 /*latte*/
-@define-color base   #eff1f5;
-@define-color text     #4c4f69;
+/* @define-color base   #eff1f5; */
+/* @define-color text     #4c4f69; */
 
 window#waybar {
     background: transparent;

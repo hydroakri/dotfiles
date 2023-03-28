@@ -75,10 +75,9 @@ vim.o.background = "dark"
 vim.o.termguicolors = true
 vim.opt.termguicolors = true
 -- 不可见字符的显示，这里只把空格显示为一个点
-vim.o.list = true
-vim.o.listchars = "space:⋅"
-vim.o.listchars = "tab:=="
-vim.opt.clipboard = unnamedplus --see :help clipboard
+vim.opt.list = true
+vim.opt.listchars = { space = '⋅', tab = '>-', eol = '↵' }
+vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
 vim.wo.foldmethod = "expr"
@@ -108,67 +107,73 @@ end
 -- Call function on startup to set default value
 ResetGuiFont()
 
--- Keymaps
-local opts = { noremap = true, silent = true }
-vim.keymap.set({ "n", "i" }, "<C-=>", function()
-	ResizeGuiFont(1)
-end, opts)
-vim.keymap.set({ "n", "i" }, "<C-->", function()
-	ResizeGuiFont(-1)
-end, opts)
--- Leader key
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
+-- keybind
 -- 保存本地变量
 local map = vim.api.nvim_set_keymap
 local opt = { noremap = true, silent = true }
 -- 之后就可以这样映射按键了
 -- map('模式','按键','映射为XX',opt)
 
+vim.keymap.set({ "n", "i" }, "<C-=>", function()
+	ResizeGuiFont(1)
+end, opt)
+vim.keymap.set({ "n", "i" }, "<C-->", function()
+	ResizeGuiFont(-1)
+end, opt)
+-- Leader key
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- split windows
 map("n", "<Leader>\\", ":vsp<CR>", opt)
 map("n", "<Leader>-", ":sp<CR>", opt)
 
+-- Navigation
 -- windows jump
-map("n", "<Leader>h", "<C-w>h", opt)
-map("n", "<Leader>j", "<C-w>j", opt)
-map("n", "<Leader>k", "<C-w>k", opt)
-map("n", "<Leader>l", "<C-w>l", opt)
-map("n", "<Leader>q", "<C-w>q", opt)
-
--- Telescope
-map("n", "<Leader>ff", ":Telescope fd hidden=true<CR>", opt)
-map("n", "<Leader>fh", ":Telescope oldfiles<CR>", opt)
-map("n", "<leader>g", ":Telescope live_grep<CR>", opt)
-map("n", "<leader>t", ":Telescope<CR>", opt)
-
--- nvimTree
-map("n", "t", ":NvimTreeFindFileToggle<CR>", opt)
-
+map("n", "<C-h>", "<C-w>h", opt)
+map("n", "<C-j>", "<C-w>j", opt)
+map("n", "<C-k>", "<C-w>k", opt)
+map("n", "<C-l>", "<C-w>l", opt)
+map("n", "<C-q>", "<C-w>q", opt)
+-- Resize with arrows
+map("n", "<C-Up>", ":resize -2<CR>", opt)
+map("n", "<C-Down>", ":resize +2<CR>", opt)
+map("n", "<C-Left>", ":vertical resize -2<CR>", opt)
+map("n", "<C-Right>", ":vertical resize +2<CR>", opt)
 -- bufferline 左右切换
--- map("n", "<A-h>", ":BufferLineCyclePrev<CR>", opt)
-map("n", "<S-j>", ":BufferLineCyclePrev<CR>", opt)
-map("n", "<S-k>", ":BufferLineCycleNext<CR>", opt)
+map("n", "<S-h>", ":BufferLineCyclePrev<CR>", opt)
+map("n", "<S-l>", ":BufferLineCycleNext<CR>", opt)
 map("n", "<Leader>b", ":BufferLinePickClose<CR>", opt)
 
--- toggleterm
-map("n", ".", ":ToggleTerm direction=float<CR>", opt)
+-- Move text up and down
+map("n", "<A-j>", "<Esc>:m .+1<CR>==gi<Esc>", opt)
+map("n", "<A-k>", "<Esc>:m .-2<CR>==gi<Esc>", opt)
+
+-- search
+map("n", "<Leader>sf", ":Telescope fd hidden=true<CR>", opt)
+map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
+map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
+
+-- toggle
+map("n", "tf", ":NvimTreeFindFileToggle<CR>", opt)
+map("n", "<leader>tt", ":ToggleTerm direction=float<CR>", opt)
+map("n", "<leader>tg", ":Telescope<CR>", opt)
 map("t", "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
+map("n", "<leader>td", ":Dashboard<CR>", opt)
 
--- outline
-map("n", "<Leader>o", ":SymbolsOutline<CR>", opt)
+-- git
+map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
+map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
+map("n", "<leader>gl", ":Gitsigns blame_line<CR>", opt)
+map("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", opt)
+map("n", "<leader>gd", ":Gitsigns preview_hunk<CR>", opt)
+-- lsp
+map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
+map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
+vim.keymap.set("n", "<space>lx", vim.diagnostic.setloclist)
 
--- trouble
-map("n", "<Leader>x", "<cmd>TroubleToggle<CR>", opt)
-
--- neoformat
-map("n", "<Leader>=", "<cmd>Neoformat<CR>", opt)
-
--- Session manager
-map("n", "<Leader>sl", ":SessionManager load_session<CR>", opt)
-map("n", "<Leader>ss", ":SessionManager save_current_session<CR>", opt)
-map("n", "<Leader>sd", ":SessionManager delete_session<CR>", opt)
 -- debug
 map("n", "<leader>db", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
 map("n", "<leader>dB", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
@@ -182,8 +187,38 @@ map("n", "<F8>", "<cmd>lua require'dap'.step_out()<cr>", opt)
 -- map("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", opt)
 -- map("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", opt)
 
+-- lsp keybind begin --
+-- after the language server attaches to the current buffer
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+	callback = function(ev)
+		-- Enable completion triggered by <c-x><c-o>
+		vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
+
+		-- Buffer local mappings.
+		-- See `:help vim.lsp.*` for documentation on any of the below functions
+		local opts = { buffer = ev.buf }
+		vim.keymap.set("n", "<Leader>lD", vim.lsp.buf.declaration, opts)
+		vim.keymap.set("n", "<Leader>ld", vim.lsp.buf.definition, opts)
+		vim.keymap.set("n", "<Leader>ltd", vim.lsp.buf.type_definition, opts)
+        vim.keymap.set("n", "<Leader>lr", vim.lsp.buf.references, opts)
+		vim.keymap.set("n", "<Leader>lk", vim.lsp.buf.hover, opts)
+		vim.keymap.set("n", "<Leader>li", vim.lsp.buf.implementation, opts)
+		vim.keymap.set("n", "<Leader>lh", vim.lsp.buf.signature_help, opts)
+		vim.keymap.set("n", "<Leader>lwa", vim.lsp.buf.add_workspace_folder, opts)
+		vim.keymap.set("n", "<Leader>lwr", vim.lsp.buf.remove_workspace_folder, opts)
+		vim.keymap.set("n", "<Leader>lwl", function()
+			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+		end, opts)
+		vim.keymap.set("n", "<Leader>lrn", vim.lsp.buf.rename, opts)
+		vim.keymap.set("n", "<Leader>lca", vim.lsp.buf.code_action, opts)
+	end,
+})
+-- lsp keybind end --
+
 -- install plugins
 require("lazy").setup({
+    { 'glepnir/dashboard-nvim', event = 'VimEnter', dependencies = 'nvim-tree/nvim-web-devicons'},
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
@@ -191,12 +226,11 @@ require("lazy").setup({
 	{ "nvim-lualine/lualine.nvim" },
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 	{ "akinsho/toggleterm.nvim", version = "*" },
-	{ "Shatur/neovim-session-manager" },
 	{
 		"folke/which-key.nvim",
 		config = function()
 			vim.o.timeout = true
-			vim.o.timeoutlen = 300
+			vim.o.timeoutlen = 500
 			require("which-key").setup()
 		end,
 	},
@@ -215,7 +249,6 @@ require("lazy").setup({
 	{ "mg979/vim-visual-multi", version = "master" },
 	{ "nvim-treesitter/nvim-treesitter-context" },
 	{ "windwp/nvim-autopairs" },
-	{ "folke/trouble.nvim" },
 	{ "ggandor/leap.nvim" },
 	{ "RRethy/vim-illuminate" },
 	{ "norcalli/nvim-colorizer.lua" },
@@ -237,30 +270,59 @@ require("lazy").setup({
 	--cmp--
 })
 
-vim.cmd.colorscheme("catppuccin-latte")
+vim.cmd.colorscheme("catppuccin-mocha")
 
 -- plugins config
 require("colorizer").setup()
 require("leap").add_default_mappings()
-require("trouble").setup()
 require("nvim-autopairs").setup()
 require("neoscroll").setup()
 require("toggleterm").setup()
 require("symbols-outline").setup()
 require("nvim-tree").setup()
-require("trouble").setup()
 require("treesitter-context").setup()
 require("gitsigns").setup()
 require("color-picker").setup()
 require("Comment").setup()
 require("mason").setup()
 
+require("dashboard").setup(
+{
+    theme = 'hyper',
+    config = {
+      week_header = {
+       enable = true,
+      },
+      shortcut = {
+        { desc = ' Update', group = '@property', action = 'Lazy update', key = 'u' },
+        {
+          icon = ' ',
+          icon_hl = '@variable',
+          desc = 'Files',
+          group = 'Label',
+          action = 'Telescope find_files',
+          key = 'f',
+        },
+        {
+          desc = ' Apps',
+          group = 'DiagnosticHint',
+          action = 'Telescope app',
+          key = 'a',
+        },
+        {
+          desc = ' dotfiles',
+          group = 'Number',
+          action = 'Telescope dotfiles',
+          key = 'd',
+        },
+      },
+    },
+  }
+)
+
 local telescopeConfig = require("telescope.config")
--- Clone the default Telescope configuration
 local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
--- I want to search in hidden/dot files.
 table.insert(vimgrep_arguments, "--hidden")
--- I don't want to search in the `.git` directory.
 table.insert(vimgrep_arguments, "--glob")
 table.insert(vimgrep_arguments, "!**/.git/*")
 require("telescope").setup({
@@ -384,8 +446,8 @@ cmp.setup({
 		-- documentation = cmp.config.window.bordered(),
 	},
 	mapping = cmp.mapping.preset.insert({
-		["<C-b>"] = cmp.mapping.scroll_docs(-4),
-		["<C-f>"] = cmp.mapping.scroll_docs(4),
+		["<C-u>"] = cmp.mapping.scroll_docs(-4),
+		["<C-d>"] = cmp.mapping.scroll_docs(4),
 		["<C-Space>"] = cmp.mapping.complete(),
 		["<C-e>"] = cmp.mapping.abort(),
 		["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
@@ -439,9 +501,6 @@ require("lspconfig").lua_ls.setup({
 			diagnostics = {
 				globals = { "vim", "packer_bootstrap" },
 			},
-			workspace = {
-				library = vim.api.nvim_get_runtime_file("", true),
-			},
 			telemetry = {
 				enable = false,
 			},
@@ -479,6 +538,10 @@ require("lspconfig").clangd.setup({
 		"--header-insertion=iwyu",
 	},
 })
+require'lspconfig'.html.setup {
+  capabilities = capabilities,
+}
+
 -- cmp config end --
 
 require("bufferline").setup({
