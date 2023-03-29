@@ -19,7 +19,7 @@ return {
 		--     harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
 		-- },
 	}),
-	font_size = 16.0,
+	font_size = 18.0,
 	hide_tab_bar_if_only_one_tab = true,
 	default_prog = { "fish" },
 	mouse_bindings = {

@@ -76,7 +76,7 @@ vim.o.termguicolors = true
 vim.opt.termguicolors = true
 -- 不可见字符的显示，这里只把空格显示为一个点
 vim.opt.list = true
-vim.opt.listchars = { space = '⋅', tab = '>-', eol = '↵' }
+vim.opt.listchars = { space = "⋅", tab = "> ", eol = "↵" }
 vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
@@ -166,7 +166,7 @@ map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
 map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
 map("n", "<leader>gl", ":Gitsigns blame_line<CR>", opt)
 map("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", opt)
-map("n", "<leader>gd", ":Gitsigns preview_hunk<CR>", opt)
+map("n", "<leader>gd", ":DiffviewOpen<CR>", opt)
 -- lsp
 map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
 map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
@@ -175,15 +175,12 @@ vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
 vim.keymap.set("n", "<space>lx", vim.diagnostic.setloclist)
 
 -- debug
-map("n", "<leader>db", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
-map("n", "<leader>dB", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
--- map("n", "<leader>dr", "lua require'dap'.repl.open()<cr>", opt)
-map("n", "<F9>", "<cmd>lua require'dap'.run_last()<cr>", opt)
-map("n", "<F4>", "<cmd>lua require'dap'.terminate()<cr>", opt)
-map("n", "<F5>", "<cmd>lua require'dap'.continue()<cr>", opt)
-map("n", "<F6>", "<cmd>lua require'dap'.step_over()<cr>", opt)
-map("n", "<F7>", "<cmd>lua require'dap'.step_into()<cr>", opt)
-map("n", "<F8>", "<cmd>lua require'dap'.step_out()<cr>", opt)
+map("n", "<leader>dp", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
+map("n", "<leader>dP", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
+map("n", "<leader>dc", "<cmd>lua require'dap'.continue()<cr>", opt)
+map("n", "<leader>dx", "<cmd>lua require'dap'.step_over()<cr>", opt)
+map("n", "<leader>di", "<cmd>lua require'dap'.step_into()<cr>", opt)
+map("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", opt)
 -- map("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", opt)
 -- map("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", opt)
 
@@ -200,25 +197,23 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		local opts = { buffer = ev.buf }
 		vim.keymap.set("n", "<Leader>lD", vim.lsp.buf.declaration, opts)
 		vim.keymap.set("n", "<Leader>ld", vim.lsp.buf.definition, opts)
-		vim.keymap.set("n", "<Leader>ltd", vim.lsp.buf.type_definition, opts)
-        vim.keymap.set("n", "<Leader>lr", vim.lsp.buf.references, opts)
-		vim.keymap.set("n", "<Leader>lk", vim.lsp.buf.hover, opts)
+		vim.keymap.set("n", "<Leader>lr", vim.lsp.buf.references, opts)
 		vim.keymap.set("n", "<Leader>li", vim.lsp.buf.implementation, opts)
 		vim.keymap.set("n", "<Leader>lh", vim.lsp.buf.signature_help, opts)
+		vim.keymap.set("n", "<Leader>ln", vim.lsp.buf.rename, opts)
+		vim.keymap.set("n", "<Leader>lca", vim.lsp.buf.code_action, opts)
 		vim.keymap.set("n", "<Leader>lwa", vim.lsp.buf.add_workspace_folder, opts)
 		vim.keymap.set("n", "<Leader>lwr", vim.lsp.buf.remove_workspace_folder, opts)
 		vim.keymap.set("n", "<Leader>lwl", function()
 			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
 		end, opts)
-		vim.keymap.set("n", "<Leader>lrn", vim.lsp.buf.rename, opts)
-		vim.keymap.set("n", "<Leader>lca", vim.lsp.buf.code_action, opts)
 	end,
 })
 -- lsp keybind end --
 
 -- install plugins
 require("lazy").setup({
-    { 'glepnir/dashboard-nvim', event = 'VimEnter', dependencies = 'nvim-tree/nvim-web-devicons'},
+	{ "glepnir/dashboard-nvim", event = "VimEnter", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
@@ -246,7 +241,7 @@ require("lazy").setup({
 	},
 	{ "lukas-reineke/indent-blankline.nvim" },
 	{ "karb94/neoscroll.nvim" },
-	{ "mg979/vim-visual-multi", version = "master" },
+	{ "mg979/vim-visual-multi", version = "*" },
 	{ "nvim-treesitter/nvim-treesitter-context" },
 	{ "windwp/nvim-autopairs" },
 	{ "ggandor/leap.nvim" },
@@ -259,6 +254,7 @@ require("lazy").setup({
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	{ "sindrets/diffview.nvim" },
 	{ "sbdchd/neoformat" },
+	{ "Exafunction/codeium.vim" },
 	--cmp--
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
@@ -286,39 +282,58 @@ require("color-picker").setup()
 require("Comment").setup()
 require("mason").setup()
 
-require("dashboard").setup(
-{
-    theme = 'hyper',
-    config = {
-      week_header = {
-       enable = true,
-      },
-      shortcut = {
-        { desc = ' Update', group = '@property', action = 'Lazy update', key = 'u' },
-        {
-          icon = ' ',
-          icon_hl = '@variable',
-          desc = 'Files',
-          group = 'Label',
-          action = 'Telescope find_files',
-          key = 'f',
-        },
-        {
-          desc = ' Apps',
-          group = 'DiagnosticHint',
-          action = 'Telescope app',
-          key = 'a',
-        },
-        {
-          desc = ' dotfiles',
-          group = 'Number',
-          action = 'Telescope dotfiles',
-          key = 'd',
-        },
-      },
+-- indent blank begin --
+vim.cmd [[highlight IndentBlanklineIndent1 guifg=#E06C75 gui=nocombine]]
+vim.cmd [[highlight IndentBlanklineIndent2 guifg=#E5C07B gui=nocombine]]
+vim.cmd [[highlight IndentBlanklineIndent3 guifg=#98C379 gui=nocombine]]
+vim.cmd [[highlight IndentBlanklineIndent4 guifg=#56B6C2 gui=nocombine]]
+vim.cmd [[highlight IndentBlanklineIndent5 guifg=#61AFEF gui=nocombine]]
+vim.cmd [[highlight IndentBlanklineIndent6 guifg=#C678DD gui=nocombine]]
+require("indent_blankline").setup {
+    space_char_blankline = " ",
+    char_highlight_list = {
+        "IndentBlanklineIndent1",
+        "IndentBlanklineIndent2",
+        "IndentBlanklineIndent3",
+        "IndentBlanklineIndent4",
+        "IndentBlanklineIndent5",
+        "IndentBlanklineIndent6",
     },
-  }
-)
+}
+-- indent blank begin --
+
+
+require("dashboard").setup({
+	theme = "hyper",
+	config = {
+		week_header = {
+			enable = true,
+		},
+		shortcut = {
+			{ desc = " Update", group = "@property", action = "Lazy update", key = "u" },
+			{
+				icon = " ",
+				icon_hl = "@variable",
+				desc = "Files",
+				group = "Label",
+				action = "Telescope find_files",
+				key = "f",
+			},
+			{
+				desc = " Apps",
+				group = "DiagnosticHint",
+				action = "Telescope app",
+				key = "a",
+			},
+			{
+				desc = " dotfiles",
+				group = "Number",
+				action = "Telescope dotfiles",
+				key = "d",
+			},
+		},
+	},
+})
 
 local telescopeConfig = require("telescope.config")
 local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
@@ -538,9 +553,9 @@ require("lspconfig").clangd.setup({
 		"--header-insertion=iwyu",
 	},
 })
-require'lspconfig'.html.setup {
-  capabilities = capabilities,
-}
+require("lspconfig").html.setup({
+	capabilities = capabilities,
+})
 
 -- cmp config end --
 
