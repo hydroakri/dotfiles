@@ -355,8 +355,8 @@ require("mason-lspconfig").setup_handlers({
 	end,
 
 	["lua_ls"] = function()
-		capabilities =
-			capabilities, require("lspconfig").lua_ls.setup({
+			require("lspconfig").lua_ls.setup({
+			    capabilities = capabilities,
 				settings = {
 					Lua = {
 						runtime = {
@@ -396,21 +396,21 @@ require("mason-lspconfig").setup_handlers({
 })
 
 -- indent blank begin --
-vim.cmd([[highlight IndentBlanklineIndent1 guifg=#E06C75 gui=nocombine]])
-vim.cmd([[highlight IndentBlanklineIndent2 guifg=#E5C07B gui=nocombine]])
-vim.cmd([[highlight IndentBlanklineIndent3 guifg=#98C379 gui=nocombine]])
-vim.cmd([[highlight IndentBlanklineIndent4 guifg=#56B6C2 gui=nocombine]])
-vim.cmd([[highlight IndentBlanklineIndent5 guifg=#61AFEF gui=nocombine]])
-vim.cmd([[highlight IndentBlanklineIndent6 guifg=#C678DD gui=nocombine]])
+vim.cmd([[highlight line1 guifg=#E06C75 gui=nocombine]])
+vim.cmd([[highlight line2 guifg=#E5C07B gui=nocombine]])
+vim.cmd([[highlight line3 guifg=#98C379 gui=nocombine]])
+vim.cmd([[highlight line4 guifg=#56B6C2 gui=nocombine]])
+vim.cmd([[highlight line5 guifg=#61AFEF gui=nocombine]])
+vim.cmd([[highlight line6 guifg=#C678DD gui=nocombine]])
 require("indent_blankline").setup({
 	space_char_blankline = " ",
 	char_highlight_list = {
-		"IndentBlanklineIndent1",
-		"IndentBlanklineIndent2",
-		"IndentBlanklineIndent3",
-		"IndentBlanklineIndent4",
-		"IndentBlanklineIndent5",
-		"IndentBlanklineIndent6",
+		"line1",
+		"line2",
+		"line3",
+		"line4",
+		"line5",
+		"line6",
 	},
 })
 -- indent blank begin --
