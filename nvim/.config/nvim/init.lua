@@ -231,6 +231,7 @@ require("lazy").setup({
 	},
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim" },
+	{ "williamboman/mason-lspconfig.nvim" },
 	{ "mfussenegger/nvim-dap" },
 	{ "simrat39/symbols-outline.nvim" },
 	{
@@ -281,6 +282,7 @@ require("gitsigns").setup()
 require("color-picker").setup()
 require("Comment").setup()
 require("mason").setup()
+require("mason-lspconfig").setup()
 
 -- indent blank begin --
 vim.cmd [[highlight IndentBlanklineIndent1 guifg=#E06C75 gui=nocombine]]

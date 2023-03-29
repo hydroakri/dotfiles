@@ -21,6 +21,8 @@ return {
 	}),
 	font_size = 18.0,
 	hide_tab_bar_if_only_one_tab = true,
+    initial_rows = 25,
+    initial_cols = 100,
 	default_prog = { "fish" },
 	mouse_bindings = {
 		-- Ctrl-click will open the link under the mouse cursor
