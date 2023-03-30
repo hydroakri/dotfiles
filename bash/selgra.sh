@@ -22,7 +22,7 @@ case $input in
     gnome-shell --wayland;;
     2)
     sleep 1
-    Hyprland;;
+    WLR_DRM_DEVICES=/dev/dri/card1:/dev/dri/card0 Hyprland;;
     3)
     sleep 1
     WLR_DRM_DEVICES=/dev/dri/card0 Hyprland;;

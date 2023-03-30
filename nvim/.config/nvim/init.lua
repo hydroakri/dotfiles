@@ -87,9 +87,9 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.wo.foldlevel = 99
 
 -- font
-vim.g.gui_font_default_size = 16
+--vim.g.gui_font_default_size = 16
+--vim.g.gui_font_face = "FiraCode Nerd Font"
 --vim.g.gui_font_size = vim.g.gui_font_default_size
-vim.g.gui_font_face = "FiraCode Nerd Font"
 
 RefreshGuiFont = function()
 	vim.opt.guifont = string.format("%s:h%s", vim.g.gui_font_face, vim.g.gui_font_size)
@@ -108,28 +108,25 @@ end
 ResetGuiFont()
 
 -- keybind
--- 保存本地变量
 local map = vim.api.nvim_set_keymap
 local opt = { noremap = true, silent = true }
--- 之后就可以这样映射按键了
--- map('模式','按键','映射为XX',opt)
 
-vim.keymap.set({ "n", "i" }, "<C-=>", function()
+vim.keymap.set({ "i" }, "<C-=>", function()
 	ResizeGuiFont(1)
 end, opt)
-vim.keymap.set({ "n", "i" }, "<C-->", function()
+vim.keymap.set({ "i" }, "<C-->", function()
 	ResizeGuiFont(-1)
 end, opt)
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- split windows
-map("n", "<Leader>\\", ":vsp<CR>", opt)
-map("n", "<Leader>-", ":sp<CR>", opt)
+-- package manager
+map("n", "<leader>pu", ":Lazy update<CR>", opt)
+map("n", "<leader>pm", ":Mason<CR>", opt)
+map("n", "<leader>pl", ":LspInfo<CR>", opt)
 
 -- Navigation
--- windows jump
 map("n", "<C-h>", "<C-w>h", opt)
 map("n", "<C-j>", "<C-w>j", opt)
 map("n", "<C-k>", "<C-w>k", opt)
@@ -159,7 +156,8 @@ map("n", "tf", ":NvimTreeFindFileToggle<CR>", opt)
 map("n", "<leader>tt", ":ToggleTerm direction=float<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
 map("t", "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
-map("n", "<leader>td", ":Dashboard<CR>", opt)
+map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
+map("n", "<leader>tsd", ":SessionManager delete_session<CR>", opt)
 
 -- git
 map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
@@ -167,12 +165,6 @@ map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
 map("n", "<leader>gl", ":Gitsigns blame_line<CR>", opt)
 map("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", opt)
 map("n", "<leader>gd", ":DiffviewOpen<CR>", opt)
--- lsp
-map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
-map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
-vim.keymap.set("n", "<space>lx", vim.diagnostic.setloclist)
 
 -- debug
 map("n", "<leader>dp", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
@@ -185,7 +177,14 @@ map("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", opt)
 -- map("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", opt)
 
 -- lsp keybind begin --
--- after the language server attaches to the current buffer
+map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
+map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
+map("n", "<Leader>lx", ":TroubleToggle workspace_diagnostics<CR>", opt)
+map("n", "<Leader>lr", ":TroubleToggle lsp_references<CR>", opt)
+map("n", "<Leader>lD", ":TroubleToggle lsp_type_definitions<CR>", opt)
+map("n", "<Leader>ld", ":TroubleToggle lsp_definitions<CR>", opt)
+map("n", "<Leader>li", ":TroubleToggle lsp_implementations<CR>", opt)
+
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
 	callback = function(ev)
@@ -195,10 +194,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		-- Buffer local mappings.
 		-- See `:help vim.lsp.*` for documentation on any of the below functions
 		local opts = { buffer = ev.buf }
-		vim.keymap.set("n", "<Leader>lD", vim.lsp.buf.declaration, opts)
-		vim.keymap.set("n", "<Leader>ld", vim.lsp.buf.definition, opts)
-		vim.keymap.set("n", "<Leader>lr", vim.lsp.buf.references, opts)
-		vim.keymap.set("n", "<Leader>li", vim.lsp.buf.implementation, opts)
 		vim.keymap.set("n", "<Leader>lh", vim.lsp.buf.signature_help, opts)
 		vim.keymap.set("n", "<Leader>ln", vim.lsp.buf.rename, opts)
 		vim.keymap.set("n", "<Leader>lca", vim.lsp.buf.code_action, opts)
@@ -213,22 +208,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- install plugins
 require("lazy").setup({
-	{ "glepnir/dashboard-nvim", event = "VimEnter", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "catppuccin/nvim", name = "catppuccin" },
+	{ "lunarvim/lunar.nvim" },
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "nvim-lualine/lualine.nvim" },
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 	{ "akinsho/toggleterm.nvim", version = "*" },
-	{
-		"folke/which-key.nvim",
-		config = function()
-			vim.o.timeout = true
-			vim.o.timeoutlen = 500
-			require("which-key").setup()
-		end,
-	},
+	{ "folke/which-key.nvim" },
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim" },
 	{ "williamboman/mason-lspconfig.nvim" },
@@ -256,7 +244,9 @@ require("lazy").setup({
 	{ "sindrets/diffview.nvim" },
 	{ "sbdchd/neoformat" },
 	{ "Exafunction/codeium.vim" },
-	--cmp--
+	{ "Shatur/neovim-session-manager" },
+	{ "folke/trouble.nvim" },
+	{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify" } },
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
@@ -264,12 +254,12 @@ require("lazy").setup({
 	{ "hrsh7th/nvim-cmp" },
 	{ "hrsh7th/cmp-vsnip" },
 	{ "hrsh7th/vim-vsnip" },
-	--cmp--
 })
 
 vim.cmd.colorscheme("catppuccin-mocha")
 
 -- plugins config
+require("which-key").setup()
 require("colorizer").setup()
 require("leap").add_default_mappings()
 require("nvim-autopairs").setup()
@@ -281,9 +271,10 @@ require("treesitter-context").setup()
 require("gitsigns").setup()
 require("color-picker").setup()
 require("Comment").setup()
+require("trouble").setup()
+require("noice").setup()
 -- cmp config begin
 local cmp = require("cmp")
-
 cmp.setup({
 	snippet = {
 		-- REQUIRED - you must specify a snippet engine
@@ -355,22 +346,22 @@ require("mason-lspconfig").setup_handlers({
 	end,
 
 	["lua_ls"] = function()
-			require("lspconfig").lua_ls.setup({
-			    capabilities = capabilities,
-				settings = {
-					Lua = {
-						runtime = {
-							version = "LuaJIT",
-						},
-						diagnostics = {
-							globals = { "vim", "packer_bootstrap" },
-						},
-						telemetry = {
-							enable = false,
-						},
+		require("lspconfig").lua_ls.setup({
+			capabilities = capabilities,
+			settings = {
+				Lua = {
+					runtime = {
+						version = "LuaJIT",
+					},
+					diagnostics = {
+						globals = { "vim", "packer_bootstrap" },
+					},
+					telemetry = {
+						enable = false,
 					},
 				},
-			})
+			},
+		})
 	end,
 
 	["clangd"] = function()
@@ -413,45 +404,11 @@ require("indent_blankline").setup({
 		"line6",
 	},
 })
--- indent blank begin --
+-- indent blank end --
 
-require("dashboard").setup({
-	theme = "hyper",
-	config = {
-		week_header = {
-			enable = true,
-		},
-		shortcut = {
-			{ desc = " Update", group = "@property", action = "Lazy update", key = "u" },
-			{
-				icon = " ",
-				icon_hl = "@variable",
-				desc = "Files",
-				group = "Label",
-				action = "Telescope find_files",
-				key = "f",
-			},
-			{
-				desc = " Apps",
-				group = "DiagnosticHint",
-				action = "Telescope app",
-				key = "a",
-			},
-			{
-				desc = " dotfiles",
-				group = "Number",
-				action = "Telescope dotfiles",
-				key = "d",
-			},
-		},
-	},
-})
-
-local telescopeConfig = require("telescope.config")
-local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
-table.insert(vimgrep_arguments, "--hidden")
-table.insert(vimgrep_arguments, "--glob")
-table.insert(vimgrep_arguments, "!**/.git/*")
+table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "--hidden")
+table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "--glob")
+table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "!**/.git/*")
 require("telescope").setup({
 	extensions = {
 		fzf = {
@@ -464,7 +421,7 @@ require("telescope").setup({
 	},
 	defaults = {
 		-- `hidden = true` is not supported in text grep commands.
-		vimgrep_arguments = vimgrep_arguments,
+		vimgrep_arguments = { unpack(require("telescope.config").values.vimgrep_arguments) },
 	},
 	pickers = {
 		find_files = {
@@ -528,7 +485,7 @@ require("indent_blankline").setup({
 require("dap").adapters.cppdbg = {
 	id = "cppdbg",
 	type = "executable",
-	command = "/home/hydroakri/.local/share/nvim/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
+	command = "~/.local/share/nvim/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
 }
 require("dap").configurations.cpp = {
 	{
@@ -580,9 +537,8 @@ require("bufferline").setup({
 })
 
 require("nvim-treesitter.configs").setup({
-	-- 安装 language parser
-	-- :TSInstallInfo 命令查看支持的语言
-	ensure_installed = { "python", "cpp", "c", "html", "css", "vim", "lua", "javascript", "typescript", "tsx" },
+	ensure_installed = { "c", "lua", "vim", "help", "query" },
+	auto_install = true,
 	-- 启用代码高亮功能
 	highlight = {
 		enable = true,
@@ -598,8 +554,4 @@ require("nvim-treesitter.configs").setup({
 			scope_incremental = "<TAB>",
 		},
 	},
-	-- 启用基于Treesitter的代码格式化(=) . NOTE: This is an experimental feature.
-	-- indent = {
-	-- 	enable = true,
-	-- },
 })
