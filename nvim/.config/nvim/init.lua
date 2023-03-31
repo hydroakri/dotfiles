@@ -45,13 +45,13 @@ vim.o.smartindent = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
 -- 搜索不要高亮
-vim.o.hlsearch = false
+vim.o.hlsearch = true
 -- 边输入边搜索
 vim.o.incsearch = true
 -- 使用增强状态栏后不再需要 vim 的模式提示
 vim.o.showmode = false
 -- 命令行高为2，提供足够的显示空间
-vim.o.cmdheight = 1
+vim.o.cmdheight = 0
 -- 当文件被外部程序修改时，自动加载
 vim.o.autoread = true
 vim.bo.autoread = true
@@ -69,7 +69,7 @@ vim.o.backup = false
 vim.o.writebackup = false
 vim.o.swapfile = false
 -- 自动补全不自动选中
-vim.g.completeopt = "menu,menuone,noselect,noinsert"
+--vim.g.completeopt = "menu,menuone,noselect,noinsert"
 -- 样式
 vim.o.background = "dark"
 vim.o.termguicolors = true
@@ -126,6 +126,8 @@ map("n", "<leader>pu", ":Lazy update<CR>", opt)
 map("n", "<leader>pm", ":Mason<CR>", opt)
 map("n", "<leader>pl", ":LspInfo<CR>", opt)
 
+map("i", "", "zz", opt)
+map("n", "", "zz", opt)
 -- Navigation
 map("n", "<C-h>", "<C-w>h", opt)
 map("n", "<C-j>", "<C-w>j", opt)
@@ -196,7 +198,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		local opts = { buffer = ev.buf }
 		vim.keymap.set("n", "<Leader>lh", vim.lsp.buf.signature_help, opts)
 		vim.keymap.set("n", "<Leader>ln", vim.lsp.buf.rename, opts)
-		vim.keymap.set("n", "<Leader>lca", vim.lsp.buf.code_action, opts)
+		vim.keymap.set("n", "<Leader>la", vim.lsp.buf.code_action, opts)
 		vim.keymap.set("n", "<Leader>lwa", vim.lsp.buf.add_workspace_folder, opts)
 		vim.keymap.set("n", "<Leader>lwr", vim.lsp.buf.remove_workspace_folder, opts)
 		vim.keymap.set("n", "<Leader>lwl", function()
@@ -246,7 +248,7 @@ require("lazy").setup({
 	{ "Exafunction/codeium.vim" },
 	{ "Shatur/neovim-session-manager" },
 	{ "folke/trouble.nvim" },
-	{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", "rcarriga/nvim-notify" } },
+	{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] } },
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
