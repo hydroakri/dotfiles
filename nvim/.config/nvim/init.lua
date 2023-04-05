@@ -12,7 +12,6 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
---
 -- utf8
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
@@ -104,8 +103,6 @@ map("n", "<leader>pu", ":Lazy update<CR>", opt)
 map("n", "<leader>pm", ":Mason<CR>", opt)
 map("n", "<leader>pl", ":LspInfo<CR>", opt)
 
-map("i", "", "zz", opt)
-map("n", "", "zz", opt)
 -- Navigation
 map("n", "<C-h>", "<C-w>h", opt)
 map("n", "<C-j>", "<C-w>j", opt)
@@ -121,7 +118,9 @@ map("n", "<C-Right>", ":vertical resize +2<CR>", opt)
 map("n", "<S-h>", ":BufferLineCyclePrev<CR>", opt)
 map("n", "<S-l>", ":BufferLineCycleNext<CR>", opt)
 map("n", "<Leader>b", ":BufferLinePickClose<CR>", opt)
-
+-- tabpage 切换
+map("n", "<S-j>", ":tabprevious<CR>", opt)
+map("n", "<S-k>", ":tabnext<CR>", opt)
 -- Move text up and down
 map("n", "<A-j>", "<Esc>:m .+1<CR>==gi<Esc>", opt)
 map("n", "<A-k>", "<Esc>:m .-2<CR>==gi<Esc>", opt)
@@ -133,9 +132,9 @@ map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
 
 -- toggle
 map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
-map("n", "<leader>tt", ":ToggleTerm direction=float<CR>", opt)
+map("n", "<leader>tt", ":ToggleTerm direction=tab<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
-map("t", "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
+map("t", "<Esc>", "<C-\\><C-n>", opt)
 map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
 map("n", "<leader>tsd", ":SessionManager delete_session<CR>", opt)
 map("n", "<leader>tm", ":MinimapToggle<CR>", opt)
@@ -189,46 +188,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- install plugins
 require("lazy").setup({
+    -- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "joshdick/onedark.vim" },
-	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
-	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
-	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
-	{ "nvim-lualine/lualine.nvim" },
-	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
-	{ "akinsho/toggleterm.nvim", version = "*" },
-	{ "folke/which-key.nvim" },
-	{ "neovim/nvim-lspconfig" },
-	{ "williamboman/mason.nvim" },
-	{ "williamboman/mason-lspconfig.nvim" },
-	{ "mfussenegger/nvim-dap" },
-	{ "simrat39/symbols-outline.nvim" },
-	{
-		"iamcco/markdown-preview.nvim",
-		build = function()
-			vim.fn["mkdp#util#install"]()
-		end,
-	},
-	{ "wfxr/minimap.vim", build = "cargo install --locked code-minimap" },
-	{ "lukas-reineke/indent-blankline.nvim" },
-	{ "karb94/neoscroll.nvim" },
-	{ "mg979/vim-visual-multi", version = "*" },
-	{ "nvim-treesitter/nvim-treesitter-context" },
-	{ "windwp/nvim-autopairs" },
-	{ "ggandor/leap.nvim" },
-	{ "RRethy/vim-illuminate" },
-	{ "norcalli/nvim-colorizer.lua" },
-	{ "lewis6991/gitsigns.nvim" },
-	{ "lambdalisue/suda.vim" },
-	{ "ziontee113/color-picker.nvim" },
-	{ "numToStr/Comment.nvim" },
-	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{ "sindrets/diffview.nvim" },
-	{ "sbdchd/neoformat" },
-	{ "Exafunction/codeium.vim" },
-	{ "Shatur/neovim-session-manager" },
-	{ "folke/trouble.nvim" },
-	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] } },
+    -- lsp/completion/dap/spellcheck
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
@@ -236,24 +199,50 @@ require("lazy").setup({
 	{ "hrsh7th/nvim-cmp" },
 	{ "hrsh7th/cmp-vsnip" },
 	{ "hrsh7th/vim-vsnip" },
+	{ "neovim/nvim-lspconfig" },
+	{ "williamboman/mason.nvim", config = true },
+	{ "williamboman/mason-lspconfig.nvim", config = true },
+	{ "Exafunction/codeium.vim" },
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+	{ "nvim-treesitter/nvim-treesitter-context", config = true },
+	{ "folke/trouble.nvim", config = true },
+	{ "simrat39/symbols-outline.nvim", config = true },
+	{ "sbdchd/neoformat" },
+	{ "mfussenegger/nvim-dap" },
+    -- basic ide
+	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
+	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "akinsho/toggleterm.nvim", version = "*", config = true },
+	{ "sindrets/diffview.nvim" },
+	{ "lewis6991/gitsigns.nvim", config = true },
+	{ "lukas-reineke/indent-blankline.nvim", config = true },
+	{ "wfxr/minimap.vim", build = "cargo install --locked code-minimap" },
+	{ "nvim-lualine/lualine.nvim", config = true },
+	{ "RRethy/vim-illuminate" },
+	{ "mg979/vim-visual-multi", version = "*" },
+	{ "lambdalisue/suda.vim" },
+	{ "Shatur/neovim-session-manager" },
+	{ "ggandor/leap.nvim", config = true },
+	{ "folke/which-key.nvim", config = true },
+	{ "numToStr/Comment.nvim", config = true },
+	{ "karb94/neoscroll.nvim", config = true },
+	{ "windwp/nvim-autopairs", config = true },
+	{ "norcalli/nvim-colorizer.lua", config = true },
+	{ "ziontee113/color-picker.nvim", config = true },
+	{
+		"iamcco/markdown-preview.nvim",
+		build = function()
+			vim.fn["mkdp#util#install"]()
+		end,
+	},
+	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
 })
 
-vim.cmd.colorscheme("catppuccin-mocha")
-
 -- plugins config
-require("which-key").setup()
-require("colorizer").setup()
+vim.cmd.colorscheme("catppuccin-mocha")
 require("leap").add_default_mappings()
-require("nvim-autopairs").setup()
-require("neoscroll").setup()
-require("toggleterm").setup()
-require("symbols-outline").setup()
-require("treesitter-context").setup()
-require("gitsigns").setup()
-require("color-picker").setup()
-require("Comment").setup()
-require("trouble").setup()
---require("noice").setup()
 
 require("nvim-tree").setup({
 	view = {
@@ -324,8 +313,6 @@ cmp.setup.cmdline(":", {
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 -- cmp config end --
-require("mason").setup()
-require("mason-lspconfig").setup()
 require("mason-lspconfig").setup_handlers({
 	function(server_name)
 		require("lspconfig")[server_name].setup({
@@ -400,7 +387,6 @@ local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
 table.insert(vimgrep_arguments, "--hidden")
 table.insert(vimgrep_arguments, "--glob")
 table.insert(vimgrep_arguments, "!**/.git/*")
-
 telescope.setup({
 	defaults = {
 		vimgrep_arguments = vimgrep_arguments,
@@ -424,44 +410,7 @@ require("lualine").setup({
 		-- component_separators = { left = '', right = ''},
 		-- component_separators = { left = '', right = ''},
 		-- section_separators = { left = '', right = ''},
-		disabled_filetypes = {
-			statusline = {},
-			winbar = {},
-		},
-		ignore_focus = {},
-		always_divide_middle = true,
-		globalstatus = false,
-		refresh = {
-			statusline = 1000,
-			tabline = 1000,
-			winbar = 1000,
-		},
 	},
-	sections = {
-		lualine_a = { "mode" },
-		lualine_b = { "branch", "diff", "diagnostics" },
-		lualine_c = { "filename" },
-		lualine_x = { "encoding", "fileformat", "filetype" },
-		lualine_y = { "progress" },
-		lualine_z = { "location" },
-	},
-	inactive_sections = {
-		lualine_a = {},
-		lualine_b = {},
-		lualine_c = { "filename" },
-		lualine_x = { "location" },
-		lualine_y = {},
-		lualine_z = {},
-	},
-	tabline = {},
-	winbar = {},
-	inactive_winbar = {},
-	extensions = {},
-})
-require("indent_blankline").setup({
-	-- for example, context is off by default, use this to turn it on
-	show_current_context = true,
-	show_current_context_start = true,
 })
 -- --dap
 require("dap").adapters.cppdbg = {
