@@ -20,8 +20,8 @@ return {
 	}),
 	font_size = 16.0,
 	hide_tab_bar_if_only_one_tab = true,
-	initial_rows = 25,
-	initial_cols = 100,
+	initial_rows = 24,
+	initial_cols = 80,
 	default_prog = { "fish" },
 	mouse_bindings = {
 		-- Ctrl-click will open the link under the mouse cursor

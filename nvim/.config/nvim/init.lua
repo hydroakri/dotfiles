@@ -76,7 +76,7 @@ vim.o.termguicolors = true
 vim.opt.termguicolors = true
 -- 不可见字符的显示，这里只把空格显示为一个点
 vim.opt.list = true
-vim.opt.listchars = { space = "⋅", tab = "> ", eol = "↵" }
+vim.opt.listchars = { space = " ", tab = "> ", eol = "↵" }
 vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
@@ -87,36 +87,14 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.wo.foldlevel = 99
 
 -- font
---vim.g.gui_font_default_size = 16
---vim.g.gui_font_face = "FiraCode Nerd Font"
+--vim.g.gui_font_default_size = 14
+--vim.g.gui_font_face = "Hack Nerd Font"
 --vim.g.gui_font_size = vim.g.gui_font_default_size
-
-RefreshGuiFont = function()
-	vim.opt.guifont = string.format("%s:h%s", vim.g.gui_font_face, vim.g.gui_font_size)
-end
-
-ResizeGuiFont = function(delta)
-	vim.g.gui_font_size = vim.g.gui_font_size + delta
-	RefreshGuiFont()
-end
-
-ResetGuiFont = function()
-	vim.g.gui_font_size = vim.g.gui_font_default_size
-	RefreshGuiFont()
-end
--- Call function on startup to set default value
-ResetGuiFont()
 
 -- keybind
 local map = vim.api.nvim_set_keymap
 local opt = { noremap = true, silent = true }
 
-vim.keymap.set({ "i" }, "<C-=>", function()
-	ResizeGuiFont(1)
-end, opt)
-vim.keymap.set({ "i" }, "<C-->", function()
-	ResizeGuiFont(-1)
-end, opt)
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -154,12 +132,13 @@ map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
 
 -- toggle
-map("n", "tf", ":NvimTreeFindFileToggle<CR>", opt)
+map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
 map("n", "<leader>tt", ":ToggleTerm direction=float<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
 map("t", "<Esc>", "<C-\\><C-n><cmd>ToggleTerm direction=float<CR>", opt)
 map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
 map("n", "<leader>tsd", ":SessionManager delete_session<CR>", opt)
+map("n", "<leader>tm", ":MinimapToggle<CR>", opt)
 
 -- git
 map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
@@ -211,7 +190,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- install plugins
 require("lazy").setup({
 	{ "catppuccin/nvim", name = "catppuccin" },
-	{ "lunarvim/lunar.nvim" },
+	{ "joshdick/onedark.vim" },
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
@@ -230,6 +209,7 @@ require("lazy").setup({
 			vim.fn["mkdp#util#install"]()
 		end,
 	},
+	{ "wfxr/minimap.vim", build = "cargo install --locked code-minimap" },
 	{ "lukas-reineke/indent-blankline.nvim" },
 	{ "karb94/neoscroll.nvim" },
 	{ "mg979/vim-visual-multi", version = "*" },
@@ -248,7 +228,7 @@ require("lazy").setup({
 	{ "Exafunction/codeium.vim" },
 	{ "Shatur/neovim-session-manager" },
 	{ "folke/trouble.nvim" },
-	{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] } },
+	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] } },
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
@@ -268,13 +248,19 @@ require("nvim-autopairs").setup()
 require("neoscroll").setup()
 require("toggleterm").setup()
 require("symbols-outline").setup()
-require("nvim-tree").setup()
 require("treesitter-context").setup()
 require("gitsigns").setup()
 require("color-picker").setup()
 require("Comment").setup()
 require("trouble").setup()
-require("noice").setup()
+--require("noice").setup()
+
+require("nvim-tree").setup({
+	view = {
+		width = 20,
+	},
+})
+
 -- cmp config begin
 local cmp = require("cmp")
 cmp.setup({
@@ -408,22 +394,16 @@ require("indent_blankline").setup({
 })
 -- indent blank end --
 
-table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "--hidden")
-table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "--glob")
-table.insert({ unpack(require("telescope.config").values.vimgrep_arguments) }, "!**/.git/*")
-require("telescope").setup({
-	extensions = {
-		fzf = {
-			fuzzy = true, -- false will only do exact matching
-			override_generic_sorter = true, -- override the generic sorter
-			override_file_sorter = true, -- override the file sorter
-			case_mode = "smart_case", -- or "ignore_case" or "respect_case"
-			-- the default case_mode is "smart_case"
-		},
-	},
+local telescope = require("telescope")
+local telescopeConfig = require("telescope.config")
+local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
+table.insert(vimgrep_arguments, "--hidden")
+table.insert(vimgrep_arguments, "--glob")
+table.insert(vimgrep_arguments, "!**/.git/*")
+
+telescope.setup({
 	defaults = {
-		-- `hidden = true` is not supported in text grep commands.
-		vimgrep_arguments = { unpack(require("telescope.config").values.vimgrep_arguments) },
+		vimgrep_arguments = vimgrep_arguments,
 	},
 	pickers = {
 		find_files = {
