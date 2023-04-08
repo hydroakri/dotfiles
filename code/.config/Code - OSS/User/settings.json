@@ -5,7 +5,7 @@
         "editor.formatOnType": true, //敲完一行代码自动格式化
         "editor.smoothScrolling": true, //使编辑器滚动变平滑
         "editor.tabCompletion": "on", //启用Tab补全
-        "editor.fontFamily": "'FiraCode Nerd Font','Sarasa Term SC Semibold','Cascadia Code'",
+        "editor.fontFamily": "'Hack Nerd Font','Sarasa Term SC Semibold','Cascadia Code'",
         "editor.fontLigatures": true, //启用字体连字
         "editor.detectIndentation": false, //不基于文件内容选择缩进用制表符还是空格
         /*
@@ -160,14 +160,12 @@
         "leetcode.hint.commandShortcut": false,
         "scm.inputFontSize": 16,
         "editor.codeActionsOnSave": {},
-        "window.menuBarVisibility": "toggle",
         "telemetry.telemetryLevel": "off",
         "search.actionsPosition": "auto",
         "workbench.editor.pinnedTabSizing": "shrink",
         "workbench.editor.showTabs": false,
         "workbench.editor.tabSizing": "shrink",
-        "workbench.colorTheme": "Dracula",
         "editor.fontWeight": "500",
-        "workbench.activityBar.visible": false,
         "window.zoomLevel": 2,
+        "workbench.colorTheme": "Catppuccin Mocha",
     }

@@ -227,10 +227,10 @@ require("lazy").setup({
 	{ "ggandor/leap.nvim", config = true },
 	{ "folke/which-key.nvim", config = true },
 	{ "numToStr/Comment.nvim", config = true },
-	{ "karb94/neoscroll.nvim", config = true },
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
+    { "ellisonleao/glow.nvim", config = true, cmd = "Glow" },
 	{
 		"iamcco/markdown-preview.nvim",
 		build = function()

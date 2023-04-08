@@ -6,7 +6,7 @@
         "margin-top": 0,
         "margin-bottom": 0,
         "modules-left": ["custom/launcher","wlr/taskbar","hyprland/window"],
-        "modules-center": ["custom/mpris","wlr/workspaces"],
+        "modules-center": ["mpris","wlr/workspaces"],
         "modules-right": ["tray","backlight", "battery", "clock"],
 
         "pulseaudio": {
@@ -35,17 +35,16 @@
         },
 
         "mpris": {
-            "max-length": 10,
-            "format": "{player_icon}",
-            "format-paused": "{status_icon}",
-            "player-icons": {
-                "default": "▶",
-                "mpv": "🎵"
-            },
-            "status-icons": {
-                "paused": "⏸"
-            },
-            //"ignored-players": ["firefox"]
+        	"format": "{player_icon} {title}",
+        	"format-paused": "{status_icon} <i>{title}</i>",
+        	"player-icons": {
+        		"default": "▶",
+        		"mpv": "🎵"
+        	},
+        	"status-icons": {
+        		"paused": "⏸"
+        	},
+        	// "ignored-players": ["firefox"]
         },
 
         "cpu": {

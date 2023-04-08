@@ -6,7 +6,7 @@ echo "(0) X11"
 echo "(1) gnome wayland"
 echo "(2) hyprland"
 echo "(3) hyprland ex"
-echo "(4) X11 single app"
+echo "(4) gdm"
 echo "(5) plasma-wayland"
 echo "(6) plasma-wayland ex"
 echo "(9) Exit Menu"
@@ -28,9 +28,7 @@ case $input in
     WLR_DRM_DEVICES=/dev/dri/card0 Hyprland;;
     4)
     sleep 1
-    #xrandr --setprovideroutputsource modesetting NVIDIA-0
-    xrandr --auto
-    exec virt-manager;;
+    systemctl start gdm --now;;
     5)
     sleep 1
     WLR_DRM_DEVICES=/dev/dri/card0:/dev/dri/card1 startplasma-wayland;;
