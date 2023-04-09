@@ -1,21 +1,21 @@
 [character]
-error_symbol = "[λ](bold #ff5555)"
-success_symbol = "[λ](bold #f8f8f2)"
+error_symbol = "[>](bold #ed8796)"
+success_symbol = "[>](bold #cad3f5)"
 
 [cmd_duration]
-style = "bold #f1fa8c"
+style = "bold #f4dbd6"
 
 [directory]
-style = "bold #50fa7b"
+style = "bold #a6da95"
 
 [git_branch]
-style = "bold #ff79c6"
+style = "bold #f5a97f"
 
 [git_status]
-style = "bold #ff5555"
+style = "bold #ee99a0"
 
 [hostname]
-style = "bold #ff5555"
+style = "bold #ee99a0"
 
 [username]
 format = "[$user]($style) on "

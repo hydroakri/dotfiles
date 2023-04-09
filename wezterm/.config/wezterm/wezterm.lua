@@ -22,7 +22,7 @@ return {
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 24,
 	initial_cols = 80,
-	default_prog = { "fish" },
+	-- default_prog = { "bash" },
 	mouse_bindings = {
 		-- Ctrl-click will open the link under the mouse cursor
 		{
@@ -33,10 +33,10 @@ return {
 	},
 
 	-- color_scheme = "Dracula (Official)", -- or Macchiato, Frappe, Latte
-	color_scheme = "Catppuccin Mocha", -- or Macchiato, Frappe, Latte
+	-- color_scheme = "Catppuccin Mocha", -- or Macchiato, Frappe, Latte
 	-- color_scheme = "Catppuccin Frappe", -- or Macchiato, Frappe, Latte
 	-- color_scheme = "Catppuccin Latte", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Catppuccin Macchiato", -- or Macchiato, Frappe, Latte
+	 color_scheme = "Catppuccin Macchiato", -- or Macchiato, Frappe, Latte
 	-- color_scheme = "Solarized Dark (base16)",
 	-- color_scheme = "Solarized Light (base16)",
 	window_decorations = "RESIZE",

@@ -241,7 +241,11 @@ require("lazy").setup({
 })
 
 -- plugins config
-vim.cmd.colorscheme("catppuccin-mocha")
+require("catppuccin").setup({
+    ransparent_background = true,
+})
+
+vim.cmd.colorscheme("catppuccin-macchiato")
 require("leap").add_default_mappings()
 
 require("nvim-tree").setup({
