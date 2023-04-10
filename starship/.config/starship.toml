@@ -1,6 +1,6 @@
 [character]
-error_symbol = "[>](bold #ed8796)"
-success_symbol = "[>](bold #cad3f5)"
+error_symbol = "[❯](bold #ed8796)"
+success_symbol = "[❯](bold #cad3f5)"
 
 [cmd_duration]
 style = "bold #f4dbd6"

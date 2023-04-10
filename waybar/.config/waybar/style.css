@@ -1,10 +1,10 @@
 * {
     border: none;
     border-radius: 5px;
-    font-family: Inter Medium,Source Han Sans CN Medium, Montserrat, Roboto, Helvetica, Arial, sans-serif;
+    font-family: Sarasa UI SC,Source Han Sans CN Medium, Montserrat, Roboto, Helvetica, Arial, sans-serif;
     font-size: 16px;
     font-weight: bold;
-    min-height: 22px;
+    min-height: 24px;
 
 }
 
@@ -24,9 +24,9 @@ window#waybar {
     background: transparent;
 }
 window > box {
-    margin-left: 4px;
-    margin-right: 4px;
-    margin-top: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
     background-color: @base;
 }
 #custom-launcher {
