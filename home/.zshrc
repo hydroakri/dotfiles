@@ -26,3 +26,4 @@ alias cd='z'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+alias neovide='WINIT_UNIX_BACKEND=x11 neovide'

@@ -86,9 +86,7 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.wo.foldlevel = 99
 
 -- font
---vim.g.gui_font_default_size = 14
---vim.g.gui_font_face = "Hack Nerd Font"
---vim.g.gui_font_size = vim.g.gui_font_default_size
+vim.opt.guifont = { "Hack_Nerd_Font", ":h12" }
 
 -- keybind
 local map = vim.api.nvim_set_keymap

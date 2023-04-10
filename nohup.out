@@ -1,0 +1,245 @@
+[2023-04-10 12:02:29.528] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:02:29.528] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:02:29.533] [info] Hyprland IPC starting
+[2023-04-10 12:02:29.538] [warning] module wlr/workspaces: Unknown module: wlr/workspaces
+[2023-04-10 12:02:29.539] [warning] As using a timezone, some format args may be missing as the date library haven't got a release since 2018.
+[2023-04-10 12:02:29.650] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+
+** (waybar:115971): WARNING **: 12:02:29.655: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.655: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.655: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.655: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.655: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.656: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.896: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.896: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.896: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:115971): WARNING **: 12:02:29.896: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+[2023-04-10 12:02:50.408] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:02:50.408] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:02:50.412] [info] Hyprland IPC starting
+[2023-04-10 12:02:50.417] [warning] module wlr/workspaces: Unknown module: wlr/workspaces
+[2023-04-10 12:02:50.419] [warning] As using a timezone, some format args may be missing as the date library haven't got a release since 2018.
+[2023-04-10 12:02:50.528] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+
+** (waybar:116103): WARNING **: 12:02:50.533: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.533: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.533: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.533: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.534: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.534: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.534: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.534: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.896: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.896: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.896: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:116103): WARNING **: 12:02:50.896: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+[2023-04-10 12:09:08.823] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:09:08.823] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:09:08.823] [error] style.css:7:10'height' is not a valid property name
+[2023-04-10 12:09:12.183] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:09:12.183] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:09:12.184] [error] style.css:7:10'height' is not a valid property name
+[2023-04-10 12:12:34.365] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:12:34.365] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:12:34.371] [info] Hyprland IPC starting
+[2023-04-10 12:12:34.376] [warning] module wlr/workspaces: Unknown module: wlr/workspaces
+[2023-04-10 12:12:34.377] [warning] As using a timezone, some format args may be missing as the date library haven't got a release since 2018.
+[2023-04-10 12:12:34.409] [error] mpris[playerctld]: GDBus.Error:com.github.altdesktop.playerctld.NoActivePlayer: No player is being controlled by playerctld
+[2023-04-10 12:12:34.476] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:34.476] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+
+** (waybar:118875): WARNING **: 12:12:34.481: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.481: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.481: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.481: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.481: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.482: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.896: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.896: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.896: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:118875): WARNING **: 12:12:34.896: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+[2023-04-10 12:12:36.950] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:38.653] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:38.653] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:39.756] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:40.653] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:40.653] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:41.430] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:43.124] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:43.124] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:43.881] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:44.721] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:44.721] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:47.599] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:48.507] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:48.507] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:50.999] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:51.892] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:51.892] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:52.773] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:53.792] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:53.792] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:12:54.631] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:12:55.569] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:12:55.569] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:03.932] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:14:03.933] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:14:03.939] [info] Hyprland IPC starting
+[2023-04-10 12:14:03.943] [warning] module wlr/workspaces: Unknown module: wlr/workspaces
+[2023-04-10 12:14:03.945] [warning] As using a timezone, some format args may be missing as the date library haven't got a release since 2018.
+[2023-04-10 12:14:03.973] [error] mpris[playerctld]: GDBus.Error:com.github.altdesktop.playerctld.NoActivePlayer: No player is being controlled by playerctld
+[2023-04-10 12:14:04.044] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:04.044] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.049: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.050: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.396: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.396: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.396: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:120259): WARNING **: 12:14:04.396: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+[2023-04-10 12:14:08.217] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:09.891] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:09.891] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:10.612] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:11.440] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:11.440] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:12.300] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:13.093] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:13.093] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:13.836] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:14.815] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:14.815] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:15.487] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:16.288] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:16.288] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:16.813] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:18.289] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:18.289] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:19.002] [info] Bar configured (width: 1920, height: 32) for output: eDP-1
+[2023-04-10 12:14:19.877] [warning] Requested height: 32 is less than the minimum height: 36 required by the modules
+[2023-04-10 12:14:19.877] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+[2023-04-10 12:14:48.247] [info] Using configuration file /home/hydroakri/.config/waybar/config
+[2023-04-10 12:14:48.248] [info] Using CSS file /home/hydroakri/.config/waybar/style.css
+[2023-04-10 12:14:48.253] [info] Hyprland IPC starting
+[2023-04-10 12:14:48.257] [warning] module wlr/workspaces: Unknown module: wlr/workspaces
+[2023-04-10 12:14:48.259] [warning] As using a timezone, some format args may be missing as the date library haven't got a release since 2018.
+[2023-04-10 12:14:48.288] [error] mpris[playerctld]: GDBus.Error:com.github.altdesktop.playerctld.NoActivePlayer: No player is being controlled by playerctld
+[2023-04-10 12:14:48.356] [info] Bar configured (width: 1920, height: 36) for output: eDP-1
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.361: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.362: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.646: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.646: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.646: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:121440): WARNING **: 12:14:48.646: Status Notifier Item with bus name ':1.447' and object path '/org/ayatana/NotificationItem/indicator_solaar' is already registered
+[2023-04-10 12:16:19.081] [warning] Failed to update properties: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: Object does not exist at path “/org/ayatana/NotificationItem/indicator_solaar”
+
+** (waybar:121440): WARNING **: 12:16:19.232: Status Notifier Item with bus name ':1.8' and object path '/org/ayatana/NotificationItem/nm_applet' is already registered
+
+** (waybar:121440): WARNING **: 12:16:19.232: Status Notifier Item with bus name ':1.7' and object path '/org/ayatana/NotificationItem/BlueBerry' is already registered
+
+** (waybar:121440): WARNING **: 12:16:19.232: Status Notifier Item with bus name ':1.32' and object path '/org/ayatana/NotificationItem/pasystray' is already registered
