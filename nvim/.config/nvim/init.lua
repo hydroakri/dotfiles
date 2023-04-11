@@ -216,7 +216,7 @@ require("lazy").setup({
 	{ "sindrets/diffview.nvim" },
 	{ "lewis6991/gitsigns.nvim", config = true },
 	{ "lukas-reineke/indent-blankline.nvim", config = true },
-	{ "wfxr/minimap.vim", build = "cargo install --locked code-minimap" },
+	{ "petertriho/nvim-scrollbar", config = true },
 	{ "nvim-lualine/lualine.nvim", config = true },
 	{ "RRethy/vim-illuminate" },
 	{ "mg979/vim-visual-multi", version = "*" },
