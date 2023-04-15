@@ -188,7 +188,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 require("lazy").setup({
     -- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
-	{ "joshdick/onedark.vim" },
+	{ "rebelot/kanagawa.nvim" },
+	{ "navarasu/onedark.nvim" },
     -- lsp/completion/dap/spellcheck
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
@@ -228,7 +229,6 @@ require("lazy").setup({
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
-    { "ellisonleao/glow.nvim", config = true, cmd = "Glow" },
 	{
 		"iamcco/markdown-preview.nvim",
 		build = function()
@@ -238,12 +238,17 @@ require("lazy").setup({
 	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
 })
 
+vim.cmd.colorscheme("onedark")
 -- plugins config
+-- Lua
+require('onedark').setup {
+    style = 'warmer'
+}
+require('onedark').load()
 require("catppuccin").setup({
-    ransparent_background = true,
+    transparent_background = true,
 })
 
-vim.cmd.colorscheme("catppuccin-macchiato")
 require("leap").add_default_mappings()
 
 require("nvim-tree").setup({
@@ -404,7 +409,7 @@ require("lualine").setup({
 	options = {
 		icons_enabled = true,
 		theme = "auto",
-		component_separators = { left = "", right = "" },
+		component_separators = { left = " ", right = " " },
 		section_separators = { left = " ", right = " " },
 		-- component_separators = { left = '', right = '' },
 		-- section_separators = { left = '', right = ''},

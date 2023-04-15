@@ -7,13 +7,16 @@
 
 }
 
+@define-color base   #333333;
+@define-color text   #e3e3e3;
+
 /*mocha*/
 /* @define-color base   #1e1e2e;
 @define-color text     #cdd6f4; */
 
 /*macchiato*/
-@define-color base   #24273a;
-@define-color text   #cad3f5;
+/* @define-color base   #24273a;
+@define-color text   #cad3f5; */
 
 /*latte*/
 /* @define-color base   #eff1f5; */

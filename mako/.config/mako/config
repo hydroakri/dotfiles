@@ -1,21 +1,19 @@
-font=Inter Medium 14
+font=Hack Nerd Font 14
+background-color=#1a1a1a
+text-color=#e3e3e3
 
 # mocha
-
-background-color=#1e1e2e
-text-color=#cdd6f4
+#background-color=#1e1e2e
+#text-color=#cdd6f4
 border-color=#89b4fa
 progress-color=over #313244
-
 [urgency=high]
 border-color=#fab387
 
 #latte
-
 # background-color=#eff1f5
 # text-color=#4c4f69
 # border-color=#1e66f5
 # progress-color=over #ccd0da
-#
 # [urgency=high]
 # border-color=#fe640by

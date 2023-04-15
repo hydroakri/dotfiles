@@ -14,8 +14,8 @@ return {
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 		{
-		    family = "Source Han Sans CN Regular",
-		    harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
+			family = "Source Han Sans CN Regular",
+			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 	}),
 	font_size = 16.0,
@@ -36,9 +36,10 @@ return {
 	-- color_scheme = "Catppuccin Mocha", -- or Macchiato, Frappe, Latte
 	-- color_scheme = "Catppuccin Frappe", -- or Macchiato, Frappe, Latte
 	-- color_scheme = "Catppuccin Latte", -- or Macchiato, Frappe, Latte
-	 color_scheme = "Catppuccin Macchiato", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Solarized Dark (base16)",
-	-- color_scheme = "Solarized Light (base16)",
+	-- color_scheme = "Catppuccin Macchiato", -- or Macchiato, Frappe, Latte
+	-- color_scheme = "Builtin Solarized Dark",
+	-- color_scheme = "Builtin Solarized Light",
+	 color_scheme = "Tomorrow Night Eighties",
 	window_decorations = "RESIZE",
 	-- window_background_opacity = 0.8,
 	window_padding = {
