@@ -33,8 +33,3 @@ source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring
 fpath=(usr/share/zsh/site-functions/ $fpath)
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
-
-if [[ $(ps --no-header --pid=$PPID --format=cmd) != "fish" ]]
-then
-    exec fish
-fi

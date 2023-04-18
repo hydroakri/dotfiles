@@ -238,17 +238,8 @@ require("lazy").setup({
 	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
 })
 
-vim.cmd.colorscheme("onedark")
+vim.cmd.colorscheme("kanagawa-dragon")
 -- plugins config
--- Lua
-require('onedark').setup {
-    style = 'warmer'
-}
-require('onedark').load()
-require("catppuccin").setup({
-    transparent_background = true,
-})
-
 require("leap").add_default_mappings()
 
 require("nvim-tree").setup({
