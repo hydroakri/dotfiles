@@ -1,6 +1,7 @@
 export PATH="$PATH:/home/hydroakri"
 SAVEHIST=999999999
 HISTFILE=~/.zsh_history
+bindkey -v
 
 autoload -U compinit
 autoload -U promptinit

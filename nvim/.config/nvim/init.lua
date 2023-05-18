@@ -86,7 +86,7 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.wo.foldlevel = 99
 
 -- font
-vim.opt.guifont = { "Hack_Nerd_Font", ":h12" }
+vim.opt.guifont = { "Hack Nerd Font", ":h12" }
 
 -- keybind
 local map = vim.api.nvim_set_keymap
@@ -186,11 +186,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- install plugins
 require("lazy").setup({
-    -- colorscheme
+	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
 	{ "navarasu/onedark.nvim" },
-    -- lsp/completion/dap/spellcheck
+	-- lsp/completion/dap/spellcheck
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
@@ -208,7 +208,7 @@ require("lazy").setup({
 	{ "simrat39/symbols-outline.nvim", config = true },
 	{ "sbdchd/neoformat" },
 	{ "mfussenegger/nvim-dap" },
-    -- basic ide
+	-- basic ide
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },

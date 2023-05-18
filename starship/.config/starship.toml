@@ -1,22 +1,19 @@
-[character]
-error_symbol = "[❯](bold #ed8796)"
-success_symbol = "[❯](bold #cad3f5)"
+# Use custom format:
+format="$username@$hostname $directory$character$git_branch"
 
-[cmd_duration]
-style = "bold #f4dbd6"
+[character]
 
 [directory]
-style = "bold #a6da95"
+style = 'bold grey'
 
 [git_branch]
-style = "bold #f5a97f"
-
-[git_status]
-style = "bold #ee99a0"
 
 [hostname]
-style = "bold #ee99a0"
+ssh_only = false
+format = '[$ssh_symbol](bold blue)[$hostname](bold grey)'
+disabled = false
 
 [username]
-format = "[$user]($style) on "
-style_user = "bold #bd93f9"
+format = '[$user](bold green)'
+disabled = false
+show_always = true

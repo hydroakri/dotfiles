@@ -6,8 +6,8 @@
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "modules-left": ["custom/launcher","wlr/taskbar","hyprland/window"],
-        "modules-center": ["mpris","wlr/workspaces"],
+        "modules-left": ["custom/launcher","wlr/workspaces","wlr/taskbar","hyprland/window"],
+        "modules-center": ["mpris"],
         "modules-right": ["tray","backlight", "battery", "clock"],
 
         "pulseaudio": {
