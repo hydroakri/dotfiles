@@ -86,7 +86,7 @@ vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 vim.wo.foldlevel = 99
 
 -- font
-vim.opt.guifont = { "Hack Nerd Font", ":h12" }
+--vim.opt.guifont = { "Hack Nerd Font", ":h12" }
 
 -- keybind
 local map = vim.api.nvim_set_keymap
@@ -189,7 +189,7 @@ require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
-	{ "navarasu/onedark.nvim" },
+	{ "projekt0n/github-nvim-theme" },
 	-- lsp/completion/dap/spellcheck
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
@@ -238,7 +238,7 @@ require("lazy").setup({
 	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
 })
 
-vim.cmd.colorscheme("kanagawa-dragon")
+vim.cmd.colorscheme("github_dark_high_contrast")
 -- plugins config
 require("leap").add_default_mappings()
 

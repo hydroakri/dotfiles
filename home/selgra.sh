@@ -25,7 +25,7 @@ case $input in
     Hyprland;;
     3)
     sleep 1
-    WLR_DRM_DEVICES=/dev/dri/card0 Hyprland;;
+    WLR_DRM_DEVICES=/dev/dri/card1:/dev/dri/card0 Hyprland;;
     4)
     sleep 1
     systemctl start gdm --now;;

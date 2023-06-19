@@ -20,8 +20,8 @@ return {
 	}),
 	font_size = 16.0,
 	hide_tab_bar_if_only_one_tab = true,
-	initial_rows = 24,
-	initial_cols = 80,
+	initial_rows = 29,
+	initial_cols = 82,
 	-- default_prog = { "bash" },
 	mouse_bindings = {
 		-- Ctrl-click will open the link under the mouse cursor
@@ -42,6 +42,7 @@ return {
 	 color_scheme = "Tomorrow Night Eighties",
 	window_decorations = "RESIZE",
 	-- window_background_opacity = 0.8,
+    window_close_confirmation = 'NeverPrompt',
 	window_padding = {
 		left = 0,
 		right = 0,

@@ -12,8 +12,6 @@ zstyle ':completion:*' menu select
 zstyle ':completion:*' rehash true
 
 export EDITOR=nvim
-alias sudo='doas'
-alias sudoedit='doas rnano'
 alias vim='nvim'
 alias vi='nvim'
 alias ls='lsd'
@@ -21,6 +19,7 @@ alias find='fd'
 alias grep='rg'
 alias ack='ag'
 alias cd='z'
+alias zj='zellij'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
 alias neovide='WINIT_UNIX_BACKEND=x11 neovide'
 

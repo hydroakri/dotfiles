@@ -8,27 +8,27 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 font:
   normal:
-    family: Hack Nerd Font  
+    family: "Sarasa Term SC" 
     style: Regular
 
   bold:
-    family: Hack Nerd Font  
+    family: "Sarasa Term SC" 
     style: Bold
 
   italic:
-    family: Hack Nerd Font  
+    family: "Sarasa Term SC" 
     style: Italic
 
   bold_italic:
-    family: Hack Nerd Font  
+    family: "Sarasa Term SC" 
     style: Bold Italic
 
-  size: 16
+  size: 18
 
 window:
    dimensions:
-     columns: 80
-     lines: 24
+     columns: 100
+     lines: 30
 
     ##dracula
     #colors:
