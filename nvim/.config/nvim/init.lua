@@ -198,18 +198,20 @@ require("lazy").setup({
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim", config = true },
 	{ "williamboman/mason-lspconfig.nvim", config = true },
-	-- treesitter
-	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
-	{ "nvim-treesitter/nvim-treesitter-context", config = true },
-	-- lsp && treesitter
 	{ "simrat39/symbols-outline.nvim", config = true },
-	{ "sbdchd/neoformat" },
-	{ "mfussenegger/nvim-dap" },
+	{ "j-hui/fidget.nvim", tag = "legacy", config = true },
 	{
 		"ray-x/navigator.lua",
 		dependencies = { { "ray-x/guihua.lua", build = "cd lua/fzy && make" }, { "neovim/nvim-lspconfig" } },
 		config = true,
 	},
+	-- treesitter
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+	{ "nvim-treesitter/nvim-treesitter-context", config = true },
+	-- format
+	{ "sbdchd/neoformat" },
+	-- debug
+	{ "mfussenegger/nvim-dap" },
 	-- git
 	{ "sindrets/diffview.nvim" },
 	{ "lewis6991/gitsigns.nvim", config = true },
@@ -225,11 +227,21 @@ require("lazy").setup({
 	{ "RRethy/vim-illuminate" },
 	{ "mg979/vim-visual-multi", version = "*" },
 	{ "Shatur/neovim-session-manager" },
-	{ "folke/which-key.nvim", config = true },
 	{ "numToStr/Comment.nvim", config = true },
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
+	{ "karb94/neoscroll.nvim", config = true },
+	{ "lambdalisue/suda.vim" },
+	{
+		"folke/which-key.nvim",
+		config = true,
+		event = "VeryLazy",
+		init = function()
+			vim.o.timeout = true
+			vim.o.timeoutlen = 0
+		end,
+	},
 	-- language
 	{ "elkowar/yuck.vim" },
 	{
@@ -238,7 +250,6 @@ require("lazy").setup({
 			vim.fn["mkdp#util#install"]()
 		end,
 	},
-	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
 	-- jump
 	{
 		"folke/flash.nvim",
@@ -520,7 +531,7 @@ require("bufferline").setup({
 })
 
 require("nvim-treesitter.configs").setup({
-	ensure_installed = { "c", "lua", "vim", "help", "query" },
+	ensure_installed = { "c", "lua", "vim", "query" },
 	auto_install = true,
 	-- 启用代码高亮功能
 	highlight = {
