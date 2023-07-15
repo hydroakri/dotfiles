@@ -1,6 +1,6 @@
 configuration {
   terminal: "alacritty";
-  font: "Inter Medium 14";
+  font: "Sarasa UI SC 14";
   icon-theme: "Papirus";
   modi: "combi,window,drun";
   Combi-modi: "drun,window";
@@ -35,12 +35,23 @@ configuration {
    red:        #d20f39;
    cyan:       #1e66f5;
    emphasis:   #cad3f5;
-   text:       #6e738d;
+   text:       #e3e3e3;
    text-alt:   #cad3f5;
-   bg:         #24273a;
-   input-bg: #24273a;
-   input-bg-alt: #24273a;
-   background-color: #24273a;
+   bg:         #333333;
+   input-bg: #333333;
+   input-bg-alt: #333333;
+   background-color: #333333;
+
+  /* macchiato */
+  /* red:        #d20f39; */
+  /* cyan:       #1e66f5; */
+  /* emphasis:   #cad3f5; */
+  /* text:       #6e738d; */
+  /* text-alt:   #cad3f5; */
+  /* bg:         #24273a; */
+  /* input-bg: #24273a; */
+  /* input-bg-alt: #24273a; */
+  /* background-color: #24273a; */
 
   /* latte */
   /* red:        #d20f39; */

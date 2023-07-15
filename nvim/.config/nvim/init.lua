@@ -157,11 +157,6 @@ map("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", opt)
 -- lsp keybind begin --
 map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
 map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
-map("n", "<Leader>lx", ":TroubleToggle workspace_diagnostics<CR>", opt)
-map("n", "<Leader>lr", ":TroubleToggle lsp_references<CR>", opt)
-map("n", "<Leader>lD", ":TroubleToggle lsp_type_definitions<CR>", opt)
-map("n", "<Leader>ld", ":TroubleToggle lsp_definitions<CR>", opt)
-map("n", "<Leader>li", ":TroubleToggle lsp_implementations<CR>", opt)
 
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
@@ -190,7 +185,7 @@ require("lazy").setup({
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
 	{ "projekt0n/github-nvim-theme" },
-	-- lsp/completion/dap/spellcheck
+	-- completion
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
@@ -198,37 +193,45 @@ require("lazy").setup({
 	{ "hrsh7th/nvim-cmp" },
 	{ "hrsh7th/cmp-vsnip" },
 	{ "hrsh7th/vim-vsnip" },
+	{ "Exafunction/codeium.vim" },
+	-- lsp
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim", config = true },
 	{ "williamboman/mason-lspconfig.nvim", config = true },
-	{ "Exafunction/codeium.vim" },
+	-- treesitter
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 	{ "nvim-treesitter/nvim-treesitter-context", config = true },
-	{ "folke/trouble.nvim", config = true },
+	-- lsp && treesitter
 	{ "simrat39/symbols-outline.nvim", config = true },
 	{ "sbdchd/neoformat" },
 	{ "mfussenegger/nvim-dap" },
+	{
+		"ray-x/navigator.lua",
+		dependencies = { { "ray-x/guihua.lua", build = "cd lua/fzy && make" }, { "neovim/nvim-lspconfig" } },
+		config = true,
+	},
+	-- git
+	{ "sindrets/diffview.nvim" },
+	{ "lewis6991/gitsigns.nvim", config = true },
 	-- basic ide
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/toggleterm.nvim", version = "*", config = true },
-	{ "sindrets/diffview.nvim" },
-	{ "lewis6991/gitsigns.nvim", config = true },
 	{ "lukas-reineke/indent-blankline.nvim", config = true },
 	{ "petertriho/nvim-scrollbar", config = true },
 	{ "nvim-lualine/lualine.nvim", config = true },
 	{ "RRethy/vim-illuminate" },
 	{ "mg979/vim-visual-multi", version = "*" },
-	{ "lambdalisue/suda.vim" },
 	{ "Shatur/neovim-session-manager" },
-	{ "ggandor/leap.nvim", config = true },
 	{ "folke/which-key.nvim", config = true },
 	{ "numToStr/Comment.nvim", config = true },
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
+	-- language
+	{ "elkowar/yuck.vim" },
 	{
 		"iamcco/markdown-preview.nvim",
 		build = function()
@@ -236,11 +239,64 @@ require("lazy").setup({
 		end,
 	},
 	--{ "folke/noice.nvim", dependencies = { "MunifTanjim/nui.nvim", --[[ "rcarriga/nvim-notify" ]] }, config = true },
+	-- jump
+	{
+		"folke/flash.nvim",
+		event = "VeryLazy",
+		opts = {},
+		keys = {
+			{
+				"s",
+				mode = { "n", "x", "o" },
+				function()
+					require("flash").jump()
+				end,
+				desc = "Flash",
+			},
+			{
+				"S",
+				mode = { "n", "o", "x" },
+				function()
+					require("flash").treesitter()
+				end,
+				desc = "Flash Treesitter",
+			},
+			{
+				"r",
+				mode = "o",
+				function()
+					require("flash").remote()
+				end,
+				desc = "Remote Flash",
+			},
+			{
+				"R",
+				mode = { "o", "x" },
+				function()
+					require("flash").treesitter_search()
+				end,
+				desc = "Treesitter Search",
+			},
+			{
+				"<c-s>",
+				mode = { "c" },
+				function()
+					require("flash").toggle()
+				end,
+				desc = "Toggle Flash Search",
+			},
+		},
+	},
 })
 
 vim.cmd.colorscheme("github_dark_high_contrast")
 -- plugins config
-require("leap").add_default_mappings()
+
+require("navigator").setup({
+	lsp = {
+		format_on_save = false,
+	},
+})
 
 require("nvim-tree").setup({
 	view = {
@@ -317,7 +373,6 @@ require("mason-lspconfig").setup_handlers({
 			capabilities = capabilities,
 		})
 	end,
-
 	["lua_ls"] = function()
 		require("lspconfig").lua_ls.setup({
 			capabilities = capabilities,
@@ -336,7 +391,6 @@ require("mason-lspconfig").setup_handlers({
 			},
 		})
 	end,
-
 	["clangd"] = function()
 		require("lspconfig").clangd.setup({
 			capabilities = capabilities,

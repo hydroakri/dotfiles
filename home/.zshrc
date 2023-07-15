@@ -27,9 +27,9 @@ alias neovide='WINIT_UNIX_BACKEND=x11 neovide'
 eval "$(starship init zsh)"
 eval "$(mcfly init zsh)"
 eval "$(zoxide init zsh)"
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
-fpath=(usr/share/zsh/site-functions/ $fpath)
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
+#source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+#source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+#fpath=(usr/share/zsh/site-functions/ $fpath)
+#bindkey '^[[A' history-substring-search-up
+#bindkey '^[[B' history-substring-search-down

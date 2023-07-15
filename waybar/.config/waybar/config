@@ -91,7 +91,7 @@
             "format-icons": ["", "", "", "", "", "", "", "", ""],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
-            "on-click": "killall swaybg && swaybg -i $(find ~/PICTURES/wllppr/. -name '*.*g' | shuf -n1) -m fill",
+            "on-click": "killall swaybg && swaybg -i $(find ~/Pictures/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "battery": {

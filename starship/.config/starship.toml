@@ -1,19 +1,19 @@
 # Use custom format:
-format="$username@$hostname $directory$character$git_branch"
-
-[character]
-
-[directory]
-style = 'bold grey'
-
-[git_branch]
-
-[hostname]
-ssh_only = false
-format = '[$ssh_symbol](bold blue)[$hostname](bold grey)'
-disabled = false
-
-[username]
-format = '[$user](bold green)'
-disabled = false
-show_always = true
+# format="$username@$hostname $directory$character$git_branch"
+#
+# [character]
+#
+# [directory]
+# style = 'bold grey'
+#
+# [git_branch]
+#
+# [hostname]
+# ssh_only = false
+# format = '[$ssh_symbol](bold blue)[$hostname](bold grey)'
+# disabled = false
+#
+# [username]
+# format = '[$user](bold green)'
+# disabled = false
+# show_always = true
