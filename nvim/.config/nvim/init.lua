@@ -83,68 +83,69 @@ vim.o.foldcolumn = "1" -- '0' is not bad
 vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
-vim.wo.foldmethod = "expr"
-vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
+--vim.wo.foldmethod = "expr"
+--vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- font
 --vim.opt.guifont = { "Hack Nerd Font", ":h12" }
 
--- keybind
+-- coq auto start [ need before 'require("lazy")' and 'require("coq")' ]
+vim.g.coq_settings = {
+	auto_start = "shut-up",
+	keymap = { recommended = false },
+}
+vim.g.indent_blankline_filetype_exclude = { "dashboard" }
+
+-- ========================================== keybind ====================================
 local map = vim.api.nvim_set_keymap
 local opt = { noremap = true, silent = true }
-
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
-
 -- package manager
 map("n", "<leader>pu", ":Lazy update<CR>", opt)
 map("n", "<leader>pm", ":Mason<CR>", opt)
 map("n", "<leader>pl", ":LspInfo<CR>", opt)
-
--- Navigation
-map("n", "<C-h>", "<C-w>h", opt)
-map("n", "<C-j>", "<C-w>j", opt)
-map("n", "<C-k>", "<C-w>k", opt)
-map("n", "<C-l>", "<C-w>l", opt)
-map("n", "<C-q>", "<C-w>q", opt)
--- Resize with arrows
-map("n", "<C-Up>", ":resize -2<CR>", opt)
-map("n", "<C-Down>", ":resize +2<CR>", opt)
-map("n", "<C-Left>", ":vertical resize -2<CR>", opt)
-map("n", "<C-Right>", ":vertical resize +2<CR>", opt)
+-- window
+map("n", "<A-h>", "<C-w>h", opt)
+map("n", "<A-j>", "<C-w>j", opt)
+map("n", "<A-k>", "<C-w>k", opt)
+map("n", "<A-l>", "<C-w>l", opt)
+map("n", "<A-q>", "<C-w>q", opt)
+map("n", "<A-v>", "<C-w>v", opt)
+map("n", "<A-s>", "<C-w>s", opt)
+map("n", "<A-Up>", ":horizontal resize -2<CR>", opt)
+map("n", "<A-Down>", ":horizontal resize +2<CR>", opt)
+map("n", "<A-Left>", ":vertical resize -2<CR>", opt)
+map("n", "<A-Right>", ":vertical resize +2<CR>", opt)
 -- bufferline 左右切换
 map("n", "<S-h>", ":BufferLineCyclePrev<CR>", opt)
 map("n", "<S-l>", ":BufferLineCycleNext<CR>", opt)
 map("n", "<Leader>b", ":BufferLinePickClose<CR>", opt)
 -- tabpage 切换
-map("n", "<S-j>", ":tabprevious<CR>", opt)
-map("n", "<S-k>", ":tabnext<CR>", opt)
+map("n", "<S-Tab>", ":tabprevious<CR>", opt)
+map("n", "<Tab>", ":tabnext<CR>", opt)
 -- Move text up and down
-map("n", "<A-j>", "<Esc>:m .+1<CR>==gi<Esc>", opt)
-map("n", "<A-k>", "<Esc>:m .-2<CR>==gi<Esc>", opt)
-
+map("n", "<A-u>", "<Esc>:m .+1<CR>==gi<Esc>", opt)
+map("n", "<A-d>", "<Esc>:m .-2<CR>==gi<Esc>", opt)
 -- search
 map("n", "<Leader>sf", ":Telescope fd hidden=true<CR>", opt)
 map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
-
 -- toggle
 map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
 map("n", "<leader>tt", ":ToggleTerm direction=tab<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
 map("t", "<Esc>", "<C-\\><C-n>", opt)
-map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
-map("n", "<leader>tsd", ":SessionManager delete_session<CR>", opt)
-map("n", "<leader>tm", ":MinimapToggle<CR>", opt)
-
+map("n", "<leader>tsl", ":Autosession search<CR>", opt)
+map("n", "<leader>tsd", ":Autosession delete<CR>", opt)
+map("n", "<leader>tp", ":Telescope projects<CR>", opt)
 -- git
 map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
 map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
 map("n", "<leader>gl", ":Gitsigns blame_line<CR>", opt)
 map("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", opt)
 map("n", "<leader>gd", ":DiffviewOpen<CR>", opt)
-
 -- debug
 map("n", "<leader>dp", "<cmd>lua require'dap'.toggle_breakpoint()<cr>", opt)
 map("n", "<leader>dP", "<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>", opt)
@@ -154,8 +155,7 @@ map("n", "<leader>di", "<cmd>lua require'dap'.step_into()<cr>", opt)
 map("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", opt)
 -- map("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", opt)
 -- map("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", opt)
-
---============================================ lsp keybind   ==============================================
+-- lsp keybind
 map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
 map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
 
@@ -179,19 +179,12 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
---=========================================== coq keybind ================================================
-
--- coq auto start [ need before 'require("lazy")' and 'require("coq")' ]    
-vim.g.coq_settings = {
-    auto_start = 'shut-up',
-    keymap = { recommended = false },
-}
-
 --=========================================== install plugins ===============================================
 require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
+	{ "folke/tokyonight.nvim" },
 	-- completion
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
@@ -228,7 +221,7 @@ require("lazy").setup({
 	-- basic ide
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons", config = true },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/toggleterm.nvim", version = "*", config = true },
 	{ "lukas-reineke/indent-blankline.nvim", config = true },
@@ -236,7 +229,9 @@ require("lazy").setup({
 	{ "nvim-lualine/lualine.nvim", config = true },
 	{ "RRethy/vim-illuminate" },
 	{ "mg979/vim-visual-multi", version = "*" },
-	{ "Shatur/neovim-session-manager" },
+	{ "rmagatti/auto-session" },
+	{ "ahmedkhalf/project.nvim" },
+	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
 	{ "numToStr/Comment.nvim", config = true },
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
@@ -311,8 +306,50 @@ require("lazy").setup({
 	},
 })
 
---========================================== plugins config ================================================
-vim.cmd("colorscheme kanagawa-dragon")
+--========================================== plug conf ================================================
+vim.cmd("colorscheme tokyonight-night")
+
+require("project_nvim").setup({})
+require("telescope").load_extension("projects")
+
+require("dashboard").setup({
+	config = {
+		header = {
+			[[⠀                    ⢠⠱⢐                      ]],
+			[[⠀             ⠀⢂⣀⡁⣅⢌⡤⡥⡦⡦⡢⡱⠬⣤⣅⣌⡀               ]],
+			[[⠀            ⣐⣤⢮⣞⢾⢽⣝⢾⢽⢽⣝⠔⡽⡵⣎⡚⠮⣗⡶⣤⡠⠠⠠⠂⡊  ⠀     ]],
+			[[⠀         ⡀⣶⣳⣻⣺⢽⣺⣝⢷⢽⢽⣝⣗⣗⢱⢹⣝⣗⡯⣗⢌⢫⢳⡱⡥⡁⢐ ⠀       ]],
+			[[⠀       ⢀⣲⢿⢽⣺⣺⣺⢽⣺⣺⢽⣝⣗⣗⢷⢽⡢⡹⣞⠾⣱⡳⣯⣻⢽⡻⣺⢿⡔⠐⠀       ]],
+			[[⠀      ⣔⡿⣼⣿⣽⣞⣞⡾⣱⢷⣝⣗⣗⢷⢽⣝⣗⡧⡪⡳⣽⡺⣽⣺⣺⢽⡽⡮⣯⣿⣕        ]],
+			[[⠀ ⠀  ⣠⣟⡾⡏⣾⣻⢾⣻⣟⣿⣳⣽⣾⣺⣺⢽⣳⣳⡳⡯⡣⣟⡵⡯⣗⣗⡯⣟⣽⣻⢽⢯⣻⣮⢄      ]],
+			[[⠀ ⠀⢡⠺⠉⣔⡿⡑⡷⣽⢸⣳⣳⢽⡲⡵⣳⢽⣺⢽⡺⣪⡯⣳⢹⣳⢯⢯⣗⣗⢯⣗⢷⢽⣺⢵⡇⣟⣿⡠     ]],
+			[[⠀     ⣗⡧⡱⣝⣮⡢⡳⢽⢝⣇⠯⣯⣻⣺⢽⢝⢵⢹⢢⣻⡺⣝⣗⢷⢽⢕⡯⣯⣻⣺⡳⡯⡺⣺⣽     ]],
+			[[⠀     ⢷⠑⡩⣗⢷⢹⡇⢯⣗⡗⣝⣞⣞⣞⡽⡡⡏⡇⡗⣗⣯⢳⢯⢯⢯⡳⡯⣗⣗⠧⡯⡯⡇⠓⡽⡅    ]],
+			[[⠀     ⡫⠐⠈⣺⣝⢔⢨⡊⢾⢝⡜⣞⣞⡮⡯⣊⢊⢎⢮⢺⣺⡪⡯⣯⣻⢼⢝⡷⡽⣑⢯⢯⡇ ⠈⢕    ]],
+			[[⠀     ⠐⠀⡁⣸⣿⣽ ⣻⣆⢻⠪⣳⣳⢯⡫⢬⡪⣏⡎⣞⣗⢇⢿⢵⣫⢮⢯⢯⣻⢐⢯⣟⡆       ]],
+			[[⠀      ⢡⣼⣯⣷⣿⣕⢽⣿⣼⡕⡵⡯⣗⢇⣗⢽⢜⡎⣺⡺⡨⡺⣽⡺⣕⢯⣻⣺⠀⣫⢾⡅       ]],
+			[[⠀      ⠘⣿⣽⢿⣾⣻⣟⣿⣽⡯⣺⢽⣳⢱⡧⡏⣯⢪⣸⢕⠡⢣⢳⡻⡜⣝⣞⡞ ⠈⢷⠅       ]],
+			[[⠀       ⢸⣿⣟⣷⣿⣻⣽⣯⣿⣪⢟⡎⣾⢯⣫⢾⢕⢇⣗⢯⠇⠐⡹⡕⢕⡷⡃  ⠈⡁       ]],
+			[[⠀      ⠀ ⠑⢧⣿⡾⣟⣯⣿⢷⢵⣻⢸⡫⣯⡺⣝⣕⢵⡫⣯⠁ ⠈⡊⢸⠇⠀ ⠀         ]],
+			[[⠀          ⠻⠟⠿⠻⠫⡻⡱⠏⡮⣯⡺⣝⣞⢮⢯⢯⠞⣊⠄  ⠈⠊            ]],
+			[[⠀               ⠌⢘⢀⢟⣞⢮⣳⡳⡝⠣⣕⡶                  ]],
+		},
+		shortcut = {
+			{
+				desc = "󰊳 Update",
+				group = "@property",
+				action = "Lazy update",
+				key = "u",
+			},
+			{
+				desc = " Mason",
+				group = "Number",
+				action = "Mason",
+				key = "m",
+			},
+		},
+	},
+})
 
 require("navigator").setup({
 	lsp = {
@@ -320,13 +357,13 @@ require("navigator").setup({
 	},
 })
 
-require("nvim-tree").setup({
-	view = {
-		width = 20,
-	},
+require("auto-session").setup({
+	log_level = "error",
+	auto_session_enable_last_session = true,
+	auto_save_enabled = true,
 })
 
---========================================= Set up lspconfig. =============================================
+-- Set up lspconfig.
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
 local coq = require("coq")
 require("mason-lspconfig").setup_handlers({
@@ -380,6 +417,8 @@ vim.cmd([[highlight line5 guifg=#61AFEF gui=nocombine]])
 vim.cmd([[highlight line6 guifg=#C678DD gui=nocombine]])
 require("indent_blankline").setup({
 	space_char_blankline = " ",
+	show_current_context = true,
+	show_current_context_start = true,
 	char_highlight_list = {
 		"line1",
 		"line2",
