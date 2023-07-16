@@ -68,7 +68,7 @@ vim.o.backup = false
 vim.o.writebackup = false
 vim.o.swapfile = false
 -- 自动补全不自动选中
---vim.g.completeopt = "menu,menuone,noselect,noinsert"
+vim.g.completeopt = "menu,menuone,noselect,noinsert"
 -- 样式
 vim.o.background = "dark"
 vim.o.termguicolors = true
@@ -79,11 +79,12 @@ vim.opt.listchars = { space = " ", tab = "> ", eol = "↵" }
 vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
+vim.o.foldcolumn = "1" -- '0' is not bad
+vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
 vim.wo.foldmethod = "expr"
 vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
--- 默认不要折叠
--- https://stackoverflow.com/questions/8316139/how-to-set-the-default-to-unfolded-when-you-open-a-file
-vim.wo.foldlevel = 99
 
 -- font
 --vim.opt.guifont = { "Hack Nerd Font", ":h12" }
@@ -154,7 +155,7 @@ map("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", opt)
 -- map("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", opt)
 -- map("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", opt)
 
--- lsp keybind begin --
+--============================================ lsp keybind   ==============================================
 map("n", "<Leader>lf", "<cmd>Neoformat<CR>", opt)
 map("n", "<Leader>ls", ":SymbolsOutline<CR>", opt)
 
@@ -177,14 +178,20 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		end, opts)
 	end,
 })
--- lsp keybind end --
 
--- install plugins
+--=========================================== coq keybind ================================================
+
+-- coq auto start [ need before 'require("lazy")' and 'require("coq")' ]    
+vim.g.coq_settings = {
+    auto_start = 'shut-up',
+    keymap = { recommended = false },
+}
+
+--=========================================== install plugins ===============================================
 require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
-	{ "projekt0n/github-nvim-theme" },
 	-- completion
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
@@ -194,6 +201,9 @@ require("lazy").setup({
 	{ "hrsh7th/cmp-vsnip" },
 	{ "hrsh7th/vim-vsnip" },
 	{ "Exafunction/codeium.vim" },
+	{ "ms-jpq/coq_nvim", branch = "coq" },
+	{ "ms-jpq/coq.artifacts", branch = "artifacts" },
+	{ "ms-jpq/coq.thirdparty", branch = "3p" },
 	-- lsp
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim", config = true },
@@ -232,6 +242,7 @@ require("lazy").setup({
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
 	{ "karb94/neoscroll.nvim", config = true },
+	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async" },
 	{ "lambdalisue/suda.vim" },
 	{
 		"folke/which-key.nvim",
@@ -300,8 +311,8 @@ require("lazy").setup({
 	},
 })
 
-vim.cmd.colorscheme("github_dark_high_contrast")
--- plugins config
+--========================================== plugins config ================================================
+vim.cmd("colorscheme kanagawa-dragon")
 
 require("navigator").setup({
 	lsp = {
@@ -315,78 +326,15 @@ require("nvim-tree").setup({
 	},
 })
 
--- cmp config begin
-local cmp = require("cmp")
-cmp.setup({
-	snippet = {
-		-- REQUIRED - you must specify a snippet engine
-		expand = function(args)
-			vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-			-- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-			-- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-			-- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-		end,
-	},
-	window = {
-		-- completion = cmp.config.window.bordered(),
-		-- documentation = cmp.config.window.bordered(),
-	},
-	mapping = cmp.mapping.preset.insert({
-		["<C-u>"] = cmp.mapping.scroll_docs(-4),
-		["<C-d>"] = cmp.mapping.scroll_docs(4),
-		["<C-Space>"] = cmp.mapping.complete(),
-		["<C-e>"] = cmp.mapping.abort(),
-		["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-	}),
-	sources = cmp.config.sources({
-		{ name = "nvim_lsp" },
-		{ name = "vsnip" }, -- For vsnip users.
-		-- { name = 'luasnip' }, -- For luasnip users.
-		-- { name = 'ultisnips' }, -- For ultisnips users.
-		-- { name = 'snippy' }, -- For snippy users.
-	}, {
-		{ name = "buffer" },
-	}),
-})
-
--- Set configuration for specific filetype.
-cmp.setup.filetype("gitcommit", {
-	sources = cmp.config.sources({
-		{ name = "cmp_git" }, -- You can specify the `cmp_git` source if you were installed it.
-	}, {
-		{ name = "buffer" },
-	}),
-})
-
--- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline({ "/", "?" }, {
-	mapping = cmp.mapping.preset.cmdline(),
-	sources = {
-		{ name = "buffer" },
-	},
-})
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(":", {
-	mapping = cmp.mapping.preset.cmdline(),
-	sources = cmp.config.sources({
-		{ name = "path" },
-	}, {
-		{ name = "cmdline" },
-	}),
-})
--- Set up lspconfig.
+--========================================= Set up lspconfig. =============================================
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
--- cmp config end --
+local coq = require("coq")
 require("mason-lspconfig").setup_handlers({
 	function(server_name)
-		require("lspconfig")[server_name].setup({
-			capabilities = capabilities,
-		})
+		require("lspconfig")[server_name].setup(coq.lsp_ensure_capabilities({}))
 	end,
 	["lua_ls"] = function()
-		require("lspconfig").lua_ls.setup({
-			capabilities = capabilities,
+		require("lspconfig").lua_ls.setup(coq.lsp_ensure_capabilities({
 			settings = {
 				Lua = {
 					runtime = {
@@ -400,11 +348,10 @@ require("mason-lspconfig").setup_handlers({
 					},
 				},
 			},
-		})
+		}))
 	end,
 	["clangd"] = function()
-		require("lspconfig").clangd.setup({
-			capabilities = capabilities,
+		require("lspconfig").clangd.setup(coq.lsp_ensure_capabilities({
 			filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
 			single_file_support = true,
 			cmd = {
@@ -420,7 +367,7 @@ require("mason-lspconfig").setup_handlers({
 				"--header-insertion-decorators",
 				"--header-insertion=iwyu",
 			},
-		})
+		}))
 	end,
 })
 
