@@ -68,7 +68,7 @@ vim.o.backup = false
 vim.o.writebackup = false
 vim.o.swapfile = false
 -- 自动补全不自动选中
-vim.g.completeopt = "menu,menuone,noselect,noinsert"
+--vim.g.completeopt = "menu,menuone,noselect,noinsert"
 -- 样式
 vim.o.background = "dark"
 vim.o.termguicolors = true
@@ -89,11 +89,6 @@ vim.o.foldenable = true
 -- font
 --vim.opt.guifont = { "Hack Nerd Font", ":h12" }
 
--- coq auto start [ need before 'require("lazy")' and 'require("coq")' ]
-vim.g.coq_settings = {
-	auto_start = "shut-up",
-	keymap = { recommended = false },
-}
 vim.g.indent_blankline_filetype_exclude = { "dashboard" }
 
 -- ========================================== keybind ====================================
@@ -134,12 +129,13 @@ map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
 -- toggle
 map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
-map("n", "<leader>tt", ":ToggleTerm direction=tab<CR>", opt)
+map("n", "<leader>tt", ":ToggleTerm direction=float<CR>i", opt)
+map("t", "<Esc>", "<C-\\><C-n>:ToggleTerm<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
-map("t", "<Esc>", "<C-\\><C-n>", opt)
-map("n", "<leader>tsl", ":Autosession search<CR>", opt)
 map("n", "<leader>tsd", ":Autosession delete<CR>", opt)
 map("n", "<leader>tp", ":Telescope projects<CR>", opt)
+map("n", "<leader>td", ":Dashboard<CR>", opt)
+map("n", "<leader>tc", ":PickColor<CR>", opt)
 -- git
 map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
 map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
@@ -179,28 +175,27 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
---=========================================== install plugins ===============================================
+--=========================================== plug install ===============================================
 require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
 	{ "folke/tokyonight.nvim" },
 	-- completion
+	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
 	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "hrsh7th/cmp-buffer" },
 	{ "hrsh7th/cmp-path" },
 	{ "hrsh7th/cmp-cmdline" },
-	{ "hrsh7th/nvim-cmp" },
-	{ "hrsh7th/cmp-vsnip" },
-	{ "hrsh7th/vim-vsnip" },
-	{ "Exafunction/codeium.vim" },
-	{ "ms-jpq/coq_nvim", branch = "coq" },
-	{ "ms-jpq/coq.artifacts", branch = "artifacts" },
-	{ "ms-jpq/coq.thirdparty", branch = "3p" },
+	{ "hrsh7th/cmp-nvim-lsp-signature-help" },
+	{ "tzachar/cmp-tabnine", build = "./install.sh" },
+	-- snips, friendly-snippets as provider
+	{ "L3MON4D3/LuaSnip", dependencies = "rafamadriz/friendly-snippets", event = "InsertEnter" },
+	{ "saadparwaiz1/cmp_luasnip" },
 	-- lsp
 	{ "neovim/nvim-lspconfig" },
-	{ "williamboman/mason.nvim", config = true },
-	{ "williamboman/mason-lspconfig.nvim", config = true },
+	{ "williamboman/mason.nvim", config = true, event = "User FileOpened" },
+	{ "williamboman/mason-lspconfig.nvim", config = true, event = "User FileOpened" },
 	{ "simrat39/symbols-outline.nvim", config = true },
 	{ "j-hui/fidget.nvim", tag = "legacy", config = true },
 	{
@@ -209,30 +204,32 @@ require("lazy").setup({
 		config = true,
 	},
 	-- treesitter
-	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "User FileOpened" },
 	{ "nvim-treesitter/nvim-treesitter-context", config = true },
 	-- format
 	{ "sbdchd/neoformat" },
 	-- debug
 	{ "mfussenegger/nvim-dap" },
+	-- coderunner
+	{ "michaelb/sniprun", build = "sh ./install.sh", event = "VeryLazy" },
 	-- git
 	{ "sindrets/diffview.nvim" },
 	{ "lewis6991/gitsigns.nvim", config = true },
 	-- basic ide
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons", config = true },
+	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
+	{ "nvim-lualine/lualine.nvim", config = true, event = "VimEnter" },
 	{ "akinsho/toggleterm.nvim", version = "*", config = true },
 	{ "lukas-reineke/indent-blankline.nvim", config = true },
 	{ "petertriho/nvim-scrollbar", config = true },
-	{ "nvim-lualine/lualine.nvim", config = true },
 	{ "RRethy/vim-illuminate" },
 	{ "mg979/vim-visual-multi", version = "*" },
 	{ "rmagatti/auto-session" },
-	{ "ahmedkhalf/project.nvim" },
+	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
 	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
-	{ "numToStr/Comment.nvim", config = true },
+	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
 	{ "windwp/nvim-autopairs", config = true },
 	{ "norcalli/nvim-colorizer.lua", config = true },
 	{ "ziontee113/color-picker.nvim", config = true },
@@ -312,6 +309,12 @@ vim.cmd("colorscheme tokyonight-night")
 require("project_nvim").setup({})
 require("telescope").load_extension("projects")
 
+require("nvim-tree").setup({
+	view = {
+		width = 20,
+	},
+})
+
 require("dashboard").setup({
 	config = {
 		header = {
@@ -325,14 +328,15 @@ require("dashboard").setup({
 			[[⠀ ⠀⢡⠺⠉⣔⡿⡑⡷⣽⢸⣳⣳⢽⡲⡵⣳⢽⣺⢽⡺⣪⡯⣳⢹⣳⢯⢯⣗⣗⢯⣗⢷⢽⣺⢵⡇⣟⣿⡠     ]],
 			[[⠀     ⣗⡧⡱⣝⣮⡢⡳⢽⢝⣇⠯⣯⣻⣺⢽⢝⢵⢹⢢⣻⡺⣝⣗⢷⢽⢕⡯⣯⣻⣺⡳⡯⡺⣺⣽     ]],
 			[[⠀     ⢷⠑⡩⣗⢷⢹⡇⢯⣗⡗⣝⣞⣞⣞⡽⡡⡏⡇⡗⣗⣯⢳⢯⢯⢯⡳⡯⣗⣗⠧⡯⡯⡇⠓⡽⡅    ]],
-			[[⠀     ⡫⠐⠈⣺⣝⢔⢨⡊⢾⢝⡜⣞⣞⡮⡯⣊⢊⢎⢮⢺⣺⡪⡯⣯⣻⢼⢝⡷⡽⣑⢯⢯⡇ ⠈⢕    ]],
-			[[⠀     ⠐⠀⡁⣸⣿⣽ ⣻⣆⢻⠪⣳⣳⢯⡫⢬⡪⣏⡎⣞⣗⢇⢿⢵⣫⢮⢯⢯⣻⢐⢯⣟⡆       ]],
+			[[⠀     ⡫ ⠈⣺⣝⢔⢨⡊⢾⢝⡜⣞⣞⡮⡯⣊⢊⢎⢮⢺⣺⡪⡯⣯⣻⢼⢝⡷⡽⣑⢯⢯⡇ ⠈⢕    ]],
+			[[⠀      ⠀ ⣸⣿⣽ ⣻⣆⢻⠪⣳⣳⢯⡫⢬⡪⣏⡎⣞⣗⢇⢿⢵⣫⢮⢯⢯⣻⢐⢯⣟⡆       ]],
 			[[⠀      ⢡⣼⣯⣷⣿⣕⢽⣿⣼⡕⡵⡯⣗⢇⣗⢽⢜⡎⣺⡺⡨⡺⣽⡺⣕⢯⣻⣺⠀⣫⢾⡅       ]],
 			[[⠀      ⠘⣿⣽⢿⣾⣻⣟⣿⣽⡯⣺⢽⣳⢱⡧⡏⣯⢪⣸⢕⠡⢣⢳⡻⡜⣝⣞⡞ ⠈⢷⠅       ]],
 			[[⠀       ⢸⣿⣟⣷⣿⣻⣽⣯⣿⣪⢟⡎⣾⢯⣫⢾⢕⢇⣗⢯⠇⠐⡹⡕⢕⡷⡃  ⠈⡁       ]],
 			[[⠀      ⠀ ⠑⢧⣿⡾⣟⣯⣿⢷⢵⣻⢸⡫⣯⡺⣝⣕⢵⡫⣯⠁ ⠈⡊⢸⠇⠀ ⠀         ]],
 			[[⠀          ⠻⠟⠿⠻⠫⡻⡱⠏⡮⣯⡺⣝⣞⢮⢯⢯⠞⣊⠄  ⠈⠊            ]],
 			[[⠀               ⠌⢘⢀⢟⣞⢮⣳⡳⡝⠣⣕⡶                  ]],
+			[[⠀                                             ]],
 		},
 		shortcut = {
 			{
@@ -359,19 +363,84 @@ require("navigator").setup({
 
 require("auto-session").setup({
 	log_level = "error",
-	auto_session_enable_last_session = true,
 	auto_save_enabled = true,
+    auto_restore_enabled = true,
+    session_lens = {
+    load_on_setup = true,
+    theme_conf = { border = true },
+    previewer = false,
+  },
+})
+vim.keymap.set("n", "<Leader>tsl", require("auto-session.session-lens").search_session, {
+  noremap = true,
 })
 
+-- luasnip loading friendly-snippets
+require("luasnip.loaders.from_vscode").lazy_load()
+-- cmp conf
+local cmp = require("cmp")
+cmp.setup({
+	snippet = {
+		-- REQUIRED - you must specify a snippet engine
+		expand = function(args)
+			require("luasnip").lsp_expand(args.body)
+		end,
+	},
+	window = {},
+	mapping = cmp.mapping.preset.insert({
+		["<C-b>"] = cmp.mapping.scroll_docs(-4),
+		["<C-f>"] = cmp.mapping.scroll_docs(4),
+		["<C-Space>"] = cmp.mapping.complete(),
+		["<C-e>"] = cmp.mapping.abort(),
+		["<CR>"] = cmp.mapping.confirm({ select = true }),
+	}),
+	sources = cmp.config.sources({
+		{ name = "nvim_lsp" },
+		{ name = "buffer" },
+		{ name = "path" },
+		{ name = "cmdline" },
+		{ name = "nvim_lsp_signature_help" },
+		{ name = "luasnip" },
+		{ name = "cmp_tabnine" },
+	}),
+})
+
+cmp.setup.filetype("gitcommit", {
+	sources = cmp.config.sources({
+		{ name = "git" },
+	}, {
+		{ name = "buffer" },
+	}),
+})
+
+cmp.setup.cmdline({ "/", "?" }, {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = {
+		{ name = "buffer" },
+	},
+})
+
+cmp.setup.cmdline(":", {
+	mapping = cmp.mapping.preset.cmdline(),
+	sources = cmp.config.sources({
+		{ name = "path" },
+	}, {
+		{ name = "cmdline" },
+	}),
+})
+
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
 -- Set up lspconfig.
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
-local coq = require("coq")
 require("mason-lspconfig").setup_handlers({
 	function(server_name)
-		require("lspconfig")[server_name].setup(coq.lsp_ensure_capabilities({}))
+		require("lspconfig")[server_name].setup({
+			capabilities = capabilities,
+		})
 	end,
 	["lua_ls"] = function()
-		require("lspconfig").lua_ls.setup(coq.lsp_ensure_capabilities({
+		require("lspconfig").lua_ls.setup({
+			capabilities = capabilities,
 			settings = {
 				Lua = {
 					runtime = {
@@ -385,10 +454,11 @@ require("mason-lspconfig").setup_handlers({
 					},
 				},
 			},
-		}))
+		})
 	end,
 	["clangd"] = function()
-		require("lspconfig").clangd.setup(coq.lsp_ensure_capabilities({
+		require("lspconfig").clangd.setup({
+			capabilities = capabilities,
 			filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
 			single_file_support = true,
 			cmd = {
@@ -404,7 +474,7 @@ require("mason-lspconfig").setup_handlers({
 				"--header-insertion-decorators",
 				"--header-insertion=iwyu",
 			},
-		}))
+		})
 	end,
 })
 
