@@ -113,13 +113,14 @@ map("n", "<A-Up>", ":horizontal resize -2<CR>", opt)
 map("n", "<A-Down>", ":horizontal resize +2<CR>", opt)
 map("n", "<A-Left>", ":vertical resize -2<CR>", opt)
 map("n", "<A-Right>", ":vertical resize +2<CR>", opt)
+-- accelerated-jk
+map("n", "j", "<Plug>(accelerated_jk_gj)", opt)
+map("n", "k", "<Plug>(accelerated_jk_gk)", opt)
 -- bufferline 左右切换
 map("n", "<S-h>", ":BufferLineCyclePrev<CR>", opt)
 map("n", "<S-l>", ":BufferLineCycleNext<CR>", opt)
-map("n", "<Leader>b", ":BufferLinePickClose<CR>", opt)
--- tabpage 切换
-map("n", "<S-Tab>", ":tabprevious<CR>", opt)
-map("n", "<Tab>", ":tabnext<CR>", opt)
+map("n", "<Leader>bp", ":BufferLinePick<CR>", opt)
+map("n", "<Leader>bc", ":BufferLinePickClose<CR>", opt)
 -- Move text up and down
 map("n", "<A-u>", "<Esc>:m .+1<CR>==gi<Esc>", opt)
 map("n", "<A-d>", "<Esc>:m .-2<CR>==gi<Esc>", opt)
@@ -129,13 +130,14 @@ map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
 -- toggle
 map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
-map("n", "<leader>tt", ":ToggleTerm direction=float<CR>i", opt)
+map("n", "<leader>tt", ":ToggleTerm direction=horizontal<CR>i", opt)
 map("t", "<Esc>", "<C-\\><C-n>:ToggleTerm<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
-map("n", "<leader>tsd", ":Autosession delete<CR>", opt)
+map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
+map("n", "<leader>tsd", ":SessionManager delete_session<CR>", opt)
 map("n", "<leader>tp", ":Telescope projects<CR>", opt)
 map("n", "<leader>td", ":Dashboard<CR>", opt)
-map("n", "<leader>tc", ":PickColor<CR>", opt)
+map("n", "<leader>tc", ":CccPick<CR>", opt)
 -- git
 map("n", "<leader>gj", ":Gitsigns next_hunk<CR>", opt)
 map("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", opt)
@@ -188,12 +190,13 @@ require("lazy").setup({
 	{ "hrsh7th/cmp-path" },
 	{ "hrsh7th/cmp-cmdline" },
 	{ "hrsh7th/cmp-nvim-lsp-signature-help" },
-	{ "tzachar/cmp-tabnine", build = "./install.sh" },
+	{ "ray-x/cmp-treesitter" },
+	{ "Exafunction/codeium.vim" },
 	-- snips, friendly-snippets as provider
 	{ "L3MON4D3/LuaSnip", dependencies = "rafamadriz/friendly-snippets", event = "InsertEnter" },
 	{ "saadparwaiz1/cmp_luasnip" },
 	-- lsp
-	{ "neovim/nvim-lspconfig" },
+	{ "neovim/nvim-lspconfig", event = "InsertEnter" },
 	{ "williamboman/mason.nvim", config = true, event = "User FileOpened" },
 	{ "williamboman/mason-lspconfig.nvim", config = true, event = "User FileOpened" },
 	{ "simrat39/symbols-outline.nvim", config = true },
@@ -202,6 +205,7 @@ require("lazy").setup({
 		"ray-x/navigator.lua",
 		dependencies = { { "ray-x/guihua.lua", build = "cd lua/fzy && make" }, { "neovim/nvim-lspconfig" } },
 		config = true,
+		event = "InsertEnter",
 	},
 	-- treesitter
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "User FileOpened" },
@@ -215,27 +219,28 @@ require("lazy").setup({
 	-- git
 	{ "sindrets/diffview.nvim" },
 	{ "lewis6991/gitsigns.nvim", config = true },
-	-- basic ide
+	-- tools
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+	{ "mg979/vim-visual-multi", version = "*" },
+	{ "Shatur/neovim-session-manager",dependencies = "nvim-lua/plenary.nvim" ,event = "BufReadPre", config = true },
+	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
+	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
+	{ "windwp/nvim-autopairs", config = true },
+	{ "uga-rosa/ccc.nvim", config = true },
+	{ "lambdalisue/suda.vim" },
+	-- user interface
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "nvim-lualine/lualine.nvim", config = true, event = "VimEnter" },
+	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
 	{ "akinsho/toggleterm.nvim", version = "*", config = true },
 	{ "lukas-reineke/indent-blankline.nvim", config = true },
 	{ "petertriho/nvim-scrollbar", config = true },
 	{ "RRethy/vim-illuminate" },
-	{ "mg979/vim-visual-multi", version = "*" },
-	{ "rmagatti/auto-session" },
-	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
-	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
-	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
-	{ "windwp/nvim-autopairs", config = true },
-	{ "norcalli/nvim-colorizer.lua", config = true },
-	{ "ziontee113/color-picker.nvim", config = true },
+	{ "NvChad/nvim-colorizer.lua", config = true },
 	{ "karb94/neoscroll.nvim", config = true },
 	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async" },
-	{ "lambdalisue/suda.vim" },
 	{
 		"folke/which-key.nvim",
 		config = true,
@@ -254,6 +259,7 @@ require("lazy").setup({
 		end,
 	},
 	-- jump
+	{ "rainbowhxch/accelerated-jk.nvim" },
 	{
 		"folke/flash.nvim",
 		event = "VeryLazy",
@@ -304,6 +310,9 @@ require("lazy").setup({
 })
 
 --========================================== plug conf ================================================
+require("tokyonight").setup({
+	theme = "night",
+})
 vim.cmd("colorscheme tokyonight-night")
 
 require("project_nvim").setup({})
@@ -361,20 +370,6 @@ require("navigator").setup({
 	},
 })
 
-require("auto-session").setup({
-	log_level = "error",
-	auto_save_enabled = true,
-    auto_restore_enabled = true,
-    session_lens = {
-    load_on_setup = true,
-    theme_conf = { border = true },
-    previewer = false,
-  },
-})
-vim.keymap.set("n", "<Leader>tsl", require("auto-session.session-lens").search_session, {
-  noremap = true,
-})
-
 -- luasnip loading friendly-snippets
 require("luasnip.loaders.from_vscode").lazy_load()
 -- cmp conf
@@ -401,7 +396,8 @@ cmp.setup({
 		{ name = "cmdline" },
 		{ name = "nvim_lsp_signature_help" },
 		{ name = "luasnip" },
-		{ name = "cmp_tabnine" },
+		{ name = "treesitter" },
+		{ name = "codeium" },
 	}),
 })
 
@@ -430,7 +426,7 @@ cmp.setup.cmdline(":", {
 })
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
--- Set up lspconfig.
+-- Set up lsp config.
 -- 配置方法详见 https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#clangd
 require("mason-lspconfig").setup_handlers({
 	function(server_name)
