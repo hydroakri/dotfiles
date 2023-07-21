@@ -12,7 +12,6 @@ zstyle ':completion:*' menu select
 zstyle ':completion:*' rehash true
 
 export EDITOR=nvim
-alias vim='nvim'
 alias vi='nvim'
 alias ls='lsd'
 alias find='fd'

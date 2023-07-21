@@ -27,8 +27,8 @@ font:
 
 window:
    dimensions:
-     columns: 82
-     lines: 27
+     columns: 88
+     lines: 24
 
 shell:
   program: /bin/zsh

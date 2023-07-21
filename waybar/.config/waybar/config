@@ -1,51 +1,57 @@
 {
     "layer": "top",
-    "height": 36,
-    "position": "top",
+        "position": "top",
         "margin-left": 0,
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "modules-left": ["custom/launcher","wlr/workspaces","wlr/taskbar","hyprland/window"],
-        "modules-center": ["mpris"],
-        "modules-right": ["tray","backlight", "battery", "clock"],
+        "modules-left": ["custom/launcher", "tray","mpris","cava","custom/cava"],
+        "modules-center": ["wlr/workspaces"],
+        "modules-right": ["custom/mako", "wireplumber", "backlight", "battery", "clock",],
 
-        "pulseaudio": {
-            "format": "{volume}% {icon}",
-            "format-bluetooth": "{volume}% {icon}",
+        "custom/mako": {
+            "format": " ",
+            "on-click": "makoctl mode -a do-not-disturb",
+            "on-click-right": "makoctl mode -r do-not-disturb",
+            "on-click-middle": "makoctl restore",
+        },
+
+        "wireplumber": {
+            "format": "{icon} {volume}%",
+            "format-bluetooth": "{icon} {volume}%",
             "format-muted": "",
             "format-icons": {
+                "headphone": "",
+                "hands-free": "",
+                "headset": "",
+                "phone": "",
+                "portable": "",
+                "car": "",
                 "default": ["", ""]
             },
-            "scroll-step": 1,
             "on-click": "pavucontrol",
-            "ignored-sinks": ["Easy Effects Sink"]
+            "max-volume": 150,
+            "scroll-step": 1
         },
-        
+
         "custom/launcher":{
-            "format": "  ",
-            "on-click": "rofi -combi-modi drun -show combi -icon-theme 'Papirus' -show-icons",
+            "format": " ",
+            "on-click": "wofi --show run",
             "on-click-right": "killall rofi"
         },
 
-        "custom/mpris":{
-            "format": "⏯",
-            "on-click": "playerctl play-pause",
-            "on-click-right": "playerctl next",
-            "on-click-middle": "playerctl previous",
-        },
-
         "mpris": {
-        	"format": "{player_icon} {title}",
-        	"format-paused": "{status_icon} <i>{title}</i>",
-        	"player-icons": {
-        		"default": "▶",
-        		"mpv": "🎵"
-        	},
-        	"status-icons": {
-        		"paused": "⏸"
-        	},
-        	// "ignored-players": ["firefox"]
+            "max-length": 25,
+            "format": "{player_icon} {title}",
+            "format-paused": "{status_icon} <i>{title}</i>",
+            "player-icons": {
+                "default": "▶",
+                "mpv": "🎵"
+            },
+            "status-icons": {
+                "paused": "⏸"
+            },
+            // "ignored-players": ["firefox"]
         },
 
         "cpu": {
@@ -67,7 +73,6 @@
 
         "wlr/taskbar": {
             "format": "{icon}",
-            "icon-size": 22,
             "icon-theme": "Papirus",
             "tooltip-format": "{title}",
             "on-click": "activate",
@@ -80,14 +85,41 @@
             }
         },
 
-        /* "custom/cava": { */
-        /*     "exec": "sleep 1s && cava -p ~/.config/cava/conf_for_bar | sed -u 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'", */
-        /*     "tooltip": false */
-        /*     }, */
+        "hyprland/window": {
+            "max-length": 20
+        },
+
+        "cava": {
+            "cava_config": "$XDG_CONFIG_HOME/cava/conf_for_bar",
+            "framerate": 30,
+            "autosens": 1,
+            "sensitivity": 100,
+            "bars": 14,
+            "lower_cutoff_freq": 50,
+            "higher_cutoff_freq": 10000,
+            "method": "pulse",
+            "source": "auto",
+            "stereo": true,
+            "reverse": false,
+            "bar_delimiter": 0,
+            "monstercat": false,
+            "waves": false,
+            "noise_reduction": 0.77,
+            "input_delay": 2,
+            "format-icons" : ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" ],
+            "actions": {
+                "on-click-right": "mode"
+            }
+        },
+
+        "custom/cava": { 
+            "exec": "sleep 1s && cava -p ~/.config/cava/conf_for_bar | sed -u 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'", 
+            "tooltip": false 
+        }, 
 
         "backlight": {
             // "device": "amdgpu_bl1",
-            "format": "{icon}",
+            "format": "{icon} {percent}%",
             "format-icons": ["", "", "", "", "", "", "", "", ""],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
@@ -134,8 +166,7 @@
 
         "clock": {
             "interval" : 1, 
-            "format" : "{:%m月%d日 周%a %H:%M}", 
-            "tooltip" : true, 
-            "tooltip-format" : "<tt>{calendar}</tt>",
+            "format" : "{:%H:%M}", 
+            "format-alt": "{:%m-%d Week %a }",
         }
 },

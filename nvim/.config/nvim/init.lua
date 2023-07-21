@@ -87,7 +87,7 @@ vim.o.foldenable = true
 --vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- font
---vim.opt.guifont = { "Hack Nerd Font", ":h12" }
+vim.opt.guifont = { "Hack Nerd Font", ":h12" }
 
 vim.g.indent_blankline_filetype_exclude = { "dashboard" }
 
@@ -183,6 +183,7 @@ require("lazy").setup({
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
 	{ "folke/tokyonight.nvim" },
+	{ "EdenEast/nightfox.nvim" },
 	-- completion
 	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
 	{ "hrsh7th/cmp-nvim-lsp" },
@@ -223,7 +224,7 @@ require("lazy").setup({
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	{ "mg979/vim-visual-multi", version = "*" },
-	{ "Shatur/neovim-session-manager",dependencies = "nvim-lua/plenary.nvim" ,event = "BufReadPre", config = true },
+	{ "Shatur/neovim-session-manager", dependencies = "nvim-lua/plenary.nvim", event = "VeryLazy", config = true },
 	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
 	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
 	{ "windwp/nvim-autopairs", config = true },
@@ -347,9 +348,10 @@ require("dashboard").setup({
 			[[⠀               ⠌⢘⢀⢟⣞⢮⣳⡳⡝⠣⣕⡶                  ]],
 			[[⠀                                             ]],
 		},
+		disable_move = true,
 		shortcut = {
 			{
-				desc = "󰊳 Update",
+				desc = "󰚰 Update",
 				group = "@property",
 				action = "Lazy update",
 				key = "u",
@@ -359,6 +361,12 @@ require("dashboard").setup({
 				group = "Number",
 				action = "Mason",
 				key = "m",
+			},
+			{
+				desc = " Load Sessions",
+				group = "DiagnosticHint",
+				action = "SessionManager load_last_session",
+				key = "l",
 			},
 		},
 	},
