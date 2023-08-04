@@ -68,7 +68,7 @@ vim.o.backup = false
 vim.o.writebackup = false
 vim.o.swapfile = false
 -- 自动补全不自动选中
---vim.g.completeopt = "menu,menuone,noselect,noinsert"
+vim.g.completeopt = "menu,menuone,noselect,noinsert"
 -- 样式
 vim.o.background = "dark"
 vim.o.termguicolors = true
@@ -182,26 +182,26 @@ require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
-	{ "folke/tokyonight.nvim" },
+	{ "folke/tokyonight.nvim", },
 	{ "EdenEast/nightfox.nvim" },
 	-- completion
 	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
-	{ "hrsh7th/cmp-nvim-lsp" },
-	{ "hrsh7th/cmp-buffer" },
-	{ "hrsh7th/cmp-path" },
-	{ "hrsh7th/cmp-cmdline" },
-	{ "hrsh7th/cmp-nvim-lsp-signature-help" },
-	{ "ray-x/cmp-treesitter" },
-	{ "Exafunction/codeium.vim" },
+	{ "hrsh7th/cmp-nvim-lsp", event = "InsertEnter" },
+	{ "hrsh7th/cmp-buffer", event = "InsertEnter" },
+	{ "hrsh7th/cmp-path", event = "InsertEnter" },
+	{ "hrsh7th/cmp-cmdline", event = "CmdlineEnter" },
+	{ "hrsh7th/cmp-nvim-lsp-signature-help", event = "InsertEnter" },
+	{ "ray-x/cmp-treesitter", event = "InsertEnter" },
+	{ "Exafunction/codeium.vim", event = "BufEnter" },
 	-- snips, friendly-snippets as provider
 	{ "L3MON4D3/LuaSnip", dependencies = "rafamadriz/friendly-snippets", event = "InsertEnter" },
-	{ "saadparwaiz1/cmp_luasnip" },
+	{ "saadparwaiz1/cmp_luasnip", event = "InsertEnter" },
 	-- lsp
-	{ "neovim/nvim-lspconfig", event = "InsertEnter" },
+	{ "neovim/nvim-lspconfig", event = "User FileOpened" },
 	{ "williamboman/mason.nvim", config = true, event = "User FileOpened" },
 	{ "williamboman/mason-lspconfig.nvim", config = true, event = "User FileOpened" },
-	{ "simrat39/symbols-outline.nvim", config = true },
-	{ "j-hui/fidget.nvim", tag = "legacy", config = true },
+	{ "simrat39/symbols-outline.nvim", config = true, event = "BufReadPre" },
+	{ "j-hui/fidget.nvim", tag = "legacy", config = true, event = "BufReadPre" },
 	{
 		"ray-x/navigator.lua",
 		dependencies = { { "ray-x/guihua.lua", build = "cd lua/fzy && make" }, { "neovim/nvim-lspconfig" } },
@@ -210,38 +210,38 @@ require("lazy").setup({
 	},
 	-- treesitter
 	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "User FileOpened" },
-	{ "nvim-treesitter/nvim-treesitter-context", config = true },
+	{ "nvim-treesitter/nvim-treesitter-context", config = true, event = "BufReadPre" },
 	-- format
-	{ "sbdchd/neoformat" },
+	{ "sbdchd/neoformat", event = "InsertEnter" },
 	-- debug
-	{ "mfussenegger/nvim-dap" },
+	{ "mfussenegger/nvim-dap", event = "VeryLazy" },
 	-- coderunner
 	{ "michaelb/sniprun", build = "sh ./install.sh", event = "VeryLazy" },
 	-- git
-	{ "sindrets/diffview.nvim" },
-	{ "lewis6991/gitsigns.nvim", config = true },
+	{ "sindrets/diffview.nvim", event = "BufReadPre" },
+	{ "lewis6991/gitsigns.nvim", config = true, event = "BufReadPre" },
 	-- tools
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{ "mg979/vim-visual-multi", version = "*" },
+	{ "mg979/vim-visual-multi", version = "*", event = "InsertEnter" },
 	{ "Shatur/neovim-session-manager", dependencies = "nvim-lua/plenary.nvim", event = "VeryLazy", config = true },
 	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
 	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
-	{ "windwp/nvim-autopairs", config = true },
-	{ "uga-rosa/ccc.nvim", config = true },
+	{ "windwp/nvim-autopairs", config = true, event = "InsertEnter" },
+	{ "uga-rosa/ccc.nvim", config = true, event = "VeryLazy" },
 	{ "lambdalisue/suda.vim" },
 	-- user interface
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
 	{ "nvim-lualine/lualine.nvim", config = true, event = "VimEnter" },
 	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
-	{ "akinsho/toggleterm.nvim", version = "*", config = true },
-	{ "lukas-reineke/indent-blankline.nvim", config = true },
-	{ "petertriho/nvim-scrollbar", config = true },
-	{ "RRethy/vim-illuminate" },
-	{ "NvChad/nvim-colorizer.lua", config = true },
-	{ "karb94/neoscroll.nvim", config = true },
-	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async" },
+	{ "akinsho/toggleterm.nvim", version = "*", config = true, event = "BufEnter" },
+	{ "lukas-reineke/indent-blankline.nvim", config = true, event = "BufEnter" },
+	{ "petertriho/nvim-scrollbar", config = true, event = "VeryLazy" },
+	{ "RRethy/vim-illuminate", event = "VimEnter" },
+	{ "NvChad/nvim-colorizer.lua", config = true, event = "VeryLazy" },
+	{ "karb94/neoscroll.nvim", config = true, event = "VeryLazy" },
+	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "VimEnter" },
 	{
 		"folke/which-key.nvim",
 		config = true,
@@ -252,7 +252,6 @@ require("lazy").setup({
 		end,
 	},
 	-- language
-	{ "elkowar/yuck.vim" },
 	{
 		"iamcco/markdown-preview.nvim",
 		build = function()
@@ -260,7 +259,7 @@ require("lazy").setup({
 		end,
 	},
 	-- jump
-	{ "rainbowhxch/accelerated-jk.nvim" },
+	{ "rainbowhxch/accelerated-jk.nvim", event = "VeryLazy" },
 	{
 		"folke/flash.nvim",
 		event = "VeryLazy",

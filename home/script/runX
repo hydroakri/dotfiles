@@ -1,0 +1,2 @@
+Xwayland :1 -ac -retro -noreset +extension RANDR +extension RENDER +extension GLX +extension
+#QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 DISPLAY=:1 startxfce4 --replace

@@ -7,7 +7,20 @@
         "margin-bottom": 0,
         "modules-left": ["custom/launcher", "tray","mpris","cava","custom/cava"],
         "modules-center": ["wlr/workspaces"],
-        "modules-right": ["custom/mako", "wireplumber", "backlight", "battery", "clock",],
+        "modules-right": ["gamemode","custom/mako", "wireplumber", "backlight", "battery", "clock",],
+
+        "gamemode": {
+            "format": "{glyph}",
+            "format-alt": "{glyph} {count}",
+            "glyph": "󰊗 ",
+            "hide-not-running": true,
+            "use-icon": true,
+            "icon-name": "input-gaming-symbolic",
+            "icon-spacing": 4,
+            "icon-size": 20,
+            "tooltip": true,
+            "tooltip-format": "Games running: {count}",
+        },
 
         "custom/mako": {
             "format": " ",
@@ -36,8 +49,7 @@
 
         "custom/launcher":{
             "format": " ",
-            "on-click": "wofi --show run",
-            "on-click-right": "killall rofi"
+            "on-click": "nwgbar",
         },
 
         "mpris": {
@@ -136,12 +148,13 @@
             "format-charging": " {capacity}%",
             "format-plugged": " {capacity}%",
             "format-alt": "{time} {icon}",
-            "format-icons": ["", "", "", "", ""]
+            "format-icons": ["", "", "", "", ""],
+            "on-click": "killall swayidle",
+            "on-click-right": "swayidle -w timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' timeout 600 'swaylock -f -c 000000' before-sleep 'swaylock -c 000000 -f'",
         },
 
         "tray": {
             // "icon-size": 21,
-            "spacing": 10
         },
 
         "pulseaudio": {
@@ -167,6 +180,6 @@
         "clock": {
             "interval" : 1, 
             "format" : "{:%H:%M}", 
-            "format-alt": "{:%m-%d Week %a }",
+            "format-alt": "{:%m-%d %a }",
         }
 },
