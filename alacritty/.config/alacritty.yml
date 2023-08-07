@@ -23,7 +23,7 @@ font:
     family: "CaskaydiaCove Nerd Font" 
     style: Bold Italic
 
-  size: 15 #12 
+  size: 12 #15 
 
 window:
    dimensions:

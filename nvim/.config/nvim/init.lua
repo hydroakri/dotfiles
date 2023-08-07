@@ -182,7 +182,7 @@ require("lazy").setup({
 	-- colorscheme
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
-	{ "folke/tokyonight.nvim", },
+	{ "folke/tokyonight.nvim" },
 	{ "EdenEast/nightfox.nvim" },
 	-- completion
 	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
@@ -242,6 +242,17 @@ require("lazy").setup({
 	{ "NvChad/nvim-colorizer.lua", config = true, event = "VeryLazy" },
 	{ "karb94/neoscroll.nvim", config = true, event = "VeryLazy" },
 	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "VimEnter" },
+	{
+		"anuvyklack/windows.nvim",
+		dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
+		event = "VimEnter",
+		config = function()
+			vim.o.winwidth = 10
+			vim.o.winminwidth = 10
+			vim.o.equalalways = false
+			require("windows").setup()
+		end,
+	},
 	{
 		"folke/which-key.nvim",
 		config = true,

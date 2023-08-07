@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+parallel ::: kdeconnect-indicator localsend syncthing keepassxc 'cd ~/Yacd-meta && pnpm start' 'wayvnc 0.0.0.0' copyq
