@@ -5,9 +5,36 @@
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "modules-left": ["custom/launcher", "tray","mpris","cava","custom/cava"],
-        "modules-center": ["wlr/workspaces"],
-        "modules-right": ["gamemode","custom/mako", "wireplumber", "backlight", "battery", "clock",],
+        "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
+        "modules-center": ["mpris"],
+        "modules-right": ["gamemode","custom/mako", "backlight", "tray", "battery", "clock",],
+
+        "hyprland/window": {
+            "format": "{}",
+            "rewrite": {
+                "(.*) — Mozilla Firefox": "🌎 $1",
+                "(.*) - fish": "> [$1]"
+            },
+            "separate-outputs": true,
+            "max-length": 25,
+        },
+
+        "hyprland/workspaces": {
+            "format": "{icon}",
+            "format-icons": {
+                "1": " ",
+                "2": " ",
+                "3": " ",
+                "4": " ",
+                "5": " ",
+                "active": " ",
+                "default": " "
+            },
+            "persistent_workspaces": {
+                "*": 5, // 5 workspaces by default on every monitor
+                "HDMI-A-1": 3 // but only three on HDMI-A-1
+            }
+        },
 
         "gamemode": {
             "format": "{glyph}",
@@ -78,31 +105,8 @@
             "max-length": 10,
         },
 
-        "wlr/workspaces": {
-            "format": "{icon}",
-            "on-click": "activate",
-        },
-
-        "wlr/taskbar": {
-            "format": "{icon}",
-            "icon-theme": "Papirus",
-            "tooltip-format": "{title}",
-            "on-click": "activate",
-            "on-click-middle": "close",
-            "ignore-list": [
-                "Alacritty"
-            ],
-            "app_ids-mapping": {
-                "firefoxdeveloperedition": "firefox-developer-edition"
-            }
-        },
-
-        "hyprland/window": {
-            "max-length": 20
-        },
-
         "cava": {
-            "cava_config": "$XDG_CONFIG_HOME/cava/conf_for_bar",
+            //"cava_config": "~/.config/cava/conf_for_bar",
             "framerate": 30,
             "autosens": 1,
             "sensitivity": 100,
@@ -131,7 +135,7 @@
 
         "backlight": {
             // "device": "amdgpu_bl1",
-            "format": "{icon} {percent}%",
+            "format": "{icon}",
             "format-icons": ["", "", "", "", "", "", "", "", ""],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
@@ -145,36 +149,14 @@
                 "critical": 20
             },
             "format": "{icon}  {capacity}%",
-            "format-charging": " {capacity}%",
-            "format-plugged": " {capacity}%",
+            "format-plugged": "  {capacity}%",
             "format-alt": "{time} {icon}",
             "format-icons": ["", "", "", "", ""],
-            "on-click": "killall swayidle",
-            "on-click-right": "swayidle -w timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' timeout 600 'swaylock -f -c 000000' before-sleep 'swaylock -c 000000 -f'",
         },
 
         "tray": {
-            // "icon-size": 21,
-        },
-
-        "pulseaudio": {
-            // "scroll-step": 1, // %, can be a float
-            "format": "{volume}% {icon} {format_source}",
-            "format-bluetooth": "{volume}% {icon} {format_source}",
-            "format-bluetooth-muted": " {icon} {format_source}",
-            "format-muted": " {format_source}",
-            "format-source": "{volume}% ",
-            "format-source-muted": "",
-            "format-icons": {
-                "headphone": "",
-                "hands-free": "",
-                "headset": "",
-                "phone": "",
-                "portable": "",
-                "car": "",
-                "default": ["", "", ""]
-            },
-            "on-click": "pavucontrol"
+            "icon-size": 20,
+            "spacing": 10,
         },
 
         "clock": {

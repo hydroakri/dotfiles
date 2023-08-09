@@ -6,7 +6,7 @@ first make sure you have installed the `stow`
 I use `stow` for unified file management
 
 ## For Chinese users
-You can use ssh to speed up git clone
+You can use ssh to speed up git clone(need add gpg key to your ssh)
 ```
 git config --global --add url."git@github.com:".insteadOf "https://github.com/"
 ```
@@ -27,26 +27,26 @@ stow polybar
 
 |       Program       |                                                             Name                                                              |
 | :-----------------: | :---------------------------------------------------------------------------------------------------------------------------: |
-|    Window Manger    |     [i3wm](https://i3wm.org/),[sway](https://github.com/swaywm/sway)   [hyprland](https://wiki.hyprland.org/)|
-|         Bar         |     [polybar](https://github.com/polybar/polybar),[waybar](https://github.com/Alexays/Waybar)|
-|     Compositor      |     [picom-jonaburg-git](https://github.com/jonaburg/picom)|
-|      Launcher       |     [rofi](https://github.com/davatorium/rofi)   [rofi for wayland](https://github.com/lbonn/rofi)|
-|  Wallpaper Setter   |     [nitrogen](https://archlinux.org/packages/?name=nitrogen)    swaybg|
-|     Web Browser     |     [edge](https://aur.archlinux.org/packages/microsoft-edge-stable-bin)|
+|    Window Manger    |     [hyprland](https://wiki.hyprland.org/)|
+|         Bar         |     waybar |
+|      Launcher       |     wofi   |
+|  Wallpaper Setter   |      swaybg|
+|     Web Browser     |     [brave](https://github.com/brave/brave-browser)     |
 |      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/) [wezterm](https://wezfurlong.org/)|
-|        Shell        |     [fish](https://www.fishshell.com)|
+|        Shell        |     [fish](https://www.fishshell.com) zsh(with zoxide mcfly)|
 |     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide)) |
 | Notification daemon |     [dunst](https://dunst-project.org/) [mako](https://github.com/sqlalchemy/mako)                                             |
 |        Fetch        |     [fastfetch](https://github.com/LinusDierheimer/fastfetch)                                 |
 |       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava [playerctl](https://github.com/altdesktop/playerctl)       |
-|        misc         |     [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep), [ranger(require w3m)](https://github.com/ranger/ranger), [scrcpy](https://github.com/Genymobile/scrcpy), [stow](https://www.gnu.org/software/stow/), [tlp](https://linrunner.de/tlp/index.html), [lazygit](https://github.com/jesseduffield/lazygit) [zellij](https://github.com/zellij-org/zellij)|
-|       fonts         |     [awesome-terminal-fonts](https://archlinux.org/packages/community/any/awesome-terminal-fonts/), [nerd-fonts-sarasa-mono](https://aur.archlinux.org/packages/nerd-fonts-sarasa-mono), [noto-fonts-cjk](https://archlinux.org/packages/extra/any/noto-fonts-cjk/), [ttf-font-awesome](https://archlinux.org/packages/community/any/ttf-font-awesome/)      |
+|        misc         |     [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep), [ranger(require w3m)](https://github.com/ranger/ranger), [scrcpy](https://github.com/Genymobile/scrcpy), [stow](https://www.gnu.org/software/stow/), [tlp](https://linrunner.de/tlp/index.html), [lazygit](https://github.com/jesseduffield/lazygit) [zellij](https://github.com/zellij-org/zellij) carbon|
+|       fonts         |     cascadia [awesome-terminal-fonts](https://archlinux.org/packages/community/any/awesome-terminal-fonts/), [nerd-fonts-sarasa-mono](https://aur.archlinux.org/packages/nerd-fonts-sarasa-mono), [noto-fonts-cjk](https://archlinux.org/packages/extra/any/noto-fonts-cjk/), [ttf-font-awesome](https://archlinux.org/packages/community/any/ttf-font-awesome/)      |
 |   Chinese Input     |     sudo pacman -Sy fcitx5 fcitx5-chinese-addons fcitx5-configtool fcitx5-gtk fcitx5-rime fcitx5-qt                                |
 |   system monitor    |     [btop](https://github.com/aristocratos/btop)                                |
 |      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
 |  download manager   |     [motrix](https://motrix.app/)                                                        |
-| themes & the manager|     [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  [qt5ct](https://github.com/desktop-app/qt5ct)  [gradience](https://github.com/GradienceTeam/Gradience)               |
-|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/), X11:[arandr](https://christian.amsuess.com/tools/arandr/), wayland:[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics autorandr nitrogen pavucontrol fontweak dconf powermangement:lxqt-powermanagement|
+| themes & the manager|     bibata-cursor-theme [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  [qt5ct](https://github.com/desktop-app/qt5ct) qt6ct  [gradience](https://github.com/GradienceTeam/Gradience)               |
+|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/),[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics pavucontrol fontweak dconf|
+| virtualization | virtio-win qemu-desktop |
 
 
 
