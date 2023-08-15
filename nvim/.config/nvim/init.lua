@@ -130,7 +130,7 @@ map("n", "<Leader>so", ":Telescope oldfiles<CR>", opt)
 map("n", "<leader>sg", ":Telescope live_grep<CR>", opt)
 -- toggle
 map("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", opt)
-map("n", "<leader>tt", ":ToggleTerm direction=horizontal<CR>i", opt)
+map("n", "<leader>tt", ":ToggleTerm direction=tab<CR>i", opt)
 map("t", "<Esc>", "<C-\\><C-n>:ToggleTerm<CR>", opt)
 map("n", "<leader>tg", ":Telescope<CR>", opt)
 map("n", "<leader>tsl", ":SessionManager load_session<CR>", opt)
