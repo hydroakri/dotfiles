@@ -183,7 +183,6 @@ require("lazy").setup({
 	{ "catppuccin/nvim", name = "catppuccin" },
 	{ "rebelot/kanagawa.nvim" },
 	{ "folke/tokyonight.nvim" },
-	{ "EdenEast/nightfox.nvim" },
 	-- completion
 	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
 	{ "hrsh7th/cmp-nvim-lsp", event = "InsertEnter" },
@@ -323,8 +322,22 @@ require("lazy").setup({
 --========================================== plug conf ================================================
 require("tokyonight").setup({
 	theme = "night",
+	on_colors = function(colors)
+		colors.hint = colors.orange
+		colors.error = "#ff0000"
+		colors.bg= "#191919"
+		colors.fg= "#191919"
+	end,
 })
-vim.cmd("colorscheme tokyonight-night")
+require("catppuccin").setup({
+	color_overrides = {
+		all = {
+			base = "#191919",
+			mantle = "#191919",
+		},
+	},
+})
+vim.cmd("colorscheme catppuccin-mocha")
 
 require("project_nvim").setup({})
 require("telescope").load_extension("projects")

@@ -7,7 +7,7 @@
         "margin-bottom": 0,
         "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
         "modules-center": ["mpris"],
-        "modules-right": ["gamemode","custom/mako", "backlight", "tray", "battery", "clock",],
+        "modules-right": ["gamemode","custom/mako", "backlight", "wireplumber", "tray", "battery", "clock",],
 
         "hyprland/window": {
             "format": "{}",
@@ -24,9 +24,9 @@
             "format-icons": {
                 "1": " ",
                 "2": " ",
-                "3": " ",
-                "4": " ",
-                "5": " ",
+                "3": " ",
+                "4": "󰎆 ",
+                "5": "󰓓 ",
                 "active": " ",
                 "default": " "
             },
@@ -57,7 +57,7 @@
         },
 
         "wireplumber": {
-            "format": "{icon} {volume}%",
+            "format": "{icon}",
             "format-bluetooth": "{icon} {volume}%",
             "format-muted": "",
             "format-icons": {
@@ -139,7 +139,8 @@
             "format-icons": ["", "", "", "", "", "", "", "", ""],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
-            "on-click": "killall swaybg && swaybg -i $(find ~/Pictures/wllppr/. -name '*.*g' | shuf -n1) -m fill",
+            "on-click": "~/script/chgwllpr.sh",
+            //"on-click": "killall swaybg && swaybg -i $(find ~/Pictures/wllppr/. -name '*.*g' | shuf -n1) -m fill",
         },
 
         "battery": {
