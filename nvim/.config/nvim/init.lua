@@ -87,7 +87,7 @@ vim.o.foldenable = true
 --vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- font
-vim.opt.guifont = { "Hack Nerd Font", ":h12" }
+vim.opt.guifont = { "CaskaydiaCove Nerd Font", ":h12" }
 
 vim.g.indent_blankline_filetype_exclude = { "dashboard" }
 
@@ -184,67 +184,72 @@ require("lazy").setup({
 	{ "rebelot/kanagawa.nvim" },
 	{ "folke/tokyonight.nvim" },
 	-- completion
-	{ "hrsh7th/nvim-cmp", event = { "InsertEnter", "CmdlineEnter" } },
-	{ "hrsh7th/cmp-nvim-lsp", event = "InsertEnter" },
-	{ "hrsh7th/cmp-buffer", event = "InsertEnter" },
-	{ "hrsh7th/cmp-path", event = "InsertEnter" },
-	{ "hrsh7th/cmp-cmdline", event = "CmdlineEnter" },
-	{ "hrsh7th/cmp-nvim-lsp-signature-help", event = "InsertEnter" },
-	{ "ray-x/cmp-treesitter", event = "InsertEnter" },
-	{ "Exafunction/codeium.vim", event = "BufEnter" },
+	{ "hrsh7th/nvim-cmp", event = "InsertEnter" },
+	{ "hrsh7th/cmp-nvim-lsp" },
+	{ "hrsh7th/cmp-buffer" },
+	{ "hrsh7th/cmp-path" },
+	{ "hrsh7th/cmp-cmdline" },
+	{ "hrsh7th/cmp-nvim-lsp-signature-help" },
+	{ "ray-x/cmp-treesitter" },
+	{ "Exafunction/codeium.vim" },
 	-- snips, friendly-snippets as provider
-	{ "L3MON4D3/LuaSnip", dependencies = "rafamadriz/friendly-snippets", event = "InsertEnter" },
-	{ "saadparwaiz1/cmp_luasnip", event = "InsertEnter" },
+	{ "L3MON4D3/LuaSnip", dependencies = "rafamadriz/friendly-snippets" },
+	{ "saadparwaiz1/cmp_luasnip" },
 	-- lsp
-	{ "neovim/nvim-lspconfig", event = "User FileOpened" },
-	{ "williamboman/mason.nvim", config = true, event = "User FileOpened" },
-	{ "williamboman/mason-lspconfig.nvim", config = true, event = "User FileOpened" },
-	{ "simrat39/symbols-outline.nvim", config = true, event = "BufReadPre" },
-	{ "j-hui/fidget.nvim", tag = "legacy", config = true, event = "BufReadPre" },
+	{ "neovim/nvim-lspconfig" },
+	{ "williamboman/mason.nvim", config = true },
+	{ "williamboman/mason-lspconfig.nvim", config = true },
+	{ "simrat39/symbols-outline.nvim", config = true },
+	{ "j-hui/fidget.nvim", tag = "legacy", config = true },
 	{
 		"ray-x/navigator.lua",
 		dependencies = { { "ray-x/guihua.lua", build = "cd lua/fzy && make" }, { "neovim/nvim-lspconfig" } },
 		config = true,
-		event = "InsertEnter",
+		event = "VeryLazy",
 	},
 	-- treesitter
-	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate", event = "User FileOpened" },
+	{ "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 	{ "nvim-treesitter/nvim-treesitter-context", config = true, event = "BufReadPre" },
 	-- format
-	{ "sbdchd/neoformat", event = "InsertEnter" },
+	{ "sbdchd/neoformat" },
 	-- debug
-	{ "mfussenegger/nvim-dap", event = "VeryLazy" },
+	{ "mfussenegger/nvim-dap" },
 	-- coderunner
-	{ "michaelb/sniprun", build = "sh ./install.sh", event = "VeryLazy" },
+	{ "michaelb/sniprun", build = "sh ./install.sh" },
 	-- git
-	{ "sindrets/diffview.nvim", event = "BufReadPre" },
+	{ "sindrets/diffview.nvim" },
 	{ "lewis6991/gitsigns.nvim", config = true, event = "BufReadPre" },
 	-- tools
 	{ "nvim-telescope/telescope.nvim", version = "0.1.1", dependencies = "nvim-lua/plenary.nvim" },
 	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{ "mg979/vim-visual-multi", version = "*", event = "InsertEnter" },
+	{ "mg979/vim-visual-multi", version = "*" },
 	{ "Shatur/neovim-session-manager", dependencies = "nvim-lua/plenary.nvim", event = "VeryLazy", config = true },
-	{ "ahmedkhalf/project.nvim", event = "VimEnter" },
-	{ "numToStr/Comment.nvim", config = true, event = "InsertEnter" },
-	{ "windwp/nvim-autopairs", config = true, event = "InsertEnter" },
-	{ "uga-rosa/ccc.nvim", config = true, event = "VeryLazy" },
+	{ "ahmedkhalf/project.nvim" },
+	{ "numToStr/Comment.nvim", config = true },
+	{ "windwp/nvim-autopairs", config = true, event = "BufReadPost" },
+	{ "uga-rosa/ccc.nvim", config = true },
 	{ "lambdalisue/suda.vim" },
 	-- user interface
 	{ "nvim-tree/nvim-tree.lua", version = "nightly", dependencies = "nvim-tree/nvim-web-devicons" },
-	{ "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
-	{ "nvim-lualine/lualine.nvim", config = true, event = "VimEnter" },
+	{
+		"akinsho/bufferline.nvim",
+		version = "v3.*",
+		dependencies = "nvim-tree/nvim-web-devicons",
+		event = "BufReadPre",
+	},
+	{ "nvim-lualine/lualine.nvim", config = true },
 	{ "nvimdev/dashboard-nvim", config = true, event = "VimEnter" },
-	{ "akinsho/toggleterm.nvim", version = "*", config = true, event = "BufEnter" },
-	{ "lukas-reineke/indent-blankline.nvim", config = true, event = "BufEnter" },
-	{ "petertriho/nvim-scrollbar", config = true, event = "VeryLazy" },
-	{ "RRethy/vim-illuminate", event = "VimEnter" },
-	{ "NvChad/nvim-colorizer.lua", config = true, event = "VeryLazy" },
-	{ "karb94/neoscroll.nvim", config = true, event = "VeryLazy" },
-	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "VimEnter" },
+	{ "akinsho/toggleterm.nvim", version = "*", config = true },
+	{ "lukas-reineke/indent-blankline.nvim", config = true, event = "BufReadPre" },
+	{ "petertriho/nvim-scrollbar", config = true, event = "BufReadPost" },
+	{ "RRethy/vim-illuminate", event = "BufReadPost" },
+	{ "NvChad/nvim-colorizer.lua", config = true, event = "BufReadPre" },
+	{ "karb94/neoscroll.nvim", config = true },
+	{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "BufReadPost" },
 	{
 		"anuvyklack/windows.nvim",
 		dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
-		event = "VimEnter",
+		event = "WinNew",
 		config = function()
 			vim.o.winwidth = 10
 			vim.o.winminwidth = 10
@@ -264,12 +269,13 @@ require("lazy").setup({
 	-- language
 	{
 		"iamcco/markdown-preview.nvim",
+		ft = { "markdown", "md" },
 		build = function()
 			vim.fn["mkdp#util#install"]()
 		end,
 	},
 	-- jump
-	{ "rainbowhxch/accelerated-jk.nvim", event = "VeryLazy" },
+	{ "rainbowhxch/accelerated-jk.nvim" },
 	{
 		"folke/flash.nvim",
 		event = "VeryLazy",
@@ -323,10 +329,7 @@ require("lazy").setup({
 require("tokyonight").setup({
 	theme = "night",
 	on_colors = function(colors)
-		colors.hint = colors.orange
-		colors.error = "#ff0000"
-		colors.bg= "#191919"
-		colors.fg= "#191919"
+		colors.bg = "#191919"
 	end,
 })
 require("catppuccin").setup({
@@ -337,7 +340,7 @@ require("catppuccin").setup({
 		},
 	},
 })
-vim.cmd("colorscheme catppuccin-mocha")
+vim.cmd("colorscheme catppuccin-frappe")
 
 require("project_nvim").setup({})
 require("telescope").load_extension("projects")
@@ -394,6 +397,7 @@ require("dashboard").setup({
 		},
 	},
 })
+vim.cmd([[hi DashboardHeader guifg=pink]])
 
 require("navigator").setup({
 	lsp = {

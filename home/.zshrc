@@ -39,3 +39,5 @@ source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 #then
 #    exec fish
 #fi
+
+source /home/hydroakri/.config/broot/launcher/bash/br

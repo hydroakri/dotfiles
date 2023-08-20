@@ -51,8 +51,8 @@
 
         "custom/mako": {
             "format": " ",
-            "on-click": "makoctl mode -a do-not-disturb",
-            "on-click-right": "makoctl mode -r do-not-disturb",
+            "on-click": "notify-send 'no disturb on' && makoctl mode -a do-not-disturb",
+            "on-click-right": "makoctl mode -r do-not-disturb && notify-send 'no disturb off'",
             "on-click-middle": "makoctl restore",
         },
 

@@ -26,6 +26,8 @@ default-timeout=0
 default-timeout=2000
 group-by=category
 
+[mode=do-not-disturb]
+invisible=1
 
 # mocha
 #background-color=#1e1e2e
