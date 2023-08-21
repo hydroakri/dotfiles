@@ -194,6 +194,9 @@ require("lazy").setup({
 						mantle = "#191919",
 					},
 				},
+				integrations = {
+					illuminate = true,
+				},
 			},
 		},
 		{ "rebelot/kanagawa.nvim" },
