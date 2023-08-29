@@ -22,8 +22,8 @@ vim.o.sidescrolloff = 8
 vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
-vim.wo.cursorline = true
-vim.wo.cursorcolumn = true
+-- vim.wo.cursorline = true
+-- vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -154,29 +154,7 @@ vim.api.nvim_set_keymap("n", "<leader>di", "<cmd>lua require'dap'.step_into()<cr
 vim.api.nvim_set_keymap("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", {noremap=true,silent=true})
 -- vim.api.nvim_set_keymap("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", {noremap=true,silent=true})
--- lsp keybind
 vim.api.nvim_set_keymap("n", "<Leader>lf", "<cmd>Neoformat<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<Leader>ls", ":SymbolsOutline<CR>", { noremap = true, silent = true })
-
-vim.api.nvim_create_autocmd("LspAttach", {
-	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-	callback = function(ev)
-		-- Enable completion triggered by <c-x><c-o>
-		vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-
-		-- Buffer local mappings.
-		-- See `:help vim.lsp.*` for documentation on any of the below functions
-		local opts = { buffer = ev.buf }
-		vim.keymap.set("n", "<Leader>lh", vim.lsp.buf.signature_help, opts)
-		vim.keymap.set("n", "<Leader>ln", vim.lsp.buf.rename, opts)
-		vim.keymap.set("n", "<Leader>la", vim.lsp.buf.code_action, opts)
-		vim.keymap.set("n", "<Leader>lwa", vim.lsp.buf.add_workspace_folder, opts)
-		vim.keymap.set("n", "<Leader>lwr", vim.lsp.buf.remove_workspace_folder, opts)
-		vim.keymap.set("n", "<Leader>lwl", function()
-			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-		end, opts)
-	end,
-})
 
 require("lazy").setup({
 	defaults = {
@@ -188,6 +166,7 @@ require("lazy").setup({
 			"catppuccin/nvim",
 			name = "catppuccin",
 			opts = {
+				transparent_background = true,
 				color_overrides = {
 					all = {
 						base = "#191919",
@@ -196,6 +175,23 @@ require("lazy").setup({
 				},
 				integrations = {
 					illuminate = true,
+					dashboard = true,
+					flash = true,
+					gitsigns = true,
+					indent_blankline = {
+						enabled = true,
+						colored_indent_levels = true,
+					},
+					mason = true,
+					noice = true,
+					cmp = true,
+					dap = {
+						enabled = true,
+						enable_ui = true, -- enable nvim-dap-ui
+					},
+					notify = true,
+					treesitter_context = true,
+					which_key = true,
 				},
 			},
 		},
@@ -212,28 +208,15 @@ require("lazy").setup({
 		},
 		-- completion
 		{
-			"Exafunction/codeium.vim",
-			event = "InsertEnter",
-			config = function()
-				-- Change '<C-g>' here to any keycode you like.
-				vim.keymap.set("i", "<C-g>", function()
-					return vim.fn["codeium#Accept"]()
-				end, { expr = true })
-				vim.keymap.set("i", "<c-;>", function()
-					return vim.fn["codeium#CycleCompletions"](1)
-				end, { expr = true })
-				vim.keymap.set("i", "<c-,>", function()
-					return vim.fn["codeium#CycleCompletions"](-1)
-				end, { expr = true })
-				vim.keymap.set("i", "<c-x>", function()
-					return vim.fn["codeium#Clear"]()
-				end, { expr = true })
-			end,
-		},
-		{
 			"hrsh7th/nvim-cmp",
 			event = "InsertEnter",
 			dependencies = {
+				{
+					"jcdickinson/codeium.nvim",
+					config = function()
+						require("codeium").setup({})
+					end,
+				},
 				{
 					"L3MON4D3/LuaSnip",
 					dependencies = { "rafamadriz/friendly-snippets" },
@@ -311,7 +294,6 @@ require("lazy").setup({
 			"neovim/nvim-lspconfig",
 			event = "InsertEnter",
 			dependencies = {
-				{ "simrat39/symbols-outline.nvim", config = true, opts = { width = 25 } },
 				{ "williamboman/mason-lspconfig.nvim" },
 				{
 					"ray-x/navigator.lua",
@@ -375,11 +357,24 @@ require("lazy").setup({
 				})
 			end,
 		},
-		{ "williamboman/mason.nvim", event = "InsertEnter" },
+		{
+			"williamboman/mason.nvim",
+			cmd = "Mason",
+			config = function()
+				require("mason").setup()
+			end,
+		},
 		{
 			"folke/noice.nvim",
+			enabled = false,
 			event = "BufReadPre",
-			opts = {},
+			opts = {
+				lsp = {
+					hover = {
+						enabled = false,
+					},
+				},
+			},
 			dependencies = {
 				"MunifTanjim/nui.nvim",
 			},
@@ -394,7 +389,27 @@ require("lazy").setup({
 			},
 			config = function()
 				require("nvim-treesitter.configs").setup({
-					ensure_installed = { "c", "lua", "vim", "query" },
+					ensure_installed = {
+						"c",
+						"lua",
+						"vim",
+						"query",
+						"bash",
+						"python",
+						"cpp",
+						"json",
+						"dockerfile",
+						"cmake",
+                        "make",
+                        "comment",
+						"diff",
+						"html",
+						"http",
+						"css",
+						"scss",
+						"yaml",
+						"toml",
+					},
 					auto_install = true,
 					-- 启用代码高亮功能
 					highlight = {
@@ -529,6 +544,18 @@ require("lazy").setup({
 			version = "v3.*",
 			dependencies = "nvim-tree/nvim-web-devicons",
 			event = "BufReadPre",
+			cmd = { "BufferLineCyclePrev", "BufferLineCycleNext", "BufferLinePick" },
+			config = function()
+				require("bufferline").setup({
+					highlights = require("catppuccin.groups.integrations.bufferline").get({
+						custom = {
+							all = {
+								fill = { bg = "#191919" },
+							},
+						},
+					}),
+				})
+			end,
 			opts = {
 				options = {
 					indicator = {
@@ -709,6 +736,26 @@ require("lazy").setup({
 			end,
 		},
 		-- language
+		{
+			"Dhanus3133/LeetBuddy.nvim",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"nvim-telescope/telescope.nvim",
+			},
+			config = function()
+				require("leetbuddy").setup({
+					domain = "cn",
+					language = "cpp",
+				})
+			end,
+			keys = {
+				{ "<leader>lq", "<cmd>LBQuestions<cr>", desc = "List Questions" },
+				{ "<leader>ll", "<cmd>LBQuestion<cr>", desc = "View Question" },
+				{ "<leader>lr", "<cmd>LBReset<cr>", desc = "Reset Code" },
+				{ "<leader>lt", "<cmd>LBTest<cr>", desc = "Run Code" },
+				{ "<leader>ls", "<cmd>LBSubmit<cr>", desc = "Submit Code" },
+			},
+		},
 		{
 			"iamcco/markdown-preview.nvim",
 			ft = { "markdown", "md" },

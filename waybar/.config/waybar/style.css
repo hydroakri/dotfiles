@@ -8,7 +8,7 @@
   border-radius: 0px;
 }
 window#waybar {
-  background: rgba(25, 25, 25, 0.0);
+  background: rgba(25, 25, 25, 0.3);
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   color: white;
   transition-property: background-color;
