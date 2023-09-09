@@ -366,7 +366,6 @@ require("lazy").setup({
 		},
 		{
 			"folke/noice.nvim",
-			enabled = false,
 			event = "BufReadPre",
 			opts = {
 				lsp = {
@@ -724,6 +723,10 @@ require("lazy").setup({
 				require("windows").setup()
 			end,
 		},
+        {
+            "LunarVim/bigfile.nvim",
+            event = "BufReadPre",
+        },
 		{
 			"folke/which-key.nvim",
 			keys = { "<leader>", '"', "'", "`", "c", "v", "g" },
