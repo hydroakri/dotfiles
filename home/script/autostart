@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sleep 3 && parallel ::: '/usr/lib/kdeconnectd' kdeconnect-indicator localsend syncthing keepassxc 'cd ~/Yacd-meta && pnpm start' 'wayvnc 0.0.0.0' copyq 'aria2c --enable-rpc' 'foot --server' 'colormgr get-devices'
+sleep 3 && parallel ::: '/usr/lib/kdeconnectd' kdeconnect-indicator localsend syncthing keepassxc 'cd ~/Yacd-meta && pnpm start' 'wayvnc 0.0.0.0' 'aria2c --enable-rpc' 'foot --server' 'colormgr get-devices'
