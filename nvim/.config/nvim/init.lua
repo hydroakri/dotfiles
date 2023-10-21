@@ -368,6 +368,7 @@ require("lazy").setup({
 		{
 			"folke/noice.nvim",
 			event = "BufReadPre",
+            enabled = false,
 			opts = {
 				lsp = {
 					hover = {
@@ -380,6 +381,12 @@ require("lazy").setup({
 			},
 		},
 		-- treesitter
+		{
+			"folke/trouble.nvim",
+            event = "BufReadPost",
+			dependencies = { "nvim-tree/nvim-web-devicons" },
+			opts = {},
+		},
 		{
 			"nvim-treesitter/nvim-treesitter",
 			build = ":TSUpdate",
@@ -474,7 +481,7 @@ require("lazy").setup({
 		-- tools
 		{
 			"nvim-telescope/telescope.nvim",
-			version = "0.1.1",
+			version = "0.1.4",
 			dependencies = {
 				{ "nvim-lua/plenary.nvim" },
 				{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
