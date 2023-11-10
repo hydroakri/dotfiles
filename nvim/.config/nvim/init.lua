@@ -196,7 +196,7 @@ require("lazy").setup({
 				},
 			},
 		},
-		{ "rebelot/kanagawa.nvim" },
+		{ "sainnhe/everforest" },
 		{
 			"folke/tokyonight.nvim",
 			opts = {
@@ -368,7 +368,7 @@ require("lazy").setup({
 		{
 			"folke/noice.nvim",
 			event = "BufReadPre",
-            enabled = false,
+			enabled = false,
 			opts = {
 				lsp = {
 					hover = {
@@ -383,7 +383,7 @@ require("lazy").setup({
 		-- treesitter
 		{
 			"folke/trouble.nvim",
-            event = "BufReadPost",
+			event = "BufReadPost",
 			dependencies = { "nvim-tree/nvim-web-devicons" },
 			opts = {},
 		},
@@ -438,6 +438,17 @@ require("lazy").setup({
 		},
 		-- format
 		{ "sbdchd/neoformat", cmd = "Neoformat" },
+		-- refactor
+		{
+			"ThePrimeagen/refactoring.nvim",
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"nvim-treesitter/nvim-treesitter",
+			},
+			config = function()
+				require("refactoring").setup()
+			end,
+		},
 		-- debug
 		{
 			"mfussenegger/nvim-dap",
@@ -781,6 +792,7 @@ require("lazy").setup({
 		-- jump
 		{
 			"rainbowhxch/accelerated-jk.nvim",
+			enabled = false,
 			keys = {
 				{ "j", mode = "n", "<Plug>(accelerated_jk_gj)", desc = {} },
 				{ "k", mode = "n", "<Plug>(accelerated_jk_gk)", desc = {} },
@@ -834,5 +846,6 @@ require("lazy").setup({
 		},
 	},
 })
-vim.cmd("colorscheme catppuccin-mocha")
+vim.cmd("colorscheme everforest")
+-- vim.cmd("colorscheme catppuccin-mocha")
 --vim.cmd("colorscheme tokyonight-night")
