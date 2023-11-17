@@ -1,2 +1,10 @@
-gamemoderun gamescope -w 1920 -h 1080 -W 2560 -H 1440 -r 144 -e -f -U -- steam -gamepadui
-gamemoderun gamescope -w 1920 -h 1080 -W 2560 -H 1440 -r 144 -rt -e -f --prefer-vk-device -U -- %command%
+#!/usr/bin/env sh
+if [ "$(hyprctl getoption input:repeat_rate | awk 'NR==2{print $2}')" = 50 ] ; then
+    hyprctl --batch "\
+        keyword input:repeat_rate 0; "
+    exit
+fi
+hyprctl reload
+# gamemoderun gamescope -w 1920 -h 1080 -W 2560 -H 1440 -r 144 -e -f -U -- steam -gamepadui
+# gamemoderun gamescope -w 1920 -h 1080 -W 2560 -H 1440 -r 144 -rt -e -f --prefer-vk-device -U -- %command%
+

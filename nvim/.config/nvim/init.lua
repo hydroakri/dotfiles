@@ -846,6 +846,6 @@ require("lazy").setup({
 		},
 	},
 })
-vim.cmd("colorscheme everforest")
--- vim.cmd("colorscheme catppuccin-mocha")
+-- vim.cmd("colorscheme everforest")
+vim.cmd("colorscheme catppuccin-mocha")
 --vim.cmd("colorscheme tokyonight-night")

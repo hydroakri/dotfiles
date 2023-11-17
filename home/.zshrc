@@ -15,10 +15,11 @@ zstyle ':completion:*' rehash true
 export EDITOR=nvim
 export VISUAL=nvim
 alias vi='nvim'
-alias ls='lsd'
-alias find='fd'
-alias grep='rg'
-alias ack='ag'
+alias sudo='doas'
+# alias ls='lsd'
+# alias find='fd'
+# alias grep='rg'
+# alias ack='ag'
 alias cd='z'
 alias zj='zellij'
 alias tmux='tmux -u'
