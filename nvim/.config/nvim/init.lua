@@ -22,8 +22,8 @@ vim.o.sidescrolloff = 8
 vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
--- vim.wo.cursorline = true
--- vim.wo.cursorcolumn = true
+vim.wo.cursorline = true
+vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -90,6 +90,10 @@ vim.o.foldenable = true
 
 -- font
 vim.opt.guifont = { "CaskaydiaCove Nerd Font", ":h12" }
+
+-- doas
+vim.cmd([[cmap w!! w !doas tee % >/dev/null]])
+vim.cmd([[command! SaveAsRoot w !doas tee %]])
 
 -- ========================================== keybind ====================================
 -- Leader key
@@ -492,7 +496,6 @@ require("lazy").setup({
 		-- tools
 		{
 			"nvim-telescope/telescope.nvim",
-			version = "0.1.4",
 			dependencies = {
 				{ "nvim-lua/plenary.nvim" },
 				{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
@@ -502,9 +505,14 @@ require("lazy").setup({
 				local telescope = require("telescope")
 				local telescopeConfig = require("telescope.config")
 				local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
+				-- table.insert(vimgrep_arguments, "--color=never")
+				-- table.insert(vimgrep_arguments, "--no-heading")
+				-- table.insert(vimgrep_arguments, "--with-filename")
+				-- table.insert(vimgrep_arguments, "--line-number")
+				-- table.insert(vimgrep_arguments, "--column")
+				-- table.insert(vimgrep_arguments, "--smart-case")
 				table.insert(vimgrep_arguments, "--hidden")
-				table.insert(vimgrep_arguments, "--glob")
-				table.insert(vimgrep_arguments, "!**/.git/*")
+				table.insert(vimgrep_arguments, "--glob=!.git/")
 				telescope.setup({
 					defaults = {
 						vimgrep_arguments = vimgrep_arguments,
@@ -542,7 +550,6 @@ require("lazy").setup({
 		},
 		{ "windwp/nvim-autopairs", config = true, event = "BufReadPost" },
 		{ "uga-rosa/ccc.nvim", cmd = "CccPick" },
-		{ "lambdalisue/suda.vim", cmd = "SudaWrite" },
 		-- user interface
 		{
 			"nvim-tree/nvim-tree.lua",
@@ -736,15 +743,12 @@ require("lazy").setup({
 		},
 		{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "BufReadPost" },
 		{
-			"anuvyklack/windows.nvim",
-			dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
-			event = "WinNew",
-			config = function()
-				vim.o.winwidth = 10
-				vim.o.winminwidth = 10
-				vim.o.equalalways = false
-				require("windows").setup()
-			end,
+			"pysan3/fcitx5.nvim",
+            config = function ()
+                require("fcitx5").setup()
+            end,
+			cond = vim.fn.executable("fcitx5-remote") == 1,
+			event = { "ModeChanged" },
 		},
 		{
 			"LunarVim/bigfile.nvim",

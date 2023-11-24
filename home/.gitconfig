@@ -1,7 +1,7 @@
 [user]
 	name = hydroakri
 	email = hsx011231@gmail.com
-; [url "git@github.com:"]
-; 	insteadOf = https://github.com/
+[url "git@github.com:"]
+	insteadOf = https://github.com/
 [color]
 	ui = auto
