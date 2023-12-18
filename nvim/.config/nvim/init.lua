@@ -22,8 +22,8 @@ vim.o.sidescrolloff = 8
 vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
-vim.wo.cursorline = true
-vim.wo.cursorcolumn = true
+-- vim.wo.cursorline = true
+-- vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -89,7 +89,7 @@ vim.o.foldenable = true
 --vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- font
-vim.opt.guifont = { "CaskaydiaCove Nerd Font", ":h12" }
+vim.opt.guifont = { "CaskaydiaCove NF", ":h12" }
 
 -- doas
 vim.cmd([[cmap w!! w !doas tee % >/dev/null]])
@@ -174,8 +174,9 @@ require("lazy").setup({
 				transparent_background = true,
 				color_overrides = {
 					all = {
-						base = "#191919",
-						mantle = "#191919",
+                        text = "#fdf6e3",
+						base = "#363430",
+						mantle = "#363430",
 					},
 				},
 				integrations = {
@@ -216,12 +217,6 @@ require("lazy").setup({
 			"hrsh7th/nvim-cmp",
 			event = "InsertEnter",
 			dependencies = {
-				{
-					"jcdickinson/codeium.nvim",
-					config = function()
-						require("codeium").setup({})
-					end,
-				},
 				{
 					"L3MON4D3/LuaSnip",
 					dependencies = { "rafamadriz/friendly-snippets" },
@@ -265,7 +260,6 @@ require("lazy").setup({
 						{ name = "nvim_lsp_signature_help" },
 						{ name = "luasnip" },
 						{ name = "treesitter" },
-						{ name = "codeium" },
 					}),
 				})
 

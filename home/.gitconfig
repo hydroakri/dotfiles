@@ -5,3 +5,5 @@
 	insteadOf = https://github.com/
 [color]
 	ui = auto
+[init]
+	defaultBranch = main

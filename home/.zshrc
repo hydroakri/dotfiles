@@ -15,6 +15,7 @@ zstyle ':completion:*' rehash true
 export EDITOR=nvim
 export VISUAL=nvim
 alias vi='nvim'
+alias suvi='doas nvim -u ~/dotfiles/nvim/.config/nvim/init.lua'
 alias sudo='doas'
 # alias ls='lsd'
 # alias find='fd'

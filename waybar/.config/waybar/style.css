@@ -1,14 +1,14 @@
-/* * {
-  font-family: "Inter", "CaskaydiaCove Nerd Font", "Sarasa UI SC";
-  font-size: 18px;
+* {
+  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Sarasa UI SC";
+  font-size: 16px;
   font-weight: 400;
   min-height: 0;
   border: none;
-  margin: 0.1em 0.2em 0.1em 0.2em;
-  border-radius: 0px;
-} */
+  /* margin: 0.1em 0.2em 0.1em 0.2em; */
+  border-radius: 9px;
+}
 window#waybar {
-  background: rgba(25, 25, 25, 0.3);
+  background: rgba(54, 52, 48, 0.6);
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   color: white;
   transition-property: background-color;

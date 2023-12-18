@@ -1,12 +1,12 @@
-/* * {
-    font-family: "Inter" ,"CaskaydiaCove Nerd Font", "Sarasa UI SC";
+* {
+    font-family: "Inter Display" ,"Caskaydiacove nerd font", "sarasa ui sc";
     border: none;
-    border-radius: 7px;
-} */
+    border-radius: 9px;
+} 
 
 window {
     font-size: 32px;
-    background-color: rgba(25, 25, 25, 0.3);
+    background-color: rgba(54, 52, 48, 0.6);
     color: white;
 }
 
@@ -15,7 +15,7 @@ window {
 }
 
 #entry:selected {
-    background: linear-gradient(90deg, #6493cf, #e4a3f5);
+    background: linear-gradient(135deg, #4b8099, #e4aaaa);
 }
 
 #text:selected {

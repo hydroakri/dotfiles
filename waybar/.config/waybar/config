@@ -1,10 +1,10 @@
 {
     "layer": "top",
         "position": "top",
-        "margin-left": 0,
-        "margin-right": 0,
-        "margin-top": 0,
-        "margin-bottom": 0,
+        "margin-left": 4,
+        "margin-right": 4,
+        "margin-top": 4,
+        "margin-bottom": 4,
         "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
         //"modules-left": ["custom/launcher",],
         "modules-center": ["mpris"],
@@ -161,7 +161,7 @@
 
         "tray": {
             "icon-size": 20,
-            "spacing": 10,
+            "spacing": 5,
         },
 
         "clock": {
