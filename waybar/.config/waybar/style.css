@@ -5,14 +5,18 @@
   min-height: 0;
   border: none;
   /* margin: 0.1em 0.2em 0.1em 0.2em; */
-  border-radius: 9px;
+  /* border-radius: 9px; */
 }
 window#waybar {
-  background: rgba(54, 52, 48, 0.6);
+  background-color: transparent;
+}
+
+window#waybar > box {
+    background-color: rgba(239,241,245, 0.5);
+  /* border-radius: 9px; */
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
-  color: white;
-  transition-property: background-color;
-  transition-duration: 0.5s;
+  /* box-shadow: 1px 1px 1px 1px #101010; */
+  /* margin: 1px 1px 1px 1px; */
 }
 
 button {

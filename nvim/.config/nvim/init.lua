@@ -99,6 +99,12 @@ vim.cmd([[command! SaveAsRoot w !doas tee %]])
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+-- bind sys clipboard as default
+vim.api.nvim_set_keymap("n", "y", "\"+y", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("v", "y", "\"+y", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "x", "\"+x", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("v", "x", "\"+x", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "dd", "\"+dd", { noremap = true, silent = true })
 -- package manager
 vim.api.nvim_set_keymap("n", "<leader>pu", ":Lazy update<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>pm", ":Mason<CR>", { noremap = true, silent = true })
@@ -174,9 +180,9 @@ require("lazy").setup({
 				transparent_background = true,
 				color_overrides = {
 					all = {
-                        text = "#fdf6e3",
-						base = "#363430",
-						mantle = "#363430",
+                        -- text = "#363430",
+						-- base = "#fdf6e3",
+						-- mantle = "#fdf6e3",
 					},
 				},
 				integrations = {
@@ -207,8 +213,8 @@ require("lazy").setup({
 			opts = {
 				theme = "night",
 				on_colors = function(colors)
-					colors.bg = "#191919"
-					colors.bg_dark = "#191919"
+					colors.bg = "#fdf6e3"
+					colors.bg_dark = "#fdf6e3"
 				end,
 			},
 		},
@@ -845,5 +851,5 @@ require("lazy").setup({
 	},
 })
 -- vim.cmd("colorscheme everforest")
-vim.cmd("colorscheme catppuccin-mocha")
+vim.cmd("colorscheme catppuccin-latte")
 --vim.cmd("colorscheme tokyonight-night")

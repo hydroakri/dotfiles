@@ -1,17 +1,16 @@
-export PATH="$PATH:/home/$USER/script"
 export LANG=en_US.UTF-8
-SAVEHIST=999999999
+
+# history
+SAVEHIST=9223372036854775807
 HISTFILE=~/.zsh_history
-bindkey -v
+setopt INC_APPEND_HISTORY
+export HISTTIMEFORMAT="[%F %T] "
+setopt EXTENDED_HISTORY
+setopt HIST_FIND_NO_DUPS
+setopt HIST_IGNORE_ALL_DUPS
 
-autoload -U compinit
-autoload -U promptinit
-promptinit
-compinit
-setopt HIST_IGNORE_DUPS
-zstyle ':completion:*' menu select
-zstyle ':completion:*' rehash true
-
+# some personal variables
+export PATH="$PATH:/home/$USER/script"
 export EDITOR=nvim
 export VISUAL=nvim
 alias vi='nvim'
@@ -28,6 +27,19 @@ alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {
 alias p='all_proxy=127.0.0.1:7890 ALL_PROXY=127.0.0.1:7890'
 alias x='unset WAYLAND_DISPLAY && QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 DISPLAY=:1 DESKTOP_SESSION=xfce XDG_CURRENT_DESKTOP=XFCE XDG_SESSION_TYPE=x11 XDG_MENU_PREFIX=xfce-'
 #alias gamemoderun='gamemoderun gamescope -w 1920 -h 1080 -r 144 -rt -e -f --prefer-vk-device -U -- %command%'
+
+# vim bindkey
+bindkey -v
+
+# load plugin
+autoload -U compinit
+autoload -U promptinit
+promptinit
+compinit
+setopt HIST_IGNORE_DUPS
+zstyle ':completion:*' menu select
+zstyle ':completion:*' rehash true
+
 
 # plugins
 eval "$(starship init zsh)"

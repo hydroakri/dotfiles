@@ -10,8 +10,9 @@ default-timeout=3000
 ignore-timeout=1
 font=Inter Display
 
-background-color=#363430
-text-color=#fdf6e3
+background-color=#eff1f5cc
+text-color=#4c4f69
+progress-color=over #ccd0dacc
 [urgency=low]
 border-color=#cccccc
 
@@ -19,7 +20,7 @@ border-color=#cccccc
 border-color=#d08770
 
 [urgency=high]
-border-color=#bf616a
+border-color=#fe640b
 default-timeout=0
 
 [category=mpd]

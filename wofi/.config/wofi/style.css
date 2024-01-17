@@ -6,7 +6,7 @@
 
 window {
     font-size: 32px;
-    background-color: rgba(54, 52, 48, 0.6);
+    background-color: rgba(0, 0, 0, 0.0);
     color: white;
 }
 
@@ -15,11 +15,11 @@ window {
 }
 
 #entry:selected {
-    background: linear-gradient(135deg, #4b8099, #e4aaaa);
+    background: linear-gradient(135deg, #ea999c,#babbf1);
 }
 
 #text:selected {
-    color: #333333;
+    color: #eff1f5;
 }
 
 #input {
