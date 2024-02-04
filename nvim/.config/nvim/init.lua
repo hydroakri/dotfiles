@@ -140,6 +140,10 @@ vim.api.nvim_set_keymap("n", "<leader>tsl", ":SessionManager load_session<CR>", 
 vim.api.nvim_set_keymap("n", "<leader>tsd", ":SessionManager delete_session<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>td", ":Dashboard<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tc", ":CccPick<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>tx", ":TroubleToggle<CR>", { noremap = true, silent = true })
+-- terminal
+vim.api.nvim_set_keymap("n", "<A-t>", ":ToggleTerm direction=tab<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("t", "<esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 -- git
 vim.api.nvim_set_keymap("n", "<leader>gj", ":Gitsigns next_hunk<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", { noremap = true, silent = true })
@@ -553,7 +557,7 @@ require("lazy").setup({
 		-- user interface
 		{
 			"nvim-tree/nvim-tree.lua",
-			version = "nightly",
+			version = "*",
 			dependencies = "nvim-tree/nvim-web-devicons",
 			cmd = { "NvimTreeFindFileToggle", "NvimTreeFocus" },
 			config = function()
@@ -679,26 +683,11 @@ require("lazy").setup({
 			end,
 		},
 		{
-			"NvChad/nvterm",
+			"akinsho/toggleterm.nvim",
+			event = "BufReadPre",
 			config = function()
-				require("nvterm").setup()
+                require("toggleterm").setup()
 			end,
-			keys = {
-				{
-					"<A-t>",
-					mode = { "n", "t" },
-					function()
-						require("nvterm.terminal").toggle("horizontal")
-					end,
-				},
-				{
-					"<A-f>",
-					mode = { "n", "t" },
-					function()
-						require("nvterm.terminal").toggle("float")
-					end,
-				},
-			},
 		},
 		{
 			"lukas-reineke/indent-blankline.nvim",
@@ -744,6 +733,7 @@ require("lazy").setup({
 		{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "BufReadPost" },
 		{
 			"pysan3/fcitx5.nvim",
+            enabled=false,
             config = function ()
                 require("fcitx5").setup()
             end,

@@ -1,5 +1,6 @@
 {
     "layer": "top",
+        "exclusive": "false",
         "position": "top",
         "margin-left": 0,
         "margin-right": 0,

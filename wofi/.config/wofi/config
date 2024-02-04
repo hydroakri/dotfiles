@@ -2,3 +2,6 @@ mode=drun
 allow_images=true
 width=61.8%
 height=61.8%
+normal_window=true
+exec_search=true
+always_parse_args=true

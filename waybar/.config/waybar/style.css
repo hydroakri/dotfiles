@@ -12,7 +12,7 @@ window#waybar {
 }
 
 window#waybar > box {
-    background-color: rgba(239,241,245, 0.5);
+    background-color: rgba(239,241,245, 0.8);
   /* border-radius: 9px; */
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   /* box-shadow: 1px 1px 1px 1px #101010; */
