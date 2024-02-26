@@ -11,6 +11,7 @@ setopt HIST_IGNORE_ALL_DUPS
 
 # some personal variables
 export PATH="$PATH:/home/$USER/script"
+export PATH="$PATH:/opt"
 export EDITOR=nvim
 export VISUAL=nvim
 alias vi='nvim'
@@ -24,8 +25,9 @@ alias cd='z'
 alias zj='zellij'
 alias tmux='tmux -u'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
-alias p='all_proxy=127.0.0.1:7890 ALL_PROXY=127.0.0.1:7890'
+alias p='all_proxy=127.0.0.1:2080 ALL_PROXY=127.0.0.1:2080'
 alias x='unset WAYLAND_DISPLAY && GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11'
+alias nv='__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia'
 #alias gamemoderun='gamemoderun gamescope -w 1920 -h 1080 -r 144 -rt -e -f --prefer-vk-device -U -- %command%'
 
 # vim bindkey
@@ -54,3 +56,9 @@ source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 #then
 #    exec fish
 #fi
+if pgrep -x "zellij" > /dev/null
+then
+    zellij attach
+else
+    zellij
+fi

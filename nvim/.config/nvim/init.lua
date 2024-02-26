@@ -82,10 +82,10 @@ vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
 vim.o.foldcolumn = "1" -- '0' is not bad
-vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevel = 999 -- Using ufo provider need a large value, feel free to decrease the value
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
---vim.wo.foldmethod = "expr"
+-- vim.wo.foldmethod = "manual"
 --vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- font
@@ -100,15 +100,16 @@ vim.cmd([[command! SaveAsRoot w !doas tee %]])
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 -- bind sys clipboard as default
-vim.api.nvim_set_keymap("n", "y", "\"+y", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("v", "y", "\"+y", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "x", "\"+x", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("v", "x", "\"+x", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "dd", "\"+dd", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "y", '"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("v", "y", '"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "x", '"+x', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("v", "x", '"+x', { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "dd", '"+dd', { noremap = true, silent = true })
 -- package manager
 vim.api.nvim_set_keymap("n", "<leader>pu", ":Lazy update<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>pm", ":Mason<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>pl", ":LspInfo<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>pc", ":CmpStatus<CR>", { noremap = true, silent = true })
 -- window
 vim.api.nvim_set_keymap("n", "<A-h>", "<C-w>h", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<A-j>", "<C-w>j", { noremap = true, silent = true })
@@ -184,7 +185,7 @@ require("lazy").setup({
 				transparent_background = true,
 				color_overrides = {
 					all = {
-                        -- text = "#363430",
+						-- text = "#363430",
 						-- base = "#fdf6e3",
 						-- mantle = "#fdf6e3",
 					},
@@ -301,7 +302,7 @@ require("lazy").setup({
 		-- lsp
 		{
 			"neovim/nvim-lspconfig",
-			event = "InsertEnter",
+			event = "BufReadPre",
 			dependencies = {
 				{ "williamboman/mason-lspconfig.nvim" },
 				{
@@ -373,10 +374,11 @@ require("lazy").setup({
 				require("mason").setup()
 			end,
 		},
+		-- UI
 		{
 			"folke/noice.nvim",
 			event = "BufReadPre",
-			enabled = false,
+			enabled = true,
 			opts = {
 				lsp = {
 					hover = {
@@ -387,6 +389,13 @@ require("lazy").setup({
 			dependencies = {
 				"MunifTanjim/nui.nvim",
 			},
+		},
+		{
+			"j-hui/fidget.nvim",
+			event = "BufReadPre",
+			config = function()
+				require("fidget").setup({})
+			end,
 		},
 		-- treesitter
 		{
@@ -686,7 +695,7 @@ require("lazy").setup({
 			"akinsho/toggleterm.nvim",
 			event = "BufReadPre",
 			config = function()
-                require("toggleterm").setup()
+				require("toggleterm").setup()
 			end,
 		},
 		{
@@ -733,10 +742,10 @@ require("lazy").setup({
 		{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "BufReadPost" },
 		{
 			"pysan3/fcitx5.nvim",
-            enabled=false,
-            config = function ()
-                require("fcitx5").setup()
-            end,
+			enabled = false,
+			config = function()
+				require("fcitx5").setup()
+			end,
 			cond = vim.fn.executable("fcitx5-remote") == 1,
 			event = { "ModeChanged" },
 		},
