@@ -1,6 +1,7 @@
 {
-    "layer": "top",
+        "layer": "top",
         "exclusive": "false",
+        "reload_style_on_change": true,
         "position": "top",
         "margin-left": 0,
         "margin-right": 0,
@@ -22,22 +23,18 @@
         },
 
         "hyprland/workspaces": {
+            "show-special": true,
             "persistent_workspaces": {
-                "1": [],
-                "2": [],
-                "3": [],
-                "4": ["eDP-1"],
-                "5": ["eDP-1", "DP-2"]
+                "eDP-1": [ 1, 2, 3, 4, 5 ], // workspace 1 shown on DP-3
             },
             "format": "{icon}",
             "format-icons": {
-                "1": " ",
-                "2": " ",
-                "3": " ",
-                "4": " ",
-                "5": " ",
-                "active": " ",
-                "default": " "
+                "1": "󰲠 ",
+                "2": "󰲢 ",
+                "3": "󰲤 ",
+                "4": "󰲦 ",
+                "5": "󰲨 ",
+                "special": " ",
             },
         },
 
@@ -80,7 +77,7 @@
         },
 
         "custom/launcher":{
-            "format": " ",
+            "format": "󰌽 ",
             "on-click": "nwgbar",
         },
 

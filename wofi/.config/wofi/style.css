@@ -1,3 +1,5 @@
+@import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
+
 * {
     font-family: "Inter Display" ,"Caskaydiacove nerd font", "HarmonyOS Sans SC", "sarasa ui sc";
     border: none;
@@ -6,7 +8,7 @@
 
 window {
     font-size: 32px;
-    background-color: rgba(239, 241, 245, 1.0);
+    background-color: @color14Alpha;
     color: white;
 }
 
@@ -15,20 +17,21 @@ window {
 }
 
 #entry:selected {
-    background: linear-gradient(135deg, #ea999c,#babbf1);
+    background: @color8;
+    background-color: linear-gradient(135deg, @color6Alpha,@color14Alpha);
 }
 
 #text{
-    color: #1f1f1f
+    color: @color0
 }
 
 #text:selected {
-    color: #1f1f1f
+    color: @color0
 }
 
 #input {
-    background-color: rgba(239, 241, 245, 0.6);
-    /* color: white; */
+    background-color: @color6Alpha;
+    color: @color0;
     padding: 0.25em;
 }
 
