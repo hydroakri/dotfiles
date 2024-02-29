@@ -8,8 +8,8 @@
 
 window {
     font-size: 32px;
-    background-color: @color14Alpha;
-    color: white;
+    background-color: @backgroundAlpha;
+    color: black;
 }
 
 #entry{
@@ -17,21 +17,20 @@ window {
 }
 
 #entry:selected {
-    background: @color8;
-    background-color: linear-gradient(135deg, @color6Alpha,@color14Alpha);
+    background: linear-gradient(135deg, @color1, @color5);
 }
 
 #text{
-    color: @color0
+    color: @foreground 
 }
 
 #text:selected {
-    color: @color0
+    color: @foreground 
 }
 
 #input {
     background-color: @color6Alpha;
-    color: @color0;
+    color: @foreground; 
     padding: 0.25em;
 }
 
