@@ -7,15 +7,14 @@
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "modules-left": ["custom/launcher", "hyprland/workspaces", "hyprland/window"],
-        //"modules-left": ["custom/launcher",],
+        "modules-left": ["custom/launcher", "hyprland/window"],
         "modules-center": ["mpris"],
-        "modules-right": ["gamemode","custom/mako", "backlight", "wireplumber", "tray", "battery", "clock",],
+        "modules-right": ["tray", "gamemode", "idle_inhibitor","backlight", "pulseaudio", "battery", "clock"],
 
         "hyprland/window": {
             "format": "{}",
             "rewrite": {
-                "(.*) — Mozilla Firefox": "🌎 $1",
+                "(.*) — Mozilla Firefox": "$1",
                 "(.*) - foot": "> [$1]"
             },
             "separate-outputs": true,
@@ -51,6 +50,14 @@
             "tooltip-format": "Games running: {count}",
         },
 
+        "idle_inhibitor": {
+            "format": "{icon}",
+            "format-icons": {
+                "activated": "󰅶",
+                "deactivated": "󰾪"
+            }
+        },
+
         "custom/mako": {
             "format": " ",
             "on-click": "notify-send 'no disturb on' && sleep 1 && makoctl mode -a do-not-disturb",
@@ -58,10 +65,10 @@
             "on-click-middle": "makoctl restore",
         },
 
-        "wireplumber": {
+        "pulseaudio": {
             "format": "{icon}",
-            "format-bluetooth": "{icon} {volume}%",
-            "format-muted": "",
+            "format-bluetooth": "{icon}",
+            "format-muted": "󰝟",
             "format-icons": {
                 "headphone": "",
                 "hands-free": "",
@@ -69,11 +76,13 @@
                 "phone": "",
                 "portable": "",
                 "car": "",
-                "default": ["", ""]
+                "default": ["", "", "", "", "", "", "", "", ""],
             },
+            "scroll-step": 1,
             "on-click": "pavucontrol",
-            "max-volume": 150,
-            "scroll-step": 1
+            "on-click-right": "pactl set-source-mute @DEFAULT_SOURCE@ toggle
+",
+            "ignored-sinks": ["Easy Effects Sink"]
         },
 
         "custom/launcher":{
@@ -86,11 +95,11 @@
             "format": "{player_icon} {title}",
             "format-paused": "{status_icon} <i>{title}</i>",
             "player-icons": {
-                "default": "▶",
+                "default": "󰐊",
                 "mpv": "🎵"
             },
             "status-icons": {
-                "paused": "⏸"
+                "paused": "󰏤"
             },
             // "ignored-players": ["firefox"]
         },
@@ -108,7 +117,7 @@
         },
 
         "cava": {
-            //"cava_config": "~/.config/cava/conf_for_bar",
+            "cava_config": "~/.config/cava/conf_for_bar",
             "framerate": 30,
             "autosens": 1,
             "sensitivity": 100,
@@ -138,11 +147,11 @@
         "backlight": {
             // "device": "amdgpu_bl1",
             "format": "{icon}",
-            "format-icons": ["", "", "", "", "", "", "", "", ""],
+            "format-icons": ["󱩎", "󱩏", "󱩐", "󱩑", "󱩒", "󱩓", "󱩔", "󱩕", "󱩖", "󰛨"],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
             "on-click": "~/script/chgwllpr.sh",
-            //"on-click": "killall swaybg && swaybg -i $(find ~/Pictures/wllppr/. -name '*.*g' | shuf -n1) -m fill",
+            "spacing": "5",
         },
 
         "battery": {
@@ -151,20 +160,22 @@
                 "warning": 30,
                 "critical": 20
             },
-            "format": "{icon}  {capacity}%",
-            "format-plugged": "  {capacity}%",
+            "format": " {icon} ",
+            "format-plugged": "󰂄",
             "format-alt": "{time} {icon}",
-            "format-icons": ["", "", "", "", ""],
+            "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹", ""],
         },
 
         "tray": {
-            "icon-size": 20,
-            "spacing": 5,
+           // "icon-size": 20,
+            "spacing": 10,
         },
 
         "clock": {
             "interval" : 1, 
-            "format" : "{:%H:%M}", 
+            "format" : "{:%a %b %d %H:%M}", 
             "format-alt": "{:%m-%d %a }",
+            "on-scroll-up": "hyprctl dispatch workspace -1",
+            "on-scroll-down": "hyprctl dispatch workspace +1"
         }
 },
