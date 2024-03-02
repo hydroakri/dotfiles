@@ -80,8 +80,7 @@
             },
             "scroll-step": 1,
             "on-click": "pavucontrol",
-            "on-click-right": "pactl set-source-mute @DEFAULT_SOURCE@ toggle
-",
+            "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
             "ignored-sinks": ["Easy Effects Sink"]
         },
 
