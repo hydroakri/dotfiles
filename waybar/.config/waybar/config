@@ -9,7 +9,7 @@
         "margin-bottom": 0,
         "modules-left": ["custom/launcher", "hyprland/window"],
         "modules-center": ["mpris"],
-        "modules-right": ["tray", "gamemode", "idle_inhibitor","backlight", "pulseaudio", "battery", "clock"],
+        "modules-right": ["tray", "gamemode", "idle_inhibitor", "pulseaudio", "battery", "clock"],
 
         "hyprland/window": {
             "format": "{}",
@@ -70,15 +70,9 @@
             "format-bluetooth": "{icon}",
             "format-muted": "󰝟",
             "format-icons": {
-                "headphone": "",
-                "hands-free": "",
-                "headset": "",
-                "phone": "",
-                "portable": "",
-                "car": "",
                 "default": ["", "", "", "", "", "", "", "", ""],
             },
-            "scroll-step": 1,
+            "scroll-step": 5,
             "on-click": "pavucontrol",
             "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
             "ignored-sinks": ["Easy Effects Sink"]
@@ -159,10 +153,13 @@
                 "warning": 30,
                 "critical": 20
             },
-            "format": " {icon} ",
+            "format": "{icon}",
             "format-plugged": "󰂄",
             "format-alt": "{time} {icon}",
-            "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹", ""],
+            "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+            "on-scroll-up": "brightnessctl set 5%+",
+            "on-scroll-down": "brightnessctl set 5%-",
+            "on-click": "~/script/chgwllpr.sh",
         },
 
         "tray": {
@@ -173,8 +170,10 @@
         "clock": {
             "interval" : 1, 
             "format" : "{:%a %b %d %H:%M}", 
-            "format-alt": "{:%m-%d %a }",
+            // "format-alt": "{:%m-%d %a }",
             "on-scroll-up": "hyprctl dispatch workspace -1",
-            "on-scroll-down": "hyprctl dispatch workspace +1"
+            "on-scroll-down": "hyprctl dispatch workspace +1",
+            "on-click": "hyprctl dispatch togglespecialworkspace
+",
         }
 },

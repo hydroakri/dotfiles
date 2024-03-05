@@ -1,8 +1,10 @@
 local wezterm = require("wezterm")
-return {
+local home = os.getenv("HOME")
+wezterm.add_to_config_reload_watch_list(home .. '/.cache/wal/col.toml')
+local config = {
 	font = wezterm.font_with_fallback({
 		{
-			family = "Hack Nerd Font",
+			family = "CaskaydiaCove NF",
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 		{
@@ -18,7 +20,8 @@ return {
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 	}),
-	font_size = 16.0,
+	enable_wayland = false,
+	font_size = 18.0,
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 29,
 	initial_cols = 82,
@@ -31,18 +34,12 @@ return {
 			action = wezterm.action.OpenLinkAtMouseCursor,
 		},
 	},
-
-	-- color_scheme = "Dracula (Official)", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Catppuccin Mocha", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Catppuccin Frappe", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Catppuccin Latte", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Catppuccin Macchiato", -- or Macchiato, Frappe, Latte
-	-- color_scheme = "Builtin Solarized Dark",
-	-- color_scheme = "Builtin Solarized Light",
-	 color_scheme = "Tomorrow Night Eighties",
+    -- colorscheme
+    color_scheme_dirs = { home .. '/.cache/wal' },
+    color_scheme = "pywal",
 	window_decorations = "RESIZE",
-	-- window_background_opacity = 0.8,
-    window_close_confirmation = 'NeverPrompt',
+	window_background_opacity = 0.8,
+	window_close_confirmation = "NeverPrompt",
 	window_padding = {
 		left = 0,
 		right = 0,
@@ -50,3 +47,4 @@ return {
 		bottom = 0,
 	},
 }
+return config
