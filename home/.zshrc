@@ -56,9 +56,11 @@ source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 #then
 #    exec fish
 #fi
-if pgrep -x "zellij" > /dev/null
-then
-    zellij attach
-else
-    zellij
-fi
+
+# if pgrep -x "zellij" > /dev/null
+# then
+#     zellij attach
+# else
+#     zellij attach -c
+# fi
+zellij attach -c

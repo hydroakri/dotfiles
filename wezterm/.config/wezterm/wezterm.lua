@@ -1,6 +1,7 @@
 local wezterm = require("wezterm")
 local home = os.getenv("HOME")
 wezterm.add_to_config_reload_watch_list(home .. '/.cache/wal/col.toml')
+
 local config = {
 	font = wezterm.font_with_fallback({
 		{
@@ -16,7 +17,7 @@ local config = {
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 		{
-			family = "Source Han Sans CN Regular",
+			family = "HarmonyOS Sans",
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 	}),
@@ -37,8 +38,9 @@ local config = {
     -- colorscheme
     color_scheme_dirs = { home .. '/.cache/wal' },
     color_scheme = "pywal",
+    color_scheme = 'Builtin Light',
 	window_decorations = "RESIZE",
-	window_background_opacity = 0.8,
+	-- window_background_opacity = 0.8,
 	window_close_confirmation = "NeverPrompt",
 	window_padding = {
 		left = 0,

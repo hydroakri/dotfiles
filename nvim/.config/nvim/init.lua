@@ -16,8 +16,8 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
 -- jk移动时光标下上方保留8行
-vim.o.scrolloff = 8
-vim.o.sidescrolloff = 8
+-- vim.o.scrolloff = 8
+-- vim.o.sidescrolloff = 8
 -- 使用相对行号
 vim.wo.number = true
 vim.wo.relativenumber = true
@@ -99,12 +99,11 @@ vim.cmd([[command! SaveAsRoot w !doas tee %]])
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+-- fold hotkey
+vim.api.nvim_set_keymap("n", "<leader>z", "za", { noremap = true, silent = true })
 -- bind sys clipboard as default
 vim.api.nvim_set_keymap("n", "y", '"+y', { noremap = true, silent = true })
 vim.api.nvim_set_keymap("v", "y", '"+y', { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "x", '"+x', { noremap = true, silent = true })
-vim.api.nvim_set_keymap("v", "x", '"+x', { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "dd", '"+dd', { noremap = true, silent = true })
 -- package manager
 vim.api.nvim_set_keymap("n", "<leader>pu", ":Lazy update<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>pm", ":Mason<CR>", { noremap = true, silent = true })
@@ -137,8 +136,8 @@ vim.api.nvim_set_keymap("n", "<leader>sg", ":Telescope live_grep<CR>", { noremap
 -- toggle
 vim.api.nvim_set_keymap("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tg", ":Telescope<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tsl", ":SessionManager load_session<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tsd", ":SessionManager delete_session<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>tsl", ":SessionRestore<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>tsd", ":SessionSave<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>td", ":Dashboard<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tc", ":CccPick<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tx", ":TroubleToggle<CR>", { noremap = true, silent = true })
@@ -212,7 +211,6 @@ require("lazy").setup({
 				},
 			},
 		},
-		{ "sainnhe/everforest" },
 		{
 			"folke/tokyonight.nvim",
 			opts = {
@@ -234,6 +232,12 @@ require("lazy").setup({
 					opts = { history = true, updateevents = "TextChanged,TextChangedI" },
 					config = function()
 						require("luasnip.loaders.from_vscode").lazy_load()
+					end,
+				},
+				{
+					"Exafunction/codeium.nvim",
+					config = function()
+						require("codeium").setup({})
 					end,
 				},
 				{
@@ -271,6 +275,7 @@ require("lazy").setup({
 						{ name = "nvim_lsp_signature_help" },
 						{ name = "luasnip" },
 						{ name = "treesitter" },
+						{ name = "codeium" },
 					}),
 				})
 
@@ -306,6 +311,16 @@ require("lazy").setup({
 			dependencies = {
 				{ "williamboman/mason-lspconfig.nvim" },
 				{
+					"nvimdev/lspsaga.nvim",
+					config = function()
+						require("lspsaga").setup({})
+					end,
+					dependencies = {
+						"nvim-treesitter/nvim-treesitter",
+						"nvim-tree/nvim-web-devicons",
+					},
+				},
+				--[[ {
 					"ray-x/navigator.lua",
 					dependencies = {
 						{ "ray-x/guihua.lua", build = "cd lua/fzy && make" },
@@ -316,7 +331,7 @@ require("lazy").setup({
 							format_on_save = false,
 						},
 					},
-				},
+				}, ]]
 			},
 			config = function()
 				local capabilities = require("cmp_nvim_lsp").default_capabilities()
@@ -378,7 +393,7 @@ require("lazy").setup({
 		{
 			"folke/noice.nvim",
 			event = "BufReadPre",
-			enabled = true,
+			enabled = false,
 			opts = {
 				lsp = {
 					hover = {
@@ -392,6 +407,7 @@ require("lazy").setup({
 		},
 		{
 			"j-hui/fidget.nvim",
+			enabled = false,
 			event = "BufReadPre",
 			config = function()
 				require("fidget").setup({})
@@ -403,6 +419,26 @@ require("lazy").setup({
 			event = "BufReadPost",
 			dependencies = { "nvim-tree/nvim-web-devicons" },
 			opts = {},
+		},
+		{
+			"stevearc/aerial.nvim",
+			event = "BufReadPost",
+			opts = {},
+			dependencies = {
+				"nvim-treesitter/nvim-treesitter",
+				"nvim-tree/nvim-web-devicons",
+			},
+			config = function()
+				require("aerial").setup({
+					-- optionally use on_attach to set keymaps when aerial has attached to a buffer
+					on_attach = function(bufnr)
+						-- Jump forwards/backwards with '{' and '}'
+						vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
+						vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
+					end,
+				})
+				vim.keymap.set("n", "<leader>to", "<cmd>AerialToggle!<CR>")
+			end,
 		},
 		{
 			"nvim-treesitter/nvim-treesitter",
@@ -438,7 +474,7 @@ require("lazy").setup({
 					-- 启用代码高亮功能
 					highlight = {
 						enable = true,
-						additional_vim_regex_highlighting = false,
+						additional_vim_regex_highlighting = true,
 					},
 					-- 启用增量选择
 					incremental_selection = {
@@ -458,6 +494,7 @@ require("lazy").setup({
 		-- refactor
 		{
 			"ThePrimeagen/refactoring.nvim",
+			event = "InsertEnter",
 			dependencies = {
 				"nvim-lua/plenary.nvim",
 				"nvim-treesitter/nvim-treesitter",
@@ -540,11 +577,13 @@ require("lazy").setup({
 		},
 		{ "mg979/vim-visual-multi", version = "*", event = "InsertEnter" },
 		{
-			"Shatur/neovim-session-manager",
-			dependencies = "nvim-lua/plenary.nvim",
-			cmd = "SessionManager",
+			"rmagatti/auto-session",
+			cmd = { "SessionRestore", "SessionSave" },
 			config = function()
-				require("session_manager").setup({})
+				require("auto-session").setup({
+					log_level = "error",
+					auto_session_suppress_dirs = { "~/Projects", "~/Downloads" },
+				})
 			end,
 		},
 		{
@@ -579,9 +618,8 @@ require("lazy").setup({
 		},
 		{
 			"akinsho/bufferline.nvim",
-			version = "v3.*",
 			dependencies = "nvim-tree/nvim-web-devicons",
-			event = "BufReadPre",
+			event = "BufEnter",
 			cmd = { "BufferLineCyclePrev", "BufferLineCycleNext", "BufferLinePick" },
 			config = function()
 				require("bufferline").setup({
@@ -665,6 +703,10 @@ require("lazy").setup({
 							[[⠀               ⠌⢘⢀⢟⣞⢮⣳⡳⡝⠣⣕⡶                  ]],
 							[[⠀                                             ]],
 						},
+						project = {
+							limit = 5,
+							label = "projects",
+						},
 						disable_move = true,
 						shortcut = {
 							{
@@ -682,7 +724,7 @@ require("lazy").setup({
 							{
 								desc = " Load Sessions",
 								group = "DiagnosticHint",
-								action = "SessionManager load_last_session",
+								action = "SessionRestore",
 								key = "l",
 							},
 						},
@@ -728,9 +770,9 @@ require("lazy").setup({
 				require("ibl").setup({ indent = { highlight = highlight } })
 			end,
 		},
-		{ "petertriho/nvim-scrollbar", config = true, event = "BufReadPost" },
-		{ "RRethy/vim-illuminate", event = "BufReadPost" },
 		{ "NvChad/nvim-colorizer.lua", config = true, event = "BufReadPre" },
+		{ "RRethy/vim-illuminate", event = "BufReadPost" },
+		{ "petertriho/nvim-scrollbar", config = true, event = "BufReadPost" },
 		{
 			"karb94/neoscroll.nvim",
 			keys = { "C-d", "C-u" },
@@ -740,15 +782,6 @@ require("lazy").setup({
 			end,
 		},
 		{ "kevinhwang91/nvim-ufo", config = true, dependencies = "kevinhwang91/promise-async", event = "BufReadPost" },
-		{
-			"pysan3/fcitx5.nvim",
-			enabled = false,
-			config = function()
-				require("fcitx5").setup()
-			end,
-			cond = vim.fn.executable("fcitx5-remote") == 1,
-			event = { "ModeChanged" },
-		},
 		{
 			"LunarVim/bigfile.nvim",
 			event = "BufReadPre",
@@ -793,14 +826,6 @@ require("lazy").setup({
 			end,
 		},
 		-- jump
-		{
-			"rainbowhxch/accelerated-jk.nvim",
-			enabled = false,
-			keys = {
-				{ "j", mode = "n", "<Plug>(accelerated_jk_gj)", desc = {} },
-				{ "k", mode = "n", "<Plug>(accelerated_jk_gk)", desc = {} },
-			},
-		},
 		{
 			"folke/flash.nvim",
 			opts = {},
