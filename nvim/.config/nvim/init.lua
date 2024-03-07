@@ -16,14 +16,14 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
 -- jk移动时光标下上方保留8行
--- vim.o.scrolloff = 8
--- vim.o.sidescrolloff = 8
+vim.o.scrolloff = 8
+vim.o.sidescrolloff = 8
 -- 使用相对行号
 vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
--- vim.wo.cursorline = true
--- vim.wo.cursorcolumn = true
+vim.wo.cursorline = true
+vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -43,7 +43,7 @@ vim.o.smartindent = true
 -- 搜索大小写不敏感，除非包含大写
 vim.o.ignorecase = true
 vim.o.smartcase = true
--- 搜索不要高亮
+-- 搜索要高亮
 vim.o.hlsearch = true
 -- 边输入边搜索
 vim.o.incsearch = true
@@ -75,9 +75,9 @@ vim.o.termguicolors = true
 vim.opt.termguicolors = true
 -- 不可见字符的显示，这里只把空格显示为一个点
 vim.opt.list = true
--- vim.opt.listchars:append("space:⋅")
--- vim.opt.listchars:append("eol:↵")
-vim.opt.listchars:append("tab:▏ ")
+-- vim.opt.listchars:append("space:␣")
+vim.opt.listchars:append("eol:↵")
+-- vim.opt.listchars:append("tab:▏ ")
 vim.opt.clipboard = unamedplus --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
@@ -320,18 +320,6 @@ require("lazy").setup({
 						"nvim-tree/nvim-web-devicons",
 					},
 				},
-				--[[ {
-					"ray-x/navigator.lua",
-					dependencies = {
-						{ "ray-x/guihua.lua", build = "cd lua/fzy && make" },
-					},
-					event = "InsertEnter",
-					opts = {
-						lsp = {
-							format_on_save = false,
-						},
-					},
-				}, ]]
 			},
 			config = function()
 				local capabilities = require("cmp_nvim_lsp").default_capabilities()
@@ -704,8 +692,8 @@ require("lazy").setup({
 							[[⠀                                             ]],
 						},
 						project = {
-							limit = 5,
-							label = "projects",
+							enable = true,
+							limit = 8,
 						},
 						disable_move = true,
 						shortcut = {
@@ -767,7 +755,17 @@ require("lazy").setup({
 					vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#56B6C2" })
 				end)
 
-				require("ibl").setup({ indent = { highlight = highlight } })
+				require("ibl").setup({
+					indent = {
+						highlight = highlight,
+						char = "┃",
+						tab_char = "┃",
+					},
+					exclude = {
+						filetypes = { "dashboard" },
+						buftypes = { "dashboard" },
+					},
+				})
 			end,
 		},
 		{ "NvChad/nvim-colorizer.lua", config = true, event = "BufReadPre" },
@@ -874,6 +872,5 @@ require("lazy").setup({
 		},
 	},
 })
--- vim.cmd("colorscheme everforest")
 vim.cmd("colorscheme catppuccin-latte")
 --vim.cmd("colorscheme tokyonight-night")
