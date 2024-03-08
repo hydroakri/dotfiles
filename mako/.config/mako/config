@@ -11,8 +11,8 @@ ignore-timeout=1
 # font=Inter Display
 font=HarmonyOS Sans SC
 
-background-color=#B3B4AA
-text-color=#faf8f5
+background-color=#A8A88E
+text-color=#f9f6ef
 progress-color=over #ccd0da
 [urgency=low]
 border-color=#cccccc

@@ -1,2 +1,0 @@
-#!/bin/bash
-parallel ::: 'Xwayland :1 -ac -retro -noreset +extension RANDR +extension RENDER +extension GLX +extension' 'unset WAYLAND_DISPLAY && QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 SDL_VIDEODRIVER=x11 CLUTTER_BACKEND=x11 DISPLAY=:1 DESKTOP_SESSION=xfce XDG_CURRENT_DESKTOP=XFCE XDG_SESSION_TYPE=x11 XDG_MENU_PREFIX=xfce- startxfce4 --replace'

@@ -143,7 +143,6 @@
             "format-icons": ["󱩎", "󱩏", "󱩐", "󱩑", "󱩒", "󱩓", "󱩔", "󱩕", "󱩖", "󰛨"],
             "on-scroll-up": "brightnessctl set 5%+",
             "on-scroll-down": "brightnessctl set 5%-",
-            "on-click": "~/script/chgwllpr.sh",
             "spacing": "5",
         },
 

@@ -3,53 +3,46 @@ I'm a lazy person, I'm often annoyed by the amount of scripts and scattered file
 ![](./preview.png)
 # Installation
 first make sure you have installed the `stow`  
-I use `stow` for unified file management
+I use `stow` for unified file management, you can install it yourself for your own distro  
 
-## For Chinese users
-You can use ssh to speed up git clone(need add gpg key to your ssh)
-```
-git config --global --add url."git@github.com:".insteadOf "https://github.com/"
-```
-
-```
-sudo apt install stow # for ubuntu
-sudo pacman -S stow  # for archlinux
-pkg install stow # for freebsd
-```
 before you apply the conf, You MUST make sure that you have backed up your configuration  
-For example: if you want to apply the config of my polybar, you should:
+For example: if you want to apply the config of my waybar, you should:
 ```
-cd ~
+cd ~/
 git clone https://github.com/hydroakri/dotfiles.git
 cd dotfiles
-stow polybar
+stow waybar
 ```
 
-|       Program       |                                                             Name                                                              |
-| :-----------------: | :---------------------------------------------------------------------------------------------------------------------------: |
-|    Window Manger    |     [hyprland](https://wiki.hyprland.org/)|
-|         Bar         |     waybar |
-|      Launcher       |     wofi   |
-|  Wallpaper Setter   |      swaybg|
-|     Web Browser     |     [brave](https://github.com/brave/brave-browser)     |
-|      Terminal       |     [Alacritty](https://github.com/alacritty/alacritty), [starship](https://starship.rs/) [wezterm](https://wezfurlong.org/)|
-|        Shell        |     [fish](https://www.fishshell.com) zsh(with zoxide mcfly)|
-|     Code Editor     |     [neovim](https://neovim.io/) ([neovide](https://github.com/neovide/neovide)) |
-| Notification daemon |     [dunst](https://dunst-project.org/) [mako](https://github.com/sqlalchemy/mako)                                             |
-|        Fetch        |     [fastfetch](https://github.com/LinusDierheimer/fastfetch)                                 |
-|       Media         |     [mpv](https://mpv.io/), [nomacs](https://nomacs.org/), [obs-studio](https://obsproject.com/), [yesplaymusic](https://github.com/qier222/YesPlayMusic), [cider](https://cider.sh/) cava [playerctl](https://github.com/altdesktop/playerctl)       |
-|        misc         |     [lsd](https://github.com/Peltoche/lsd), [bat](https://github.com/sharkdp/bat), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep), [ranger(require w3m)](https://github.com/ranger/ranger), [scrcpy](https://github.com/Genymobile/scrcpy), [stow](https://www.gnu.org/software/stow/), [tlp](https://linrunner.de/tlp/index.html), [lazygit](https://github.com/jesseduffield/lazygit) [zellij](https://github.com/zellij-org/zellij) carbon|
-|       fonts         |     cascadia [awesome-terminal-fonts](https://archlinux.org/packages/community/any/awesome-terminal-fonts/), [nerd-fonts-sarasa-mono](https://aur.archlinux.org/packages/nerd-fonts-sarasa-mono), [noto-fonts-cjk](https://archlinux.org/packages/extra/any/noto-fonts-cjk/), [ttf-font-awesome](https://archlinux.org/packages/community/any/ttf-font-awesome/)      |
-|   Chinese Input     |     sudo pacman -Sy fcitx5 fcitx5-chinese-addons fcitx5-configtool fcitx5-gtk fcitx5-rime fcitx5-qt                                |
-|   system monitor    |     [btop](https://github.com/aristocratos/btop)                                |
-|      screenshot     |     [flameshot](https://flameshot.org/)                                                  |
-|  download manager   |     [motrix](https://motrix.app/)                                                        |
-| themes & the manager|     bibata-cursor-theme [dracula](https://draculatheme.com/), icon:[papirus-icon-theme](https://aur.archlinux.org/packages/papirus-icon-theme-git), [lxappearance](https://github.com/lxde/lxappearance)  [qt5ct](https://github.com/desktop-app/qt5ct) qt6ct  [gradience](https://github.com/GradienceTeam/Gradience)               |
-|   settings          |     [network-manager-applet](https://archlinux.org/packages/extra/x86_64/network-manager-applet/),[wdisplays-git](https://github.com/artizirk/wdisplays), [blueman](https://github.com/blueman-project/blueman) polkit-gnome xf86-input-synaptics pavucontrol fontweak dconf|
-| virtualization | virtio-win qemu-desktop |
+Bar: waybar  
+Theme: Breeze  
+LockScreen: hyprlock  
+Wallpaper manager: swww  
+Icon: papirus-icon-theme  
+Cursor: bibata-cursor-theme  
+Font: Inter Display, HarmonyOS Sans/Zhuque Fangsong(CJK font)  
 
+## pywaled config file
+I use `pywal` to change theme, so if you dont want use it, you need do some modify(edit words like `colorxx` to your color code) to below config  
+wezterm, waybar(its css), mako, wofi, zellij  
 
+## waybar:  
+Nerd Font: to display icons correctly  
+nwgbar: (optional) the on-click event of custom button, you can change to your command.  
+Inter Display: (optional) you can choose your favorite font  
+hyprland: (optional) the second left module of the bar, you can change if you not use hyprland  
+mpris: (optional) the center module of the bar  
+  
+pulseaudio module: left click for pavucontrol, right click for mute, scroll to change volume  
+battery module: left click for `chgwllpr.sh` to switch wallpaper(via swww) and theme(via pywal)  
+clock module: scroll for switch workspace for hyprland.  
 
+## scripts:
+some script i use, put under `~/script`
+`autostart.sh`: use `parallel` to start serval commands when hyprland start(my npm service, syncthing, aria2, password manager)  
+`gamemode.sh`: disable keyboard rate in hyprland to prevent input lag  
+`bemenu`: just like its name  
+`chgwllpr.sh`: change wallpaper and lockscreen paper, use pywal to change theme of mako,zellij,wezterm  
 
 # license
-all files and scripts in this repo are released [CC0](https://creativecommons.org/publicdomain/zero/1.0/)  in the spirit of _freedom of information_, i encourage you to fork, modify, change, share, or do whatever you like with this project! `^c^v`
+all files and scripts in this repo are released [CC0](https://creativecommons.org/publicdomain/zero/1.0/)  in the spirit of _freedom of information_, i encourage you to fork, modify, change, share, or do whatever you like with this project! `^c^v`  
