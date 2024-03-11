@@ -1,7 +1,7 @@
 @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
 
 * {
-    font-family: "Inter Display" ,"Caskaydiacove nerd font", "HarmonyOS Sans SC", "sarasa ui sc";
+    font-family: "Inter Display" ,"Caskaydiacove nerd font", "Noto Sans CJK SC", "HarmonyOS Sans SC", "sarasa ui sc";
     border: none;
     border-radius: 9px;
 } 

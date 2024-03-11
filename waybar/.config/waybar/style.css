@@ -1,7 +1,7 @@
 @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
 
 * {
-  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "HarmonyOS Sans SC", "Sarasa UI SC";
+  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC", "HarmonyOS Sans SC", "Sarasa UI SC";
   /* font-size: 16px; */
   /* font-weight: 400; */
   min-height: 28px;
@@ -16,7 +16,7 @@ window#waybar {
 
 window#waybar > box {
     /* background-color: rgba(239,241,245, 0.8); */
-    background-color: @color6Alpha;
+    background-color: @backgroundAlpha;
   /* border-radius: 9px; */
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   /* box-shadow: 1px 1px 1px 1px #101010; */
@@ -64,11 +64,11 @@ button:hover {
   border-radius: 5px;
   margin: 0.1em 0.1em 0.1em 0.1em;
   padding: 0 7px;
-  color: @color0;
+  color: @eeeeee;
 }
 
 #workspaces {
-  color: @color0;
+  color: @eeeeee;
 }
 /* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {

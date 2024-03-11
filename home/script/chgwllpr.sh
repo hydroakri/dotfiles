@@ -6,7 +6,8 @@ swww img $(find ~/Pictures/wllppr/. -name '*.*g' | shuf -n1) --transition-step 1
 ######################### generate theme according to wallpaper ############
 current_paper=$(swww query | grep -o 'image: .*' | cut -d ' ' -f 2-)
 random_lockscreen=$(find ~/Pictures/wllppr -name '*.png' | shuf -n1)
-wal -l -i $current_paper
+# wal -l -i $current_paper
+wal -i $current_paper
 . "${HOME}/.cache/wal/colors.sh"
 
 ####################### chane hyprlock paper ###############################

@@ -17,7 +17,7 @@ local config = {
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 		{
-			family = "HarmonyOS Sans Regular",
+			family = "Noto Sans CJK SC",
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1" },
 		},
 	}),
