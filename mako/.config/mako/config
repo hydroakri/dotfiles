@@ -12,7 +12,7 @@ ignore-timeout=1
 font=Noto Sans CJK SC
 
 background-color=#282726
-text-color=#FFFCF0
+text-color=#CECDC3
 progress-color=over #ccd0da
 [urgency=low]
 border-color=#cccccc

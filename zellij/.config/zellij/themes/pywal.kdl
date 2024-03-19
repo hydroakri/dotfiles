@@ -1,6 +1,6 @@
 themes {
     default {
-        fg "#FFFCF0"
+        fg "#CECDC3"
         bg "#282726"
         black "#100F0F"
         red "#AF3029"

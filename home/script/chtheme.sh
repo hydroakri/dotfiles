@@ -1,5 +1,7 @@
 current_paper=$(swww query | grep -o 'image: .*' | cut -d ' ' -f 2-)
 current_hour=$(date +"%H")
+qtlight='~\/dotfiles\/theme\/.config\/qt6ct\/colors\/flexoki-light.conf'
+qtdark='~\/dotfiles\/theme\/.config\/qt6ct\/colors\/flexoki-dark.conf'
 
 if [ $current_hour -ge 6 ] && [ $current_hour -lt 18 ]; then
     # wal -l -i $current_paper                  # if day light mode
@@ -9,6 +11,7 @@ if [ $current_hour -ge 6 ] && [ $current_hour -lt 18 ]; then
     gsettings set org.gnome.desktop.interface gtk-theme Adw-gtk3
     cp ~/dotfiles/theme/.config/gtk-3.0/gtk-flexoki-light.css ~/.config/gtk-3.0/gtk.css
     cp ~/dotfiles/theme/.config/gtk-4.0/gtk-flexoki-light.css ~/.config/gtk-4.0/gtk.css
+    sed -i "0,/^color_scheme_path.*/{s/=.*/=$qtlight/}" ~/.config/qt6ct/qt6ct.conf
 else
     # wal -i $current_paper                     # if night dark mode
     wal --theme ~/.config/wal/colorschemes/dark/flexoki-dark.json
@@ -17,6 +20,7 @@ else
     gsettings set org.gnome.desktop.interface gtk-theme Adw-gtk3-dark
     cp ~/dotfiles/theme/.config/gtk-3.0/gtk-flexoki-dark.css ~/.config/gtk-3.0/gtk.css
     cp ~/dotfiles/theme/.config/gtk-4.0/gtk-flexoki-dark.css ~/.config/gtk-4.0/gtk.css
+    sed -i "0,/^color_scheme_path.*/{s/=.*/=$qtdark/}" ~/.config/qt6ct/qt6ct.conf
 fi
 . "${HOME}/.cache/wal/colors.sh"
 ############################# change mako theme ################################
