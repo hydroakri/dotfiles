@@ -11,8 +11,8 @@ ignore-timeout=1
 # font=Inter Display
 font=Noto Sans CJK SC
 
-background-color=#FEBFA1
-text-color=#0a0d14
+background-color=#282726
+text-color=#FFFCF0
 progress-color=over #ccd0da
 [urgency=low]
 border-color=#cccccc

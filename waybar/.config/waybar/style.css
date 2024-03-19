@@ -4,7 +4,7 @@
   font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC", "HarmonyOS Sans SC", "Sarasa UI SC";
   /* font-size: 16px; */
   /* font-weight: 400; */
-  min-height: 28px;
+  min-height: 1.5em;
   border: none;
   /* margin: 0.1em 0.2em 0.1em 0.2em; */
   /* border-radius: 9px; */
@@ -61,14 +61,14 @@ button:hover {
 #bluetooth,
 #idle_inhibitor,
 #tray {
-  border-radius: 5px;
+  border-radius: 0.31em;
   margin: 0.1em 0.1em 0.1em 0.1em;
-  padding: 0 7px;
-  color: @eeeeee;
+  padding: 0 0.43em;
+  color: @foreground;
 }
 
 #workspaces {
-  color: @eeeeee;
+  color: @background;
 }
 /* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {
@@ -149,15 +149,6 @@ label:focus {
 #tray {
   /* background-color: #889ff5; */
   /* border-bottom: 7px solid #5979f1; */
-}
-
-#tray > .passive {
-  -gtk-icon-effect: dim;
-}
-
-#tray > .needs-attention {
-  -gtk-icon-effect: highlight;
-  background-color: #eb4d4b;
 }
 
 #mpris {

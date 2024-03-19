@@ -23,7 +23,7 @@ vim.wo.number = true
 vim.wo.relativenumber = true
 -- 高亮所在行
 vim.wo.cursorline = true
-vim.wo.cursorcolumn = true
+-- vim.wo.cursorcolumn = true
 -- 显示左侧图标指示列
 vim.wo.signcolumn = "yes"
 -- 右侧参考线，超过表示代码太长了，考虑换行
@@ -70,7 +70,6 @@ vim.o.swapfile = false
 -- 自动补全不自动选中
 vim.g.completeopt = "menu,menuone,noselect,noinsert"
 -- 样式
-vim.o.background = "dark"
 vim.o.termguicolors = true
 vim.opt.termguicolors = true
 -- 不可见字符的显示，这里只把空格显示为一个点
@@ -141,6 +140,8 @@ vim.api.nvim_set_keymap("n", "<leader>tsd", ":SessionSave<CR>", { noremap = true
 vim.api.nvim_set_keymap("n", "<leader>td", ":Dashboard<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tc", ":CccPick<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>tx", ":TroubleToggle<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>ttl", ":Catppuccin latte<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>ttd", ":Catppuccin mocha<CR>", { noremap = true, silent = true })
 -- terminal
 vim.api.nvim_set_keymap("n", "<A-t>", ":ToggleTerm direction=tab<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("t", "<esc>", "<C-\\><C-n>", { noremap = true, silent = true })
@@ -181,12 +182,55 @@ require("lazy").setup({
 			"catppuccin/nvim",
 			name = "catppuccin",
 			opts = {
+				background = { -- :h background
+					light = "latte",
+					dark = "mocha",
+				},
 				transparent_background = true,
 				color_overrides = {
 					all = {
-						-- text = "#363430",
-						-- base = "#fdf6e3",
-						-- mantle = "#fdf6e3",
+						rosewater = "#CE5D97",
+						flamingo = "#A02F6F",
+						pink = "#8B7EC8",
+						mauve = "#5E409D",
+						red = "#D14D41",
+						maroon = "#AF3029",
+						peach = "#D0A215",
+						yellow = "#AD8301",
+						green = "#879A39",
+						teal = "#66800B",
+						sky = "#3AA99F",
+						sapphire = "#24837B",
+						blue = "#4385BE",
+						lavender = "#205EA6",
+					},
+					mocha = {
+						text = "#FFFCF0",
+						subtext1 = "#F2F0E5",
+						subtext0 = "#E6E4D9",
+						overlay2 = "#DAD8CE",
+						overlay1 = "#CECDC3",
+						overlay0 = "#B7B5AC",
+						surface2 = "#878580",
+						surface1 = "#6F6E69",
+						surface0 = "#575653",
+						base = "#100F0F",
+						mantle = "#1C1B1A",
+						crust = "#282726",
+					},
+					latte = {
+						text = "#100F0F",
+						subtext1 = "#1C1B1A",
+						subtext0 = "#282726",
+						overlay2 = "#343331",
+						overlay1 = "#403E3C",
+						overlay0 = "#575653",
+						surface2 = "#6F6E69",
+						surface1 = "#878580",
+						surface0 = "#B7B5AC",
+						base = "#FFFCF0",
+						mantle = "#F2F0E5",
+						crust = "#E6E4D9",
 					},
 				},
 				integrations = {
@@ -872,5 +916,5 @@ require("lazy").setup({
 		},
 	},
 })
-vim.cmd("colorscheme catppuccin-latte")
+vim.cmd("colorscheme catppuccin")
 --vim.cmd("colorscheme tokyonight-night")

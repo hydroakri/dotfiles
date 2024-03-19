@@ -42,7 +42,8 @@ some script i use, put under `~/script`
 `autostart.sh`: use `parallel` to start serval commands when hyprland start(my npm service, syncthing, aria2, password manager)  
 `gamemode.sh`: disable keyboard rate in hyprland to prevent input lag  
 `bemenu`: just like its name  
-`chgwllpr.sh`: change wallpaper and lockscreen paper, use pywal to change theme of mako,zellij,wezterm  
+`chgwllpr.sh`: change wallpaper and lockscreen paper  
+`chtheme.sh`:  use pywal to change theme of mako, zellij, wezterm, alacritty. The day/night theme shift methmod depends on `Adw-gtk3`   
 
 # license
 all files and scripts in this repo are released [CC0](https://creativecommons.org/publicdomain/zero/1.0/)  in the spirit of _freedom of information_, i encourage you to fork, modify, change, share, or do whatever you like with this project! `^c^v`  

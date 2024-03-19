@@ -7,9 +7,27 @@
         "margin-right": 0,
         "margin-top": 0,
         "margin-bottom": 0,
-        "modules-left": ["custom/launcher", "hyprland/window"],
+        "modules-left": ["custom/launcher", "wlr/taskbar", "hyprland/window"],
         "modules-center": ["mpris"],
         "modules-right": ["tray", "gamemode", "idle_inhibitor", "pulseaudio", "battery", "clock"],
+
+        "wlr/taskbar": {
+            "format": "{icon}",
+            "icon-theme": "Papirus",
+            "tooltip-format": "{title}",
+            "on-click": "activate",
+            "on-click-middle": "close",
+            "ignore-list": [
+                "Alacritty"
+            ],
+            "app_ids-mapping": {
+                "firefoxdeveloperedition": "firefox-developer-edition"
+            },
+            "rewrite": {
+                "Firefox Web Browser": "Firefox",
+                "Foot Server": "Terminal"
+            }
+        },
 
         "hyprland/window": {
             "format": "{}",
