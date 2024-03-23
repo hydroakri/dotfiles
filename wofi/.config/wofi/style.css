@@ -17,7 +17,7 @@ window {
 }
 
 #entry:selected {
-    background: linear-gradient(135deg, @color1, @color5);
+    background: linear-gradient(135deg, @color4, @color5);
 }
 
 #text{
@@ -29,7 +29,7 @@ window {
 }
 
 #input {
-    background-color: @color6Alpha;
+    background-color: @backgroundAlpha;
     color: @foreground; 
     padding: 0.25em;
 }

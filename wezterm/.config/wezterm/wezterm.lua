@@ -26,7 +26,7 @@ local config = {
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 29,
 	initial_cols = 82,
-	-- default_prog = { "bash" },
+	default_prog = { "fish" },
 	mouse_bindings = {
 		-- Ctrl-click will open the link under the mouse cursor
 		{

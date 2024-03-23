@@ -12,6 +12,14 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- auto set background
+local hour = tonumber(os.date("%H"))
+if hour >= 6 and hour < 18 then
+	vim.opt.background = "light"
+else
+	vim.opt.background = "dark"
+end
+
 -- utf8
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
@@ -86,91 +94,72 @@ vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 -- vim.wo.foldmethod = "manual"
 --vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
-
 -- font
 vim.opt.guifont = { "CaskaydiaCove NF", ":h12" }
 
--- doas
-vim.cmd([[cmap w!! w !doas tee % >/dev/null]])
-vim.cmd([[command! SaveAsRoot w !doas tee %]])
+-- save session before quit
+vim.cmd("autocmd VimLeave * :mksession!" .. vim.fn.stdpath("data") .. "/sessions/latest.vim")
 
 -- ========================================== keybind ====================================
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 -- fold hotkey
-vim.api.nvim_set_keymap("n", "<leader>z", "za", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>z", "za")
 -- bind sys clipboard as default
-vim.api.nvim_set_keymap("n", "y", '"+y', { noremap = true, silent = true })
-vim.api.nvim_set_keymap("v", "y", '"+y', { noremap = true, silent = true })
+vim.keymap.set("n", "y", '"+y')
+vim.keymap.set("v", "y", '"+y')
 -- package manager
-vim.api.nvim_set_keymap("n", "<leader>pu", ":Lazy update<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>pm", ":Mason<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>pl", ":LspInfo<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>pc", ":CmpStatus<CR>", { noremap = true, silent = true })
--- window
-vim.api.nvim_set_keymap("n", "<A-h>", "<C-w>h", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-j>", "<C-w>j", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-k>", "<C-w>k", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-l>", "<C-w>l", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-q>", "<C-w>q", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-v>", "<C-w>v", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-s>", "<C-w>s", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-Up>", ":horizontal resize -2<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-Down>", ":horizontal resize +2<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-Left>", ":vertical resize -2<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-Right>", ":vertical resize +2<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>pu", ":Lazy update<CR>")
+vim.keymap.set("n", "<leader>pm", ":Mason<CR>")
+vim.keymap.set("n", "<leader>pl", ":LspInfo<CR>")
+vim.keymap.set("n", "<leader>pc", ":CmpStatus<CR>")
 -- bufferline 左右切换
-vim.api.nvim_set_keymap("n", "<S-Tab>", ":BufferLineCyclePrev<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<Tab>", ":BufferLineCycleNext<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<Leader>bp", ":BufferLinePick<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<Leader>bc", ":BufferLinePickClose<CR>", { noremap = true, silent = true })
--- Move text up and down
-vim.api.nvim_set_keymap("n", "<A-u>", "<Esc>:m .+1<CR>==gi<Esc>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<A-d>", "<Esc>:m .-2<CR>==gi<Esc>", { noremap = true, silent = true })
+vim.keymap.set("n", "<S-Tab>", ":BufferLineCyclePrev<CR>")
+vim.keymap.set("n", "<Tab>", ":BufferLineCycleNext<CR>")
+vim.keymap.set("n", "<Leader>bp", ":BufferLinePick<CR>")
+vim.keymap.set("n", "<Leader>bc", ":BufferLinePickClose<CR>")
 -- search
-vim.api.nvim_set_keymap("n", "<Leader>sf", ":Telescope fd hidden=true<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<Leader>so", ":Telescope oldfiles<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>sg", ":Telescope live_grep<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Leader>sf", ":Telescope fd hidden=true<CR>")
+vim.keymap.set("n", "<Leader>so", ":Telescope oldfiles<CR>")
+vim.keymap.set("n", "<leader>sg", ":Telescope live_grep<CR>")
 -- toggle
-vim.api.nvim_set_keymap("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tg", ":Telescope<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tsl", ":SessionRestore<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tsd", ":SessionSave<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>td", ":Dashboard<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tc", ":CccPick<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>tx", ":TroubleToggle<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>ttl", ":Catppuccin latte<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>ttd", ":Catppuccin mocha<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>tf", ":NvimTreeFindFileToggle<CR>")
+vim.keymap.set("n", "<leader>tg", ":Telescope<CR>")
+vim.keymap.set("n", "<leader>td", ":Dashboard<CR>")
+vim.keymap.set("n", "<leader>tc", ":CccPick<CR>")
+vim.keymap.set("n", "<leader>tx", ":TroubleToggle<CR>")
+vim.keymap.set("n", "<leader>tt", ":ToggleTerm direction=tab<CR>")
+vim.keymap.set("n", "<leader>to", "<cmd>AerialToggle!<CR>")
+vim.keymap.set("n", "<leader>tm", ":MCvisual<CR>")
 -- terminal
-vim.api.nvim_set_keymap("n", "<A-t>", ":ToggleTerm direction=tab<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("t", "<esc>", "<C-\\><C-n>", { noremap = true, silent = true })
+vim.keymap.set("t", "<esc>", "<C-\\><C-n>")
 -- git
-vim.api.nvim_set_keymap("n", "<leader>gj", ":Gitsigns next_hunk<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>gk", ":Gitsigns prev_hunk<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>gl", ":Gitsigns blame_line<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>gp", ":Gitsigns preview_hunk<CR>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>gd", ":DiffviewOpen<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>gj", ":Gitsigns next_hunk<CR>")
+vim.keymap.set("n", "<leader>gk", ":Gitsigns prev_hunk<CR>")
+vim.keymap.set("n", "<leader>gl", ":Gitsigns blame_line<CR>")
+vim.keymap.set("n", "<leader>gp", ":Gitsigns preview_hunk<CR>")
+vim.keymap.set("n", "<leader>gd", ":DiffviewOpen<CR>")
 -- debug
-vim.api.nvim_set_keymap(
+vim.keymap.set(
 	"n",
 	"<leader>dp",
 	"<cmd>lua require'dap'.toggle_breakpoint()<cr>",
 	{ noremap = true, silent = true }
 )
-vim.api.nvim_set_keymap(
+vim.keymap.set(
 	"n",
 	"<leader>dP",
 	"<cmd>lua require'dap'.set_breakpoint(vim.fn.input '[Condition] > ')<cr>",
 	{ noremap = true, silent = true }
 )
-vim.api.nvim_set_keymap("n", "<leader>dc", "<cmd>lua require'dap'.continue()<cr>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>dx", "<cmd>lua require'dap'.step_over()<cr>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>di", "<cmd>lua require'dap'.step_into()<cr>", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>", { noremap = true, silent = true })
--- vim.api.nvim_set_keymap("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", {noremap=true,silent=true})
--- vim.api.nvim_set_keymap("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", {noremap=true,silent=true})
-vim.api.nvim_set_keymap("n", "<Leader>lf", "<cmd>Neoformat<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>dc", "<cmd>lua require'dap'.continue()<cr>")
+vim.keymap.set("n", "<leader>dx", "<cmd>lua require'dap'.step_over()<cr>")
+vim.keymap.set("n", "<leader>di", "<cmd>lua require'dap'.step_into()<cr>")
+vim.keymap.set("n", "<leader>du", "<cmd>lua require'dap'.repl.open()<cr>")
+-- vim.keymap.set("n", "<leader>dt", "<cmd>lua require'dapui'.toggle()<cr>", {noremap=true,silent=true})
+-- vim.keymap.set("n", "<leader>dx", "<cmd>lua require'dap'.terminate()<cr>", {noremap=true,silent=true})
+vim.keymap.set("n", "<Leader>lf", "<cmd>Neoformat<CR>")
 
 require("lazy").setup({
 	defaults = {
@@ -186,7 +175,7 @@ require("lazy").setup({
 					light = "latte",
 					dark = "mocha",
 				},
-				transparent_background = true,
+				-- transparent_background = true,
 				color_overrides = {
 					all = {
 						rosewater = "#CE5D97",
@@ -469,7 +458,6 @@ require("lazy").setup({
 						vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
 					end,
 				})
-				vim.keymap.set("n", "<leader>to", "<cmd>AerialToggle!<CR>")
 			end,
 		},
 		{
@@ -607,16 +595,22 @@ require("lazy").setup({
 				})
 			end,
 		},
-		{ "mg979/vim-visual-multi", version = "*", event = "InsertEnter" },
 		{
-			"rmagatti/auto-session",
-			cmd = { "SessionRestore", "SessionSave" },
-			config = function()
-				require("auto-session").setup({
-					log_level = "error",
-					auto_session_suppress_dirs = { "~/Projects", "~/Downloads" },
-				})
-			end,
+			"smoka7/multicursors.nvim",
+			event = "BufReadPost",
+			dependencies = {
+				"smoka7/hydra.nvim",
+			},
+			opts = {},
+			cmd = { "MCstart", "MCvisual", "MCclear", "MCpattern", "MCvisualPattern", "MCunderCursor" },
+			keys = {
+				{
+					mode = { "v", "n" },
+					"<Leader>m",
+					"<cmd>MCstart<cr>",
+					desc = "Create a selection for selected text or word under the cursor",
+				},
+			},
 		},
 		{
 			"numToStr/Comment.nvim",
@@ -657,9 +651,7 @@ require("lazy").setup({
 				require("bufferline").setup({
 					highlights = require("catppuccin.groups.integrations.bufferline").get({
 						custom = {
-							all = {
-								fill = { bg = "#191919" },
-							},
+							all = {},
 						},
 					}),
 				})
@@ -739,7 +731,6 @@ require("lazy").setup({
 							enable = true,
 							limit = 8,
 						},
-						disable_move = true,
 						shortcut = {
 							{
 								desc = "󰚰 Update",
@@ -754,9 +745,9 @@ require("lazy").setup({
 								key = "m",
 							},
 							{
-								desc = " Load Sessions",
+								desc = " Latest Sessions",
 								group = "DiagnosticHint",
-								action = "SessionRestore",
+								action = "lua local sessionpath = vim.fn.stdpath('data') .. '/sessions/latest.vim' vim.cmd('source ' .. sessionpath)",
 								key = "l",
 							},
 						},
@@ -790,20 +781,20 @@ require("lazy").setup({
 
 				local hooks = require("ibl.hooks")
 				hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-					vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#E06C75" })
-					vim.api.nvim_set_hl(0, "RainbowYellow", { fg = "#E5C07B" })
-					vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#61AFEF" })
-					vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#D19A66" })
-					vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#98C379" })
-					vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#C678DD" })
-					vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#56B6C2" })
+					vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#D14D41" })
+					vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#DA702C" })
+					vim.api.nvim_set_hl(0, "RainbowYellow", { fg = "#D0A215" })
+					vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#879A39" })
+					vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#3AA99F" })
+					vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#4385BE" })
+					vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#8B7EC8" })
 				end)
 
 				require("ibl").setup({
 					indent = {
 						highlight = highlight,
-						char = "┃",
-						tab_char = "┃",
+						char = "│",
+						tab_char = "│",
 					},
 					exclude = {
 						filetypes = { "dashboard" },
@@ -830,7 +821,7 @@ require("lazy").setup({
 		},
 		{
 			"folke/which-key.nvim",
-			keys = { "<leader>", '"', "'", "`", "c", "v", "g" },
+			keys = { "<leader>", '"', "'", "`", "c", "v", "g", "<C-w>" },
 			config = function()
 				require("which-key").setup()
 			end,
