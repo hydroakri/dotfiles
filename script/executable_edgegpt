@@ -1,0 +1,24 @@
+#!/bin/bash
+ 
+echo "----------------------------------"
+echo "please enter your choise:"
+echo "(0) creative"
+echo "(1) balanced"
+echo "(2) precise"
+echo "(9) Exit Menu"
+echo "----------------------------------"
+read input
+ 
+case $input in
+    0)
+    sleep 1
+    python3 -m EdgeGPT --style creative --cookie-file ~/cookies.json;;
+    1)
+    sleep 1
+    python3 -m EdgeGPT --style balanced --cookie-file ~/cookies.json;;
+    2)
+    sleep 1
+    python3 -m EdgeGPT --style precise --cookie-file ~/cookies.json;;
+    9)
+    exit;;
+esac

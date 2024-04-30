@@ -1,0 +1,34 @@
+[colors]
+ansi = [
+    '',
+    '#6F6E69',
+    '#D14D41',
+    '#879A39',
+    '#D0A215',
+    '#4385BE',
+    '#CE5D97',
+    '#3AA99F',
+]
+background = '#FFFCF0'
+brights = [
+    '#FFFCF0',
+    '#100F0F',
+    '#AF3029',
+    '#66800B',
+    '#AD8301',
+    '#205EA6',
+    '#A02F6F',
+    '#24837B',
+]
+cursor_bg = '#100F0F'
+cursor_border = '#100F0F'
+cursor_fg = '#100F0F'
+foreground = '#100F0F'
+selection_bg = '#100F0F'
+selection_fg = '#100F0F'
+
+[colors.indexed]
+
+[metadata]
+author = 'hydroakri'
+name = 'flexoki-light'
