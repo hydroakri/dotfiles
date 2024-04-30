@@ -1,0 +1,42 @@
+@import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
+
+* {
+  font-family: "Inter Display", "Caskaydiacove nerd font", "Noto Sans CJK SC",
+    "HarmonyOS Sans SC", "sarasa ui sc";
+  border: none;
+  border-radius: 9px;
+}
+
+window {
+  font-size: 32px;
+  /* background-color: @backgroundAlpha; */
+  background-color: @background;
+  color: black;
+}
+
+#entry {
+  padding: 0.25em;
+}
+
+#entry:selected {
+  background: linear-gradient(135deg, @color4, @color5);
+}
+
+#text {
+  color: @foreground;
+}
+
+#text:selected {
+  color: @foreground;
+}
+
+#input {
+  background-color: @backgroundAlpha;
+  color: @foreground;
+  padding: 0.25em;
+}
+
+image {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+}

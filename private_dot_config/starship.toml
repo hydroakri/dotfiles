@@ -1,0 +1,30 @@
+# Use custom format:
+# format="$username@$hostname $directory$character$git_branch"
+#
+# [character]
+#
+# [directory]
+# style = 'bold grey'
+#
+# [git_branch]
+#
+# [hostname]
+# ssh_only = false
+# format = '[$ssh_symbol](bold blue)[$hostname](bold grey)'
+# disabled = false
+#
+# [username]
+# format = '[$user](bold green)'
+# disabled = false
+# show_always = true
+
+[character]
+vimcmd_symbol = '[](bold green)'
+
+[shell]
+fish_indicator = ''
+zsh_indicator = '%'
+bash_indicator = '󱆃'
+powershell_indicator = ''
+style = 'cyan bold'
+disabled = false

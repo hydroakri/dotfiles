@@ -1,0 +1,18 @@
+[connection]
+id=OnePlus 9R
+uuid=72c77fb1-05db-4429-84ab-5475baff659f
+type=wifi
+interface-name=wlo1
+
+[wifi]
+mode=infrastructure
+ssid=OnePlus 9R
+
+[ipv4]
+method=auto
+
+[ipv6]
+addr-gen-mode=stable-privacy
+method=auto
+
+[proxy]

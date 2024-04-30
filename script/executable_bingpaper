@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# 获取Bing壁纸API
+url="https://bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
+img_url="https://bing.com"
+
+# 获取图片地址
+img_path=$(curl -s $url | jq -r '.images[0].url')
+img_url=$img_url$img_path
+
+# 下载图片
+curl -s $img_url -o /tmp/bing.jpg
+
+# 更换背景
+#swaybg -i /tmp/bing.jpg -m fill
+swww img /tmp/bing.jpg --transition-step 144 --transition-fps 144 --transition-type center

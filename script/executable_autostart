@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+sleep 3 && parallel ::: '/usr/lib/kdeconnectd' kdeconnect-indicator syncthing keepassxc 'cd ~/git-app/Yacd-meta && pnpm start' 'aria2c --enable-rpc' 'foot --server' 'colormgr get-devices' 'systemctl --user start warp-taskbar' '/usr/bin/env systemctl start --u sunshine'

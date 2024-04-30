@@ -1,0 +1,196 @@
+{
+        "layer": "top",
+        "exclusive": "false",
+        "reload_style_on_change": true,
+        "position": "top",
+        "margin-left": 0,
+        "margin-right": 0,
+        "margin-top": 0,
+        "margin-bottom": 0,
+        "modules-left": ["custom/launcher", "wlr/taskbar", "hyprland/window"],
+        "modules-center": ["mpris"],
+        "modules-right": ["tray", "gamemode", "idle_inhibitor", "pulseaudio", "battery", "clock"],
+
+        "wlr/taskbar": {
+            "format": "{icon}",
+            "icon-theme": "Papirus",
+            "tooltip-format": "{title}",
+            "on-click": "activate",
+            "on-click-middle": "close",
+            "ignore-list": [
+                "Alacritty"
+            ],
+            "app_ids-mapping": {
+                "firefoxdeveloperedition": "firefox-developer-edition"
+            },
+            "rewrite": {
+                "Firefox Web Browser": "Firefox",
+                "Foot Server": "Terminal"
+            }
+        },
+
+        "hyprland/window": {
+            "format": "{}",
+            "rewrite": {
+                "(.*) — Mozilla Firefox": "$1",
+                "(.*) - foot": "> [$1]"
+            },
+            "separate-outputs": true,
+            "max-length": 25,
+        },
+
+        "hyprland/workspaces": {
+            "show-special": true,
+            "persistent_workspaces": {
+                "eDP-1": [ 1, 2, 3, 4, 5 ], // workspace 1 shown on DP-3
+            },
+            "format": "{icon}",
+            "format-icons": {
+                "1": "󰲠 ",
+                "2": "󰲢 ",
+                "3": "󰲤 ",
+                "4": "󰲦 ",
+                "5": "󰲨 ",
+                "special": " ",
+            },
+        },
+
+        "gamemode": {
+            "format": "{glyph}",
+            "format-alt": "{glyph} {count}",
+            "glyph": "󰊗 ",
+            "hide-not-running": true,
+            "use-icon": true,
+            "icon-name": "input-gaming-symbolic",
+            "icon-spacing": 4,
+            "icon-size": 20,
+            "tooltip": true,
+            "tooltip-format": "Games running: {count}",
+        },
+
+        "idle_inhibitor": {
+            "format": "{icon}",
+            "format-icons": {
+                "activated": "󰅶",
+                "deactivated": "󰾪"
+            }
+        },
+
+        "custom/mako": {
+            "format": " ",
+            "on-click": "notify-send 'no disturb on' && sleep 1 && makoctl mode -a do-not-disturb",
+            "on-click-right": "makoctl mode -r do-not-disturb && sleep 1 && notify-send 'no disturb off'",
+            "on-click-middle": "makoctl restore",
+        },
+
+        "pulseaudio": {
+            "format": "{icon}",
+            "format-bluetooth": "{icon}",
+            "format-muted": "󰝟",
+            "format-icons": {
+                "default": ["", "", "", "", "", "", "", "", ""],
+            },
+            "scroll-step": 5,
+            "on-click": "pavucontrol",
+            "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+            "ignored-sinks": ["Easy Effects Sink"]
+        },
+
+        "custom/launcher":{
+            "format": "󰌽 ",
+            "on-click": "nwgbar",
+        },
+
+        "mpris": {
+            "max-length": 25,
+            "format": "{player_icon} {title}",
+            "format-paused": "{status_icon} <i>{title}</i>",
+            "player-icons": {
+                "default": "󰐊",
+                "mpv": "🎵"
+            },
+            "status-icons": {
+                "paused": "󰏤"
+            },
+            // "ignored-players": ["firefox"]
+        },
+
+        "cpu": {
+            "interval": 15,
+            "format": " {}%",
+            "max-length": 10
+        },
+
+        "memory": {
+            "interval": 30,
+            "format": " {}%",
+            "max-length": 10,
+        },
+
+        "cava": {
+            "cava_config": "~/.config/cava/conf_for_bar",
+            "framerate": 30,
+            "autosens": 1,
+            "sensitivity": 100,
+            "bars": 14,
+            "lower_cutoff_freq": 50,
+            "higher_cutoff_freq": 10000,
+            "method": "pulse",
+            "source": "auto",
+            "stereo": true,
+            "reverse": false,
+            "bar_delimiter": 0,
+            "monstercat": false,
+            "waves": false,
+            "noise_reduction": 0.77,
+            "input_delay": 2,
+            "format-icons" : ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█" ],
+            "actions": {
+                "on-click-right": "mode"
+            }
+        },
+
+        "custom/cava": { 
+            "exec": "sleep 1s && cava -p ~/.config/cava/conf_for_bar | sed -u 's/;//g;s/0/▁/g;s/1/▂/g;s/2/▃/g;s/3/▄/g;s/4/▅/g;s/5/▆/g;s/6/▇/g;s/7/█/g;'", 
+            "tooltip": false 
+        }, 
+
+        "backlight": {
+            // "device": "amdgpu_bl1",
+            "format": "{icon}",
+            "format-icons": ["󱩎", "󱩏", "󱩐", "󱩑", "󱩒", "󱩓", "󱩔", "󱩕", "󱩖", "󰛨"],
+            "on-scroll-up": "brightnessctl set 5%+",
+            "on-scroll-down": "brightnessctl set 5%-",
+            "spacing": "5",
+        },
+
+        "battery": {
+            "states": {
+                "good": 95,
+                "warning": 30,
+                "critical": 20
+            },
+            "format": "{icon}",
+            "format-plugged": "󰂄",
+            "format-alt": "{time} {icon}",
+            "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+            "on-scroll-up": "brightnessctl set 5%+",
+            "on-scroll-down": "brightnessctl set 5%-",
+            "on-click": "~/script/chgwllpr.sh",
+        },
+
+        "tray": {
+           // "icon-size": 20,
+            "spacing": 10,
+        },
+
+        "clock": {
+            "interval" : 1, 
+            "format" : "{:%a %b %d %H:%M}", 
+            // "format-alt": "{:%m-%d %a }",
+            "on-scroll-up": "hyprctl dispatch workspace -1",
+            "on-scroll-down": "hyprctl dispatch workspace +1",
+            "on-click": "hyprctl dispatch togglespecialworkspace
+",
+        }
+},
