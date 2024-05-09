@@ -1181,7 +1181,7 @@ require("lazy").setup({
 					dependencies = { "williamboman/mason.nvim" },
 					config = function()
 						require("mason-lspconfig").setup({
-							--[[ ensure_installed = {
+							ensure_installed = {
 								-- lspservers
 								"bash-language-server",
 								"jdtls",
@@ -1207,7 +1207,7 @@ require("lazy").setup({
 								"ast-grep",
 								"beautysh",
 								"prettier",
-							}, ]]
+							},
 						})
 					end,
 				},

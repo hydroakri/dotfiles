@@ -11,7 +11,6 @@ arandr
 archlinux-keyring
 archlinuxcn-keyring
 aria2
-ark
 asp
 atuin
 autoconf
@@ -33,8 +32,6 @@ bluedevil
 blueman
 bluez
 bluez-utils
-bottles
-bottom
 breeze
 breeze-gtk
 breeze-icons
@@ -56,7 +53,6 @@ colord-gtk
 colord-kde
 colord-sane
 cool-retro-term
-cowsay
 cpupower
 cpupower-gui
 cronie
@@ -65,7 +61,6 @@ cups
 darkman
 darktable
 dconf-editor
-debootstrap
 debugedit
 devtools
 discord
@@ -90,7 +85,6 @@ egl-wayland
 electron11-bin
 erofs-utils
 ethtool
-eww-wayland
 extfstools-git
 eza
 fakeroot
@@ -101,7 +95,6 @@ fcitx5-configtool
 fcitx5-gtk
 fcitx5-qt
 fcitx5-rime
-fcitx5-solarized
 fd
 feh
 ffnvcodec-headers
@@ -126,7 +119,6 @@ gdb
 gendesk
 geogebra
 gettext
-ghostwriter
 gimp
 git-delta
 glfw
@@ -163,12 +155,10 @@ gzip
 handlr-regex
 haveged
 hiddify-next-bin
-hostapd
 hping
 htop
 httpie
 hugo
-hyfetch
 hypridle
 hyprland
 hyprlock
@@ -184,7 +174,6 @@ jdtls
 joplin-desktop
 jupyter-nbclient
 kactivitymanagerd
-kanshi
 kde-cli-tools
 kde-gtk-config
 kdeconnect
@@ -210,7 +199,6 @@ kwayland-integration
 kwin
 kwrited
 languagetool
-lapce
 layer-shell-qt
 lazygit
 lib32-gdk-pixbuf2
@@ -313,8 +301,6 @@ openbsd-netcat
 opencl-nvidia
 opendoas
 os-prober
-osdlyrics
-osu-lazer-bin
 otf-opendyslexic-nerd
 otf-operator-mono-nerd
 oxygen-sounds
@@ -506,7 +492,6 @@ xdg-user-dirs
 xf86-input-synaptics
 xf86-video-amdgpu
 xf86-video-vesa
-xmake
 xorg-bdftopcf
 xorg-docs
 xorg-font-util

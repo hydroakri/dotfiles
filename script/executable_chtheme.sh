@@ -1,4 +1,4 @@
-current_paper=$(swww query | grep -o 'image: .*' | cut -d ' ' -f 2-)
+# current_paper=$(swww query | grep -o 'image: .*' | cut -d ' ' -f 2-)
 current_hour=$(date +"%H")
 qtlight='~\/.config\/qt6ct\/colors\/flexoki-light.conf'
 qtdark='~\/.config\/qt6ct\/colors\/flexoki-dark.conf'
