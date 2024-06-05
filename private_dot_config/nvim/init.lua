@@ -102,7 +102,7 @@ vim.opt.guifont = { "CaskaydiaCove NF", ":h12" }
 
 -- AutoCmds
 -- save session before quit
--- vim.cmd("autocmd VimLeave * :mksession!" .. data .. "/sessions/latest.vim")
+vim.cmd("autocmd VimLeave * :mksession!" .. data .. "/sessions/latest.vim")
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 	callback = function()
 		require("lint").try_lint()
@@ -1048,20 +1048,39 @@ require("lazy").setup({
 			-- DIAGNOSTIC
 			{
 				"folke/trouble.nvim",
-				enabled = false,
 				keys = {
-					{ "<leader>xx", "<cmd>TroubleToggle<cr>", desc = "Diagnostics (Trouble)" },
-					{ "<leader>xw", "<cmd>TroubleToggle workspace_dianostics<cr>", desc = "Diagnostics (Trouble)" },
-					{ "<leader>xd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Diagnostics (Trouble)" },
-					{ "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", desc = "Diagnostics (Trouble)" },
-					{ "<leader>xl", "<cmd>TroubleToggle loclist<cr>", desc = "Diagnostics (Trouble)" },
-					{ "<leader>gR", "<cmd>TroubleToggle lsp_references<cr>", desc = "Diagnostics (Trouble)" },
+					{
+						"<leader>xx",
+						"<cmd>Trouble diagnostics toggle<cr>",
+						desc = "Diagnostics (Trouble)",
+					},
+					{
+						"<leader>xX",
+						"<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+						desc = "Buffer Diagnostics (Trouble)",
+					},
+					{
+						"<leader>cs",
+						"<cmd>Trouble symbols toggle focus=false<cr>",
+						desc = "Symbols (Trouble)",
+					},
+					{
+						"<leader>cl",
+						"<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+						desc = "LSP Definitions / references / ... (Trouble)",
+					},
+					{
+						"<leader>xL",
+						"<cmd>Trouble loclist toggle<cr>",
+						desc = "Location List (Trouble)",
+					},
+					{
+						"<leader>xQ",
+						"<cmd>Trouble qflist toggle<cr>",
+						desc = "Quickfix List (Trouble)",
+					},
 				},
-				event = "BufReadPost",
-				dependencies = {
-					"nvim-treesitter/nvim-treesitter",
-					"nvim-tree/nvim-web-devicons",
-				},
+				opts = {}, -- for default options, refer to the configuration section for custom setup.
 			},
 
 			-- SYMBOL OUTLINE
