@@ -7,6 +7,13 @@ I'm a lazy person, I'm often annoyed by the amount of scripts and scattered file
 
 This dotfile is managed by chezmoi
 
+To install from previous installed packages
+
+```
+cat installed_flatpak_packages.txt | cut -f1 -d' ' | xargs -n1 flatpak install -y
+paru -S --needed - < pkgs.txt
+```
+
 Bar: waybar
 Theme: Breeze  
 LockScreen: hyprlock  
