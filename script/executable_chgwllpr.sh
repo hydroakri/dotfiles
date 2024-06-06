@@ -6,4 +6,4 @@ random_lockscreen=$(find ~/Pictures/wllppr -name '*.png' | shuf -n1)
 swaybg -i $current_paper -m fill
 
 ####################### change hyprlock paper ###############################
-sed -i "0,/^ *path.*/{s,,    path=$random_lockscreen,}" ~/.config/hypr/hyprlock.conf
+# sed -i "0,/^ *path.*/{s,,    path=$random_lockscreen,}" ~/.config/hypr/hyprlock.conf

@@ -1,9 +1,9 @@
-NEXT                          LEFT LAST                              PASSED UNIT                             ACTIVATES
-Fri 2024-06-07 00:00:00 CST     8h Thu 2024-06-06 06:19:47 CST            - shadow.timer                     shadow.service
-Fri 2024-06-07 06:46:21 CST    15h Thu 2024-06-06 13:50:26 CST 1h 18min ago man-db.timer                     man-db.service
-Fri 2024-06-07 13:40:43 CST    22h Thu 2024-06-06 13:40:43 CST 1h 28min ago systemd-tmpfiles-clean.timer     systemd-tmpfiles-clean.service
-Sat 2024-06-08 17:05:32 CST 2 days Thu 2024-05-16 17:56:53 CST            - archlinux-keyring-wkd-sync.timer archlinux-keyring-wkd-sync.service
-Mon 2024-06-10 00:46:51 CST 3 days Mon 2024-06-03 12:52:02 CST            - fstrim.timer                     fstrim.service
+NEXT                            LEFT LAST                         PASSED UNIT                             ACTIVATES
+Fri 2024-06-07 00:00:00 CST       6h Thu 2024-06-06 06:19:47 CST       - shadow.timer                     shadow.service
+Fri 2024-06-07 00:29:31 CST       7h Thu 2024-06-06 13:50:26 CST       - man-db.timer                     man-db.service
+Fri 2024-06-07 17:13:21 CST      23h Thu 2024-06-06 17:13:21 CST 38s ago systemd-tmpfiles-clean.timer     systemd-tmpfiles-clean.service
+Fri 2024-06-07 19:59:20 CST 1 day 2h Thu 2024-05-16 17:56:53 CST       - archlinux-keyring-wkd-sync.timer archlinux-keyring-wkd-sync.service
+Mon 2024-06-10 01:26:13 CST   3 days Mon 2024-06-03 12:52:02 CST       - fstrim.timer                     fstrim.service
 
 5 timers listed.
 Pass --all to see loaded but inactive timers, too.
