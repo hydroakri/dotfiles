@@ -9,7 +9,7 @@
         "margin-bottom": 0,
         "modules-left": ["custom/launcher", "wlr/taskbar", "hyprland/window"],
         "modules-center": ["mpris"],
-        "modules-right": ["tray", "gamemode", "idle_inhibitor", "pulseaudio", "battery", "clock"],
+        "modules-right": ["tray", "gamemode", "idle_inhibitor", "pulseaudio", "battery", "power-profiles-daemon", "clock"],
 
         "wlr/taskbar": {
             "format": "{icon}",
