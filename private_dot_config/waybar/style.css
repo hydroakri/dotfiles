@@ -1,7 +1,7 @@
 @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
 
 * {
-  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC", "HarmonyOS Sans SC", "Sarasa UI SC";
+  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC"
   /* font-size: 16px; */
   /* font-weight: 400; */
   min-height: 1.5em;
@@ -60,6 +60,7 @@ button:hover {
 #pulseaudio,
 #bluetooth,
 #idle_inhibitor,
+#power-profiles-daemon,
 #tray {
   border-radius: 0.31em;
   margin: 0.1em 0.1em 0.1em 0.1em;

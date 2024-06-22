@@ -10,11 +10,10 @@ setopt HIST_FIND_NO_DUPS
 setopt HIST_IGNORE_ALL_DUPS
 
 # some personal variables
-export PATH="$PATH:/home/$USER/script"
+export PATH="$PATH:/home/$USER/script:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
 export XDG_DATA_DIRS="$XDG_DATA_DIRS:~/.local/share/flatpak/exports/share/applications:/var/lib/flatpak/exports/share/applications"
-export EDITOR=nvim
-export VISUAL=nvim
 alias vi='nvim'
+alias nvim='io.neovim.nvim -u ~/.config/nvim/init.lua'
 alias suvi='doas nvim -u ~/.config/nvim/init.lua'
 alias sudo='doas'
 alias la='exa -la -F -s=mod -r --icons --git --group-directories-first --git'
@@ -23,8 +22,16 @@ alias ack='ag'
 alias zj='zellij'
 alias tmux='tmux -u'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
-alias p='proxychains'
+alias p='proxychains -q'
 alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
+
+# homebrew source
+export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+export HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
+
 
 # vim bindkey
 bindkey -v
