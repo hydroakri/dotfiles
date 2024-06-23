@@ -1,9 +1,10 @@
 # GRUB boot loader configuration
 
-GRUB_DEFAULT=0
+GRUB_DEFAULT="1 >2"
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR="Arch"
-GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 rootfstype=xfs zswap.enabled=0 radeon.dpm=1 nouveau.config=NvGspRm=1 nouveau.config=NvBios=PRAMIN nouveau.modeset=0 nvidia_drm.modeset=1 amd_pstate=active mitigations=off nowatchdog processor.ignore_ppc=1 nmi_watchdog=0"
+# GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=xfs zswap.enabled=0 radeon.dpm=1 nouveau.config=NvGspRm=1 nouveau.config=NvBios=PRAMIN amd_pstate=active mitigations=off nowatchdog processor.ignore_ppc=1 nmi_watchdog=0"
+GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=xfs zswap.enabled=0 radeon.dpm=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 amd_pstate=active mitigations=off nowatchdog processor.ignore_ppc=1 nmi_watchdog=0"
 GRUB_CMDLINE_LINUX=""
 
 # Preload both GPT and MBR modules so that they are not missed
