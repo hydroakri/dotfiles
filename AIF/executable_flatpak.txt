@@ -1,51 +1,60 @@
-XIVLauncherCN	cn.ottercorp.xivlaunchercn	1.0.7.2	stable	system
-wiliwili	cn.xfangfang.wiliwili	1.4.0	stable	user
-Baidu Netdisk	com.baidu.NetDisk	4.17.7	stable	system
-Discord	com.discordapp.Discord	0.0.55	stable	system
-Extension Manager	com.mattjakeman.ExtensionManager	0.5.1	stable	system
-Studio translations	com.obsproject.Studio.Locale		stable	system
-Parsec	com.parsecgaming.parsec	3.9.9	stable	system
-Pot	com.pot_app.pot	2.7.10	stable	system
-Linux QQ	com.qq.QQ	3.2.8_240520	stable	system
-WeChat	com.tencent.WeChat	1.0.0.238	stable	system
-Steam	com.valvesoftware.Steam	1.0.0.79	stable	system
-WPS Office	com.wps.Office	11.1.0.11719	stable	system
-materialgram	io.github.kukuruzka165.materialgram	5.1.1.1	stable	system
-Solaar	io.github.pwr_solaar.solaar	1.1.11	stable	system
-YesPlayMusic	io.github.qier222.YesPlayMusic	0.4.8	stable	system
-Koodo Reader	io.github.troyeguo.koodo-reader	1.6.6	stable	system
-ungoogled-chromium	io.github.ungoogled_software.ungoogled_chromium	125.0.6422.141-1	stable	system
-Codecs	io.github.ungoogled_software.ungoogled_chromium.Codecs		stable	system
-Minecraft Bedrock Launcher	io.mrarm.mcpelauncher	v0.14.2	stable	system
-darktable	org.darktable.Darktable	4.6.1	stable	system
-Freedesktop Platform	org.freedesktop.Platform	21.08.22	21.08	system
-Freedesktop Platform	org.freedesktop.Platform	22.08.24	22.08	system
-Freedesktop Platform	org.freedesktop.Platform	23.08.19	23.08	system
-i386	org.freedesktop.Platform.Compat.i386		23.08	system
-Mesa	org.freedesktop.Platform.GL.default	21.3.9	21.08	system
-Mesa	org.freedesktop.Platform.GL.default	24.0.4	22.08	system
-Mesa (Extra)	org.freedesktop.Platform.GL.default	24.0.4	22.08-extra	system
-Mesa	org.freedesktop.Platform.GL.default	24.0.7	23.08	system
-Mesa (Extra)	org.freedesktop.Platform.GL.default	24.0.7	23.08-extra	system
-nvidia-555-42-02	org.freedesktop.Platform.GL.nvidia-555-42-02		1.4	system
-Mesa	org.freedesktop.Platform.GL32.default	24.0.7	23.08	system
-Mesa (Extra)	org.freedesktop.Platform.GL32.default	24.0.7	23.08-extra	system
-nvidia-555-42-02	org.freedesktop.Platform.GL32.nvidia-555-42-02		1.4	system
-gamescope	org.freedesktop.Platform.VulkanLayer.gamescope	3.14.18	23.08	system
-ffmpeg-full	org.freedesktop.Platform.ffmpeg-full		21.08	system
-ffmpeg-full	org.freedesktop.Platform.ffmpeg-full		23.08	system
-openh264	org.freedesktop.Platform.openh264	2.1.0	2.0	system
-openh264	org.freedesktop.Platform.openh264	2.1.0	2.2.0	system
-openh264	org.freedesktop.Platform.openh264	2.4.1	2.4.1	system
-Boxes	org.gnome.Boxes	46.0	stable	system
-GNOME Boxes Osinfo DB	org.gnome.Boxes.Extension.OsinfoDb	20240523	stable	system
-GNOME Application Platform version 45	org.gnome.Platform		45	system
-GNOME Application Platform version 46	org.gnome.Platform		46	system
-KDE Application Platform	org.kde.Platform		5.15-23.08	system
-KDE Application Platform	org.kde.Platform		6.6	system
-KDE Application Platform	org.kde.Platform		6.7	system
-Krita	org.kde.krita	5.2.2	stable	system
-KeePassXC	org.keepassxc.KeePassXC	2.7.8	stable	system
-LocalSend	org.localsend.localsend_app	1.14.0	stable	system
-Prism Launcher	org.prismlauncher.PrismLauncher	8.3	stable	system
-Telegram Desktop Webview Add-on	org.telegram.desktop.webview	2.44.2	stable	system
+cn.ottercorp.xivlaunchercn
+cn.xfangfang.wiliwili
+com.baidu.NetDisk
+com.discordapp.Discord
+com.github.tchx84.Flatseal
+com.mattjakeman.ExtensionManager
+com.mojang.Minecraft
+com.obsproject.Studio
+com.parsecgaming.parsec
+com.pot_app.pot
+com.qq.QQ
+com.tencent.WeChat
+com.tencent.wemeet
+com.valvesoftware.Steam
+com.visualstudio.code
+com.wps.Office
+io.github.kukuruzka165.materialgram
+io.github.prateekmedia.appimagepool
+io.github.pwr_solaar.solaar
+io.github.qier222.YesPlayMusic
+io.github.troyeguo.koodo-reader
+io.github.ungoogled_software.ungoogled_chromium
+io.github.ungoogled_software.ungoogled_chromium.Codecs
+io.mrarm.mcpelauncher
+net.agalwood.Motrix
+org.bluesabre.MenuLibre
+org.darktable.Darktable
+org.flameshot.Flameshot
+org.freedesktop.Platform
+org.freedesktop.Platform
+org.freedesktop.Platform
+org.freedesktop.Platform.Compat.i386
+org.freedesktop.Platform.GL.default
+org.freedesktop.Platform.GL.default
+org.freedesktop.Platform.GL.default
+org.freedesktop.Platform.GL.default
+org.freedesktop.Platform.GL.default
+org.freedesktop.Platform.GL.nvidia-550-90-07
+org.freedesktop.Platform.GL32.default
+org.freedesktop.Platform.GL32.default
+org.freedesktop.Platform.GL32.nvidia-550-90-07
+org.freedesktop.Platform.VulkanLayer.gamescope
+org.freedesktop.Platform.ffmpeg-full
+org.freedesktop.Platform.ffmpeg-full
+org.freedesktop.Platform.openh264
+org.freedesktop.Platform.openh264
+org.freedesktop.Platform.openh264
+org.freedesktop.Sdk
+org.gnome.Boxes
+org.gnome.Boxes.Extension.OsinfoDb
+org.gnome.Platform
+org.gnome.Platform
+org.kde.Platform
+org.kde.Platform
+org.kde.Platform
+org.kde.krita
+org.keepassxc.KeePassXC
+org.localsend.localsend_app
+org.prismlauncher.PrismLauncher
+org.telegram.desktop.webview

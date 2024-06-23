@@ -6,16 +6,15 @@
   colord.service                loaded active running Manage, Install and Generate Color Profiles
   dbus-broker.service           loaded active running D-Bus System Message Bus
   earlyoom.service              loaded active running Early OOM Daemon
-  flatpak-system-helper.service loaded active running flatpak system helper
   mysqld.service                loaded active running MySQL Server
   NetworkManager.service        loaded active running Network Manager
   nvidia-persistenced.service   loaded active running NVIDIA Persistence Daemon
   nvidia-powerd.service         loaded active running nvidia-powerd service
   polkit.service                loaded active running Authorization Manager
+  power-profiles-daemon.service loaded active running Power Profiles daemon
   redis.service                 loaded active running Advanced key-value store
   rtkit-daemon.service          loaded active running RealtimeKit Scheduling Policy Service
   sddm.service                  loaded active running Simple Desktop Display Manager
-  systemd-hostnamed.service     loaded active running Hostname Service
   systemd-journald.service      loaded active running Journal Service
   systemd-logind.service        loaded active running User Login Management
   systemd-machined.service      loaded active running Virtual Machine and Container Registration Service
@@ -33,4 +32,4 @@ Legend: LOAD   → Reflects whether the unit definition was properly loaded.
         ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
         SUB    → The low-level unit activation state, values depend on unit type.
 
-29 loaded units listed.
+28 loaded units listed.
