@@ -39,8 +39,8 @@ local config = {
 			}),
 		},
 	},
-	enable_wayland = false,
-	font_size = 16.0,
+	enable_wayland = true,
+	font_size = 12.0,
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 24,
 	initial_cols = 80,
@@ -57,7 +57,7 @@ local config = {
 	-- color_scheme = "pywal", -- wezterm uses pywal file in ~/.cache/wal/wezterm.toml
 	color_scheme = color_scheme,
 
-	window_decorations = "RESIZE",
+	-- window_decorations = "RESIZE",
 	-- window_background_opacity = 0.9,
 	window_close_confirmation = "NeverPrompt",
 	window_padding = {
