@@ -1,5 +1,8 @@
 export LANG=en_US.UTF-8
 
+# use ssh insteadof https
+# git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+
 # history
 SAVEHIST=9223372036854775807
 HISTFILE=~/.zsh_history
