@@ -12,10 +12,9 @@ setopt HIST_IGNORE_ALL_DUPS
 # some personal variables
 export PATH="$PATH:/home/$USER/script:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
 export XDG_DATA_DIRS="$XDG_DATA_DIRS:~/.local/share/flatpak/exports/share/applications:/var/lib/flatpak/exports/share/applications"
+export EDITOR=nvim
 alias vi='nvim'
-alias nvim='io.neovim.nvim -u ~/.config/nvim/init.lua'
-alias suvi='doas nvim -u ~/.config/nvim/init.lua'
-alias sudo='doas'
+alias suvi='sudo nvim -u ~/.config/nvim/init.lua'
 alias la='exa -la -F -s=mod -r --icons --git --group-directories-first --git'
 alias ls='exa'
 alias ack='ag'
@@ -24,6 +23,11 @@ alias tmux='tmux -u'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
 alias p='proxychains -q'
 alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
+alias upgradeall='(
+    sudo nala update && sudo nala upgrade -y &&
+  flatpak update -y &&
+  brew update && brew upgrade --force &&
+)'
 
 # homebrew source
 export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
