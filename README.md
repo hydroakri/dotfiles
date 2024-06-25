@@ -10,7 +10,7 @@ This dotfile is managed by chezmoi
 To install from previous installed packages
 
 ```
-cat installed_flatpak_packages.txt | cut -f1 -d' ' | xargs -n1 flatpak install -y
+cat flatpak.txt | cut -f1 -d' ' | xargs -n1 flatpak install -y
 paru -S --needed - < pkgs.txt
 ```
 
