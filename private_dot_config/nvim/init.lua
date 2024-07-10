@@ -15,14 +15,6 @@ if not vim.loop.fs_stat(data .. "/lazy/lazy.nvim") then
 end
 vim.opt.rtp:prepend(data .. "/lazy/lazy.nvim")
 
--- auto set background
-local hour = tonumber(os.date("%H"))
-if hour >= 6 and hour < 18 then
-	vim.opt.background = "light"
-else
-	vim.opt.background = "dark"
-end
-
 -- utf8
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
@@ -455,7 +447,7 @@ require("lazy").setup({
 				config = function()
 					require("lint").linters_by_ft = {
 						lua = { "luacheck" },
-						markdown = { "write_good", "languagetool" },
+						markdown = { "write_good" },
 						bash = { "shellcheck" },
 						c = { "trivy" },
 						cpp = { "trivy" },
@@ -798,6 +790,7 @@ require("lazy").setup({
 					end
 					require("ufo").setup({
 						fold_virt_text_handler = handler,
+						vim.cmd("hi Folded guibg=bg"),
 					})
 				end,
 			},
@@ -1323,6 +1316,18 @@ require("lazy").setup({
 		{
 			"catppuccin/nvim",
 			name = "catppuccin",
+			setup = function()
+				-- change theme accroding to system color mode
+				local handle = io.popen([[
+                THEME=$(gsettings get org.gnome.desktop.interface color-scheme) echo $THEME ]])
+				local theme = handle:read("*a")
+				handle:close()
+				if string.match(theme, "prefer-dark") then
+					vim.o.background = "dark"
+				else
+					vim.o.background = "light"
+				end
+			end,
 			opts = {
 				background = { -- :h background
 					light = "latte",
@@ -1602,4 +1607,3 @@ require("lazy").setup({
 	},
 })
 vim.cmd("colorscheme catppuccin")
-vim.cmd("hi Folded guibg=bg")

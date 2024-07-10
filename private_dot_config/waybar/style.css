@@ -1,7 +1,7 @@
-@import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css");
+/* @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css"); */
 
 * {
-  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC"
+  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC";
   /* font-size: 16px; */
   /* font-weight: 400; */
   min-height: 1.5em;
