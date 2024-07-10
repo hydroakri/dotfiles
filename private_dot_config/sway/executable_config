@@ -33,7 +33,29 @@ output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 #   output HDMI-A-1 resolution 1920x1080 position 1920,0
 #
 # You can get the names of your outputs by running: swaymsg -t get_outputs
+exec waybar
+exec mako
+exec /usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1
+exec nm-applet --indicator
+exec blueman-applet
+exec fcitx5
+exec playerctld && mpris-proxy
+exec /home/$USER/script/autostart
 
+default_border 		        pixel 	2
+titlebar_border_thickness 	2
+gaps 			            top	2
+gaps 			            bottom	2
+gaps 			            left	2
+gaps 			            right	2
+gaps 			            inner 	5
+
+# window decorations
+# class			        border	    background	text        indicator   child_border
+client.focused          #A4B9EF     #332E41     #E5B4E2     #DADAE8     #A4B9EF
+client.focused_inactive #A4B9EF     #332E41     #E5B4E2     #DADAE8     #A4B9EF
+client.unfocused        #A4B9EF     #1E1E28     #DADAE8     #DADAE8     #575268
+client.urgent           #A4B9EF     #575268     #EBDDAA     #DADAE8     #EBDDAA
 ### Idle configuration
 #
 # Example configuration:
@@ -69,10 +91,10 @@ output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
     bindsym $mod+Return exec $term
 
     # Kill focused window
-    bindsym $mod+Shift+q kill
+    bindsym $mod+q kill
 
     # Start your launcher
-    bindsym $mod+d exec $menu
+    bindsym Alt+space exec $menu
 
     # Drag floating windows by holding down $mod and left mouse button.
     # Resize them with right mouse button + $mod.
@@ -203,18 +225,4 @@ bindsym $mod+r mode "resize"
 # Status Bar:
 #
 # Read `man 5 sway-bar` for more information about this section.
-bar {
-    position top
-
-    # When the status_command prints a new line to stdout, swaybar updates.
-    # The default just shows the current date and time.
-    status_command while date +'%Y-%m-%d %I:%M:%S %p'; do sleep 1; done
-
-    colors {
-        statusline #ffffff
-        background #323232
-        inactive_workspace #32323200 #32323200 #5c5c5c
-    }
-}
-
 include /etc/sway/config.d/*

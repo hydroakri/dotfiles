@@ -1,13 +1,19 @@
 local wezterm = require("wezterm")
 local home = os.getenv("HOME")
-wezterm.add_to_config_reload_watch_list(home .. "/.cache/wal/wezterm.toml")
+-- wezterm.add_to_config_reload_watch_list(home .. "/.cache/wal/wezterm.toml")
 
-local color_scheme
-local hour = tonumber(os.date("%H"))
-if hour >= 6 and hour < 18 then
-	color_scheme = "flexoki-light"
-else
-	color_scheme = "flexoki-dark"
+function get_appearance()
+  if wezterm.gui then
+    return wezterm.gui.get_appearance()
+  end
+  return 'Dark'
+end
+function scheme_for_appearance(appearance)
+  if appearance:find 'Dark' then
+    return 'flexoki-dark'
+  else
+    return 'flexoki-light'
+  end
 end
 
 local config = {
@@ -55,7 +61,7 @@ local config = {
 	-- colorscheme
 	color_scheme_dirs = { home .. "/.cache/wal" },
 	-- color_scheme = "pywal", -- wezterm uses pywal file in ~/.cache/wal/wezterm.toml
-	color_scheme = color_scheme,
+    color_scheme = scheme_for_appearance(get_appearance()),
 
 	-- window_decorations = "RESIZE",
 	-- window_background_opacity = 0.9,

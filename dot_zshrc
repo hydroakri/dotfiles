@@ -27,7 +27,7 @@ alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {
 alias p='proxychains -q'
 alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
 alias upgradeall='(
-    sudo nala update && sudo nala upgrade -y &&
+  sudo nala upgrade -y &&
   flatpak update -y &&
   brew update && brew upgrade --force &&
 )'
