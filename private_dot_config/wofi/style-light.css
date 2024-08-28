@@ -1,0 +1,51 @@
+/* @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css"); */
+@define-color background rgb(255, 252, 240);
+@define-color backgroundAlpha rgb(255, 252, 240, 0.5);
+@define-color foreground rgb(16, 15, 15);
+@define-color yellow rgb(255, 244, 51);
+@define-color cosmic-latte rgb(255, 248, 231);
+@define-color purple rgb(155, 89, 208);
+@define-color black rgb(45, 45, 45);
+
+* {
+  font-family: "Inter Display", "Caskaydiacove nerd font", "Noto Sans CJK SC",
+    "HarmonyOS Sans SC", "sarasa ui sc";
+  border: none;
+  border-radius: 9px;
+}
+
+window {
+  font-size: 32px;
+  /* background-color: @backgroundAlpha; */
+  background-color: @background;
+  color: black;
+}
+
+#entry {
+  padding: 0.25em;
+}
+
+#entry:selected {
+  /* background: linear-gradient(135deg, @color4, @color5); */
+  background: linear-gradient(135deg, @yellow, @cosmic-latte, @purple);
+}
+
+#text {
+  color: @foreground;
+}
+
+#text:selected {
+  color: @foreground;
+}
+
+#input {
+  /* background-color: @backgroundAlpha; */
+  background-color: @background;
+  color: @foreground;
+  padding: 0.25em;
+}
+
+image {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+}
