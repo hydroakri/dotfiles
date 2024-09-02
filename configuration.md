@@ -1,5 +1,5 @@
 > Useful utils  
-> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode`
+> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `ufw` `apparmor` `proxychains`
 
 ```
 sudo systemctl daemon-reload
@@ -27,6 +27,19 @@ options nvidia NVreg_PreserveVideoMemoryAllocations=1
 [zram0]
 zram-size = ram/2
 compression-algorithm = zstd
+```
+
+> /etc/systemd/resolved.conf
+
+```
+[Resolve]
+DNS=123.129.227.3#doh.apad.pro 103.2.57.5#ipublic.dns.iij.jp 101.102.103.104#101.101.101.101 1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google 9.9.9.9#dns.quad9.net
+Domains=~
+DNSSEC=allow-downgrade
+DNSOverTLS=yes
+MulticastDNS=yes
+LLMNR=yes
+Cache=yes
 ```
 
 > /etc/sysctl.conf
@@ -87,10 +100,23 @@ ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc
 btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
 ```
 
+> /etc/udev/rules.d/ntfs3_by_default.rules
+
+```
+SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs", ENV{ID_FS_TYPE}="ntfs3"
+```
+
 > /etc/environment
 
 ```
 XMODIFIERS=@im=fcitx
+```
+
+> /etc/NetworkManager/conf.d/dns.conf
+
+```
+[main]
+dns=none
 ```
 
 > kernel modules
@@ -101,6 +127,22 @@ nvidia
 nvidia_modeset
 nvidia_uvm
 nvidia_drm
+```
+
+## distro specific
+
+```list
+#local-mirror
+deb http://mirrors.ustc.edu.cn/debian trixie main contrib non-free non-free-firmware
+deb http://mirrors.ustc.edu.cn/debian trixie-updates main contrib non-free non-free-firmware
+
+#main-source/updates/backports
+deb https://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware
+deb https://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware
+deb https://deb.debian.org/debian/ trixie-backports main contrib non-free non-free-firmware
+
+#security
+deb http://deb.debian.org/debian-security/ trixie-security main contrib non-free non-free-firmware
 ```
 
 ## Another important thing
