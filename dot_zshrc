@@ -14,7 +14,7 @@ setopt HIST_IGNORE_ALL_DUPS
 
 # some personal variables
 export PATH="$PATH:/home/$USER/script:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
-export XDG_DATA_DIRS="$XDG_DATA_DIRS:~/.local/share/flatpak/exports/share/applications:/var/lib/flatpak/exports/share/applications"
+export XDG_DATA_DIRS="$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:/home/$USER/.local/share/flatpak/exports/share"
 export EDITOR=nvim
 alias vi='nvim'
 alias suvi='sudo nvim -u ~/.config/nvim/init.lua'
