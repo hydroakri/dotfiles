@@ -158,6 +158,6 @@ deb http://deb.debian.org/debian-security/ trixie-security main contrib non-free
 ```
 pacman -Qqe > pkgs.txt
 flatpak list --columns=app > flatpak.txt
-sudo apt list > debs.txt
-brew list > brew.txt
+apt-mark showmanual > debs.txt
+brew leaves > brew.txt
 ```
