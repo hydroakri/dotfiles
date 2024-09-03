@@ -11,7 +11,7 @@ sudo systemctl enable nvidia-suspend.service
 > /etc/default/grub
 
 ```conf
-GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=xfs zswap.enabled=0 mem_sleep_default=s2idle radeon.dpm=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 amd_pstate=active mitigations=on nowatchdog processor.ignore_ppc=1 nmi_watchdog=0 apparmor=1 security=apparmor lockdown=integrity quiet splash"
+GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=xfs zswap.enabled=0 mem_sleep_default=s2idle radeon.dpm=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 amd_pstate=active mitigations=auto nowatchdog processor.ignore_ppc=1 nmi_watchdog=0 apparmor=1 security=apparmor lockdown=integrity quiet splash"
 ```
 
 > /etc/modprobe.d/nvidia-options.conf
@@ -45,8 +45,16 @@ Cache=yes
 > /etc/sysctl.conf
 
 ```conf
-kernel.core_pattern=|/bin/false # Disabling automatic core dumps
-kernel.unprivileged_bpf_disabled = 0
+#security
+kernel.core_pattern=|/bin/false
+kernel.unprivileged_bpf_disabled=0
+kernel.kptr_restrict=2
+kernel.yama.ptrace_scope=3
+kernel.kexec_load_disabled=1
+module.sig_enforce=1
+net.core.bpf_jit_harden=2
+
+# performance
 net.core.default_qdisc=cake
 net.ipv4.tcp_congestion_control=bbr2
 
