@@ -4,7 +4,7 @@ git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
 > Useful utils
-> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `ufw` `apparmor` `proxychains`
+> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload`
 
 ```
 sudo systemctl daemon-reload
@@ -12,6 +12,7 @@ sudo systemctl enable fstrim.timer
 sudo systemctl enable systemd-zram-setup@zram0.service
 sudo systemctl enable nvidia-suspend.service
 sudo systemctl enable systemd-resolved.service
+sudo systemctl enable preload.service
 ```
 
 > /etc/default/grub
