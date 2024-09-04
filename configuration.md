@@ -1,4 +1,9 @@
-> Useful utils  
+> use ssh
+```
+git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+```
+
+> Useful utils
 > `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `ufw` `apparmor` `proxychains`
 
 ```
@@ -6,12 +11,13 @@ sudo systemctl daemon-reload
 sudo systemctl enable fstrim.timer
 sudo systemctl enable systemd-zram-setup@zram0.service
 sudo systemctl enable nvidia-suspend.service
+sudo systemctl enable systemd-resolved.service
 ```
 
 > /etc/default/grub
 
 ```conf
-GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=xfs zswap.enabled=0 mem_sleep_default=s2idle radeon.dpm=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 amd_pstate=active mitigations=auto nowatchdog processor.ignore_ppc=1 nmi_watchdog=0 apparmor=1 security=apparmor lockdown=integrity quiet splash"
+GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 mem_sleep_default=s2idle nowatchdog nmi_watchdog=0 snd_hda_intel.power_save=1 iwlwifi.power_save=1 usbcore.autosuspend=60 mitigations=auto apparmor=1 security=apparmor lockdown=integrity quiet splash"
 ```
 
 > /etc/modprobe.d/nvidia-options.conf
@@ -108,6 +114,15 @@ ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc
 btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
 ```
 
+> /etc/udev/rules.d/powersave.rules
+```
+SUBSYSTEM=="pci", ATTR{power/control}="auto"
+# 上述规则会关闭所有未使用的设备，但某些设备不会再次唤醒。要仅对已知可以工作的设备进行运行时电源管理，请使用对应供应商和设备ID的简单匹配（使用 lspci -nn 获取这些值)
+
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save on"
+# disable Wake-on-LAN
+```
+
 > /etc/udev/rules.d/ntfs3_by_default.rules
 
 ```
@@ -158,6 +173,6 @@ deb http://deb.debian.org/debian-security/ trixie-security main contrib non-free
 ```
 pacman -Qqe > pkgs.txt
 flatpak list --columns=app > flatpak.txt
-apt-mark showmanual > debs.txt
-brew leaves > brew.txt
+sudo apt list > debs.txt
+brew list > brew.txt
 ```
