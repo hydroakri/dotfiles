@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sleep 3 && parallel ::: '/usr/lib/kdeconnectd' kdeconnect-indicator syncthing keepassxc 'systemctl --user start warp-taskbar' '/usr/bin/env systemctl start --u sunshine'
+sleep 3 && parallel ::: '/usr/lib/kdeconnectd' kdeconnect-indicator syncthing keepassxc 'systemctl --user start warp-taskbar' '/usr/bin/env systemctl start --u sunshine' 'gamemoded -d'
