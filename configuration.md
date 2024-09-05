@@ -1,12 +1,14 @@
 # Useful utils
-> use ssh
-```
+
+> use ssh as default for github
+
+```shell
 git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
 > `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload`
 
-```
+```shell
 sudo systemctl daemon-reload
 sudo systemctl enable fstrim.timer
 sudo systemctl enable systemd-zram-setup@zram0.service
@@ -15,38 +17,39 @@ sudo systemctl enable systemd-resolved.service
 sudo systemctl enable preload.service
 ```
 
+# Kernel settings
+
 > /etc/default/grub
 
 ```conf
 GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 mem_sleep_default=s2idle nowatchdog nmi_watchdog=0 snd_hda_intel.power_save=1 iwlwifi.power_save=1 usbcore.autosuspend=60 mitigations=auto apparmor=1 security=apparmor lockdown=integrity quiet splash"
+
+# WARNING: lockdown=integrity can cause modules that out of tree not be load(such as nvidia)
 ```
 
 > /etc/modprobe.d/nvidia-options.conf
 
-```
+```conf
 options nvidia-drm modeset=1
 options nvidia NVreg_PreserveVideoMemoryAllocations=1
 ```
 
-> /etc/systemd/zram-generator.conf
+> early kernel modules:  
+> /etc/initramfs-tools/modules (Debian) /etc/mkinitcpio.conf(Arch Linux)
 
-```
-[zram0]
-zram-size = ram/2
-compression-algorithm = zstd
+```conf
+amdgpu
+nvidia
+nvidia_modeset
+nvidia_uvm
+nvidia_drm
 ```
 
-> /etc/systemd/resolved.conf
+> /etc/modules-load.d/mods.conf
 
-```
-[Resolve]
-DNS=123.129.227.3#doh.apad.pro 103.2.57.5#ipublic.dns.iij.jp 101.102.103.104#101.101.101.101 1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google 9.9.9.9#dns.quad9.net
-Domains=~
-DNSSEC=allow-downgrade
-DNSOverTLS=yes
-MulticastDNS=yes
-LLMNR=yes
-Cache=yes
+```conf
+tcp_bbr2
+zram
 ```
 
 > /etc/sysctl.conf
@@ -100,11 +103,64 @@ vm.laptop_mode=5
 vm.vfs_cache_pressure = 50
 ```
 
-> /etc/modules-load.d/tcp_bbr.conf
+# Systemd settings
+
+> /etc/systemd/zram-generator.conf
 
 ```conf
-tcp_bbr2
-zram
+[zram0]
+zram-size = ram/2
+compression-algorithm = zstd
+```
+
+> /etc/NetworkManager/conf.d/dns.conf
+
+```
+[main]
+dns=none
+```
+
+> /etc/systemd/resolved.conf
+
+```
+[Resolve]
+DNS=123.129.227.3#doh.apad.pro 103.2.57.5#ipublic.dns.iij.jp 101.102.103.104#101.101.101.101 1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google 9.9.9.9#dns.quad9.net
+Domains=~
+DNSSEC=allow-downgrade
+DNSOverTLS=yes
+MulticastDNS=yes
+LLMNR=yes
+Cache=yes
+```
+
+# Udev rules
+
+> /etc/udev/rules.d/powersave.rules
+
+```
+SUBSYSTEM=="pci", ATTR{power/control}="auto"
+
+# 上述规则会关闭所有未使用的设备，但某些设备不会再次唤醒。要仅对已知可以工作的设备进行运行时电源管理，请使用对应供应商和设备ID的简单匹配（使用 lspci -nn 获取这些值)
+
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save on"
+
+# disable Wake-on-LAN
+```
+
+> /etc/udev/rules.d/ntfs3_by_default.rules
+
+```
+# SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs", ENV{ID_FS_TYPE}="ntfs3"
+
+# WARNING: ntfs-3g is more reliable than ntfs3 you are recommended assigning fs type mannually in /etc/fstab
+```
+
+# Other /etc files
+
+> /etc/environment
+
+```
+XMODIFIERS=@im=fcitx
 ```
 
 > /etc/fstab
@@ -116,46 +172,9 @@ btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=as
 # WARNING: some distro do not support ntfs, add to fstab can boot into emergency shell
 ```
 
-> /etc/udev/rules.d/powersave.rules
-```
-SUBSYSTEM=="pci", ATTR{power/control}="auto"
-# 上述规则会关闭所有未使用的设备，但某些设备不会再次唤醒。要仅对已知可以工作的设备进行运行时电源管理，请使用对应供应商和设备ID的简单匹配（使用 lspci -nn 获取这些值)
+# distro specific
 
-ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save on"
-# disable Wake-on-LAN
-```
-
-> /etc/udev/rules.d/ntfs3_by_default.rules
-
-```
-SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs", ENV{ID_FS_TYPE}="ntfs3"
-#WARNING: ntfs-3g is more reliable than ntfs3 you are recommended assigning fs type mannually in /etc/fstab
-```
-
-> /etc/environment
-
-```
-XMODIFIERS=@im=fcitx
-```
-
-> /etc/NetworkManager/conf.d/dns.conf
-
-```
-[main]
-dns=none
-```
-
-> kernel modules
-
-```
-amdgpu
-nvidia
-nvidia_modeset
-nvidia_uvm
-nvidia_drm
-```
-
-## distro specific
+> /etc/apt/source.list
 
 ```list
 #local-mirror
@@ -183,8 +202,10 @@ brew list > brew.txt
 # Secure boot
 
 hook for auto sign for custom kernel:
+
 > /etc/initramfs-tools/hooks/sb-sign
-```
+
+```sh
 #!/bin/sh
 PREREQ=""
 prereqs()
@@ -221,6 +242,7 @@ for file in /boot/*; do
     fi
 done
 ```
+
 ```
 sudo chmod 755 /etc/initramfs-tools/hooks/sb-sign
 
