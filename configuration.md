@@ -113,6 +113,7 @@ zram
 <type>  <options>
 ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc
 btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
+# WARNING: some distro do not support ntfs, add to fstab can boot into emergency shell
 ```
 
 > /etc/udev/rules.d/powersave.rules
@@ -128,6 +129,7 @@ ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set 
 
 ```
 SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs", ENV{ID_FS_TYPE}="ntfs3"
+#WARNING: ntfs-3g is more reliable than ntfs3 you are recommended assigning fs type mannually in /etc/fstab
 ```
 
 > /etc/environment
