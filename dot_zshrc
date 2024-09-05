@@ -18,13 +18,12 @@ export XDG_DATA_DIRS="$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:/home/$USER/
 export EDITOR=nvim
 alias vi='nvim'
 alias suvi='sudo nvim -u ~/.config/nvim/init.lua'
-alias la='exa -la -F -s=mod -r --icons --git --group-directories-first --git'
-alias ls='exa'
 alias ack='ag'
 alias zj='zellij'
 alias tmux='tmux -u'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
 alias p='proxychains -q'
+alias p4='proxychains4 -q'
 alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
 alias upgradeall='(
   sudo nala upgrade -y &&
