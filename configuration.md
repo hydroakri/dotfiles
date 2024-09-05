@@ -1,9 +1,9 @@
+# Useful utils
 > use ssh
 ```
 git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
-> Useful utils
 > `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload`
 
 ```
@@ -178,4 +178,60 @@ pacman -Qqe > pkgs.txt
 flatpak list --columns=app > flatpak.txt
 sudo apt list > debs.txt
 brew list > brew.txt
+```
+
+# Secure boot
+
+hook for auto sign for custom kernel:
+> /etc/initramfs-tools/hooks/sb-sign
+```
+#!/bin/sh
+PREREQ=""
+prereqs()
+{
+        echo "$PREREQ"
+}
+case $1 in
+prereqs)
+        prereqs
+        exit 0
+        ;;
+esac
+. /usr/share/initramfs-tools/hook-functions
+# Begin real processing below this line
+
+# 定义证书和密钥的路径
+cert="/root/MOK.crt"
+key="/root/MOK.key"
+
+# 扫描 /boot 目录下的文件并使用 file 命令识别内核文件
+for file in /boot/*; do
+    if [ -f "$file" ]; then
+        # 使用 file 命令检查文件类型
+        if file "$file" | grep -q "Linux kernel"; then
+            # 检查文件是否已经签名
+            if sbverify --cert "$cert" "$file" &>/dev/null; then
+                echo "Kernel already signed: $file"
+            else
+                echo "Signing kernel: $file"
+                # 执行签名
+                sbsign --key "$key" --cert "$cert" --output "$file" "$file"
+            fi
+        fi
+    fi
+done
+```
+```
+sudo chmod 755 /etc/initramfs-tools/hooks/sb-sign
+
+#创建一个机器所有者密钥（MOK）：
+openssl req -newkey rsa:4096 -nodes -keyout /root/MOK.key -new -x509 -sha256 -days 3650 -subj "/CN=my Machine Owner Key/" -out /root/MOK.crt
+openssl x509 -outform DER -in /root/MOK.crt -out /root/MOK.cer
+
+sbsign --key /root/MOK.key --cert /root/MOK.crt --output esp/EFI/BOOT/grubx64.efi esp/EFI/BOOT/grubx64.efi
+WARNING：你需要把key的位置和esp分区的位置替换为实际情况
+
+#执行完以下两条一定要自然重启并输入密码，使其配置密钥
+sudo mokutil --import /var/lib/dkms/mok.pub #dkms的公钥用于签名树外模块
+sudo mokutil --import MOK.cer
 ```
