@@ -22,7 +22,7 @@ sudo systemctl enable preload.service
 > /etc/default/grub
 
 ```conf
-GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 nouveau.config=NvGspRm=1 nouveau.config=NvBoost=2 mem_sleep_default=deep nowatchdog nmi_watchdog=0 snd_hda_intel.power_save=1 iwlwifi.power_save=1 usbcore.autosuspend=60 mitigations=auto apparmor=1 security=apparmor lockdown=integrity quiet splash"
+GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 nouveau.config=NvGspRm=1 nouveau.config=NvBoost=2 mem_sleep_default=s2idle nowatchdog nmi_watchdog=0 snd_hda_intel.power_save=1 iwlwifi.power_save=1 mitigations=auto apparmor=1 security=apparmor lockdown=integrity quiet splash"
 
 # WARNING: lockdown=integrity can cause modules that out of tree not be load(such as nvidia)
 ```
@@ -229,14 +229,19 @@ for file in /boot/*; do
     if [ -f "$file" ]; then
         # 使用 file 命令检查文件类型
         if file "$file" | grep -q "Linux kernel"; then
-            # 检查文件是否已经签名
-            if sbverify --cert "$cert" "$file" &>/dev/null; then
-                echo "Kernel already signed: $file"
-            else
-                echo "Signing kernel: $file"
-                # 执行签名
-                sbsign --key "$key" --cert "$cert" --output "$file" "$file"
-            fi
+            sbverify --cert "$cert" "$file"
+            case $? in
+                0)
+                    echo "File already signed: $file"
+                    ;;
+                1)
+                    echo "File not signed, signing: $file"
+                    sbsign --key "$key" --cert "$cert" --output "$file" "$file"
+                    ;;
+                *)
+                    echo "Error: $file"
+                    ;;
+            esac
         fi
     fi
 done
