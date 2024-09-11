@@ -1,11 +1,13 @@
 {
-  "timeStamp": 1725804451203,
+  "timeStamp": 1726069967361,
   "version": "1.59.0",
   "userSettings": {
     "advancedUserEnabled": true,
-    "externalLists": "http://sbc.io/hosts/alternates/fakenews-gambling-social/hosts\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
+    "cloudStorageEnabled": true,
+    "externalLists": "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt\nhttps://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
     "importedLists": [
-      "http://sbc.io/hosts/alternates/fakenews-gambling-social/hosts",
+      "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt",
+      "https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt",
       "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt"
     ],
     "popupPanelSections": 63,
@@ -25,18 +27,29 @@
     "plowe-0",
     "CHN-0",
     "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
-    "http://sbc.io/hosts/alternates/fakenews-gambling-social/hosts"
+    "https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt",
+    "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt"
   ],
   "hiddenSettings": {},
   "whitelist": [
     "accounts.google.com",
+    "accounts.spotify.com",
     "centro.zjlll.net",
     "chrome-extension-scheme",
+    "godaddy.com",
     "https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&ec=65620&hl=en&ifkv=Ab5oB3rQXbyv80N2BK2D_4vYl3aUWdfjJgzfjLD5y1mgmpgciIHznQiH0--W5xMCewlc2khInlrvgQ&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&ddm=0",
-    "login.xueanquan.com"
+    "https://mail.qq.com/",
+    "https://www.amazon.cn/gp/f.html?C=22RQ26041W3PR&K=2LHBK1H6OI4CX&M=urn:rtn:msg:2024091011513706c7fb3f550240f29838c758fa40p0cn&R=VS4U4ZTRP4UM&T=C&U=https%3A%2F%2Fglobalstore.amazon.cn%2Fdownload%3Ftarget%3Dhttps%3A%2F%2Fglobalstore.amazon.cn%2FdeletionProceeding%3Ftoken%3DstW5jc7%252BM0wCmykutPZLGHONRBfrDEmyVZt3YkLXWHjWKDz28r0c4B%252F7FFoQwdfjlRMzEqT4NY6%252FQlMoJ7NrjA%253D%253D%26ref_%3Dpe_28022482_439162992_SC0101BT&H=75R4PXNUWS0OQKAALZRGQKYRFOYA",
+    "https://www.reddit.com/login/",
+    "ifttt.com",
+    "login.xueanquan.com",
+    "osu.ppy.sh",
+    "sso.godaddy.com",
+    "www.facebook.com",
+    "www.last.fm"
   ],
-  "dynamicFilteringString": "behind-the-scene * * noop\nbehind-the-scene * inline-script noop\nbehind-the-scene * 1p-script noop\nbehind-the-scene * 3p-script noop\nbehind-the-scene * 3p-frame noop\nbehind-the-scene * image noop\nbehind-the-scene * 3p noop\n* * 3p-script block\n* * 3p-frame block\ngithub.com * 3p-script noop\nchatgpt.com * 3p-script noop\nduckduckgo.com * 3p-script noop\nwww.reddit.com * 3p-script noop",
+  "dynamicFilteringString": "behind-the-scene * * noop\nbehind-the-scene * inline-script noop\nbehind-the-scene * 1p-script noop\nbehind-the-scene * 3p-script noop\nbehind-the-scene * 3p-frame noop\nbehind-the-scene * image noop\nbehind-the-scene * 3p noop\ngithub.com * 3p-script noop\nchatgpt.com * 3p-script noop\nduckduckgo.com * 3p-script noop\nnewtab.about-scheme * 3p-script noop\n2baab069-10d1-49c2-b794-3240bd7299af.moz-extension-scheme * 3p-script noop\nwww.reddit.com * 3p-script noop\naccount.bilibili.com * 3p-script noop\nspace.bilibili.com * 3p-script noop\nmail.qq.com * 3p-script noop\npassport.bilibili.com * 3p-script noop\nchromewebstore.google.com * 3p-script noop\nopen.spotify.com * 3p-script noop\naccounts.spotify.com * 3p-script noop\nwww.last.fm * 3p-script noop\ntool.chinaz.com * 3p-script noop\ndash.cloudflare.com * 3p-script noop\noutlook.live.com * 3p-script noop\nlogin.live.com * 3p-script noop\nwww.adobe.com * 3p-script noop\nwww.facebook.com * 3p-script noop\nwww.instagram.com * 3p-script noop\naccountscenter.facebook.com * 3p-script noop\nifttt.com * 3p-script noop\nosu.ppy.sh * 3p-script noop\nsteamcommunity.com * 3p-script noop\nx.com * 3p-script noop\nx.com * 3p-frame noop\n* * 3p-frame block\nfonts.google.com * 3p-frame noop",
   "urlFilteringString": "",
-  "hostnameSwitchesString": "no-large-media: behind-the-scene false\nno-csp-reports: * true",
+  "hostnameSwitchesString": "no-large-media: behind-the-scene false\nno-csp-reports: * true\nno-strict-blocking: www.facebook.com true\nno-strict-blocking: wl.spotify.com true",
   "userFilters": ""
 }
