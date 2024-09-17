@@ -26,7 +26,7 @@ local config = {
 			family = "Fira Code",
 			harfbuzz_features = { "cv01=1", "ss05=1", "ss10=1", "ss03=1", "cv02=1", "ss01=1", "zero=1" },
 		},
-        -------- The quick brown fox jumps over the lazy dog
+		-------- The quick brown fox jumps over the lazy dog
 		{
 			family = "Hiragino Sans StdN",
 		},
@@ -43,7 +43,7 @@ local config = {
 					style = "Italic",
 					harfbuzz_features = { "calt=1", "clig=1", "liga=1", "ss01=1" },
 				},
-                -------- 東国三力今書鷹酬鬱愛袋永
+				-------- 東国三力今書鷹酬鬱愛袋永
 				{
 					family = "Zhuque Fangsong (technical preview)",
 					style = "Italic",
@@ -52,15 +52,15 @@ local config = {
 					family = "LXGW WenKai Mono",
 					style = "Italic",
 				},
-		        {
-		        	family = "Noto Serif CJK SC",
+				{
+					family = "Noto Serif CJK SC",
 					style = "Italic",
-		        },
+				},
 			}),
 		},
 	},
 	enable_wayland = true,
-	font_size = 16.0,
+	-- font_size = 16.0,
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 24,
 	initial_cols = 80,
