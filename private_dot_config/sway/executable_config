@@ -14,7 +14,7 @@ set $down j
 set $up k
 set $right l
 # Your preferred terminal emulator
-set $term kitty
+set $term 'flatpak run org.wezfurlong.wezterm'
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
@@ -27,12 +27,7 @@ include /etc/sway/config-vars.d/*
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
 output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
-#
-# Example configuration:
-#
-#   output HDMI-A-1 resolution 1920x1080 position 1920,0
-#
-# You can get the names of your outputs by running: swaymsg -t get_outputs
+
 exec waybar
 exec mako
 exec /usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1
@@ -40,7 +35,10 @@ exec nm-applet --indicator
 exec blueman-applet
 exec fcitx5
 exec playerctld && mpris-proxy
-exec /home/$USER/script/autostart
+exec 'flatpak run org.keepassxc.KeePassXC'
+exec syncthing
+exec kdeconnect-indicator
+exec gamemoded -d
 
 default_border 		        pixel 	2
 titlebar_border_thickness 	2
@@ -69,19 +67,10 @@ client.urgent           #A4B9EF     #575268     #EBDDAA     #DADAE8     #EBDDAA
 # your displays after another 300 seconds, and turn your screens back on when
 # resumed. It will also lock your screen before your computer goes to sleep.
 
-### Input configuration
-#
-# Example configuration:
-#
-#   input "2:14:SynPS/2_Synaptics_TouchPad" {
-#       dwt enabled
-#       tap enabled
-#       natural_scroll enabled
-#       middle_emulation enabled
-#   }
-#
-# You can get the names of your inputs by running: swaymsg -t get_inputs
-# Read `man 5 sway-input` for more information about this section.
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+}
 
 ### Key bindings
 #
