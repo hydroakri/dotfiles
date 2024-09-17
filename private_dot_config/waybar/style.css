@@ -1,5 +1,3 @@
-/* @import url("/home/hydroakri/.cache/wal/colors-custom-gtk3.css"); */
-
 * {
   font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC";
   /* font-size: 16px; */
@@ -15,8 +13,8 @@ window#waybar {
 }
 
 window#waybar > box {
-    /* background-color: rgba(239,241,245, 0.8); */
-    background-color: @backgroundAlpha;
+  /* background-color: rgba(239,241,245, 0.8); */
+  background-color: @backgroundAlpha;
   /* border-radius: 9px; */
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   /* box-shadow: 1px 1px 1px 1px #101010; */
@@ -80,7 +78,7 @@ button:hover {
   margin-right: 0;
 }
 
-#gamemode{
+#gamemode {
   /* background-color: #e06c85; */
   /* border-bottom: 7px solid #d74262; */
 }
