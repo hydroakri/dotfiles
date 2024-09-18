@@ -67,6 +67,7 @@ net.core.bpf_jit_harden=2
 net.core.default_qdisc=cake
 net.ipv4.tcp_congestion_control=bbr2
 
+net.core.somaxconn = 256
 net.core.netdev_max_backlog = 16384
 net.core.rmem_default = 1048576
 net.core.rmem_max = 16777216
