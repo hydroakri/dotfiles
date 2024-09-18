@@ -277,25 +277,37 @@ include-toplevel: "/etc/unbound/unbound.conf.d/*.conf"
 server:
     qname-minimisation: yes
     interface: 0.0.0.0
+    port:5353
     access-control: 0.0.0.0/24 allow
-    num-threads: 8
-    num-queries-per-thread: 4096
-    verbosity: 4
-    val-log-level: 2
-    so-rcvbuf: 8m
-    so-sndbuf: 8m
-    so-reuseport: yes
     cache-max-ttl: 3600
-    outgoing-num-tcp: 1024
-    incoming-num-tcp: 1024
     edns-buffer-size: 1480
     do-ip4: yes
     do-ip6: no
     do-udp: yes
     do-tcp: yes
     fast-server-permil: 618
+    fast-server-num: 300
     harden-dnssec-stripped: yes
     tls-cert-bundle: /etc/ssl/certs/ca-certificates.crt
+    # Optimize
+    # use all CPUs
+    num-threads: 8
+    # power of 2 close to num-threads
+    msg-cache-slabs: 64
+    rrset-cache-slabs: 64
+    infra-cache-slabs: 64
+    key-cache-slabs: 64
+    # more cache memory, rrset=msg*2
+    rrset-cache-size: 100m
+    msg-cache-size: 50m
+    # more outgoing connections
+    # depends on number of cores: 1024/cores - 50
+    outgoing-range: 78
+    # Larger socket buffer.  OS may need config.
+    so-rcvbuf: 4m
+    so-sndbuf: 4m
+    # Faster UDP with multithreading (only on Linux).
+    so-reuseport: yes
 
 remote-control:
     # allows controling unbound using "unbound-control"
