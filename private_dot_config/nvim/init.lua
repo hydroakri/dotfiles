@@ -443,7 +443,7 @@ require("lazy").setup({
 			-- LINTER
 			{
 				"mfussenegger/nvim-lint",
-				event = "LazyFile",
+				event = "BufReadPost",
 				config = function()
 					require("lint").linters_by_ft = {
 						lua = { "luacheck" },
