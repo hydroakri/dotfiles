@@ -1,6 +1,7 @@
 # Use custom format:
 # format="$username@$hostname $directory$character$git_branch"
-#
+palette = 'flexoki'
+
 # [character]
 #
 # [directory]
@@ -18,6 +19,8 @@
 # disabled = false
 # show_always = true
 
+
+
 [character]
 vimcmd_symbol = '[](bold green)'
 
@@ -28,3 +31,22 @@ bash_indicator = '󱆃'
 powershell_indicator = ''
 style = 'cyan bold'
 disabled = false
+
+[palettes.flexoki]
+black = "#100F0F"
+red = "#D14D41"
+green = "#879A39"
+yellow = "#D0A215"
+blue = "#4385BE"
+magenta = "#CE5D97"
+cyan = "#3AA99F"
+white = "#CECDC3"
+bright-black = "#100F0F"
+bright-red = "#AF3029"
+bright-green = "#66800B"
+bright-yellow = "#AD8301"
+bright-blue = "#205EA6"
+bright-magenta = "#A02F6F"
+bright-cyan = "#24837B"
+bright-white = "#FFFCF0"
+

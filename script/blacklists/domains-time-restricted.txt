@@ -1,0 +1,3 @@
+*.twitter.com @work
+*.facebook.com @work
+*.youtube.com @Time-To-Sleep
