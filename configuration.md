@@ -317,3 +317,76 @@ forward-zone:
     name: "."
     forward-tls-upstream: yes
 ```
+
+> /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+
+```
+# Empty listen_addresses to use systemd socket activation
+listen_addresses = []
+block_ipv6 = true
+lb_strategy = 'p2'
+server_names = [
+'cloudflare',
+'cloudflare-family',
+'cloudflare-security',
+'mullvad-adblock-doh',
+'mullvad-all-doh',
+'mullvad-base-doh',
+'mullvad-doh',
+'mullvad-extend-doh',
+'mullvad-family-doh',
+'nextdns',
+'nextdns-ultralow',
+'controld-block-malware',
+'controld-block-malware-ad',
+'controld-block-malware-ad-social',
+'controld-family-friendly',
+'controld-uncensored',
+'controld-unfiltered',
+'dns0',
+'dns0-kid',
+'dns0-unfiltered',
+'adguard-dns-doh',
+'adguard-dns-family-doh',
+'adguard-dns-unfiltered-doh',
+'quad9-dnscrypt-ip4-filter-ecs-pri',
+'quad9-dnscrypt-ip4-filter-pri',
+'quad9-dnscrypt-ip4-nofilter-ecs-pri',
+'quad9-dnscrypt-ip4-nofilter-pri',
+'quad9-doh-ip4-port443-filter-ecs-pri',
+'quad9-doh-ip4-port443-filter-pri',
+'quad9-doh-ip4-port443-nofilter-ecs-pri',
+'quad9-doh-ip4-port443-nofilter-pri',
+'quad9-doh-ip4-port5053-filter-ecs-pri',
+'quad9-doh-ip4-port5053-filter-pri',
+'quad9-doh-ip4-port5053-nofilter-ecs-pri',
+'quad9-doh-ip4-port5053-nofilter-pri',
+'rethinkdns-doh',
+'blahdns-de-dnscrypt-v4',
+'blahdns-de-doh',
+'blahdns-sg-dnscrypt-v4',
+'blahdns-sg-doh',
+'uncensoreddns-dk-ipv4',
+'uncensoreddns-ipv4',
+'cleanbrowsing-adult-doh',
+'cleanbrowsing-family-doh',
+'cleanbrowsing-security-doh',
+]
+
+[query_log]
+  file = '/var/log/dnscrypt-proxy/query.log'
+
+[nx_log]
+  file = '/var/log/dnscrypt-proxy/nx.log'
+
+[sources]
+  [sources.'public-resolvers']
+  url = 'https://download.dnscrypt.info/resolvers-list/v2/public-resolvers.md'
+  cache_file = '/var/cache/dnscrypt-proxy/public-resolvers.md'
+  minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+  refresh_delay = 72
+  prefix = ''
+
+[blocked_names]
+  blocked_names_file = '/var/cache/dnscrypt-proxy/blocklist.txt'
+```
