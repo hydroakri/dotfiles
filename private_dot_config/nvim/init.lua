@@ -6,7 +6,6 @@ if not vim.loop.fs_stat(data .. "/lazy/lazy.nvim") then
 		"git",
 		"clone",
 		"--filter=blob:none",
-		"--depth=1",
 		"--recursive",
 		"https://github.com/folke/lazy.nvim.git",
 		"--branch=stable", -- latest stable release
@@ -545,21 +544,89 @@ require("lazy").setup({
 
 			-- MULTICURSORS
 			{
-				"smoka7/multicursors.nvim",
-				event = "BufReadPost",
-				dependencies = {
-					"smoka7/hydra.nvim",
-				},
-				opts = {},
-				cmd = { "MCstart", "MCvisual", "MCclear", "MCpattern", "MCvisualPattern", "MCunderCursor" },
-				keys = {
-					{
-						mode = { "v", "n" },
-						"<Leader>m",
-						"<cmd>MCstart<cr>",
-						desc = "Multi selection",
-					},
-				},
+				"jake-stewart/multicursor.nvim",
+				event = "BufEnter",
+				branch = "1.0",
+				config = function()
+					local mc = require("multicursor-nvim")
+
+					mc.setup()
+
+					-- Add cursors above/below the main cursor.
+					vim.keymap.set({ "n", "v" }, "<up>", function()
+						mc.addCursor("k")
+					end)
+					vim.keymap.set({ "n", "v" }, "<down>", function()
+						mc.addCursor("j")
+					end)
+
+					-- Add a cursor and jump to the next word under cursor.
+					vim.keymap.set({ "n", "v" }, "<c-n>", function()
+						mc.addCursor("*")
+					end)
+
+					-- Jump to the next word under cursor but do not add a cursor.
+					vim.keymap.set({ "n", "v" }, "<c-s>", function()
+						mc.skipCursor("*")
+					end)
+
+					-- Rotate the main cursor.
+					vim.keymap.set({ "n", "v" }, "<left>", mc.nextCursor)
+					vim.keymap.set({ "n", "v" }, "<right>", mc.prevCursor)
+
+					-- Delete the main cursor.
+					vim.keymap.set({ "n", "v" }, "<leader>x", mc.deleteCursor)
+
+					-- Add and remove cursors with control + left click.
+					vim.keymap.set("n", "<c-leftmouse>", mc.handleMouse)
+
+					vim.keymap.set({ "n", "v" }, "<c-q>", function()
+						if mc.cursorsEnabled() then
+							-- Stop other cursors from moving.
+							-- This allows you to reposition the main cursor.
+							mc.disableCursors()
+						else
+							mc.addCursor()
+						end
+					end)
+
+					vim.keymap.set("n", "<esc>", function()
+						if not mc.cursorsEnabled() then
+							mc.enableCursors()
+						elseif mc.hasCursors() then
+							mc.clearCursors()
+						else
+							-- Default <esc> handler.
+						end
+					end)
+
+					-- Align cursor columns.
+					vim.keymap.set("n", "<leader>a", mc.alignCursors)
+
+					-- Split visual selections by regex.
+					vim.keymap.set("v", "S", mc.splitCursors)
+
+					-- Append/insert for each line of visual selections.
+					vim.keymap.set("v", "I", mc.insertVisual)
+					vim.keymap.set("v", "A", mc.appendVisual)
+
+					-- match new cursors within visual selections by regex.
+					vim.keymap.set("v", "M", mc.matchCursors)
+
+					-- Rotate visual selection contents.
+					vim.keymap.set("v", "<leader>t", function()
+						mc.transposeCursors(1)
+					end)
+					vim.keymap.set("v", "<leader>T", function()
+						mc.transposeCursors(-1)
+					end)
+
+					-- Customize how cursors look.
+					vim.api.nvim_set_hl(0, "MultiCursorCursor", { link = "Cursor" })
+					vim.api.nvim_set_hl(0, "MultiCursorVisual", { link = "Visual" })
+					vim.api.nvim_set_hl(0, "MultiCursorDisabledCursor", { link = "Visual" })
+					vim.api.nvim_set_hl(0, "MultiCursorDisabledVisual", { link = "Visual" })
+				end,
 			},
 
 			-- COMMENT
@@ -790,7 +857,7 @@ require("lazy").setup({
 					end
 					require("ufo").setup({
 						fold_virt_text_handler = handler,
-						vim.cmd("hi Folded guibg=bg"),
+						-- vim.cmd("hi Folded guibg=bg"),
 					})
 				end,
 			},
@@ -1354,28 +1421,28 @@ require("lazy").setup({
 					},
 					mocha = {
 						text = "#FFFCF0",
-						subtext1 = "#F2F0E5",
-						subtext0 = "#E6E4D9",
-						overlay2 = "#DAD8CE",
-						overlay1 = "#CECDC3",
-						overlay0 = "#B7B5AC",
-						surface2 = "#878580",
-						surface1 = "#6F6E69",
-						surface0 = "#575653",
+						subtext1 = "#E6E4D9",
+						subtext0 = "#CECDC3",
+						overlay2 = "#B7B5AC",
+						overlay1 = "#878580",
+						overlay0 = "#6F6E69",
+						surface2 = "#575653",
+						surface1 = "#403E3C",
+						surface0 = "#282726",
 						base = "#100F0F",
 						mantle = "#1C1B1A",
 						crust = "#282726",
 					},
 					latte = {
 						text = "#100F0F",
-						subtext1 = "#1C1B1A",
-						subtext0 = "#282726",
-						overlay2 = "#343331",
-						overlay1 = "#403E3C",
-						overlay0 = "#575653",
-						surface2 = "#6F6E69",
-						surface1 = "#878580",
-						surface0 = "#B7B5AC",
+						subtext1 = "#343331",
+						subtext0 = "#6F6E69",
+						overlay2 = "#878580",
+						overlay1 = "#B7B5AC",
+						overlay0 = "#CECDC3",
+						surface2 = "#DAD8CE",
+						surface1 = "#E6E4D9",
+						surface0 = "#F2F0E5",
 						base = "#FFFCF0",
 						mantle = "#F2F0E5",
 						crust = "#E6E4D9",
