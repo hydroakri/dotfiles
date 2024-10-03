@@ -3,10 +3,10 @@ current_hour=$(date +"%H")
 qtlight='~\/.config\/qt6ct\/colors\/flexoki-light.conf'
 qtdark='~\/.config\/qt6ct\/colors\/flexoki-dark.conf'
 
-if [ "$current_hour" -ge 6 ] && [ "$current_hour" -lt 18 ]; then
+if [ "$current_hour" -ge 22 ] && [ "$current_hour" -lt 12 ]; then
     plasma-apply-colorscheme Flexoki-Light
     # wal -l -i $current_paper                  # if day light mode
-    wal --theme ~/.config/wal/colorschemes/light/flexoki-light.json
+    # wal --theme ~/.config/wal/colorschemes/light/flexoki-light.json
     gsettings set org.gnome.desktop.interface color-scheme prefer-light
     # gsettings set org.gnome.desktop.interface gtk-theme Adwaita
     gsettings set org.gnome.desktop.interface gtk-theme Adw-gtk3
@@ -19,7 +19,7 @@ if [ "$current_hour" -ge 6 ] && [ "$current_hour" -lt 18 ]; then
 else
     plasma-apply-colorscheme Flexoki-Dark
     # wal -i $current_paper                     # if night dark mode
-    wal --theme ~/.config/wal/colorschemes/dark/flexoki-dark.json
+    # wal --theme ~/.config/wal/colorschemes/dark/flexoki-dark.json
     gsettings set org.gnome.desktop.interface color-scheme prefer-dark
     # gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark
     gsettings set org.gnome.desktop.interface gtk-theme Adw-gtk3-dark
@@ -30,7 +30,7 @@ else
     sed -i '/^icon_theme/s/=.*/=Papirus-Dark/' ~/.config/qt6ct/qt6ct.conf
     sed -i "/^color_scheme_path/s|=.*|=$qtdark|" ~/.config/qt6ct/qt6ct.conf
 fi
-. "${HOME}/.cache/wal/colors.sh"
+# . "${HOME}/.cache/wal/colors.sh"
 ############################# change mako theme ################################
 sed -i "0,/^background-color.*/{s//background-color=$background/}" ~/.config/mako/config
 sed -i "0,/^text-color.*/{s//text-color=$foreground/}" ~/.config/mako/config

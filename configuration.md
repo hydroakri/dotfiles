@@ -6,7 +6,7 @@
 git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
-> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload`
+> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload` `dnscrypt-proxy`
 
 ```shell
 sudo systemctl daemon-reload
