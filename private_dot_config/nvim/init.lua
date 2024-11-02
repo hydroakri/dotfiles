@@ -93,6 +93,7 @@ vim.opt.guifont = { "CaskaydiaCove NF", ":h12" }
 
 -- AutoCmds
 -- save session before quit
+vim.cmd("autocmd VimLeave * :!mkdir -p ~/.local/share/nvim/sessions/")
 vim.cmd("autocmd VimLeave * :mksession!" .. data .. "/sessions/latest.vim")
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 	callback = function()
@@ -445,7 +446,7 @@ require("lazy").setup({
 				event = "BufReadPost",
 				config = function()
 					require("lint").linters_by_ft = {
-						lua = { "luacheck" },
+						lua = { "selene" },
 						markdown = { "write_good" },
 						bash = { "shellcheck" },
 						c = { "trivy" },
@@ -545,7 +546,7 @@ require("lazy").setup({
 			-- MULTICURSORS
 			{
 				"jake-stewart/multicursor.nvim",
-				event = "BufEnter",
+				event = "BufReadPost",
 				branch = "1.0",
 				config = function()
 					local mc = require("multicursor-nvim")
@@ -868,13 +869,38 @@ require("lazy").setup({
 			-- CODERUNNER
 			{ "michaelb/sniprun", build = "sh ./install.sh", cmd = "SnipRun" },
 
+			-- ORGMODE
+			{
+				"nvim-neorg/neorg",
+				lazy = false,
+				version = "*",
+				config = true,
+			},
+			{
+				"Zeioth/markmap.nvim",
+				ft = { "md", "markdown" },
+				build = "yarn global add markmap-cli",
+				cmd = { "MarkmapOpen", "MarkmapSave", "MarkmapWatch", "MarkmapWatchStop" },
+				opts = {
+					html_output = "/tmp/markmap.html", -- (default) Setting a empty string "" here means: [Current buffer path].html
+					hide_toolbar = false, -- (default)
+					grace_period = 3600000, -- (default) Stops markmap watch after 60 minutes. Set it to 0 to disable the grace_period.
+				},
+				config = function(_, opts)
+					require("markmap").setup(opts)
+				end,
+			},
+
 			-- MARKDOWN PREVIEW
 			{
-				"iamcco/markdown-preview.nvim",
+				"MeanderingProgrammer/render-markdown.nvim",
+				-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+				-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+				-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+				---@module 'render-markdown'
+				---@type render.md.UserConfig
+				opts = {},
 				ft = { "markdown", "md" },
-				build = function()
-					vim.fn["mkdp#util#install"]()
-				end,
 			},
 
 			-- JAVA_lsp_dap_support
