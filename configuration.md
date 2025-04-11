@@ -6,7 +6,7 @@
 git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
-> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload` `dnscrypt-proxy`
+> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload` `dnscrypt-proxy` 
 
 ```shell
 sudo systemctl daemon-reload
@@ -43,6 +43,12 @@ nvidia
 nvidia_modeset
 nvidia_uvm
 nvidia_drm
+```
+or  
+> /etc/dracut.conf.d/modules.conf
+`sudo dracut -f`
+```conf
+add_drivers+="amdgpu nvidia nvidia_modeset nvidia_uvm nvidia_drm"
 ```
 
 > /etc/modules-load.d/mods.conf
@@ -167,7 +173,7 @@ XMODIFIERS=@im=fcitx
 
 ```
 <type>  <options>
-ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc
+ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc,nofail
 btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
 # WARNING: some distro do not support ntfs, add to fstab can boot into emergency shell
 ```
@@ -319,7 +325,7 @@ forward-zone:
 ```
 
 > /etc/dnscrypt-proxy/dnscrypt-proxy.toml
-
+Please DO don't forget to enable socket
 ```
 # Empty listen_addresses to use systemd socket activation
 listen_addresses = []
@@ -362,15 +368,6 @@ server_names = [
 'quad9-doh-ip4-port5053-nofilter-ecs-pri',
 'quad9-doh-ip4-port5053-nofilter-pri',
 'rethinkdns-doh',
-'blahdns-de-dnscrypt-v4',
-'blahdns-de-doh',
-'blahdns-sg-dnscrypt-v4',
-'blahdns-sg-doh',
-'uncensoreddns-dk-ipv4',
-'uncensoreddns-ipv4',
-'cleanbrowsing-adult-doh',
-'cleanbrowsing-family-doh',
-'cleanbrowsing-security-doh',
 ]
 
 [query_log]
@@ -381,7 +378,7 @@ server_names = [
 
 [sources]
   [sources.'public-resolvers']
-  url = 'https://download.dnscrypt.info/resolvers-list/v2/public-resolvers.md'
+  url = 'https://download.dnscrypt.info/dnscrypt-resolvers/v3/public-resolvers.md'
   cache_file = '/var/cache/dnscrypt-proxy/public-resolvers.md'
   minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
   refresh_delay = 72

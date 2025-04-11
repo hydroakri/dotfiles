@@ -19,7 +19,8 @@ input {
 }
 
 output "eDP-1" {
-    scale 1.0
+    scale 1.25
+    background-color "#E6E6FA"
 }
 
 layout {
@@ -28,20 +29,23 @@ layout {
     preset-column-widths {
         proportion 0.33333
         proportion 0.5
-        proportion 0.66667
+        proportion 0.618
     }
+    preset-window-heights {
+        proportion 0.5
+        proportion 0.618
+        proportion 1.0
+    }
+    // default-column-width { proportion 0.618; }
+    default-column-width {}
 
-    default-column-width { proportion 0.5; }
     focus-ring {
         width 4
-        active-gradient from="#f5a9b8" to="#5bcefa" angle=45
-        inactive-gradient from="#5bcefa" to="#f5a9b8" angle=45 relative-to="workspace-view"
+        active-gradient from="#FA8FAD" to="#FFF8E7" angle=90
+        inactive-gradient from="#CCCCFF" to="#99D9EA" angle=90
     }
 
-    // You can also add a border. It's similar to the focus ring, but always visible.
     border {
-        // The settings are the same as for the focus ring.
-        // If you enable the border, you probably want to disable the focus ring.
         off
 
         width 4
@@ -52,11 +56,11 @@ layout {
         // inactive-gradient from="#505050" to="#808080" angle=45 relative-to="workspace-view"
     }
 
-    // Struts shrink the area occupied by windows, similarly to layer-shell panels.
-    // You can think of them as a kind of outer gaps. They are set in logical pixels.
-    // Left and right struts will cause the next window to the side to always be visible.
-    // Top and bottom struts will simply add outer gaps in addition to the area occupied by
-    // layer-shell panels and regular gaps.
+    insert-hint {
+        color "#ffc87f80"
+        gradient from="#ffbb6680" to="#ffc88080" angle=45 relative-to="workspace-view"
+    }
+
     struts {
         // left 64
         // right 64
@@ -66,11 +70,12 @@ layout {
 }
 
 environment {
-    XDG_SESSION_TYPE "wayland"
     GBM_BACKEND "nvidia-drm"
     __GLX_VENDOR_LIBRARY_NAME "nvidia"
     WLR_NO_HARDWARE_CURSORS "1"
     __GL_SYNC_TO_VBLANK "1"
+
+    XDG_SESSION_TYPE "wayland"
     QT_QPA_PLATFORM "wayland"
     GDK_BACKEND "wayland"
     SDL_VIDEODRIVER "wayland"
@@ -78,18 +83,23 @@ environment {
     XDG_SESSION_TYPE "wayland"
     XDG_CURRENT_DESKTOP "Hyprland"
     XDG_SESSION_DESKTOP "Hyprland"
-    QT_QPA_PLATFORMTHEME "qt6ct"
+
     GTK_IM_MODULE "wayland"
     QT_IM_MODULE "fcitx"
     XMODIFIERS "@im=fcitx"
     SDL_IM_MODULE "fcitx"
     GLFW_IM_MODULE "ibus"
+
+    QT_QPA_PLATFORMTHEME "qt6ct"
     XDG_MENU_PREFIX "plasma-"
     EDITOR "nvim"
     VISUAL "nvim"
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+
     QT_AUTO_SCREEN_SCALE_FACTOR "1.5"
     GDK_SCALE "1.5"
     STEAM_FORCE_DESKTOPUI_SCALING "1.5"
+    DISPLAY ":3"
 }
 
 cursor {
@@ -100,81 +110,53 @@ cursor {
 
 spawn-at-startup "waybar"
 spawn-at-startup "mako"
-spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+// spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "blueman-applet"
 spawn-at-startup "fcitx5"
 spawn-at-startup "playerctld"
 spawn-at-startup "mpris-proxy"
-spawn-at-startup "hypridle"
-spawn-at-startup "/home/$USER/utils/autostart"
-spawn-at-startup "~/utils/chgwllpr.sh"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
-spawn-at-startup "Xwayland" ":11" "-eglstream"
-spawn-at-startup "DISPLAY=:11" "openbox"
+spawn-at-startup "xwayland-satellite" ":3"
+spawn-at-startup "~/utils/screen-locker.sh"
 
-// Add lines like this to spawn processes at startup.
-// Note that running niri as a session supports xdg-desktop-autostart,
-// which may be more convenient to use.
-// spawn-at-startup "alacritty" "-e" "fish"
-
-// Uncomment this line to ask the clients to omit their client-side decorations if possible.
-// If the client will specifically ask for CSD, the request will be honored.
-// Additionally, clients will be informed that they are tiled, removing some rounded corners.
-// prefer-no-csd
-
-// You can change the path where screenshots are saved.
-// A ~ at the front will be expanded to the home directory.
-// The path is formatted with strftime(3) to give you the screenshot date and time.
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
-// You can also set this to null to disable saving screenshots to disk.
-// screenshot-path null
-
-// Animation settings.
-// The wiki explains how to configure individual animations:
-// https://github.com/YaLTeR/niri/wiki/Configuration:-Animations
 animations {
-    // Uncomment to turn off all animations.
-    // off
-
-    // Slow down all animations by this factor. Values below 1 speed them up instead.
-    // slowdown 3.0
 }
 
-// Window rules let you adjust behavior for individual windows.
-// Find more information on the wiki:
-// https://github.com/YaLTeR/niri/wiki/Configuration:-Window-Rules
-
-// Work around WezTerm's initial configure bug
-// by setting an empty default-column-width.
 window-rule {
-    // This regular expression is intentionally made as specific as possible,
-    // since this is the default config, and we want no false positives.
-    // You can get away with just app-id="wezterm" if you want.
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
     default-column-width {}
 }
 
-// Example: block out two password managers from screen capture.
-// (This example rule is commented out with a "/-" in front.)
-/-window-rule {
+window-rule {
     match app-id=r#"^org\.keepassxc\.KeePassXC$"#
     match app-id=r#"^org\.gnome\.World\.Secrets$"#
 
-    block-out-from "screen-capture"
+    block-out-from "screencast"
+}
 
-    // Use this instead if you want them visible on third-party screenshot tools.
-    // block-out-from "screencast"
+window-rule {
+    match app-id="Rofi"
+    match app-id="nm-tray"
+
+    open-floating true
+}
+
+layer-rule {
+    match namespace="^notifications$"
+
+    block-out-from "screencast"
 }
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
-    // Suggested binds for running programs: terminal, app launcher, screen locker.
-    Mod+T { spawn "kitty"; }
+    Mod+Return { spawn "flatpak" "run" "org.wezfurlong.wezterm"; }
     Mod+E { spawn "dolphin"; }
-    Alt+Space { spawn "wofi"; }
+    Alt+Space { spawn "~/utils/rofi.sh"; }
     Super+Alt+L { spawn "swaylock"; }
 
     // You can also use a shell:
@@ -251,8 +233,8 @@ binds {
     Mod+P              { focus-workspace-up; }
     Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    Mod+Ctrl+U         { move-column-to-workspace-down; }
-    Mod+Ctrl+I         { move-column-to-workspace-up; }
+    Mod+Ctrl+N         { move-column-to-workspace-down; }
+    Mod+Ctrl+P         { move-column-to-workspace-up; }
 
     // Alternatively, there are commands to move just a single window:
     // Mod+Ctrl+Page_Down { move-window-to-workspace-down; }
@@ -336,6 +318,7 @@ binds {
     // Mod+BracketRight { consume-or-expel-window-right; }
 
     Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-window-height; }
     Mod+F { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
     Mod+C { center-column; }
