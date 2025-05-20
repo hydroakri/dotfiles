@@ -48,7 +48,7 @@ or
 > /etc/dracut.conf.d/modules.conf
 `sudo dracut -f`
 ```conf
-add_drivers+="amdgpu nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+add_drivers+=" amdgpu nvidia nvidia_modeset nvidia_uvm nvidia_drm "
 ```
 
 > /etc/modules-load.d/mods.conf
@@ -173,6 +173,7 @@ XMODIFIERS=@im=fcitx
 
 ```
 <type>  <options>
+ntfs-3g nofail,users,uid=1000,gid=1000,rw,exec,umask=000,prealloc,windows_names,noatime,allow_other,async,big_writes
 ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc,nofail
 btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
 # WARNING: some distro do not support ntfs, add to fstab can boot into emergency shell
@@ -196,7 +197,7 @@ deb https://deb.debian.org/debian/ trixie-backports main contrib non-free non-fr
 deb http://deb.debian.org/debian-security/ trixie-security main contrib non-free non-free-firmware
 ```
 
-## Another important thing
+## Package Manager etc.
 
 ```
 pacman -Qqe > pkgs.txt
@@ -209,6 +210,18 @@ xargs -a pkgs.txt pacman -S
 xargs -a flatpak.txt flatpak install -y
 xargs -a debs.txt nala install -y
 xargs -a brew.txt brew install
+```
+
+## Flatpak Override
+If you want Flatpak application to use discrete GPU you need to add `--device=dri` and necessary variable to override.
+```
+flatpak override \
+  --user \
+  --device=dri \
+  --filesystem=~/steamlib \
+  --env=__NV_PRIME_RENDER_OFFLOAD=1 \
+  --env=__GLX_VENDOR_LIBRARY_NAME=nvidia \
+  com.valvesoftware.Steam
 ```
 
 # Secure boot

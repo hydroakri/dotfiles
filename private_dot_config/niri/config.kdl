@@ -41,8 +41,8 @@ layout {
 
     focus-ring {
         width 4
-        active-gradient from="#FA8FAD" to="#FFF8E7" angle=90
-        inactive-gradient from="#CCCCFF" to="#99D9EA" angle=90
+        active-gradient from="#FA8FAD" to="#99D9EA" angle=90
+        inactive-gradient from="#CCCCFF" to="#FFF8E7" angle=90
     }
 
     border {
@@ -75,14 +75,14 @@ environment {
     WLR_NO_HARDWARE_CURSORS "1"
     __GL_SYNC_TO_VBLANK "1"
 
-    XDG_SESSION_TYPE "wayland"
-    QT_QPA_PLATFORM "wayland"
-    GDK_BACKEND "wayland"
-    SDL_VIDEODRIVER "wayland"
-    CLUTTER_BACKEND "wayland"
-    XDG_SESSION_TYPE "wayland"
-    XDG_CURRENT_DESKTOP "Hyprland"
-    XDG_SESSION_DESKTOP "Hyprland"
+    // XDG_SESSION_TYPE "wayland"
+    // QT_QPA_PLATFORM "wayland"
+    // GDK_BACKEND "wayland"
+    // SDL_VIDEODRIVER "wayland"
+    // CLUTTER_BACKEND "wayland"
+    // XDG_SESSION_TYPE "wayland"
+    // XDG_CURRENT_DESKTOP "niri"
+    // XDG_SESSION_DESKTOP "niri"
 
     GTK_IM_MODULE "wayland"
     QT_IM_MODULE "fcitx"
@@ -90,16 +90,16 @@ environment {
     SDL_IM_MODULE "fcitx"
     GLFW_IM_MODULE "ibus"
 
-    QT_QPA_PLATFORMTHEME "qt6ct"
-    XDG_MENU_PREFIX "plasma-"
+    // QT_QPA_PLATFORMTHEME "qt6ct"
+    // XDG_MENU_PREFIX "plasma-"
     EDITOR "nvim"
     VISUAL "nvim"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
 
-    QT_AUTO_SCREEN_SCALE_FACTOR "1.5"
-    GDK_SCALE "1.5"
-    STEAM_FORCE_DESKTOPUI_SCALING "1.5"
-    DISPLAY ":3"
+    // QT_AUTO_SCREEN_SCALE_FACTOR "1.5"
+    // GDK_SCALE "1.5"
+    // STEAM_FORCE_DESKTOPUI_SCALING "1.5"
+    // DISPLAY ":3"
 }
 
 cursor {
@@ -118,8 +118,9 @@ spawn-at-startup "fcitx5"
 spawn-at-startup "playerctld"
 spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
-spawn-at-startup "xwayland-satellite" ":3"
 spawn-at-startup "~/utils/screen-locker.sh"
+spawn-at-startup "xwayland-satellite" ":3"
+spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 

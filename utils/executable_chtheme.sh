@@ -3,7 +3,7 @@ current_hour=$(date +"%H")
 qtlight='~\/.config\/qt6ct\/colors\/flexoki-light.conf'
 qtdark='~\/.config\/qt6ct\/colors\/flexoki-dark.conf'
 
-if [ "$current_hour" -ge 22 ] && [ "$current_hour" -lt 12 ]; then
+if [ "$current_hour" -ge 6 ] && [ "$current_hour" -lt 18 ]; then
     plasma-apply-colorscheme Flexoki-Light
     # wal -l -i $current_paper                  # if day light mode
     # wal --theme ~/.config/wal/colorschemes/light/flexoki-light.json
