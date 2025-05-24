@@ -4,57 +4,126 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 {
-  imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
-    ];
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "usbhid" "usb_storage" "sd_mod" "sdhci_pci" ];
+  boot.initrd.availableKernelModules =
+    [ "nvme" "xhci_pci" "usbhid" "usb_storage" "sd_mod" "sdhci_pci" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/5652-348E";
-      fsType = "vfat";
-      options = [ "fmask=0077" "dmask=0077" ];
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/5652-348E";
+    fsType = "vfat";
+    options = [ "fmask=0077" "dmask=0077" ];
+  };
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-      fsType = "btrfs";
-      options = [ "subvol=@" "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=120" "compress=zstd:1" "discard=async" ];
-    };
+  fileSystems."/" = {
+    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
+    fsType = "btrfs";
+    options = [
+      "subvol=@"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+    ];
+  };
 
-  fileSystems."/nix" =
-    { device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-      fsType = "btrfs";
-      options = [ "subvol=@nix" "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=120" "compress=zstd:1" "discard=async" "autodefrag" ];
-    };
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
+    fsType = "btrfs";
+    options = [
+      "subvol=@nix"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+      "autodefrag"
+    ];
+  };
 
-  fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-      fsType = "btrfs";
-      options = [ "subvol=@home" "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=120" "compress=zstd:1" "discard=async" ];
-    };
+  fileSystems."/home" = {
+    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
+    fsType = "btrfs";
+    options = [
+      "subvol=@home"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+    ];
+  };
 
-  fileSystems."/var/log" =
-    { device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-      fsType = "btrfs";
-      options = [ "subvol=@log" "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=120" "compress=zstd:1" "discard=async" ];
-    };
+  fileSystems."/var/log" = {
+    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
+    fsType = "btrfs";
+    options = [
+      "subvol=@log"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+    ];
+  };
 
-  fileSystems."/.snapshot" =
-    { device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-      fsType = "btrfs";
-      options = [ "subvol=@snapshot" "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=120" "compress=zstd:1" "discard=async" ];
-    };
+  fileSystems."/.snapshot" = {
+    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
+    fsType = "btrfs";
+    options = [
+      "subvol=@snapshot"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+    ];
+  };
 
-  fileSystems."/steamlib" =
-    { label = "steamlib";
-      fsType = "ntfs-3g";
-      options = ["nofail" "users" "uid=1000" "gid=1000" "rw" "exec" "umask=000" "prealloc" "noatime" "allow_other" "async" "windows_names" "big_writes"]; #ntfs-3g
-      #options = ["nofail" "users" "uid=1000" "gid=1000" "rw" "exec" "umask=000" "noatime" "async" ]; #ntfs3
-    };
+  fileSystems."/steamlib" = {
+    label = "steamlib";
+    fsType = "ntfs-3g";
+    options = [
+      "nofail"
+      "users"
+      "uid=1000"
+      "gid=1000"
+      "rw"
+      "exec"
+      "umask=000"
+      "prealloc"
+      "noatime"
+      "allow_other"
+      "async"
+      "windows_names"
+      "big_writes"
+    ]; # ntfs-3g
+    #options = ["nofail" "users" "uid=1000" "gid=1000" "rw" "exec" "umask=000" "noatime" "async" ]; #ntfs3
+  };
 
   swapDevices = [ ];
 
@@ -67,5 +136,6 @@
   # networking.interfaces.wlo1.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode =
+    lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

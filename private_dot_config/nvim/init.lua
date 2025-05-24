@@ -424,6 +424,7 @@ require("lazy").setup({
 						csh = { "beautysh" },
 						zsh = { "beautysh" },
 						sh = { "beautysh" },
+						nix = { "nixfmt" },
 					},
 					-- Set up format-on-save
 					format_on_save = { timeout_ms = 500, lsp_fallback = true },
@@ -1202,6 +1203,7 @@ require("lazy").setup({
 							"c",
 							"lua",
 							"vim",
+							"nix",
 							"query",
 							"bash",
 							"python",
@@ -1297,6 +1299,7 @@ require("lazy").setup({
 								"ltex",
 								"lua_ls",
 								"marksman",
+								"nil",
 								-- dap
 								"debugpy",
 								"java-debug-adapter",
@@ -1313,6 +1316,7 @@ require("lazy").setup({
 								"ast_grep",
 								"beautysh",
 								"prettierd",
+                                "nixfmt",
 							},
 						})
 					end,

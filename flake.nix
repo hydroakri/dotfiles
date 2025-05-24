@@ -3,367 +3,376 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     minegrub-theme.url = "github:Lxtharia/minegrub-theme";
   };
 
   outputs = { self, nixpkgs, home-manager, minegrub-theme, ... }:
     let
+      # hostname = builtins.getEnv "HOSTNAME";
+      # username = builtins.getEnv "USER";
       system = "x86_64-linux";
       hostName = "nixos";
       username = "hydroakri";
-    in
-    {
+      pkgs = import nixpkgs { inherit system; };
+    in {
       nixosConfigurations = {
         nixos = nixpkgs.lib.nixosSystem {
           system = "${system}";
           modules = [
-          minegrub-theme.nixosModules.default
-          home-manager.nixosModules.home-manager {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.${username}= ./home.nix;
-          }
+            minegrub-theme.nixosModules.default
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.${username} = ./home.nix;
+            }
 
-          ({ config, pkgs, ... }:
-          {
-            imports =
-              [ # Include the results of the hardware scan.
+            ({ config, pkgs, ... }: {
+              imports = [ # Include the results of the hardware scan.
                 ./hardware-configuration.nix
               ];
-            nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
-          
-            # Bootloader.
-            boot.loader.grub = {
-              device = "nodev";
-              efiSupport = true;
-              useOSProber = true;
-              configurationLimit = 3;
-              minegrub-theme = {
+              nix.settings.substituters =
+                [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+
+              # Bootloader.
+              boot = {
+                loader.efi.canTouchEfiVariables = true;
+                kernelPackages = pkgs.linuxPackages_xanmod_latest;
+                loader.grub = {
+                  device = "nodev";
+                  efiSupport = true;
+                  useOSProber = true;
+                  configurationLimit = 3;
+                  minegrub-theme = {
+                    enable = true;
+                    splash = "Never Knows Best";
+                    background =
+                      "background_options/1.8  - [Classic Minecraft].png";
+                    boot-options-count = 4;
+                  };
+                };
+                plymouth.enable = true;
+                kernelParams = [
+                  "zswap.enabled=0"
+                  "radeon.dpm=1"
+                  "amd_pstate=active"
+                  "processor.ignore_ppc=1"
+                  "nvidia_drm.modeset=1"
+                  "nvidia_drm.fbdev=1"
+                  "nouveau.config=NvGspRm=1"
+                  "nouveau.config=NvBoost=2"
+                  "mem_sleep_default=s2idle"
+                  "nowatchdog"
+                  "nmi_watchdog=0"
+                  "iwlwifi.power_save=1"
+                  "mitigations=auto"
+                  "apparmor=1"
+                  "security=apparmor"
+                  "lockdown=integrity"
+                  # Plymouth
+                  "quiet"
+                  "splash"
+                  "loglevel=3"
+                  #"udev.log_priority=3"
+                  "rd.udev.log_level=3"
+                  "vt.global_cursor_default=0"
+                  "rd.systemd.show_status=auto"
+                ];
+                consoleLogLevel = 3;
+                initrd.verbose = false;
+                kernel.sysctl = {
+                  #security
+                  "kernel.core_pattern" = "|/bin/false";
+                  "kernel.unprivileged_bpf_disabled" = 0;
+                  "kernel.kptr_restrict" = 2;
+                  "kernel.yama.ptrace_scope" = 3;
+                  "kernel.kexec_load_disabled" = 1;
+                  "module.sig_enforce" = 1;
+                  "net.core.bpf_jit_harden" = 2;
+
+                  # performance;
+                  "net.core.default_qdisc" = "cake";
+                  "net.ipv4.tcp_congestion_control" = "bbr2";
+
+                  "net.core.somaxconn" = 256;
+                  "net.core.netdev_max_backlog" = 16384;
+                  "net.core.rmem_default" = 1048576;
+                  "net.core.rmem_max" = 16777216;
+                  "net.core.wmem_default" = 1048576;
+                  "net.core.wmem_max" = 16777216;
+                  "net.core.optmem_max" = 65536;
+                  "net.ipv4.tcp_rmem" = "4096 1048576 2097152";
+                  "net.ipv4.tcp_wmem" = "4096 65536 16777216";
+                  "net.ipv4.udp_rmem_min" = 8192;
+                  "net.ipv4.udp_wmem_min" = 8192;
+                  "net.ipv4.tcp_fastopen" = 3;
+                  "net.ipv4.tcp_max_syn_backlog" = 8192;
+                  "net.ipv4.tcp_max_tw_buckets" = 2000000;
+                  "net.ipv4.tcp_tw_reuse" = 1;
+                  "net.ipv4.tcp_fin_timeout" = 10;
+                  "net.ipv4.tcp_slow_start_after_idle" = 0;
+                  "net.ipv4.tcp_keepalive_time" = 60;
+                  "net.ipv4.tcp_keepalive_intvl" = 10;
+                  "net.ipv4.tcp_keepalive_probes" = 6;
+                  "net.ipv4.tcp_mtu_probing" = 1;
+                  "net.ipv4.tcp_sack" = 1;
+
+                  "vm.swappiness" = 180;
+                  "vm.watermark_boost_factor" = 0;
+                  "vm.watermark_scale_factor" = 125;
+                  "vm.page-cluster" = 0;
+
+                  "vm.dirty_ratio" = 8;
+                  "vm.dirty_background_ratio" = 4;
+                  "vm.dirty_writeback_centisecs" = 1500;
+                  "vm.dirty_expire_centisecs" = 1500;
+                  "vm.laptop_mode" = 5;
+                  "vm.vfs_cache_pressure" = 50;
+                };
+                # Early KMS
+                initrd.kernelModules = [
+                  "amdgpu"
+                  "nvidia"
+                  "nvidia_modeset"
+                  "nvidia_uvm"
+                  "nvidia_drm"
+                ];
+                extraModprobeConfig = ''
+                  options nvidia-drm modeset=1
+                  options nvidia NVreg_PreserveVideoMemoryAllocations=1
+                '';
+              };
+
+              services.udev.extraRules = ''
+                SUBSYSTEM=="pci", ATTR{power/control}="auto"
+              '';
+
+              zramSwap.enable = true;
+              services.zram-generator.enable = true;
+              services.zram-generator.settings.main = {
+                name = "zram0";
+                size = "ram/2";
+                algorithm = "zstd";
+              };
+              services.fstrim.enable = true;
+              services.preload.enable = true;
+              services.earlyoom.enable = true;
+
+              networking.hostName = "${hostName}"; # Define your hostname.
+              networking.networkmanager.enable = true;
+              networking.firewall.enable = false;
+
+              services.dnscrypt-proxy2.enable = true;
+              services.dnscrypt-proxy2.settings = {
+                block_ipv6 = true;
+                lb_strategy = "p2";
+                server_names = [
+                  "cloudflare"
+                  "cloudflare-family"
+                  "cloudflare-security"
+                  "mullvad-adblock-doh"
+                  "mullvad-all-doh"
+                  "mullvad-base-doh"
+                  "mullvad-doh"
+                  "mullvad-extend-doh"
+                  "mullvad-family-doh"
+                  "nextdns"
+                  "nextdns-ultralow"
+                  "controld-block-malware"
+                  "controld-block-malware-ad"
+                  "controld-block-malware-ad-social"
+                  "controld-family-friendly"
+                  "controld-uncensored"
+                  "controld-unfiltered"
+                  "dns0"
+                  "dns0-kid"
+                  "dns0-unfiltered"
+                  "adguard-dns-doh"
+                  "adguard-dns-family-doh"
+                  "adguard-dns-unfiltered-doh"
+                  "quad9-dnscrypt-ip4-filter-ecs-pri"
+                  "quad9-dnscrypt-ip4-filter-pri"
+                  "quad9-dnscrypt-ip4-nofilter-ecs-pri"
+                  "quad9-dnscrypt-ip4-nofilter-pri"
+                  "quad9-doh-ip4-port443-filter-ecs-pri"
+                  "quad9-doh-ip4-port443-filter-pri"
+                  "quad9-doh-ip4-port443-nofilter-ecs-pri"
+                  "quad9-doh-ip4-port443-nofilter-pri"
+                  "quad9-doh-ip4-port5053-filter-ecs-pri"
+                  "quad9-doh-ip4-port5053-filter-pri"
+                  "quad9-doh-ip4-port5053-nofilter-ecs-pri"
+                  "quad9-doh-ip4-port5053-nofilter-pri"
+                  "rethinkdns-doh"
+                  "flymc-doh-8443"
+                  "flymc-doh"
+                  "flymc-doh-cdn"
+                  "flymc-dns"
+                ];
+                static.flymc-doh-8443.stamp =
+                  "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
+                static.flymc-doh.stamp =
+                  "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
+                static.flymc-doh-cdn.stamp =
+                  "sdns://AgQAAAAAAAAADDEwNC4yMS40Ni4xOAAQZG9oLnBhcmkubmV0d29yawovZG5zLXF1ZXJ5";
+                static.flymc-dns.stamp =
+                  "sdns://AgQAAAAAAAAADjE3Mi42Ny4yMjIuMTM5ABBkbnMucGFyaS5uZXR3b3JrCi9kbnMtcXVlcnk";
+                sources.public-resolvers = {
+                  urls = [
+                    "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
+                  ];
+                  cache_file = "public-resolvers.md";
+                  minisign_key =
+                    "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+                  refresh_delay = 72;
+                };
+
+              };
+
+              services.ntp.enable = true;
+              services.ntp.servers =
+                [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
+              time.timeZone = "Australia/Perth";
+              i18n.inputMethod = {
+                type = "fcitx5";
                 enable = true;
-                splash = "Never Knows Best";
-                background = "background_options/1.8  - [Classic Minecraft].png";
-                boot-options-count = 4;
+                fcitx5 = {
+                  plasma6Support = true;
+                  addons = with pkgs; [
+                    fcitx5-rime
+                    libsForQt5.fcitx5-qt
+                    fcitx5-gtk
+                    fcitx5-configtool
+                    fcitx5-chinese-addons
+                    fcitx5-lua
+                  ];
+                  waylandFrontend = true;
+                };
               };
-            };
-            boot.plymouth.enable = true;
-            boot.loader.efi.canTouchEfiVariables = true;
-            boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
-            boot.kernelParams = [
-              "zswap.enabled=0"
-              "radeon.dpm=1" 
-              "amd_pstate=active"
-              "processor.ignore_ppc=1" 
-              "nvidia_drm.modeset=1" 
-              "nvidia_drm.fbdev=1" 
-              "nouveau.config=NvGspRm=1" 
-              "nouveau.config=NvBoost=2" 
-              "mem_sleep_default=s2idle" 
-              "nowatchdog" 
-              "nmi_watchdog=0" 
-              "iwlwifi.power_save=1" 
-              "mitigations=auto" 
-              "apparmor=1" 
-              "security=apparmor" 
-              "lockdown=integrity" 
-	      # Plymouth
-              "quiet"
-              "splash"
-              "loglevel=3"
-	      #"udev.log_priority=3"
-	      "rd.udev.log_level=3"
-	      "vt.global_cursor_default=0"
-              "rd.systemd.show_status=auto"
-              ];
-	    boot.consoleLogLevel = 3;
-	    boot.initrd.verbose = false;
-            boot.kernel.sysctl = {
-              #security
-              "kernel.core_pattern" = "|/bin/false";
-              "kernel.unprivileged_bpf_disabled" = 0;
-              "kernel.kptr_restrict" = 2;
-              "kernel.yama.ptrace_scope" = 3;
-              "kernel.kexec_load_disabled" = 1;
-              "module.sig_enforce" = 1;
-              "net.core.bpf_jit_harden" = 2;
-              
-              # performance;
-              "net.core.default_qdisc" = "cake";
-              "net.ipv4.tcp_congestion_control" = "bbr2";
-              
-              "net.core.somaxconn" = 256;
-              "net.core.netdev_max_backlog" = 16384;
-              "net.core.rmem_default" = 1048576;
-              "net.core.rmem_max" = 16777216;
-              "net.core.wmem_default" = 1048576;
-              "net.core.wmem_max" = 16777216;
-              "net.core.optmem_max" = 65536;
-              "net.ipv4.tcp_rmem" = "4096 1048576 2097152";
-              "net.ipv4.tcp_wmem" = "4096 65536 16777216";
-              "net.ipv4.udp_rmem_min" = 8192;
-              "net.ipv4.udp_wmem_min" = 8192;
-              "net.ipv4.tcp_fastopen" = 3;
-              "net.ipv4.tcp_max_syn_backlog" = 8192;
-              "net.ipv4.tcp_max_tw_buckets" = 2000000;
-              "net.ipv4.tcp_tw_reuse" = 1;
-              "net.ipv4.tcp_fin_timeout" = 10;
-              "net.ipv4.tcp_slow_start_after_idle" = 0;
-              "net.ipv4.tcp_keepalive_time" = 60;
-              "net.ipv4.tcp_keepalive_intvl" = 10;
-              "net.ipv4.tcp_keepalive_probes" = 6;
-              "net.ipv4.tcp_mtu_probing" = 1;
-              "net.ipv4.tcp_sack" = 1;
-              
-              "vm.swappiness" = 180;
-              "vm.watermark_boost_factor" = 0;
-              "vm.watermark_scale_factor" = 125;
-              "vm.page-cluster" = 0;
-              
-              "vm.dirty_ratio" = 8;
-              "vm.dirty_background_ratio" = 4;
-              "vm.dirty_writeback_centisecs" = 1500;
-              "vm.dirty_expire_centisecs" = 1500;
-              "vm.laptop_mode" = 5;
-              "vm.vfs_cache_pressure" = 50;
+              i18n.defaultLocale = "en_AU.UTF-8";
+              i18n.extraLocales = [ "zh_CN.UTF-8/UTF-8" ];
+              i18n.extraLocaleSettings = {
+                LC_ADDRESS = "en_AU.UTF-8";
+                LC_IDENTIFICATION = "en_AU.UTF-8";
+                LC_MEASUREMENT = "en_AU.UTF-8";
+                LC_MONETARY = "en_AU.UTF-8";
+                LC_NAME = "en_AU.UTF-8";
+                LC_NUMERIC = "en_AU.UTF-8";
+                LC_PAPER = "en_AU.UTF-8";
+                LC_TELEPHONE = "en_AU.UTF-8";
+                LC_TIME = "en_AU.UTF-8";
               };
-	    # Early KMS
-            boot.initrd.kernelModules = [ "amdgpu" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
-            boot.extraModprobeConfig = ''
-              options nvidia-drm modeset=1
-              options nvidia NVreg_PreserveVideoMemoryAllocations=1
-            '';
-            services.udev.extraRules = ''
-            SUBSYSTEM=="pci", ATTR{power/control}="auto"
-            '';
+              fonts.fontDir.enable = true;
 
-            zramSwap.enable = true;
-            services.zram-generator.enable = true;
-            services.zram-generator.settings.main = {
-                name = "zram0"; size = "ram/2"; algorithm = "zstd";
-            };
-            services.fstrim.enable = true;
-            services.preload.enable = true;
-            
-            networking.hostName = "${hostName}"; # Define your hostname.
-            networking.networkmanager.enable = true;
-            networking.firewall.enable = false;
-
-            services.dnscrypt-proxy2.enable = true;
-            services.dnscrypt-proxy2.settings = {
-              block_ipv6 = true;
-              lb_strategy = "p2";
-              server_names = [
-              "cloudflare" 
-              "cloudflare-family" 
-              "cloudflare-security" 
-              "mullvad-adblock-doh" 
-              "mullvad-all-doh" 
-              "mullvad-base-doh" 
-              "mullvad-doh" 
-              "mullvad-extend-doh" 
-              "mullvad-family-doh" 
-              "nextdns" 
-              "nextdns-ultralow" 
-              "controld-block-malware" 
-              "controld-block-malware-ad" 
-              "controld-block-malware-ad-social" 
-              "controld-family-friendly" 
-              "controld-uncensored" 
-              "controld-unfiltered" 
-              "dns0" 
-              "dns0-kid" 
-              "dns0-unfiltered" 
-              "adguard-dns-doh" 
-              "adguard-dns-family-doh" 
-              "adguard-dns-unfiltered-doh" 
-              "quad9-dnscrypt-ip4-filter-ecs-pri" 
-              "quad9-dnscrypt-ip4-filter-pri" 
-              "quad9-dnscrypt-ip4-nofilter-ecs-pri" 
-              "quad9-dnscrypt-ip4-nofilter-pri" 
-              "quad9-doh-ip4-port443-filter-ecs-pri" 
-              "quad9-doh-ip4-port443-filter-pri" 
-              "quad9-doh-ip4-port443-nofilter-ecs-pri" 
-              "quad9-doh-ip4-port443-nofilter-pri" 
-              "quad9-doh-ip4-port5053-filter-ecs-pri" 
-              "quad9-doh-ip4-port5053-filter-pri" 
-              "quad9-doh-ip4-port5053-nofilter-ecs-pri" 
-              "quad9-doh-ip4-port5053-nofilter-pri" 
-              "rethinkdns-doh" 
-              "flymc-doh-8443"
-              "flymc-doh"
-              "flymc-doh-cdn"
-              "flymc-dns"
-              ];
-              static.flymc-doh-8443.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
-              static.flymc-doh.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
-              static.flymc-doh-cdn.stamp = "sdns://AgQAAAAAAAAADDEwNC4yMS40Ni4xOAAQZG9oLnBhcmkubmV0d29yawovZG5zLXF1ZXJ5";
-              static.flymc-dns.stamp = "sdns://AgQAAAAAAAAADjE3Mi42Ny4yMjIuMTM5ABBkbnMucGFyaS5uZXR3b3JrCi9kbnMtcXVlcnk";
-              sources.public-resolvers = {
-                urls = [ "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md" ];
-                cache_file = "public-resolvers.md";
-                minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
-                refresh_delay = 72;
+              services.xserver.enable = true;
+              services.displayManager.sddm.enable = true;
+              services.desktopManager.plasma6.enable = true;
+              services.xserver.xkb = {
+                layout = "au";
+                variant = "";
               };
 
-            };
+              services.printing.enable = true;
 
-            services.ntp.enable = true;
-            services.ntp.servers = [
-              "0.pool.ntp.org"
-              "1.pool.ntp.org"
-              "2.pool.ntp.org"
-            ];
-            time.timeZone = "Australia/Perth";
-            i18n.inputMethod = {
-              type = "fcitx5";
-              enable = true;
-              fcitx5 = {
-                plasma6Support = true; 
-                addons = with pkgs; [fcitx5-rime libsForQt5.fcitx5-qt fcitx5-gtk fcitx5-configtool fcitx5-chinese-addons fcitx5-lua];
-                waylandFrontend = true;
+              security.rtkit.enable = true;
+              services.pipewire = {
+                enable = true;
+                alsa.enable = true;
+                alsa.support32Bit = true;
+                pulse.enable = true;
               };
-            };
-            i18n.defaultLocale = "en_AU.UTF-8";
-            i18n.extraLocales= [ "zh_CN.UTF-8/UTF-8" ];
-            i18n.extraLocaleSettings = {
-              LC_ADDRESS = "en_AU.UTF-8";
-              LC_IDENTIFICATION = "en_AU.UTF-8";
-              LC_MEASUREMENT = "en_AU.UTF-8";
-              LC_MONETARY = "en_AU.UTF-8";
-              LC_NAME = "en_AU.UTF-8";
-              LC_NUMERIC = "en_AU.UTF-8";
-              LC_PAPER = "en_AU.UTF-8";
-              LC_TELEPHONE = "en_AU.UTF-8";
-              LC_TIME = "en_AU.UTF-8";
-            };
-            fonts.fontDir.enable = true;
-          
-            services.xserver.enable = true;
-            services.displayManager.sddm.enable = true;
-            services.desktopManager.plasma6.enable = true;
-            services.xserver.xkb = {
-              layout = "au";
-              variant = "";
-            };
-          
-            services.printing.enable = true;
-          
-            services.pulseaudio.enable = false;
-            security.rtkit.enable = true;
-            services.pipewire = {
-              enable = true;
-              alsa.enable = true;
-              alsa.support32Bit = true;
-              pulse.enable = true;
-            };
-          
-            # Enable touchpad support (enabled default in most desktopManager).
-            # services.xserver.libinput.enable = true;
-          
-            users.users.${username}= {
-              shell = pkgs.fish;
-              isNormalUser = true;
-              description = "${username}";
-              extraGroups = [ "networkmanager" "wheel" ];
-              packages = with pkgs; [
-                flatpak
-                kdePackages.kate
-              ];
-            };
-          
-            # Enable automatic login for the user.
-            services.displayManager.autoLogin.enable = true;
-            services.displayManager.autoLogin.user = "hydroakri";
 
-            #nvidia
-            hardware.nvidia.open = true;
-            hardware.nvidia.modesetting.enable = true;
-            services.xserver.videoDrivers = [ "nvidia" ];
-            
-            #flatpak
-            services.flatpak.enable = true;
-            #systemd.services.flatpak-repo = {
-            #  wantedBy = [ "multi-user.target" ];
-            #  path = [ pkgs.flatpak ];
-            #  script = ''
-            #    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-            #  '';
-            #};
+              # Enable touchpad support (enabled default in most desktopManager).
+              # services.xserver.libinput.enable = true;
 
-          
-            # Install firefox.
-            programs.firefox.enable = true;
-            services.sing-box = {
-              enable = false;
-              settings = {
-                _secret = "/etc/singbox/config.json";
+              users.users.${username} = {
+                shell = pkgs.fish;
+                isNormalUser = true;
+                description = "${username}";
+                extraGroups = [ "networkmanager" "wheel" ];
+                packages = with pkgs; [ flatpak kdePackages.kate ];
               };
-            };
-            programs.fish.enable = true;
-            programs.zsh.enable = true;
-            programs.git = {
-              enable = true;
-              #config = {
-              #  url = {
-              #    "ssh://git@github.com/" = {
-              #      insteadOf = [
-              #        "https://github.com/"
-              #      ];
-              #    };
-              #  };
+
+              # Enable automatic login for the user.
+              services.displayManager.autoLogin.enable = true;
+              services.displayManager.autoLogin.user = "hydroakri";
+
+              # GPU
+              hardware.amdgpu.amdvlk.enable = true;
+              hardware.nvidia.open = true;
+              hardware.nvidia.modesetting.enable = true;
+              services.xserver.videoDrivers = [ "nvidia" ];
+
+              #flatpak
+              services.flatpak.enable = true;
+              #systemd.services.flatpak-repo = {
+              #  wantedBy = [ "multi-user.target" ];
+              #  path = [ pkgs.flatpak ];
+              #  script = ''
+              #    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+              #  '';
               #};
-            };
-            environment.etc."proxychains.conf".text = ''
-              strict_chain
-              proxy_dns
-              quiet_mode
-              remote_dns_subnet 224
-              tcp_read_time_out 15000
-              tcp_connect_time_out 8000
-              localnet 127.0.0.0/255.0.0.0
-          
-              [ProxyList]
-              socks5 127.0.0.1 2080
-            '';
-          
-            # Allow unfree packages
-            nix.gc = {
-              automatic = true;
-              dates = "weekly";
-              options = "--delete-older-than 14d";
-            };
-            nixpkgs.config.allowUnfree = true;
-            nix.settings.experimental-features = [ "nix-command" "flakes" ];
-            environment.systemPackages = with pkgs; [
-              xsettingsd
-              xorg.xrdb
-              neovim
-              ncdu
-              wget
-              efibootmgr
-	      kdePackages.partitionmanager
-              nekoray
-              proxychains-ng
-              (let base = pkgs.appimageTools.defaultFhsEnvArgs; in
-                    pkgs.buildFHSEnv (base // {
-                    name = "fhs";
-                    targetPkgs = pkgs: 
-                      # pkgs.appimageTools 提供了大多数程序常用的基础包，所以我们可以直接用它来补充
-                      (base.targetPkgs pkgs) ++ (with pkgs; [
-                        pkg-config
-                        ncurses
-                      ]
-                    );
-                    profile = "export FHS=1";
-                    runScript = "bash";
-                    extraOutputsToInstall = ["dev"];
-                  }))
-            ];
 
-            system.stateVersion = "24.11"; # Did you read the comment?
-          })
+              # Install firefox.
+              programs.firefox.enable = true;
+              services.sing-box = {
+                enable = false;
+                settings = { _secret = "/etc/singbox/config.json"; };
+              };
+              programs.fish.enable = true;
+              programs.zsh.enable = true;
+              programs.git = { enable = true; };
+              environment.etc."proxychains.conf".text = ''
+                strict_chain
+                proxy_dns
+                quiet_mode
+                remote_dns_subnet 224
+                tcp_read_time_out 15000
+                tcp_connect_time_out 8000
+                localnet 127.0.0.0/255.0.0.0
+
+                [ProxyList]
+                socks5 127.0.0.1 2080
+              '';
+
+              # Allow unfree packages
+              nix.gc = {
+                automatic = true;
+                dates = "weekly";
+                options = "--delete-older-than 14d";
+              };
+              nixpkgs.config.allowUnfree = true;
+              nix.settings.experimental-features = [ "nix-command" "flakes" ];
+              environment.systemPackages = with pkgs; [
+                xsettingsd
+                xorg.xrdb
+                neovim
+                ncdu
+                wget
+                efibootmgr
+                gcc
+                cargo
+                kdePackages.partitionmanager
+                nekoray
+                proxychains-ng
+                (let base = pkgs.appimageTools.defaultFhsEnvArgs;
+                in pkgs.buildFHSEnv (base // {
+                  name = "fhs";
+                  targetPkgs = pkgs:
+                    # pkgs.appimageTools 提供了大多数程序常用的基础包，所以我们可以直接用它来补充
+                    (base.targetPkgs pkgs)
+                    ++ (with pkgs; [ pkg-config ncurses ]);
+                  profile = "export FHS=1";
+                  runScript = "bash";
+                  extraOutputsToInstall = [ "dev" ];
+                }))
+              ];
+
+              system.stateVersion = "25.05"; # Did you read the comment?
+            })
           ];
         };
       };
