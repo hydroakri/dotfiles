@@ -23,51 +23,17 @@
   # 设置鼠标指针大小以及字体 DPI（适用于 4K 显示器）
   xresources.properties = {
     "Xcursor.size" = 16;
-    "Xft.dpi" = 172;
+    "Xft.dpi" = 96;
   };
 
   # 通过 home.packages 安装一些常用的软件
   # 这些软件将仅在当前用户下可用，不会影响系统级别的配置
   # 建议将所有 GUI 软件，以及与 OS 关系不大的 CLI 软件，都通过 home.packages 安装
   home.packages = with pkgs;[
-    # 终端相关
-    zsh
-    fish
+    # 如下是我常用的一些命令行工具，你可以根据自己的需要进行增删
     fastfetch
-    yazi
     wezterm
-    kitty
-    foot
-    alacritty
-    zellij
-
-    # 输入法
-    fcitx5
-    fcitx5-rime
-
-    # 窗口管理器相关
-    sway
-    swaylock
-    waybar
-    wofi
-    mako
-    niri
-    hyprland
-
-    # 主题相关
-    qt6ct
-    qt5ct
-    gtk3
-    gtk4
-
-    # 音频
-    cava
-
-    # 编辑器
-    neovim
-
-    # 其他工具
-    atuin
+    yazi # terminal file manager
 
     # archives
     zip
@@ -76,264 +42,45 @@
     p7zip
 
     # utils
-    ripgrep
-    jq
-    yq-go
-    eza
-    fzf
+    chezmoi
+    atuin
+    zoxide
+    starship
+    ripgrep # recursively searches directories for a regex pattern
+    lazygit
+    jq # A lightweight and flexible command-line JSON processor
+    yq-go # yaml processor https://github.com/mikefarah/yq
+    eza # A modern replacement for ‘ls’
+    fzf # A command-line fuzzy finder
 
-    dnsutils
-
-    # misc
-    cowsay
-    file
-    which
-    tree
-    gnused
-    gnutar
-    gawk
-    zstd
-    gnupg
-
+    # Desktop Application
+    steam-devices-udev-rules
+    
     # nix related
     nix-output-monitor
+    
+    #system
+    btop  # replacement of htop/nmon
+    lsof # list open files
 
-    btop
 
-    # system call monitoring
-    lsof
+    #themes
+    bibata-cursors
+    papirus-icon-theme
+    
+    # fonts
+    #source-han-sans
+    #inter
+    #nerd-fonts.symbols-only
+    #cascadia-code
 
     # system tools
     sysstat
-    lm_sensors
+    lm_sensors # for `sensors` command
     ethtool
-    pciutils
-    usbutils
+    pciutils # lspci
+    usbutils # lsusb
   ];
-
-  # 启用 starship
-  programs.starship = {
-    enable = true;
-    settings = {
-      add_newline = false;
-      aws.disabled = true;
-      gcloud.disabled = true;
-      line_break.disabled = true;
-    };
-  };
-
-  # 配置 fish
-  programs.fish = {
-    enable = true;
-    interactiveShellInit = ''
-      set -U fish_greeting ""
-    '';
-  };
-
-  # 配置 zsh
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    enableAutosuggestions = true;
-    enableSyntaxHighlighting = true;
-    shellAliases = {
-      k = "kubectl";
-      urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
-      urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
-    };
-  };
-
-  # 配置 git
-  programs.git = {
-    enable = true;
-    userName = "hydroakri";
-    userEmail = "hydroakri@example.com";  # 请修改为您的邮箱
-  };
-
-  # 配置 alacritty
-  programs.alacritty = {
-    enable = true;
-    settings = {
-      env.TERM = "xterm-256color";
-      font = {
-        size = 12;
-        draw_bold_text_with_bright_colors = true;
-      };
-      scrolling.multiplier = 5;
-      selection.save_to_clipboard = true;
-    };
-  };
-
-  # 配置 gtk
-  gtk = {
-    enable = true;
-    theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome.gnome-themes-extra;
-    };
-    iconTheme = {
-      name = "Adwaita";
-      package = pkgs.gnome.adwaita-icon-theme;
-    };
-    gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-    };
-    gtk4.extraConfig = {
-      gtk-application-prefer-dark-theme = true;
-    };
-  };
-
-  # 配置 qt
-  qt = {
-    enable = true;
-    platformTheme = "gtk";
-    style = {
-      name = "adwaita-dark";
-      package = pkgs.adwaita-qt;
-    };
-  };
-
-  # 配置字体
-  fonts.fontconfig.enable = true;
-
-  # 配置 sway
-  wayland.windowManager.sway = {
-    enable = true;
-    config = {
-      modifier = "Mod4";
-      terminal = "alacritty";
-    };
-  };
-
-  # 配置 waybar
-  programs.waybar = {
-    enable = true;
-    settings = {
-      mainBar = {
-        layer = "top";
-        position = "top";
-        height = 30;
-        spacing = 4;
-        margin-top = 0;
-        margin-bottom = 0;
-        margin-left = 0;
-        margin-right = 0;
-      };
-    };
-  };
-
-  # 配置 mako
-  services.mako = {
-    enable = true;
-    backgroundColor = "#1e1e2e";
-    textColor = "#cdd6f4";
-    borderColor = "#89b4fa";
-  };
-
-  # 配置 swaylock
-  programs.swaylock = {
-    enable = true;
-    settings = {
-      color = "1e1e2e";
-      show-failed-attempts = true;
-    };
-  };
-
-  # 配置 wofi
-  programs.wofi = {
-    enable = true;
-    settings = {
-      width = 400;
-      height = 300;
-    };
-  };
-
-  # 配置 kitty
-  programs.kitty = {
-    enable = true;
-    settings = {
-      font_size = 12;
-      background_opacity = "0.8";
-    };
-  };
-
-  # 配置 foot
-  programs.foot = {
-    enable = true;
-    settings = {
-      main = {
-        font = "monospace:size=12";
-        dpi-aware = "yes";
-      };
-    };
-  };
-
-  # 配置 zellij
-  programs.zellij = {
-    enable = true;
-  };
-
-  # 配置 neovim
-  programs.neovim = {
-    enable = true;
-    viAlias = true;
-    vimAlias = true;
-  };
-
-  # 配置 atuin
-  programs.atuin = {
-    enable = true;
-    enableBashIntegration = true;
-    enableZshIntegration = true;
-    enableFishIntegration = true;
-  };
-
-  # 配置 cava
-  programs.cava = {
-    enable = true;
-  };
-
-  # 配置 wezterm
-  programs.wezterm = {
-    enable = true;
-    extraConfig = ''
-      return {
-        font_size = 12.0,
-        color_scheme = "Catppuccin Mocha",
-      }
-    '';
-  };
-
-  # 配置 hyprland
-  wayland.windowManager.hyprland = {
-    enable = true;
-    settings = {
-      monitor = ",preferred,auto,1";
-      exec-once = [
-        "waybar"
-        "mako"
-      ];
-    };
-  };
-
-  # 配置 niri
-  programs.niri = {
-    enable = true;
-  };
-
-  # 配置 bash
-  programs.bash = {
-    enable = true;
-    enableCompletion = true;
-    bashrcExtra = ''
-      export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
-    '';
-    shellAliases = {
-      k = "kubectl";
-      urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
-      urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
-    };
-  };
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
@@ -348,3 +95,4 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 }
+

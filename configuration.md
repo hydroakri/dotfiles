@@ -175,7 +175,7 @@ XMODIFIERS=@im=fcitx
 <type>  <options>
 ntfs-3g nofail,users,uid=1000,gid=1000,rw,exec,umask=000,prealloc,windows_names,noatime,allow_other,async,big_writes
 ntfs3 uid=1000,gid=1000,rw,user,exec,umask=000,prealloc,nofail
-btrfs rw,relatime,ssd,space_cache=v2,noatime,commit=120,compress=zstd,discard=async
+btrfs rw,relatime,ssd,space_cache=v2,noatime,nodiratime,commit=120,compress=zstd:1,discard=async #for Data base like /nix please add "autodefrag"
 # WARNING: some distro do not support ntfs, add to fstab can boot into emergency shell
 ```
 
@@ -211,6 +211,10 @@ xargs -a flatpak.txt flatpak install -y
 xargs -a debs.txt nala install -y
 xargs -a brew.txt brew install
 ```
+
+# IME
+Please DO remember: In wayland environment, text-input-v2/v3 protocal is required for using IME(like Fcitx5)  
+To Enable: KDE settings > keyboard > virtual keyboard > select fcitx
 
 ## Flatpak Override
 If you want Flatpak application to use discrete GPU you need to add `--device=dri` and necessary variable to override.
