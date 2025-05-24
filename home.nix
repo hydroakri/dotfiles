@@ -29,7 +29,7 @@
   # 通过 home.packages 安装一些常用的软件
   # 这些软件将仅在当前用户下可用，不会影响系统级别的配置
   # 建议将所有 GUI 软件，以及与 OS 关系不大的 CLI 软件，都通过 home.packages 安装
-  home.packages = with pkgs;[
+  home.packages = with pkgs; [
     # 如下是我常用的一些命令行工具，你可以根据自己的需要进行增删
     fastfetch
     wezterm
@@ -55,19 +55,18 @@
 
     # Desktop Application
     steam-devices-udev-rules
-    
+
     # nix related
     nix-output-monitor
-    
-    #system
-    btop  # replacement of htop/nmon
-    lsof # list open files
 
+    #system
+    btop # replacement of htop/nmon
+    lsof # list open files
 
     #themes
     bibata-cursors
     papirus-icon-theme
-    
+
     # fonts
     #source-han-sans
     #inter
@@ -90,7 +89,7 @@
   # You can update Home Manager without changing this value. See
   # the Home Manager release notes for a list of state version
   # changes in each release.
-  home.stateVersion = "24.11";
+  home.stateVersion = "25.05";
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
