@@ -1,0 +1,7 @@
+[Context]
+filesystems=/run/current-system/sw/share/X11/fonts:ro;/nix/store:ro
+
+[Environment]
+XMODIFIERS=@im=fcitx
+GTK_IM_MODULE=fcitx
+QT_IM_MODULE=fcitx
