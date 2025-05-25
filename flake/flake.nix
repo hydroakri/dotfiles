@@ -39,8 +39,7 @@
           "nmi_watchdog=0"
           "iwlwifi.power_save=1"
           "mitigations=auto"
-          "apparmor=1"
-          "security=apparmor"
+          "lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
           "lockdown=integrity"
           "quiet"
           "splash"
@@ -113,8 +112,9 @@
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
+        security.apparmor.enable = true;
         networking.networkmanager.enable = true;
-        networking.firewall.enable = false;
+        networking.firewall.enable = true;
         services.dnscrypt-proxy2 = {
           enable = true;
           settings = {

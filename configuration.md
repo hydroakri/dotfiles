@@ -22,9 +22,7 @@ sudo systemctl enable preload.service
 > /etc/default/grub
 
 ```conf
-GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 nouveau.config=NvGspRm=1 nouveau.config=NvBoost=2 mem_sleep_default=s2idle nowatchdog nmi_watchdog=0 iwlwifi.power_save=1 mitigations=auto apparmor=1 security=apparmor lockdown=integrity quiet splash"
-
-# WARNING: lockdown=integrity can cause modules that out of tree not be load(such as nvidia)
+GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 radeon.dpm=1 amd_pstate=active processor.ignore_ppc=1 nvidia_drm.modeset=1 nvidia_drm.fbdev=1 nouveau.config=NvGspRm=1 nouveau.config=NvBoost=2 mem_sleep_default=s2idle nowatchdog nmi_watchdog=0 iwlwifi.power_save=1 mitigations=auto lsm=landlock,lockdown,yama,integrity,apparmor,bpf lockdown=integrity quiet splash"
 ```
 
 > /etc/modprobe.d/nvidia-options.conf
