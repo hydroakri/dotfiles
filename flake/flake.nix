@@ -210,6 +210,7 @@
         environment.shellAliases = { vi = "nvim"; };
         environment.systemPackages = with pkgs; [
           xz
+          git
           zip
           gcc
           fzf
@@ -324,10 +325,12 @@
           services.xserver.videoDrivers = [ "nvidia" ];
           # User defination
           users.users.hydroakri = {
+            shell = pkgs.fish;
             isNormalUser = true;
             description = "hydroakri";
             extraGroups = [ "networkmanager" "wheel" ];
           };
+          programs.fish.enable = true;
           services.displayManager.autoLogin.enable = true;
           services.displayManager.autoLogin.user = "hydroakri";
           services.flatpak.enable = true;
