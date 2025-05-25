@@ -10,7 +10,6 @@ in {
     "Xcursor.size" = 16;
     "Xft.dpi" = 96;
   };
-  programs.git.enable = true;
   programs.fish.enable = true;
   home.packages = with pkgs; [
     # nix related
@@ -38,7 +37,7 @@ in {
   home.file = {
     ".zshrc".source = ../dot_zshrc;
     ".config" = {
-      source = ../private_dot_config;
+      source = ../dot_config;
       recursive = true;
       executable = true;
     };
@@ -48,7 +47,7 @@ in {
       executable = true;
     };
     ".ssh" = {
-      source = ../private_dot_ssh;
+      source = ../dot_ssh;
       recursive = true;
       executable = true;
     };
@@ -80,6 +79,4 @@ in {
     Install = { WantedBy = [ "default.target" ]; };
   };
 
-  #home.activation.cloneOrPullRepo = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-  #'';
 }

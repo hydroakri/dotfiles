@@ -210,7 +210,6 @@
         environment.shellAliases = { vi = "nvim"; };
         environment.systemPackages = with pkgs; [
           xz
-          git
           zip
           gcc
           fzf
@@ -250,10 +249,10 @@
 
       # Host-specific overrides
       hosts = {
-        "nixos" = {
+        "omen15" = {
           imports = [
             minegrub-theme.nixosModules.default
-            ./hardware-configuration.nix
+            ./omen15.nix
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -261,7 +260,7 @@
               home-manager.users.hydroakri = import ./hydroakri.nix;
             }
           ];
-          networking.hostName = "nixos";
+          networking.hostName = "omen15";
           boot.loader.grub.minegrub-theme = {
             enable = true;
             splash = "Never Knows Best";
@@ -303,7 +302,7 @@
           # cuz of non-FHS need to export fonts dir to let normal app to read
           fonts.fontDir.enable = true;
           services.xserver.enable = true;
-          services.xserver.libinput.enable = true;
+          services.libinput.enable = true;
           services.displayManager.sddm.enable = true;
           services.desktopManager.plasma6.enable = true;
           services.xserver.xkb = {
@@ -331,6 +330,17 @@
             extraGroups = [ "networkmanager" "wheel" ];
           };
           programs.fish.enable = true;
+          programs.git = {
+            enable = true;
+            config = {
+              init = { defaultBranch = "main"; };
+              url = {
+                "ssh://git@github.com/" = {
+                  pushInsteadOf = [ "https://github.com/" ];
+                };
+              };
+            };
+          };
           services.displayManager.autoLogin.enable = true;
           services.displayManager.autoLogin.user = "hydroakri";
           services.flatpak.enable = true;
