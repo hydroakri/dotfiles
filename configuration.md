@@ -217,6 +217,9 @@ Please DO remember: In wayland environment, text-input-v2/v3 protocal is require
 To Enable: KDE settings > keyboard > virtual keyboard > select fcitx
 
 ## Flatpak Override
+```
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
 If you want Flatpak application to use discrete GPU you need to add `--device=dri` and necessary variable to override.
 ```
 flatpak override \
