@@ -214,6 +214,7 @@
           gcc
           fzf
           bat
+          fish
           btop
           ncdu
           wget
@@ -251,12 +252,13 @@
         "nixos" = {
           imports = [
             minegrub-theme.nixosModules.default
+            ./hardware-configuration.nix
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.users.hydroakri = import ./hydroakri.nix;
             }
-            ./hardware-configuration.nix
           ];
           networking.hostName = "nixos";
           boot.loader.grub.minegrub-theme = {
@@ -357,57 +359,11 @@
         };
       };
 
-      # User-specific Home Manager configuration
-      users = {
-        "hydroakri" = {
-          home.username = "hydroakri";
-          home.homeDirectory = "/home/hydroakri";
-          imports = [ ];
-          xresources.properties = {
-            "Xcursor.size" = 16;
-            "Xft.dpi" = 96;
-          };
-          programs.fish.enable = true;
-          programs.git.enable = true;
-          home.packages = with pkgs; [
-            # nix related
-            nix-output-monitor
-
-            #themes
-            bibata-cursors
-            papirus-icon-theme
-
-            # Desktop APplications
-            flatpak
-            nekoray
-            kdePackages.kate
-            kdePackages.partitionmanager
-
-            # fonts
-            #source-han-sans
-            #inter
-            #nerd-fonts.symbols-only
-            #cascadia-code
-          ];
-          home.stateVersion = "25.05";
-          programs.home-manager.enable = true;
-        };
-        "bob" = {
-          home.username = "bob";
-          home.homeDirectory = "/home/bob";
-          home.packages = with pkgs; [ emacs tmux ];
-          imports = [ ];
-          programs.bash.enable = true;
-        };
-      };
-
     in {
       # NixOS system configurations by hostname
       nixosConfigurations = lib.mapAttrs (hostName: hostOverrides:
         nixpkgs.lib.nixosSystem {
           system = system;
-          # modules = [ home-manager.nixosModules.home-manager ];
-          # configuration = lib.recursiveUpdate commonNixOSConfig hostOverrides;
           # combine common defaults and host-specific overrides as modules:
           modules = [
             commonNixOSConfig
@@ -416,12 +372,5 @@
             home-manager.nixosModules.home-manager
           ];
         }) hosts;
-
-      # Home Manager configurations by username
-      homeManagerConfigurations = lib.mapAttrs (userName: userConfig:
-        home-manager.lib.homeManagerConfiguration {
-          inherit system;
-          modules = [ userConfig ];
-        }) users;
     };
 }
