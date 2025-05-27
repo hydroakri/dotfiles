@@ -10,7 +10,7 @@
     minegrub-theme.url = "github:Lxtharia/minegrub-theme";
   };
 
-  outputs = { self, nixpkgs, home-manager, minegrub-theme, ... }:
+  outputs = { self, nixpkgs, home-manager, minegrub-theme, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
@@ -114,7 +114,21 @@
         services.earlyoom.enable = true;
         security.apparmor.enable = true;
         networking.networkmanager.enable = true;
-        networking.firewall.enable = true;
+        networking.firewall = {
+          enable = true;
+          allowedTCPPorts = [ 80 443 1080 27015 27036 27037 27040 53317 ];
+          allowedUDPPorts = [ 1080 27015 27031 27036 53317 ];
+          allowedUDPPortRanges = [
+            {
+              from = 27031;
+              to = 27036;
+            }
+            {
+              from = 8000;
+              to = 8010;
+            }
+          ];
+        };
         services.dnscrypt-proxy2 = {
           enable = true;
           settings = {
@@ -185,6 +199,8 @@
         services.ntp.servers =
           [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
         time.timeZone = "Australia/Perth";
+        # cuz of non-FHS need to export fonts dir to let normal app to read
+        fonts.fontDir.enable = true;
         i18n = {
           defaultLocale = "en_AU.UTF-8";
           extraLocales = [ "zh_CN.UTF-8/UTF-8" ];
@@ -205,8 +221,29 @@
           dates = "weekly";
           options = "--delete-older-than 14d";
         };
-        # nixpkgs.config.allowUnfree = true;
-        nix.settings.experimental-features = [ "nix-command" "flakes" ];
+        programs.git = {
+          enable = true;
+          config = {
+            init = { defaultBranch = "main"; };
+            url = {
+              "ssh://git@github.com/" = {
+                pushInsteadOf = [ "https://github.com/" ];
+              };
+            };
+          };
+        };
+        environment.etc."proxychains.conf".text = ''
+          strict_chain
+          proxy_dns
+          quiet_mode
+          remote_dns_subnet 224
+          tcp_read_time_out 15000
+          tcp_connect_time_out 8000
+          localnet 127.0.0.0/255.0.0.0
+
+          [ProxyList]
+          socks5 127.0.0.1 1080
+        '';
         environment.shellAliases = { vi = "nvim"; };
         environment.systemPackages = with pkgs; [
           xz
@@ -229,6 +266,7 @@
           lazygit
           chezmoi
           ripgrep
+          pciutils
           starship
           fastfetch
           efibootmgr
@@ -244,6 +282,8 @@
             extraOutputsToInstall = [ "dev" ];
           }))
         ];
+        # nixpkgs.config.allowUnfree = true;
+        nix.settings.experimental-features = [ "nix-command" "flakes" ];
         system.stateVersion = "25.05"; # Did you read the comment?
       };
 
@@ -299,8 +339,7 @@
               waylandFrontend = true;
             };
           };
-          # cuz of non-FHS need to export fonts dir to let normal app to read
-          fonts.fontDir.enable = true;
+          # Desktop needs
           services.xserver.enable = true;
           services.libinput.enable = true;
           services.displayManager.sddm.enable = true;
@@ -317,10 +356,72 @@
             alsa.support32Bit = true;
             pulse.enable = true;
           };
+          services.dae = {
+            enable = true;
+            # configFile = "/etc/dae/config.dae";
+            config = ''
+              global {
+                dial_mode: domain+
+                lan_interface: auto
+                wan_interface: auto
+                log_level: info
+                auto_config_kernel_parameter: true
+                tcp_check_url: 'http://cp.cloudflare.com,1.1.1.1,2606:4700:4700::1111'
+                tcp_check_http_method: HEAD
+                check_interval: 30s
+                check_tolerance: 50ms
+              }
+
+              node {
+                  'socks5://localhost:1080'
+              }
+
+              dns {
+                upstream {
+                  alih3: 'h3://dns.alidns.com:443/dns-query'
+                  localdns: 'udp://127.0.0.1:53'
+                }
+                routing {
+                  request {
+                    qname(geosite:cn) -> alih3
+                    fallback: localdns
+                  }
+                }
+              }
+
+              group {
+                  local_proxy {
+                      policy: min_moving_avg
+                  }
+              }
+
+              routing {
+                pname(NetworkManager) -> direct
+                dip(224.0.0.0/3, 'ff00::/8') -> direct
+                pname(dnscrypt-proxy) -> must_direct
+                pname(nekoray) -> must_direct
+                pname(nekobox_core) -> must_direct
+
+                dip(geoip:private) -> direct
+                dip(geoip:cn) -> direct
+                ip(geoip:cn) -> direct
+                domain(geosite:cn) -> direct
+                domain(geosite:category-ads) -> block
+
+                fallback: local_proxy
+              }
+            '';
+          };
+          environment.systemPackages = with pkgs; [
+            xsettingsd
+            xorg.xrdb
+            steam-devices-udev-rules
+            daed
+          ];
           # GPU
-          hardware.amdgpu.amdvlk.enable = true;
           hardware.nvidia.open = true;
           hardware.nvidia.modesetting.enable = true;
+          hardware.nvidia.nvidiaPersistenced = true;
           services.xserver.videoDrivers = [ "nvidia" ];
           # User defination
           users.users.hydroakri = {
@@ -330,39 +431,9 @@
             extraGroups = [ "networkmanager" "wheel" ];
           };
           programs.fish.enable = true;
-          programs.git = {
-            enable = true;
-            config = {
-              init = { defaultBranch = "main"; };
-              url = {
-                "ssh://git@github.com/" = {
-                  pushInsteadOf = [ "https://github.com/" ];
-                };
-              };
-            };
-          };
           services.displayManager.autoLogin.enable = true;
           services.displayManager.autoLogin.user = "hydroakri";
           services.flatpak.enable = true;
-          environment.etc."proxychains.conf".text = ''
-            strict_chain
-            proxy_dns
-            quiet_mode
-            remote_dns_subnet 224
-            tcp_read_time_out 15000
-            tcp_connect_time_out 8000
-            localnet 127.0.0.0/255.0.0.0
-
-            [ProxyList]
-            socks5 127.0.0.1 2080
-          '';
-          environment.systemPackages = with pkgs; [
-            xsettingsd
-            xorg.xrdb
-            steam-devices-udev-rules
-            proxychains-ng
-          ];
-
         };
         "hostB" = {
           networking.hostName = "hostB";
