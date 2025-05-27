@@ -1,6 +1,6 @@
 [Context]
 devices=dri
-filesystems=~/steamlib
+filesystems=/steamlib
 
 [Environment]
 __NV_PRIME_RENDER_OFFLOAD=1

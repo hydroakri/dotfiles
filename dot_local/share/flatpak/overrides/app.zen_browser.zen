@@ -1,6 +1,9 @@
 [Context]
 filesystems=xdg-run/portal
 
+[System Bus Policy]
+org.freedesktop.portal.Desktop=talk
+
 [Session Bus Policy]
 org.freedesktop.portal.OpenURI=talk
 org.freedesktop.portal.Desktop=talk

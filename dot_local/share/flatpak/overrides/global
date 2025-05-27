@@ -1,7 +1,17 @@
 [Context]
-filesystems=/run/current-system/sw/share/X11/fonts:ro;/nix/store:ro
+filesystems=/run/current-system/sw/share/X11/fonts:ro;/nix/store:ro;xdg-run/portal
 
 [Environment]
 XMODIFIERS=@im=fcitx
 GTK_IM_MODULE=fcitx
 QT_IM_MODULE=fcitx
+
+[System Bus Policy]
+org.freedesktop.portal.OpenURI=talk
+org.freedesktop.portal.Desktop=talk
+org.freedesktop.portal.Secret=talk
+
+[Session Bus Policy]
+org.freedesktop.portal.Desktop=talk
+org.freedesktop.portal.OpenURI=talk
+org.freedesktop.portal.Secret=talk
