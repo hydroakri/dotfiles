@@ -422,7 +422,28 @@
           hardware.nvidia.open = true;
           hardware.nvidia.modesetting.enable = true;
           hardware.nvidia.nvidiaPersistenced = true;
+          hardware.nvidia.videoAcceleration = true;
+          hardware.nvidia.dynamicBoost.enable = true;
+          hardware.nvidia.powerManagement.enable = true;
+          hardware.nvidia.prime = {
+            sync.enable = true;
+            amdgpuBusId = "PCI:7@0:0:0";
+            nvidiaBusId = "PCI:1@0:0:0";
+          };
           services.xserver.videoDrivers = [ "nvidia" ];
+          systemd.services.pwmProfileMonitor = {
+            description = "Monitor power profile changes and adjust fan PWM";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "power-profiles-daemon.service" ];
+            wants = [ "power-profiles-daemon.service" ];
+
+            serviceConfig = {
+              Type = "simple";
+              ExecStart = [ "${pwmProfileMonitor}" ];
+              Restart = "always";
+              RestartSec = "5s";
+            };
+          };
           # User defination
           users.users.hydroakri = {
             shell = pkgs.fish;
@@ -442,6 +463,29 @@
           services.httpd.adminAddr = "admin@example.com";
         };
       };
+
+      pwmProfileMonitor = pkgs.writeShellScript "pwm-profile-monitor" ''
+        PWM_PATH="/sys/devices/platform/hp-wmi/hwmon/hwmon7/pwm1_enable"
+
+        # 注意：dbus-monitor 直接执行时必须用绝对路径
+        ${pkgs.dbus}/bin/dbus-monitor --system \
+          "type='signal',interface='org.freedesktop.DBus.Properties',path='/net/hadess/PowerProfiles'" |
+          while read -r line; do
+            if echo "$line" | grep -q '"ActiveProfile"'; then
+              read -r next_line
+              if echo "$next_line" | grep -q '"performance"'; then
+                echo "Detected performance mode. Setting pwm1_enable to 0"
+                echo 0 | ${pkgs.coreutils}/bin/tee "$PWM_PATH"
+              elif echo "$next_line" | grep -q '"balanced"'; then
+                echo "Detected balanced mode. Setting pwm1_enable to 2"
+                echo 2 | ${pkgs.coreutils}/bin/tee "$PWM_PATH"
+              elif echo "$next_line" | grep -q '"power-saver"'; then
+                echo "Detected power-saver mode. Setting pwm1_enable to 2"
+                echo 2 | ${pkgs.coreutils}/bin/tee "$PWM_PATH"
+              fi
+            fi
+          done
+      '';
 
     in {
       # NixOS system configurations by hostname
