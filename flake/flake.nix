@@ -133,8 +133,13 @@
         services.dnscrypt-proxy2 = {
           enable = true;
           settings = {
+            cache = true;
+            cache_size = 4096;
             block_ipv6 = true;
+            netprobe_timeout = 300;
             lb_strategy = "p2";
+            require_dnssec = false;
+            bootstrap_resolvers = [ "223.5.5.5:53" "1.1.1.1:53" ];
             server_names = [
               "cloudflare"
               "cloudflare-family"
@@ -172,10 +177,12 @@
               "quad9-doh-ip4-port5053-nofilter-ecs-pri"
               "quad9-doh-ip4-port5053-nofilter-pri"
               "rethinkdns-doh"
+              "quad101"
               "flymc-doh-8443"
               "flymc-doh"
               "flymc-doh-cdn"
               "flymc-dns"
+              "alidns-doh"
             ];
             static.flymc-doh-8443.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
@@ -374,7 +381,7 @@
               }
 
               node {
-                  'socks5://localhost:1080'
+                'socks5://localhost:1080'
               }
 
               dns {
@@ -391,25 +398,20 @@
               }
 
               group {
-                  local_proxy {
+                  proxy {
                       policy: min_moving_avg
                   }
               }
 
               routing {
-                pname(NetworkManager) -> direct
-                dip(224.0.0.0/3, 'ff00::/8') -> direct
-                pname(dnscrypt-proxy) -> must_direct
-                pname(nekoray) -> must_direct
-                pname(nekobox_core) -> must_direct
+                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core) -> must_direct
+                dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
 
-                dip(geoip:private) -> direct
-                dip(geoip:cn) -> direct
-                ip(geoip:cn) -> direct
-                domain(geosite:cn) -> direct
-                domain(geosite:category-ads) -> block
+                dip(geoip:cn) -> direct 
+                ip(geoip:cn) -> direct 
+                domain(geosite:cn, geosite:geolocation-cn) -> direct 
 
-                fallback: local_proxy
+                fallback: proxy
               }
             '';
           };
@@ -418,7 +420,6 @@
             xorg.xrdb
             steam-devices-udev-rules
             # davinci-resolve-studio
-            daed
 
             ## Scheduling layer
             vulkan-loader # Vulkan
@@ -445,6 +446,7 @@
             vulkan-tools
             libva-utils
             vdpauinfo
+            read-edid
             clinfo
           ];
           # GPU
