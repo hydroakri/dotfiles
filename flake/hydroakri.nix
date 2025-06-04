@@ -1,7 +1,5 @@
 { config, pkgs, lib, ... }:
-let
-  rime-ice = "https://github.com/iDvel/rime-ice";
-  rime-ice-path = ".local/share/fcitx5/rime";
+let rime-ice-path = ".local/share/fcitx5/";
 in {
   home.username = "hydroakri";
   home.homeDirectory = "/home/hydroakri";
@@ -23,7 +21,18 @@ in {
     flatpak
     nekoray
     kdePackages.kate
-    kdePackages.partitionmanager
+
+    # Wayland compositor
+    xwayland-satellite
+    networkmanagerapplet
+    brightnessctl
+    pavucontrol
+    playerctl
+    blueman
+    qt6ct
+    mako
+    waybar
+    rofi-wayland
 
     # fonts
     #source-han-sans
@@ -60,20 +69,22 @@ in {
   systemd.user.services.gitSyncRime = {
     Unit = {
       Description = "Sync Rime repo from GitHub";
+      wantedBy = [ "network-online.target" ];
       After = [ "network-online.target" ];
     };
 
     Service = {
       Type = "oneshot";
-      ExecStart = ''
-        if [ -d "${rime-ice-path}/.git" ]; then
-          echo "Pulling existing repository at ${rime-ice-path}"
-          ${pkgs.git}/bin/git -C "${rime-ice-path}" pull
+      ExecStart = "${pkgs.writeShellScript "watch-store" ''
+        #!/run/current-system/sw/bin/bash
+        mkdir -p "${rime-ice-path}"
+        if [ ! -d "${rime-ice-path}/rime/.git" ]; then
+          "${pkgs.git}/bin/git" clone https://github.com/iDvel/rime-ice "${rime-ice-path}/rime"
         else
-          echo "Cloning repository to ${rime-ice-path}"
-          ${pkgs.git}/bin/git clone ${rime-ice} "${rime-ice-path}"
+          cd "${rime-ice-path}/rime"
+          "${pkgs.git}/bin/git" pull --ff-only
         fi
-      '';
+      ''}";
     };
 
     Install = { WantedBy = [ "default.target" ]; };

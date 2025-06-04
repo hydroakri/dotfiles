@@ -133,8 +133,13 @@
         services.dnscrypt-proxy2 = {
           enable = true;
           settings = {
+            cache = true;
+            cache_size = 4096;
             block_ipv6 = true;
+            netprobe_timeout = 300;
             lb_strategy = "p2";
+            require_dnssec = false;
+            bootstrap_resolvers = [ "223.5.5.5:53" "1.1.1.1:53" ];
             server_names = [
               "cloudflare"
               "cloudflare-family"
@@ -172,10 +177,12 @@
               "quad9-doh-ip4-port5053-nofilter-ecs-pri"
               "quad9-doh-ip4-port5053-nofilter-pri"
               "rethinkdns-doh"
+              "quad101"
               "flymc-doh-8443"
               "flymc-doh"
               "flymc-doh-cdn"
               "flymc-dns"
+              "alidns-doh"
             ];
             static.flymc-doh-8443.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
@@ -344,7 +351,41 @@
           services.xserver.enable = true;
           services.libinput.enable = true;
           services.displayManager.sddm.enable = true;
-          services.desktopManager.plasma6.enable = true;
+          services.desktopManager = {
+            cosmic = {
+              enable = false;
+              xwayland.enable = true;
+            };
+            plasma6.enable = true;
+          };
+          xdg.portal = {
+            enable = true;
+            wlr.enable = true;
+          };
+          # Polkit
+          security.polkit.enable = true;
+          security.pam.services.polkit.enable = true;
+          systemd.user.services.polkit-agent = {
+            description = "polkit-agent";
+            wantedBy = [ "graphical-session.target" ];
+            wants = [ "graphical-session.target" ];
+            after = [ "graphical-session.target" ];
+            serviceConfig = {
+              Type = "simple";
+              ExecStart =
+                "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+              # ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
+              Restart = "on-failure";
+              RestartSec = 1;
+              TimeoutStopSec = 10;
+            };
+          };
+
+          # secret service
+          services.gnome.gnome-keyring.enable = true;
+          services.passSecretService.enable = true;
+          security.pam.services.login.enableGnomeKeyring = true;
+
           services.xserver.xkb = {
             layout = "us";
             variant = "";
@@ -374,7 +415,7 @@
               }
 
               node {
-                  'socks5://localhost:1080'
+                'socks5://localhost:1080'
               }
 
               dns {
@@ -391,25 +432,20 @@
               }
 
               group {
-                  local_proxy {
+                  proxy {
                       policy: min_moving_avg
                   }
               }
 
               routing {
-                pname(NetworkManager) -> direct
-                dip(224.0.0.0/3, 'ff00::/8') -> direct
-                pname(dnscrypt-proxy) -> must_direct
-                pname(nekoray) -> must_direct
-                pname(nekobox_core) -> must_direct
+                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core) -> must_direct
+                dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
 
-                dip(geoip:private) -> direct
-                dip(geoip:cn) -> direct
-                ip(geoip:cn) -> direct
-                domain(geosite:cn) -> direct
-                domain(geosite:category-ads) -> block
+                dip(geoip:cn) -> direct 
+                ip(geoip:cn) -> direct 
+                domain(geosite:cn, geosite:geolocation-cn) -> direct 
 
-                fallback: local_proxy
+                fallback: proxy
               }
             '';
           };
@@ -417,8 +453,13 @@
             xsettingsd
             xorg.xrdb
             steam-devices-udev-rules
+
+            polkit
+
+            xdg-desktop-portal
+            xdg-desktop-portal-wlr
             # davinci-resolve-studio
-            daed
+            kdePackages.partitionmanager
 
             ## Scheduling layer
             vulkan-loader # Vulkan
@@ -445,6 +486,7 @@
             vulkan-tools
             libva-utils
             vdpauinfo
+            read-edid
             clinfo
           ];
           # GPU
@@ -492,8 +534,7 @@
             extraGroups = [ "networkmanager" "wheel" "video" ];
           };
           programs.fish.enable = true;
-          services.displayManager.autoLogin.enable = true;
-          services.displayManager.autoLogin.user = "hydroakri";
+          programs.niri.enable = true;
           services.flatpak.enable = true;
         };
         "hostB" = {

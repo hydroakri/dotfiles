@@ -1,5 +1,5 @@
 * {
-  font-family: "Inter Display", "CaskaydiaCove Nerd Font", "Noto Sans CJK SC";
+  font-family: "sans-serif";
   /* font-size: 16px; */
   /* font-weight: 400; */
   min-height: 1.5em;
@@ -14,7 +14,7 @@ window#waybar {
 
 window#waybar > box {
   /* background-color: rgba(239,241,245, 0.8); */
-  background-color: @backgroundAlpha;
+  background-color: #FFFCF0;
   /* border-radius: 9px; */
   /* border-bottom: 7px solid rgba(25, 25, 25, 0.3); */
   /* box-shadow: 1px 1px 1px 1px #101010; */
@@ -63,11 +63,11 @@ button:hover {
   border-radius: 0.31em;
   margin: 0.1em 0.1em 0.1em 0.1em;
   padding: 0 0.43em;
-  color: @foreground;
+  color: #100F0F;
 }
 
 #workspaces {
-  color: @background;
+  color: #100F0F;
 }
 /* If workspaces is the leftmost module, omit left margin */
 .modules-left > widget:first-child > #workspaces {
