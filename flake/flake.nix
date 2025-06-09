@@ -8,9 +8,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     minegrub-theme.url = "github:Lxtharia/minegrub-theme";
+    adlist = {
+      url =
+        "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, minegrub-theme, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, minegrub-theme, adlist, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
@@ -139,7 +144,7 @@
             netprobe_timeout = 300;
             lb_strategy = "p2";
             require_dnssec = false;
-            bootstrap_resolvers = [ "223.5.5.5:53" "1.1.1.1:53" ];
+            blocked_names.blocked_names_file = blocklist_txt;
             server_names = [
               "cloudflare"
               "cloudflare-family"
@@ -195,6 +200,7 @@
             sources.public-resolvers = {
               urls = [
                 "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
+                "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"
               ];
               cache_file = "public-resolvers.md";
               minisign_key =
@@ -544,6 +550,9 @@
           services.httpd.adminAddr = "admin@example.com";
         };
       };
+      # merge the dnscrypt-proxy blocklist
+      blocklist_base = builtins.readFile inputs.adlist;
+      blocklist_txt = pkgs.writeText "blocklist.txt" blocklist_base;
 
     in {
       # NixOS system configurations by hostname
