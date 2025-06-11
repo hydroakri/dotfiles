@@ -13,9 +13,14 @@
         "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
       flake = false;
     };
+    geodb = {
+      url = "github:Loyalsoldier/v2ray-rules-dat/release";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, minegrub-theme, adlist, ... }@inputs:
+  outputs =
+    { self, nixpkgs, home-manager, minegrub-theme, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
@@ -30,6 +35,8 @@
           [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
         # Bootloader.
         boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
+        hardware.cpu.amd.updateMicrocode = true;
+        hardware.cpu.intel.updateMicrocode = true;
         boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.grub = {
           device = "nodev";
@@ -118,6 +125,9 @@
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
+        services.auto-cpufreq.enable = true;
+        services.power-profiles-daemon.enable = false;
+        programs.gamemode.enable = true;
         security.apparmor.enable = true;
         networking.networkmanager.enable = true;
         networking.firewall = {
@@ -187,7 +197,6 @@
               "flymc-doh"
               "flymc-doh-cdn"
               "flymc-dns"
-              "alidns-doh"
             ];
             static.flymc-doh-8443.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
@@ -332,7 +341,7 @@
           ];
           # Early KMS
           boot.initrd.kernelModules =
-            [ "amdgpu" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+            [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "amdgpu" ];
           boot.extraModprobeConfig = ''
             options nvidia-drm modeset=1
             options nvidia NVreg_PreserveVideoMemoryAllocations=1
@@ -407,9 +416,13 @@
           services.dae = {
             enable = true;
             # configFile = "/etc/dae/config.dae";
+            assetsPath = toString (pkgs.symlinkJoin {
+              name = "dae-assets";
+              paths = [ "${inputs.geodb}" ];
+            });
             config = ''
               global {
-                dial_mode: domain+
+                dial_mode: domain
                 lan_interface: auto
                 wan_interface: auto
                 log_level: info
@@ -449,7 +462,9 @@
 
                 dip(geoip:cn) -> direct 
                 ip(geoip:cn) -> direct 
-                domain(geosite:cn, geosite:geolocation-cn) -> direct 
+                domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:category-games@cn, geosite:apple-cn, geosite:google-cn) -> direct 
+
+                domain(geosite:gfw) -> proxy
 
                 fallback: proxy
               }
@@ -537,7 +552,7 @@
             shell = pkgs.fish;
             isNormalUser = true;
             description = "hydroakri";
-            extraGroups = [ "networkmanager" "wheel" "video" ];
+            extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
           };
           programs.fish.enable = true;
           programs.niri.enable = true;

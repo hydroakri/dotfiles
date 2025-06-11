@@ -3,13 +3,30 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-1wqYfBiRoQMGIqPzhYvhGEeWauZx6cjVUgtdXgk+1uw=",
+        "narHash": "sha256-QjKloMw6gspgnk4QxKdJL13TcFHOEl5pihuAakKi7dk=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
       "original": {
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
+      }
+    },
+    "geodb": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1749852865,
+        "narHash": "sha256-A7OpPxVPNGq6O/KcGxlJlBMzeDjEAbKriwoNRHGijTg=",
+        "owner": "Loyalsoldier",
+        "repo": "v2ray-rules-dat",
+        "rev": "6cba4b10f113d46954d4f75a4b50ab4c3aedc7a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Loyalsoldier",
+        "ref": "release",
+        "repo": "v2ray-rules-dat",
+        "type": "github"
       }
     },
     "home-manager": {
@@ -19,11 +36,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1749479111,
-        "narHash": "sha256-0cn4NGnYR3n0m8FPrt+pW817Cedi4vwOw3SgJaTcdcg=",
+        "lastModified": 1749821119,
+        "narHash": "sha256-X3WAS322EsebI4ohJcXhKpiyG1v+7wE4VOiXy1pxM/c=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "35e1f5a7c29f2b05e8f53177f6b5c71108c5f4c3",
+        "rev": "79dfd9aa295e53773aad45480b44c131da29f35b",
         "type": "github"
       },
       "original": {
@@ -68,11 +85,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1749285348,
-        "narHash": "sha256-frdhQvPbmDYaScPFiCnfdh3B/Vh81Uuoo0w5TkWmmjU=",
+        "lastModified": 1749794982,
+        "narHash": "sha256-Kh9K4taXbVuaLC0IL+9HcfvxsSUx8dPB5s5weJcc9pc=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3e3afe5174c561dee0df6f2c2b2236990146329f",
+        "rev": "ee930f9755f58096ac6e8ca94a1887e0534e2d81",
         "type": "github"
       },
       "original": {
@@ -85,6 +102,7 @@
     "root": {
       "inputs": {
         "adlist": "adlist",
+        "geodb": "geodb",
         "home-manager": "home-manager",
         "minegrub-theme": "minegrub-theme",
         "nixpkgs": "nixpkgs_2"

@@ -1,4 +1,5 @@
 [Context]
+sockets=system-bus;session-bus
 devices=dri
 filesystems=/steamlib
 
