@@ -29,7 +29,7 @@ local config = {
         },
         -------- The quick brown fox jumps over the lazy dog
         {
-            family = "Hiragino Sans StdN",
+            family = "Hiragino Sans GB",
         },
         {
             family = "Noto Sans CJK SC",
@@ -44,13 +44,13 @@ local config = {
                     style = "Italic",
                     harfbuzz_features = { "calt=1", "clig=1", "liga=1", "ss01=1" },
                 },
-                -------- 東国三力今書鷹酬鬱愛袋永
+                -------- 東国三力今書鷹酬鬱愛袋永遍角次亮采之门
                 {
-                    family = "Zhuque Fangsong (technical preview)",
+                    family = "FZFW ZhuZi MinchoS",
                     style = "Italic",
                 },
                 {
-                    family = "LXGW WenKai Mono",
+                    family = "Zhuque Fangsong (technical preview)",
                     style = "Italic",
                 },
                 {
