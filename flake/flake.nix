@@ -34,7 +34,7 @@
         nix.settings.substituters =
           [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
         # Bootloader.
-        boot.kernelPackages = pkgs.linuxPackages_xanmod_latest;
+        boot.kernelPackages = pkgs.linuxPackages_xanmod;
         hardware.cpu.amd.updateMicrocode = true;
         hardware.cpu.intel.updateMicrocode = true;
         boot.loader.efi.canTouchEfiVariables = true;
@@ -244,6 +244,7 @@
           dates = "weekly";
           options = "--delete-older-than 14d";
         };
+        programs.nh.enable = true;
         programs.git = {
           enable = true;
           config = {
@@ -549,12 +550,12 @@
           services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
           # User defination
           users.users.hydroakri = {
-            shell = pkgs.fish;
+            shell = pkgs.zsh;
             isNormalUser = true;
             description = "hydroakri";
             extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
           };
-          programs.fish.enable = true;
+          programs.zsh.enable = true;
           programs.niri.enable = true;
           services.flatpak.enable = true;
         };
