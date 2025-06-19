@@ -1,0 +1,47 @@
+/* == 全局生效，应用于所有网页 == */
+body,
+html {
+    /* 默认先用 Inter Display，再回退到中文无衬线字体，最后系统无衬线 */
+    font-family: "Inter Display",
+    "Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC",
+    sans-serif !important;
+}
+
+/* ==== 强制 serif 场景 ==== */
+/* HTML 中常见的 serif 场景：标题、引用、斜体/强调、文章主体等 */
+h1,
+h2,
+blockquote {
+    font-family: "Libertinus Serif Display",
+    "FZFW ZhuZi MinchoS", "Noto Serif CJK SC",
+    serif !important;
+}
+
+/* ==== 强制 monospace 场景 ==== */
+pre,
+pre *,
+code,
+code *,
+quoteblock,
+quoteblock *,
+kbd,
+samp,
+.blob-code-content *,
+div[data-test-selector="release-card"] details ul *,
+.highlighted-code *,
+.code-wrap *,
+/* .editor-container *, */
+.enlighter *,
+.CodeMirror {
+    font-family: "Cascadia Code",
+    monospace !important;
+}
+
+
+/* ==== 如果想针对纯中文页面再微调 ==== */
+/* :lang(zh) * {
+  font-family:
+    "Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC",
+    sans-serif
+  !important;
+} */
