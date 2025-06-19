@@ -25,19 +25,6 @@ alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {
 alias p='proxychains -q'
 alias p4='proxychains4 -q'
 alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
-alias upgradeall='(
-  sudo nala upgrade -y &&
-  flatpak update -y &&
-  brew update && brew upgrade --force &&
-)'
-
-# homebrew source
-export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
-export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
-export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
-export HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
-
 
 # vim bindkey
 bindkey -v
