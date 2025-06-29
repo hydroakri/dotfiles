@@ -472,6 +472,11 @@
             '';
           };
           environment.systemPackages = with pkgs; [
+            yad # steamtinkerlaunch depend
+            lact # GPU management
+            # davinci-resolve-studio
+            kdePackages.partitionmanager
+
             xsettingsd
             xorg.xrdb
             steam-devices-udev-rules
@@ -480,8 +485,6 @@
 
             xdg-desktop-portal
             xdg-desktop-portal-wlr
-            # davinci-resolve-studio
-            kdePackages.partitionmanager
 
             ## Scheduling layer
             vulkan-loader # Vulkan
@@ -558,6 +561,56 @@
           programs.zsh.enable = true;
           programs.niri.enable = true;
           services.flatpak.enable = true;
+          services.sunshine = {
+            enable = true;
+            autoStart = true;
+            capSysAdmin = true;
+            openFirewall = true;
+          };
+          systemd.services.fancontrol = {
+            description = "Custom Fan Control Service";
+            wants = [ "multi-user.target" ];
+            after = [ "multi-user.target" ];
+            serviceConfig = {
+              ExecStart = "${pkgs.writeShellScript "watch-store" ''
+                #!/run/current-system/sw/bin/bash
+
+                # 硬件接口路径
+                PWM_ENABLE="/sys/devices/platform/hp-wmi/hwmon/hwmon7/pwm1_enable"
+                PWM_CTRL="/sys/devices/platform/hp-wmi/hwmon/hwmon7/power/control"
+                CPU_TEMP="/sys/class/hwmon/hwmon5/temp1_input"
+                GPU_TEMP="/sys/class/hwmon/hwmon0/temp1_input"
+
+                # 先启用手动控制模式
+                echo on > "$PWM_CTRL"
+                echo 2 > "$PWM_ENABLE"
+
+                while true; do
+                  # 读取 CPU（m°C）并转换为 ℃
+                  cpu_c=$(( $(cat "$CPU_TEMP") / 1000 ))
+                  # 读取 GPU 温度（整数 ℃）
+                  gpu_c=$(( $(cat "$GPU_TEMP") / 1000 ))
+
+                  # 取最大值
+                  temp=$(( cpu_c > gpu_c ? cpu_c : gpu_c ))
+
+                  if [ "$temp" -gt 55 ]; then
+                    # 超过阈值 → 全速
+                    echo 0 > "$PWM_ENABLE"
+                  else
+                    # 否则维持自动低速
+                    echo 2 > "$PWM_ENABLE"
+                  fi
+
+                  sleep 5
+                done
+              ''}";
+              Restart = "always";
+              RestartSec = "5";
+              Type = "simple";
+            };
+            wantedBy = [ "multi-user.target" ];
+          };
         };
         "hostB" = {
           networking.hostName = "hostB";
