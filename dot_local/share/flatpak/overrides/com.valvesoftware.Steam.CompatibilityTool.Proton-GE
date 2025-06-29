@@ -1,5 +1,2 @@
 [Context]
 filesystems=xdg-config/MangoHud:ro;
-
-[Environment]
-MANGOHUD=1
