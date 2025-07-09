@@ -121,15 +121,22 @@
           size = "ram/2";
           algorithm = "zstd";
         };
+        security = {
+          sudo-rs.enable = true;
+          sudo.enable = false;
+        };
         services.fwupd.enable = true;
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
-        services.auto-cpufreq.enable = true;
-        services.power-profiles-daemon.enable = false;
+        # services.auto-cpufreq.enable = true;
+        services.power-profiles-daemon.enable = true;
         programs.gamemode.enable = true;
         security.apparmor.enable = true;
-        networking.networkmanager.enable = true;
+        networking.networkmanager = {
+          enable = true;
+          wifi.powersave = true;
+        };
         networking.firewall = {
           enable = true;
           allowedTCPPorts = [ 80 443 1080 27015 27036 27037 27040 53317 ];
@@ -239,12 +246,14 @@
             LC_TIME = "en_AU.UTF-8";
           };
         };
+        nixpkgs.config.allowUnfree = true;
         nix.gc = {
           automatic = true;
           dates = "weekly";
           options = "--delete-older-than 14d";
         };
         programs.nh.enable = true;
+        programs.nix-ld.enable = true;
         programs.git = {
           enable = true;
           config = {
@@ -285,8 +294,10 @@
           unzip
           p7zip
           cargo
+          nodejs
           zoxide
           neovim
+          python3
           lazygit
           chezmoi
           ripgrep
@@ -321,6 +332,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.users.hydroakri = import ./hydroakri.nix;
             }
           ];
@@ -458,12 +470,12 @@
               }
 
               routing {
-                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core) -> must_direct
+                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
                 dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
 
                 dip(geoip:cn) -> direct 
                 ip(geoip:cn) -> direct 
-                domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:category-games@cn, geosite:apple-cn, geosite:google-cn) -> direct 
+                domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:category-games@cn, geosite:apple-cn, geosite:google-cn) -> direct
 
                 domain(geosite:gfw) -> proxy
 
@@ -542,10 +554,11 @@
             powerManagement.enable = true;
             prime = {
               offload = {
-                enable = true;
-                enableOffloadCmd = true; # use `nvidia-offload` like `prime-run`
+                enable = false;
+                enableOffloadCmd =
+                  false; # use `nvidia-offload` like `prime-run`
               };
-              # sync.enable = true;
+              sync.enable = true;
               amdgpuBusId = "PCI:7@0:0:0";
               nvidiaBusId = "PCI:1@0:0:0";
             };
@@ -560,6 +573,11 @@
           };
           programs.zsh.enable = true;
           programs.niri.enable = true;
+          programs.clash-verge = {
+            enable = true;
+            serviceMode = true;
+            package = pkgs.clash-verge-rev;
+          };
           services.flatpak.enable = true;
           services.sunshine = {
             enable = true;

@@ -104,8 +104,8 @@
     ];
   };
 
-  fileSystems."/steamlib" = {
-    label = "steamlib";
+  fileSystems."/steam-win" = {
+    label = "steam-win";
     fsType = "ntfs-3g";
     options = [
       "nofail"
@@ -123,6 +123,23 @@
       "big_writes"
     ]; # ntfs-3g
     #options = ["nofail" "users" "uid=1000" "gid=1000" "rw" "exec" "umask=000" "noatime" "async" ]; #ntfs3
+  };
+
+  fileSystems."/steam-linux" = {
+    label = "steam-linux";
+    fsType = "btrfs";
+    options = [
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:1"
+      "discard=async"
+      "autodefrag"
+    ];
   };
 
   swapDevices = [ ];
