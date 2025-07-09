@@ -87,14 +87,20 @@ vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
 vim.wo.foldmethod = "manual"
-vim.wo.foldexpr = "nvim_treesitter#foldexpr()"
--- font
-vim.opt.guifont = { "CaskaydiaCove NF", ":h12" }
+-- vim.wo.foldexpr = "nvim_treesitter#foldexpr()"  -- ufo 和 treesitter fold 二选一
 
--- AutoCmds
--- save session before quit
-vim.cmd("autocmd VimLeave * :!mkdir -p ~/.local/share/nvim/sessions/")
-vim.cmd("autocmd VimLeave * :mksession!" .. data .. "/sessions/latest.vim")
+-- Autocmds
+-- back to the last cursor location
+vim.api.nvim_create_autocmd("BufReadPost", {
+	group = vim.api.nvim_create_augroup("LastPos", { clear = true }),
+	callback = function()
+		local mark = vim.api.nvim_buf_get_mark(0, '"')
+		if mark[1] > 0 and mark[1] <= vim.api.nvim_buf_line_count(0) and vim.bo.filetype ~= "commit" then
+			vim.cmd('silent! normal! g`"')
+		end
+	end,
+})
+-- nvim-lint
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
 	callback = function()
 		require("lint").try_lint()
@@ -151,10 +157,6 @@ require("lazy").setup({
 					},
 					dependencies = {
 						{ "nvim-lua/plenary.nvim" },
-						{
-							"nvim-telescope/telescope-fzf-native.nvim",
-							build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
-						},
 					},
 					cmd = "Telescope",
 					config = function()
@@ -185,7 +187,6 @@ require("lazy").setup({
 								},
 							},
 						})
-						require("telescope").load_extension("fzf")
 					end,
 				},
 			},
@@ -359,12 +360,6 @@ require("lazy").setup({
 									action = "Mason",
 									key = "m",
 								},
-								{
-									desc = " Latest Sessions",
-									group = "DiagnosticHint",
-									action = "lua local sessionpath = vim.fn.stdpath('data') .. '/sessions/latest.vim' vim.cmd('source ' .. sessionpath)",
-									key = "l",
-								},
 							},
 						},
 					})
@@ -417,7 +412,7 @@ require("lazy").setup({
 						typescript = { "prettierd", "ast-grep" },
 						vue = { "prettierd" },
 						yaml = { "prettierd" },
-						lua = { "ast-grep", "stylua" },
+						lua = { "stylua", "ast-grep" },
 						python = { "ast-grep" },
 						bash = { "beautysh" },
 						ksh = { "beautysh" },
@@ -447,7 +442,7 @@ require("lazy").setup({
 				event = "BufReadPost",
 				config = function()
 					require("lint").linters_by_ft = {
-						lua = { "selene" },
+						lua = { "luacheck" },
 						markdown = { "write_good" },
 						bash = { "shellcheck" },
 						c = { "trivy" },
@@ -869,14 +864,6 @@ require("lazy").setup({
 		{
 			-- CODERUNNER
 			{ "michaelb/sniprun", build = "sh ./install.sh", cmd = "SnipRun" },
-
-			-- ORGMODE
-			{
-				"nvim-neorg/neorg",
-				lazy = false,
-				version = "*",
-				config = true,
-			},
 			{
 				"Zeioth/markmap.nvim",
 				ft = { "md", "markdown" },
@@ -1284,41 +1271,10 @@ require("lazy").setup({
 			},
 			dependencies = {
 				{
-					"williamboman/mason-lspconfig.nvim",
-					dependencies = { "williamboman/mason.nvim" },
+					"mason-org/mason-lspconfig.nvim",
+					dependencies = { "mason-org/mason.nvim" },
 					config = function()
-						require("mason-lspconfig").setup({
-							automatic_installation = true,
-							ensure_installed = {
-								-- lspservers
-								"bash-language-server",
-								"jdtls",
-								"clangd",
-								"cssls",
-								"jsonls",
-								"ltex",
-								"lua_ls",
-								"marksman",
-								"nil",
-								-- dap
-								"debugpy",
-								"java-debug-adapter",
-								"java-test",
-								"bash-debug-adapter",
-								-- linter
-								"write-good",
-								"trivy",
-								"stylelint_lsp",
-								"luacheck",
-								"shellcheck",
-								"vale_ls",
-								-- formatter
-								"ast_grep",
-								"beautysh",
-								"prettierd",
-                                "nixfmt",
-							},
-						})
+						require("mason-lspconfig").setup({})
 					end,
 				},
 
@@ -1342,7 +1298,7 @@ require("lazy").setup({
 
 					-- LSP PACKAGE MANAGER
 					{
-						"williamboman/mason.nvim",
+						"mason-org/mason.nvim",
 						cmd = "Mason",
 						config = function()
 							require("mason").setup({})
@@ -1356,57 +1312,7 @@ require("lazy").setup({
 					dynamicRegistration = false,
 					lineFoldingOnly = true,
 				}
-
 				local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-				require("mason-lspconfig").setup_handlers({
-					function(server_name)
-						require("lspconfig")[server_name].setup({
-							cmp_capabilities = cmp_capabilities,
-							ufo_capabilities = ufo_capabilities,
-						})
-					end,
-					["lua_ls"] = function()
-						require("lspconfig").lua_ls.setup({
-							cmp_capabilities = cmp_capabilities,
-							ufo_capabilities = ufo_capabilities,
-							settings = {
-								Lua = {
-									runtime = {
-										version = "LuaJIT",
-									},
-									diagnostics = {
-										globals = { "vim", "packer_bootstrap" },
-									},
-									telemetry = {
-										enable = false,
-									},
-								},
-							},
-						})
-					end,
-					["clangd"] = function()
-						require("lspconfig").clangd.setup({
-							cmp_capabilities = cmp_capabilities,
-							ufo_capabilities = ufo_capabilities,
-							filetype = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
-							single_file_support = true,
-							cmd = {
-								"clangd",
-								"--background-index",
-								"--pch-storage=memory",
-								-- You MUST set this arg ↓ to your clangd executable location (if not included)!
-								"--query-driver=/usr/bin/clang++,/usr/bin/**/clang-*,/bin/clang,/bin/clang++,/usr/bin/gcc,/usr/bin/g++",
-								"--clang-tidy",
-								"--all-scopes-completion",
-								"--cross-file-rename",
-								"--completion-style=detailed",
-								"--header-insertion-decorators",
-								"--header-insertion=iwyu",
-							},
-						})
-					end,
-				})
 			end,
 		},
 
