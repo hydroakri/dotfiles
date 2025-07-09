@@ -1,5 +1,5 @@
 [Context]
-filesystems=xdg-config/MangoHud:ro
+filesystems=/steam-linux;xdg-config/MangoHud:ro;/steam-win
 
 [Environment]
 MANGOHUD=1

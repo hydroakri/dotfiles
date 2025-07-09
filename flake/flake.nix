@@ -121,15 +121,24 @@
           size = "ram/2";
           algorithm = "zstd";
         };
+        security = {
+          sudo-rs.enable = true;
+          sudo.enable = false;
+        };
         services.fwupd.enable = true;
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
-        services.auto-cpufreq.enable = true;
-        services.power-profiles-daemon.enable = false;
+        # services.auto-cpufreq.enable = true;
+        services.power-profiles-daemon.enable = true;
         programs.gamemode.enable = true;
         security.apparmor.enable = true;
-        networking.networkmanager.enable = true;
+        networking.interfaces.wlo1.wakeOnLan.enable = false;
+        networking.interfaces.eno1.wakeOnLan.enable = false;
+        networking.networkmanager = {
+          enable = true;
+          wifi.powersave = true;
+        };
         networking.firewall = {
           enable = true;
           allowedTCPPorts = [ 80 443 1080 27015 27036 27037 27040 53317 ];
@@ -218,9 +227,10 @@
             };
           };
         };
-        services.ntp.enable = true;
-        services.ntp.servers =
-          [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
+        services.chrony = {
+          enable = true;
+          servers = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
+        };
         time.timeZone = "Australia/Perth";
         # cuz of non-FHS need to export fonts dir to let normal app to read
         fonts.fontDir.enable = true;
@@ -239,12 +249,14 @@
             LC_TIME = "en_AU.UTF-8";
           };
         };
+        nixpkgs.config.allowUnfree = true;
         nix.gc = {
           automatic = true;
           dates = "weekly";
           options = "--delete-older-than 14d";
         };
         programs.nh.enable = true;
+        programs.nix-ld.enable = true;
         programs.git = {
           enable = true;
           config = {
@@ -285,8 +297,11 @@
           unzip
           p7zip
           cargo
+          nodejs
           zoxide
           neovim
+          python3
+          mokutil
           lazygit
           chezmoi
           ripgrep
@@ -321,6 +336,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.users.hydroakri = import ./hydroakri.nix;
             }
           ];
@@ -346,6 +362,7 @@
           boot.extraModprobeConfig = ''
             options nvidia-drm modeset=1
             options nvidia NVreg_PreserveVideoMemoryAllocations=1
+            options snd_hda_intel power_save=1
           '';
           i18n.inputMethod = {
             type = "fcitx5";
@@ -458,12 +475,12 @@
               }
 
               routing {
-                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core) -> must_direct
+                pname(NetworkManager, dnscrypt-proxy, nekoray, nekobox_core, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
                 dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
 
                 dip(geoip:cn) -> direct 
                 ip(geoip:cn) -> direct 
-                domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:category-games@cn, geosite:apple-cn, geosite:google-cn) -> direct 
+                domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:apple-cn, geosite:google-cn) -> direct
 
                 domain(geosite:gfw) -> proxy
 
@@ -472,15 +489,18 @@
             '';
           };
           environment.systemPackages = with pkgs; [
-            yad # steamtinkerlaunch depend
             lact # GPU management
             # davinci-resolve-studio
+            yad # steamtinkerlaunch depend
+            mangohud
+            gamescope
+            protonup-qt
+            steamtinkerlaunch
+            steam-devices-udev-rules
             kdePackages.partitionmanager
 
             xsettingsd
             xorg.xrdb
-            steam-devices-udev-rules
-
             polkit
 
             xdg-desktop-portal
@@ -539,13 +559,16 @@
             nvidiaPersistenced = true;
             videoAcceleration = true;
             dynamicBoost.enable = true;
-            powerManagement.enable = true;
+            powerManagement = {
+              enable = true;
+              finegrained = true;
+            };
             prime = {
               offload = {
                 enable = true;
                 enableOffloadCmd = true; # use `nvidia-offload` like `prime-run`
               };
-              # sync.enable = true;
+              sync.enable = false;
               amdgpuBusId = "PCI:7@0:0:0";
               nvidiaBusId = "PCI:1@0:0:0";
             };
@@ -560,6 +583,24 @@
           };
           programs.zsh.enable = true;
           programs.niri.enable = true;
+          programs = {
+            gamescope = {
+              enable = true;
+              capSysNice = true;
+            };
+            steam = {
+              enable = true;
+              remotePlay.openFirewall = true;
+              dedicatedServer.openFirewall = true;
+              localNetworkGameTransfers.openFirewall = true;
+              gamescopeSession.enable = true;
+            };
+          };
+          programs.clash-verge = {
+            enable = true;
+            serviceMode = true;
+            package = pkgs.clash-verge-rev;
+          };
           services.flatpak.enable = true;
           services.sunshine = {
             enable = true;
