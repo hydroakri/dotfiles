@@ -104,27 +104,6 @@
     ];
   };
 
-  fileSystems."/steam-win" = {
-    label = "steam-win";
-    fsType = "ntfs-3g";
-    options = [
-      "nofail"
-      "users"
-      "uid=1000"
-      "gid=1000"
-      "rw"
-      "exec"
-      "umask=000"
-      "prealloc"
-      "noatime"
-      "allow_other"
-      "async"
-      "windows_names"
-      "big_writes"
-    ]; # ntfs-3g
-    #options = ["nofail" "users" "uid=1000" "gid=1000" "rw" "exec" "umask=000" "noatime" "async" ]; #ntfs3
-  };
-
   fileSystems."/steam-linux" = {
     label = "steam-linux";
     fsType = "btrfs";

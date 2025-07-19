@@ -351,17 +351,13 @@
           boot.kernelParams = [
             "radeon.dpm=1"
             "amd_pstate=active"
-            "nvidia_drm.modeset=1"
-            "nvidia_drm.fbdev=1"
             "nouveau.config=NvGspRm=1"
             "nouveau.config=NvBoost=2"
+            "nouveau.modeset=1"
           ];
           # Early KMS
-          boot.initrd.kernelModules =
-            [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "amdgpu" ];
+          boot.initrd.kernelModules = [ "amdgpu" ];
           boot.extraModprobeConfig = ''
-            options nvidia-drm modeset=1
-            options nvidia NVreg_PreserveVideoMemoryAllocations=1
             options snd_hda_intel power_save=1
           '';
           i18n.inputMethod = {
@@ -386,7 +382,7 @@
           services.displayManager.sddm.enable = true;
           services.desktopManager = {
             cosmic = {
-              enable = false;
+              enable = true;
               xwayland.enable = true;
             };
             plasma6.enable = true;
@@ -553,27 +549,44 @@
               libvdpau-va-gl
             ];
           };
-          hardware.nvidia = {
-            open = true;
-            modesetting.enable = true;
-            nvidiaPersistenced = true;
-            videoAcceleration = true;
-            dynamicBoost.enable = true;
-            powerManagement = {
-              enable = true;
-              finegrained = true;
-            };
-            prime = {
-              offload = {
-                enable = true;
-                enableOffloadCmd = true; # use `nvidia-offload` like `prime-run`
+          specialisation = {
+            nvidia-variant.configuration = {
+              system.nixos.tags = [ "nvidia" ];
+
+              services.xserver.videoDrivers = [ "nvidia" ];
+              boot.kernelParams =
+                [ "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1" ];
+              # Early KMS
+              boot.initrd.kernelModules =
+                [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+              boot.extraModprobeConfig = ''
+                options nvidia-drm modeset=1
+                options nvidia NVreg_PreserveVideoMemoryAllocations=1
+              '';
+              hardware.nvidia = {
+                open = true;
+                modesetting.enable = true;
+                nvidiaPersistenced = true;
+                videoAcceleration = true;
+                dynamicBoost.enable = true;
+                powerManagement = {
+                  enable = true;
+                  finegrained = true;
+                };
+                prime = {
+                  offload = {
+                    enable = true;
+                    enableOffloadCmd =
+                      true; # use `nvidia-offload` like `prime-run`
+                  };
+                  sync.enable = false;
+                  amdgpuBusId = "PCI:7@0:0:0";
+                  nvidiaBusId = "PCI:1@0:0:0";
+                };
               };
-              sync.enable = false;
-              amdgpuBusId = "PCI:7@0:0:0";
-              nvidiaBusId = "PCI:1@0:0:0";
             };
           };
-          services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
+          services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
           # User defination
           users.users.hydroakri = {
             shell = pkgs.zsh;
