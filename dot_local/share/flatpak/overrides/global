@@ -1,16 +1,16 @@
 [Context]
-filesystems=/run/current-system/sw/share/X11/fonts:ro;/nix/store:ro;xdg-run/portal
+filesystems=/nix/store:ro;/run/current-system/sw/share/X11/fonts:ro;xdg-run/portal;xdg-config/gtk-4.0:ro;
 
-[Environment]
-XMODIFIERS=@im=fcitx
-QT_IM_MODULE=fcitx
+[Session Bus Policy]
+org.freedesktop.portal.OpenURI=talk
+org.freedesktop.portal.Desktop=talk
+org.freedesktop.portal.Secret=talk
 
 [System Bus Policy]
 org.freedesktop.portal.OpenURI=talk
 org.freedesktop.portal.Desktop=talk
 org.freedesktop.portal.Secret=talk
 
-[Session Bus Policy]
-org.freedesktop.portal.Desktop=talk
-org.freedesktop.portal.OpenURI=talk
-org.freedesktop.portal.Secret=talk
+[Environment]
+XMODIFIERS=@im=fcitx
+QT_IM_MODULE=fcitx
