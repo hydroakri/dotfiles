@@ -129,6 +129,7 @@
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
+        systemd.oomd.enable = false;
         # services.auto-cpufreq.enable = true;
         services.power-profiles-daemon.enable = true;
         programs.gamemode.enable = true;
@@ -379,13 +380,15 @@
           # Desktop needs
           services.xserver.enable = true;
           services.libinput.enable = true;
-          services.displayManager.sddm.enable = true;
+          # services.displayManager.sddm.enable = true;
+          services.displayManager.cosmic-greeter.enable = true;
           services.desktopManager = {
             cosmic = {
               enable = true;
               xwayland.enable = true;
             };
-            plasma6.enable = true;
+            # gnome.enable = true;
+            # plasma6.enable = true;
           };
           xdg.portal = {
             enable = true;
@@ -485,15 +488,19 @@
             '';
           };
           environment.systemPackages = with pkgs; [
+            ghostty
             lact # GPU management
             # davinci-resolve-studio
             yad # steamtinkerlaunch depend
             mangohud
             gamescope
             protonup-qt
-            steamtinkerlaunch
             steam-devices-udev-rules
             kdePackages.partitionmanager
+            # gnomeExtensions.tray-icons-reloaded
+            # gnomeExtensions.user-themes
+            # gnomeExtensions.kimpanel
+            # gnome-tweaks
 
             xsettingsd
             xorg.xrdb
@@ -530,6 +537,23 @@
             read-edid
             clinfo
           ];
+          environment.gnome.excludePackages = (with pkgs; [
+            atomix # puzzle game
+            cheese # webcam tool
+            epiphany # web browser
+            evince # document viewer
+            geary # email reader
+            gedit # text editor
+            gnome-characters
+            gnome-music
+            gnome-photos
+            gnome-terminal
+            gnome-tour
+            hitori # sudoku game
+            iagno # go game
+            tali # poker game
+            totem # video player
+          ]);
           # GPU
           hardware.graphics = {
             enable = true;
@@ -595,7 +619,7 @@
             extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
           };
           programs.zsh.enable = true;
-          programs.niri.enable = true;
+          programs.niri.enable = false;
           programs = {
             gamescope = {
               enable = true;
@@ -607,10 +631,11 @@
               dedicatedServer.openFirewall = true;
               localNetworkGameTransfers.openFirewall = true;
               gamescopeSession.enable = true;
+              extraCompatPackages = with pkgs; [ steamtinkerlaunch ];
             };
           };
           programs.clash-verge = {
-            enable = true;
+            enable = false;
             serviceMode = true;
             package = pkgs.clash-verge-rev;
           };
