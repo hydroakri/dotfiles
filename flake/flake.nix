@@ -7,7 +7,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    minegrub-theme.url = "github:Lxtharia/minegrub-theme";
     adlist = {
       url =
         "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
@@ -19,8 +18,7 @@
     };
   };
 
-  outputs =
-    { self, nixpkgs, home-manager, minegrub-theme, adlist, geodb, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
@@ -38,10 +36,17 @@
         hardware.cpu.amd.updateMicrocode = true;
         hardware.cpu.intel.updateMicrocode = true;
         boot.loader.efi.canTouchEfiVariables = true;
-        boot.loader.grub = {
-          device = "nodev";
+        boot.loader.limine = {
+          enable = true;
+          biosDevice = "nodev";
           efiSupport = true;
-          useOSProber = true;
+          secureBoot.enable = true;
+          secureBoot.sbctl = pkgs.sbctl;
+          extraEntries = ''
+            /Windows
+                protocol: efi
+                path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
+          '';
         };
         boot.kernelParams = [
           "zswap.enabled=0"
@@ -324,14 +329,13 @@
         ];
         # nixpkgs.config.allowUnfree = true;
         nix.settings.experimental-features = [ "nix-command" "flakes" ];
-        system.stateVersion = "25.05"; # Did you read the comment?
+        system.stateVersion = "25.11"; # Did you read the comment?
       };
 
       # Host-specific overrides
       hosts = {
         "omen15" = {
           imports = [
-            minegrub-theme.nixosModules.default
             ./omen15.nix
             home-manager.nixosModules.home-manager
             {
@@ -342,25 +346,22 @@
             }
           ];
           networking.hostName = "omen15";
-          boot.loader.grub.minegrub-theme = {
-            enable = true;
-            splash = "Never Knows Best";
-            background = "background_options/1.8  - [Classic Minecraft].png";
-            boot-options-count = 4;
+          boot = {
+            plymouth.enable = true;
+            kernelParams = [
+              "radeon.dpm=1"
+              "amd_pstate=active"
+              "nouveau.config=NvGspRm=1"
+              "nouveau.config=NvBoost=2"
+              "nouveau.modeset=1"
+            ];
+            initrd.kernelModules = [ "amdgpu" ]; # Early KMS First stage of boot
+            kernelModules = [ "zenpower" ]; # Second stage of boot process
+            blacklistedKernelModules = [ "k10temp" ];
+            extraModprobeConfig = ''
+              options snd_hda_intel power_save=1
+            '';
           };
-          boot.plymouth.enable = true;
-          boot.kernelParams = [
-            "radeon.dpm=1"
-            "amd_pstate=active"
-            "nouveau.config=NvGspRm=1"
-            "nouveau.config=NvBoost=2"
-            "nouveau.modeset=1"
-          ];
-          # Early KMS
-          boot.initrd.kernelModules = [ "amdgpu" ];
-          boot.extraModprobeConfig = ''
-            options snd_hda_intel power_save=1
-          '';
           i18n.inputMethod = {
             type = "fcitx5";
             enable = true;
@@ -380,19 +381,20 @@
           # Desktop needs
           services.xserver.enable = true;
           services.libinput.enable = true;
-          # services.displayManager.sddm.enable = true;
-          services.displayManager.cosmic-greeter.enable = true;
+          services.displayManager.sddm.enable = true;
+          # services.displayManager.cosmic-greeter.enable = true;
           services.desktopManager = {
             cosmic = {
-              enable = true;
+              enable = false;
               xwayland.enable = true;
             };
             # gnome.enable = true;
-            # plasma6.enable = true;
+            plasma6.enable = true;
           };
           xdg.portal = {
             enable = true;
-            wlr.enable = true;
+            xdgOpenUsePortal = true;
+            # extraPortals = [ pkgs.xdg-desktop-portal-cosmic ];
           };
           # Polkit
           security.polkit.enable = true;
@@ -488,8 +490,18 @@
             '';
           };
           environment.systemPackages = with pkgs; [
+            # file manager
+            xfce.thunar
+            xfce.thunar-archive-plugin
+            xarchiver
+            file-roller
+            p7zip
+            unzip
+            zip
+            unrar
+            # file manager
+
             ghostty
-            lact # GPU management
             # davinci-resolve-studio
             yad # steamtinkerlaunch depend
             mangohud
@@ -538,6 +550,7 @@
             clinfo
           ];
           environment.gnome.excludePackages = (with pkgs; [
+            ## gnome
             atomix # puzzle game
             cheese # webcam tool
             epiphany # web browser
@@ -553,6 +566,12 @@
             iagno # go game
             tali # poker game
             totem # video player
+
+            ## cosmic
+            cosmic-files
+            cosmic-player
+            cosmic-term
+            cosmic-edit
           ]);
           # GPU
           hardware.graphics = {
@@ -640,6 +659,8 @@
             package = pkgs.clash-verge-rev;
           };
           services.flatpak.enable = true;
+          services.lact.enable = true;
+          hardware.amdgpu.overdrive.enable = true;
           services.sunshine = {
             enable = true;
             autoStart = true;
@@ -655,10 +676,10 @@
                 #!/run/current-system/sw/bin/bash
 
                 # 硬件接口路径
-                PWM_ENABLE="/sys/devices/platform/hp-wmi/hwmon/hwmon7/pwm1_enable"
-                PWM_CTRL="/sys/devices/platform/hp-wmi/hwmon/hwmon7/power/control"
-                CPU_TEMP="/sys/class/hwmon/hwmon5/temp1_input"
-                GPU_TEMP="/sys/class/hwmon/hwmon0/temp1_input"
+                PWM_ENABLE="/sys/devices/platform/hp-wmi/hwmon/$(ls /sys/devices/platform/hp-wmi/hwmon/)/pwm1_enable"
+                PWM_CTRL="/sys/devices/platform/hp-wmi/hwmon/$(ls /sys/devices/platform/hp-wmi/hwmon/)/power/control"
+                CPU_TEMP="/sys/devices/virtual/thermal/thermal_zone0/temp"
+                GPU_TEMP="/sys/devices/virtual/thermal/thermal_zone1/temp"
 
                 # 先启用手动控制模式
                 echo on > "$PWM_CTRL"
@@ -673,7 +694,7 @@
                   # 取最大值
                   temp=$(( cpu_c > gpu_c ? cpu_c : gpu_c ))
 
-                  if [ "$temp" -gt 55 ]; then
+                  if [ "$temp" -gt 70 ]; then
                     # 超过阈值 → 全速
                     echo 0 > "$PWM_ENABLE"
                   else

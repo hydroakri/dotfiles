@@ -24,15 +24,15 @@ in {
 
     # Wayland compositor
     xwayland-satellite
-    networkmanagerapplet
+    # networkmanagerapplet
     brightnessctl
     pavucontrol
     playerctl
-    blueman
-    qt6ct
-    mako
-    waybar
-    rofi-wayland
+    # blueman
+    # qt6ct
+    # mako
+    # waybar
+    # rofi-wayland
 
     # fonts
     #source-han-sans
