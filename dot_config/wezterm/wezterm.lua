@@ -61,7 +61,7 @@ local config = {
 		},
 	},
 	-- default_prog = { "/usr/bin/fish", "-l" },
-	enable_wayland = false,
+	enable_wayland = true,
 	font_size = 12.0,
 	hide_tab_bar_if_only_one_tab = true,
 	initial_rows = 24,
