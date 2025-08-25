@@ -70,19 +70,25 @@
         boot.kernel.sysctl = {
           #security
           "kernel.core_pattern" = "|/bin/false";
-          "kernel.unprivileged_bpf_disabled" = 0;
-          "kernel.kptr_restrict" = 2;
-          "kernel.yama.ptrace_scope" = 3;
-          "kernel.kexec_load_disabled" = 1;
+          "kernel.unprivileged_bpf_disabled" = 1;
           "module.sig_enforce" = 1;
-          "net.core.bpf_jit_harden" = 2;
 
           # performance;
-          "net.core.default_qdisc" = "cake";
-          "net.ipv4.tcp_congestion_control" = "bbr2";
+          "kernel.nmi_watchdog" = 0;
+          "kernel.printk_devkmsg" = "off";
+          "kernel.sched_autogroup_enabled" = 1; # 1 for desktop, 0 for server
+          "kernel.sched_latency_ns" = 12000000; # 12 ms
+          "kernel.sched_min_granularity_ns" = 1500000; # 1.5 ms
+          "kernel.sched_wakeup_granularity_ns" = 2000000; # 2 ms
 
-          "net.core.somaxconn" = 256;
-          "net.core.netdev_max_backlog" = 16384;
+          "net.core.default_qdisc" = "cake";
+          "net.ipv4.tcp_congestion_control" = "bbr3";
+
+          "net.ipv4.tcp_low_latency" = 1;
+          "net.ipv4.tcp_timestamps" = 0;
+          "net.ipv4.tcp_fastopen" = 3;
+          "net.core.somaxconn" = 4096;
+          "net.core.netdev_max_backlog" = 2048;
           "net.core.rmem_default" = 1048576;
           "net.core.rmem_max" = 16777216;
           "net.core.wmem_default" = 1048576;
@@ -92,11 +98,10 @@
           "net.ipv4.tcp_wmem" = "4096 65536 16777216";
           "net.ipv4.udp_rmem_min" = 8192;
           "net.ipv4.udp_wmem_min" = 8192;
-          "net.ipv4.tcp_fastopen" = 3;
           "net.ipv4.tcp_max_syn_backlog" = 8192;
           "net.ipv4.tcp_max_tw_buckets" = 2000000;
           "net.ipv4.tcp_tw_reuse" = 1;
-          "net.ipv4.tcp_fin_timeout" = 10;
+          "net.ipv4.tcp_fin_timeout" = 20;
           "net.ipv4.tcp_slow_start_after_idle" = 0;
           "net.ipv4.tcp_keepalive_time" = 60;
           "net.ipv4.tcp_keepalive_intvl" = 10;
@@ -105,16 +110,17 @@
           "net.ipv4.tcp_sack" = 1;
 
           "vm.swappiness" = 180;
-          "vm.watermark_boost_factor" = 0;
-          "vm.watermark_scale_factor" = 125;
           "vm.page-cluster" = 0;
 
-          "vm.dirty_ratio" = 8;
-          "vm.dirty_background_ratio" = 4;
+          "vm.laptop_mode" = 5;
+          "vm.nr_hugepages" = 0;
+          "vm.dirty_ratio" = 10;
+          "vm.vfs_cache_pressure" = 50;
+          "vm.dirty_background_ratio" = 5;
           "vm.dirty_writeback_centisecs" = 1500;
           "vm.dirty_expire_centisecs" = 1500;
-          "vm.laptop_mode" = 5;
-          "vm.vfs_cache_pressure" = 50;
+          "vm.min_free_kbytes" = 65536;
+          "vm.max_map_count" = 262144;
         };
         services.udev.extraRules = ''
           SUBSYSTEM=="pci", ATTR{power/control}="auto"
