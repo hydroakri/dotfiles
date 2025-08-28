@@ -6,7 +6,7 @@
 git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 ```
 
-> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload` `dnscrypt-proxy` 
+> `earlyoom` `adguardhome` `warp-svc` `systemd-resolved` `gamemode` `gufw` `apparmor` `proxychains` `preload` `dnscrypt-proxy`
 
 ```shell
 sudo systemctl daemon-reload
@@ -42,9 +42,12 @@ nvidia_modeset
 nvidia_uvm
 nvidia_drm
 ```
-or  
+
+or
+
 > /etc/dracut.conf.d/modules.conf
-`sudo dracut -f`
+> `sudo dracut -f`
+
 ```conf
 add_drivers+=" amdgpu nvidia nvidia_modeset nvidia_uvm nvidia_drm "
 ```
@@ -211,14 +214,18 @@ xargs -a brew.txt brew install
 ```
 
 # IME
+
 Please DO remember: In wayland environment, text-input-v2/v3 protocal is required for using IME(like Fcitx5)  
 To Enable: KDE settings > keyboard > virtual keyboard > select fcitx
 
 ## Flatpak Override
+
 ```
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
+
 If you want Flatpak application to use discrete GPU you need to add `--device=dri` and necessary variable to override.
+
 ```
 flatpak override \
   --user \
@@ -343,7 +350,8 @@ forward-zone:
 ```
 
 > /etc/dnscrypt-proxy/dnscrypt-proxy.toml
-Please DO don't forget to enable socket
+> Please DO don't forget to enable socket
+
 ```
 # Empty listen_addresses to use systemd socket activation
 listen_addresses = []
@@ -404,4 +412,33 @@ server_names = [
 
 [blocked_names]
   blocked_names_file = '/var/cache/dnscrypt-proxy/blocklist.txt'
+```
+
+> graphic packages
+
+```
+## Scheduling layer
+vulkan-loader # Vulkan
+libglvnd # OpenGL
+ocl-icd # OpenCL
+
+## drivers
+mesa
+amdvlk # close source amd vulkan driver
+xorg.xf86videoamdgpu
+
+## RUNTIME SDK
+cudatoolkit
+
+## LIBs & Layer driver
+libva
+libvdpau
+nvidia-vaapi-driver
+libva-vdpau-driver
+libvdpau-va-gl
+
+## 3D Libs
+libdrm # DRM
+libgbm # GBM
+egl-wayland # EGL
 ```
