@@ -247,8 +247,8 @@
         # cuz of non-FHS need to export fonts dir to let normal app to read
         fonts.fontDir.enable = true;
         i18n = {
-          defaultLocale = "en_AU.UTF-8";
-          extraLocales = [ "zh_CN.UTF-8/UTF-8" ];
+          defaultLocale = "zh_CN.UTF-8";
+          extraLocales = [ "en_AU.UTF-8/UTF-8" ];
           extraLocaleSettings = {
             LC_ADDRESS = "en_AU.UTF-8";
             LC_IDENTIFICATION = "en_AU.UTF-8";
@@ -372,7 +372,6 @@
             type = "fcitx5";
             enable = true;
             fcitx5 = {
-              plasma6Support = true;
               addons = with pkgs; [
                 fcitx5-rime
                 libsForQt5.fcitx5-qt
@@ -512,7 +511,6 @@
             yad # steamtinkerlaunch depend
             mangohud
             gamescope
-            protonup-qt
             steam-devices-udev-rules
             kdePackages.partitionmanager
             # gnomeExtensions.tray-icons-reloaded
@@ -520,35 +518,9 @@
             # gnomeExtensions.kimpanel
             # gnome-tweaks
 
-            xsettingsd
-            xorg.xrdb
-            polkit
-
-            xdg-desktop-portal
-            xdg-desktop-portal-wlr
-
-            ## Scheduling layer
-            vulkan-loader # Vulkan
-            libglvnd # OpenGL
-            ocl-icd # OpenCL
-            ## drivers
-            mesa
-            amdvlk # close source amd vulkan driver
-            cudatoolkit
-            xorg.xf86videoamdgpu
-            ## LIBs & Layer driver
-            libva
-            libvdpau
-            nvidia-vaapi-driver
-            libva-vdpau-driver
-            libvdpau-va-gl
-            ## 3D Libs
-            libdrm # DRM
-            libgbm # GBM
-            gegl # EGL
-            egl-wayland # EGL
             ## tools
             nvtopPackages.full
+            virtualglLib
             vulkan-tools
             libva-utils
             vdpauinfo
@@ -580,22 +552,43 @@
             cosmic-edit
           ]);
           # GPU
+          hardware.amdgpu.overdrive.enable = true;
           hardware.graphics = {
             enable = true;
             enable32Bit = true;
-            extraPackages32 = with pkgs; [
-              libva
-              libvdpau
-              nvidia-vaapi-driver
-              libva-vdpau-driver
-              libvdpau-va-gl
-            ];
             extraPackages = with pkgs; [
+              ## Scheduling layer
+              vulkan-loader # Vulkan
+              libglvnd # OpenGL
+              ocl-icd # OpenCL
+              rocmPackages.clr.icd
+
+              ## drivers
+              amdvlk
+
+              ## LIBs & Layer driver
               libva
               libvdpau
-              nvidia-vaapi-driver
-              libva-vdpau-driver
               libvdpau-va-gl
+              libva-vdpau-driver
+              nvidia-vaapi-driver
+            ];
+            extraPackages32 = with pkgs; [
+              ## Scheduling layer
+              vulkan-loader # Vulkan
+              libglvnd # OpenGL
+              ocl-icd # OpenCL
+              rocmPackages.clr.icd
+
+              ## drivers
+              driversi686Linux.amdvlk
+
+              ## LIBs & Layer driver
+              libva
+              libvdpau
+              driversi686Linux.libva-vdpau-driver
+              driversi686Linux.libvdpau-va-gl
+              nvidia-vaapi-driver
             ];
           };
           specialisation = {
@@ -615,24 +608,25 @@
               hardware.nvidia = {
                 open = true;
                 modesetting.enable = true;
-                nvidiaPersistenced = true;
+                nvidiaPersistenced = false;
                 videoAcceleration = true;
                 dynamicBoost.enable = true;
                 powerManagement = {
                   enable = true;
-                  finegrained = true;
+                  finegrained = false; # conflict with sync
                 };
                 prime = {
                   offload = {
-                    enable = true;
-                    enableOffloadCmd =
-                      true; # use `nvidia-offload` like `prime-run`
+                    enable = false; # conflict with sync
+                    enableOffloadCmd = false; # like `prime-run`
                   };
-                  sync.enable = false;
+                  sync.enable = true;
                   amdgpuBusId = "PCI:7@0:0:0";
                   nvidiaBusId = "PCI:1@0:0:0";
                 };
               };
+              environment.systemPackages = with pkgs;
+                [ cudaPackages.cudatoolkit ];
             };
           };
           services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
@@ -651,7 +645,7 @@
               capSysNice = true;
             };
             steam = {
-              enable = true;
+              enable = false;
               remotePlay.openFirewall = true;
               dedicatedServer.openFirewall = true;
               localNetworkGameTransfers.openFirewall = true;
@@ -666,7 +660,6 @@
           };
           services.flatpak.enable = true;
           services.lact.enable = true;
-          hardware.amdgpu.overdrive.enable = true;
           services.sunshine = {
             enable = true;
             autoStart = true;

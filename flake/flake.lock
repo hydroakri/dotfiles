@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-hhr6HrniKt0BfXy5Ty+pKGqnDOCVl8uDLrzYbZ8aakY=",
+        "narHash": "sha256-t/aUa1QoXwjeVjZYmOSEQnzktVeD0k2Pq3fQ7Fsl/rQ=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1755987194,
-        "narHash": "sha256-DfoSQBV41cW9mXlIt7Uddfm5ENyij18eEmi+/LRDcPI=",
+        "lastModified": 1756332796,
+        "narHash": "sha256-XypLkfiOQWYYKsK+TE7MCbWkyB6usm6OHHf+W5Yx3l0=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "6a15b803bdf6f07488dd37281f6d80e284a31eda",
+        "rev": "dcd44c91a794a0e25d0a994887aad4405db61736",
         "type": "github"
       },
       "original": {
@@ -36,11 +36,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1755914636,
-        "narHash": "sha256-VJ+Gm6YsHlPfUCpmRQxvdiZW7H3YPSrdVOewQHAhZN8=",
+        "lastModified": 1756261190,
+        "narHash": "sha256-eiy0klFK5EVJLNilutR7grsZN/7Itj9DyD75eyOf83k=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "8b55a6ac58b678199e5bba701aaff69e2b3281c0",
+        "rev": "77f348da3176dc68b20a73dab94852a417daf361",
         "type": "github"
       },
       "original": {
@@ -51,11 +51,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1755615617,
-        "narHash": "sha256-HMwfAJBdrr8wXAkbGhtcby1zGFvs+StOp19xNsbqdOg=",
+        "lastModified": 1756266583,
+        "narHash": "sha256-cr748nSmpfvnhqSXPiCfUPxRz2FJnvf/RjJGvFfaCsM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "20075955deac2583bb12f07151c2df830ef346b4",
+        "rev": "8a6d5427d99ec71c64f0b93d45778c889005d9c2",
         "type": "github"
       },
       "original": {
