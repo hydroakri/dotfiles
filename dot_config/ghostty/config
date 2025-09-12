@@ -1,0 +1,9 @@
+font-family = "Cascadia Code"
+font-family = "Hiragino Sans GB"
+font-family = "Noto Sans CJK SC"
+font-family-italic = "Operator Mono"
+font-family-italic = "FZFW ZhuZi MinchoS"
+font-family-italic = "Noto Serif CJK SC"
+font-feature = +calt, +clig, +liga, +ss01
+theme = dark:flexoki-dark,light:flexoki-light
+window-padding-balance = false

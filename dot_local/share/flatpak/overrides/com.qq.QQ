@@ -1,2 +1,2 @@
-[Environment]
-GTK_IM_MODULE=wayland
+[Context]
+sockets=!wayland

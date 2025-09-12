@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-b7vcZPxJeW0rVM5MolMTjjXF95dd/5rvLtt8KYW7uXo=",
+        "narHash": "sha256-lmKzrG9pwoJJytWaldGM4AiEYaDyIAyH291/bL3+sCQ=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1756851130,
-        "narHash": "sha256-YwUIKg/uCkIENCz8mdv0ov8khuG9uCnApL0gu/3S6a8=",
+        "lastModified": 1757628807,
+        "narHash": "sha256-RdpgBq++km1QCFIXsO50SYqG8JrWGCUdzuW4A3jylpk=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "82d719523b397e7d631da0cbb8fe2ac44411d1c5",
+        "rev": "fa1a0f9370b93b65d2299eb3d4066bf5edf32e4f",
         "type": "github"
       },
       "original": {
@@ -36,11 +36,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1756842514,
-        "narHash": "sha256-XbtRMewPGJwTNhBC4pnBu3w/xT1XejvB0HfohC2Kga8=",
+        "lastModified": 1757650187,
+        "narHash": "sha256-OrythrqccPKtuVt0mj26rr83Qo3Ljb4ZmwLdPGjzjMU=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "30fc1b532645a21e157b6e33e3f8b4c154f86382",
+        "rev": "9eab59f3e71ea3a725e4817d8dcf0da0824ad19d",
         "type": "github"
       },
       "original": {
@@ -51,14 +51,18 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1756542300,
-        "narHash": "sha256-tlOn88coG5fzdyqz6R93SQL5Gpq+m/DsWpekNFhqPQk=",
-        "type": "tarball",
-        "url": "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
+        "lastModified": 1757487488,
+        "narHash": "sha256-zwE/e7CuPJUWKdvvTCB7iunV4E/+G0lKfv4kk/5Izdg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "ab0f3607a6c7486ea22229b92ed2d355f1482ee0",
+        "type": "github"
       },
       "original": {
-        "type": "tarball",
-        "url": "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "root": {

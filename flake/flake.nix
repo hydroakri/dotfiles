@@ -2,9 +2,8 @@
   description = "NixOS configuration";
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url =
-      "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs.url = "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,8 +30,10 @@
 
       # Common NixOS configuration
       commonNixOSConfig = {
-        nix.settings.substituters =
-          [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+        nix.settings.substituters = [
+          "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
+          "https://mirrors.ustc.edu.cn/nix-channels/store"
+        ];
         # Bootloader.
         boot.kernelPackages = pkgs.linuxPackages_xanmod;
         hardware.cpu.amd.updateMicrocode = true;
@@ -390,8 +391,11 @@
           # Desktop needs
           services.xserver.enable = true;
           services.libinput.enable = true;
-          services.displayManager.sddm.enable = true;
-          # services.displayManager.cosmic-greeter.enable = true;
+          services.displayManager = {
+            sddm.enable = true;
+            # gdm.enable = true;
+            # cosmic-greeter.enable = true;
+          };
           services.desktopManager = {
             cosmic = {
               enable = false;
@@ -517,10 +521,10 @@
             gamescope
             steam-devices-udev-rules
             kdePackages.partitionmanager
-            # gnomeExtensions.tray-icons-reloaded
-            # gnomeExtensions.user-themes
-            # gnomeExtensions.kimpanel
-            # gnome-tweaks
+            gnomeExtensions.appindicator
+            gnomeExtensions.user-themes
+            gnomeExtensions.kimpanel
+            gnome-tweaks
 
             ## tools
             nvtopPackages.full
