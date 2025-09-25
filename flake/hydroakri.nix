@@ -32,7 +32,8 @@ in {
     # qt6ct
     # mako
     # waybar
-    # rofi-wayland
+    xfce.xfce4-panel
+    rofi
 
     # fonts
     #source-han-sans
