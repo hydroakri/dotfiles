@@ -171,7 +171,7 @@
             }
           ];
         };
-        services.dnscrypt-proxy2 = {
+        services.dnscrypt-proxy = {
           enable = true;
           settings = {
             cache = true;
@@ -389,7 +389,13 @@
             };
           };
           # Desktop needs
-          services.xserver.enable = true;
+          services.xserver = {
+            enable = true;
+            desktopManager.xfce = {
+              enable = false;
+              enableWaylandSession = true;
+            };
+          };
           services.libinput.enable = true;
           services.displayManager = {
             sddm.enable = true;
@@ -407,7 +413,11 @@
           xdg.portal = {
             enable = true;
             xdgOpenUsePortal = true;
-            # extraPortals = [ pkgs.xdg-desktop-portal-cosmic ];
+            extraPortals = [
+              # pkgs.xdg-desktop-portal-cosmic
+              pkgs.xdg-desktop-portal-gtk # niri
+              pkgs.xdg-desktop-portal-gnome # niri
+            ];
           };
           # Polkit
           security.polkit.enable = true;
@@ -650,7 +660,7 @@
             extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
           };
           programs.zsh.enable = true;
-          programs.niri.enable = false;
+          programs.niri.enable = true;
           programs = {
             gamescope = {
               enable = true;
