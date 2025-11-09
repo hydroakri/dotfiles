@@ -1,8 +1,2 @@
 [Context]
-filesystems=/steam-linux;xdg-config/MangoHud:ro;/steam-win
-
-[Environment]
-MANGOHUD=1
-__NV_PRIME_RENDER_OFFLOAD=1
-__GLX_VENDOR_LIBRARY_NAME=nvidia
-__VK_LAYER_NV_optimus=NVIDIA_only
+filesystems=/steam-win;xdg-config/MangoHud:ro;/steam-linux
