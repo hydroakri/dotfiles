@@ -32,7 +32,9 @@ in {
     # qt6ct
     # mako
     # waybar
+    xfce.xfconf
     xfce.xfce4-panel
+    xfce.xfce4-panel-profiles
     rofi
 
     # fonts

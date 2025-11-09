@@ -30,10 +30,20 @@
 
       # Common NixOS configuration
       commonNixOSConfig = {
-        nix.settings.substituters = [
-          "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
-          "https://mirrors.ustc.edu.cn/nix-channels/store"
-        ];
+        nix.settings = {
+          experimental-features = [ "nix-command" "flakes" ];
+          substituters = [
+            "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
+            "https://mirrors.ustc.edu.cn/nix-channels/store"
+          ];
+        };
+        nixpkgs.config.allowUnfree = true;
+        nix.optimise.automatic = true;
+        nix.gc = {
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 7d";
+        };
         # Bootloader.
         boot.kernelPackages = pkgs.linuxPackages_xanmod;
         hardware.cpu.amd.updateMicrocode = true;
@@ -266,12 +276,6 @@
             LC_TIME = "en_AU.UTF-8";
           };
         };
-        nixpkgs.config.allowUnfree = true;
-        nix.gc = {
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 14d";
-        };
         programs.nh.enable = true;
         programs.nix-ld.enable = true;
         programs.git = {
@@ -304,6 +308,7 @@
           gcc
           fzf
           bat
+          gnumake
           fish
           btop
           ncdu
@@ -338,8 +343,6 @@
             extraOutputsToInstall = [ "dev" ];
           }))
         ];
-        # nixpkgs.config.allowUnfree = true;
-        nix.settings.experimental-features = [ "nix-command" "flakes" ];
         system.stateVersion = "25.11"; # Did you read the comment?
       };
 
@@ -381,8 +384,8 @@
                 fcitx5-rime
                 libsForQt5.fcitx5-qt
                 fcitx5-gtk
-                fcitx5-configtool
-                fcitx5-chinese-addons
+                qt6Packages.fcitx5-configtool
+                qt6Packages.fcitx5-chinese-addons
                 fcitx5-lua
               ];
               waylandFrontend = true;
@@ -582,7 +585,7 @@
               rocmPackages.clr.icd
 
               ## drivers
-              amdvlk
+              # amdvlk
 
               ## LIBs & Layer driver
               libva
@@ -598,7 +601,7 @@
               rocmPackages.clr.icd
 
               ## drivers
-              driversi686Linux.amdvlk
+              # driversi686Linux.amdvlk
 
               ## LIBs & Layer driver
               libva
