@@ -27,9 +27,9 @@ layout {
     gaps 8
     center-focused-column "never"
     preset-column-widths {
-        proportion 0.33333
         proportion 0.5
         proportion 0.618
+        proportion 0.9
     }
     preset-window-heights {
         proportion 0.5
@@ -119,7 +119,6 @@ spawn-at-startup "playerctld"
 spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
 spawn-at-startup "~/utils/screen-locker.sh"
-spawn-at-startup "xwayland-satellite" ":3"
 spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
