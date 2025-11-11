@@ -30,6 +30,7 @@
 
       # Common NixOS configuration
       commonNixOSConfig = {
+        imports = [ ./secrets.nix ];
         nix.settings = {
           experimental-features = [ "nix-command" "flakes" ];
           substituters = [
