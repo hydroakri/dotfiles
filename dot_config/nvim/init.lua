@@ -221,11 +221,6 @@ require("lazy").setup({
 				cmd = { "BufferLineCyclePrev", "BufferLineCycleNext", "BufferLinePick" },
 				config = function()
 					require("bufferline").setup({
-						highlights = require("catppuccin.groups.integrations.bufferline").get({
-							custom = {
-								all = {},
-							},
-						}),
 						options = {
 							mode = "buffer",
 							indicator = {

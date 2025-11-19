@@ -19,7 +19,6 @@ in {
 
     # Desktop APplications
     flatpak
-    nekoray
     kdePackages.kate
 
     # Wayland compositor

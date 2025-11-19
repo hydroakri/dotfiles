@@ -30,7 +30,6 @@
 
       # Common NixOS configuration
       commonNixOSConfig = {
-        imports = [ ./secrets.nix ];
         nix.settings = {
           experimental-features = [ "nix-command" "flakes" ];
           substituters = [
@@ -190,8 +189,15 @@
             block_ipv6 = true;
             netprobe_timeout = 300;
             lb_strategy = "p2";
-            require_dnssec = false;
             blocked_names.blocked_names_file = blocklist_txt;
+            ipv4_servers = true;
+            ipv6_servers = false;
+            dnscrypt_servers = true;
+            doh_servers = true;
+            odoh_servers = true;
+            require_dnssec = false;
+            require_nolog = false;
+            require_nofilter = false;
             server_names = [
               "cloudflare"
               "cloudflare-family"
@@ -232,17 +238,14 @@
               "quad101"
               "flymc-doh-8443"
               "flymc-doh"
-              "flymc-doh-cdn"
-              "flymc-dns"
+              "zerotrust"
             ];
             static.flymc-doh-8443.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
             static.flymc-doh.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
-            static.flymc-doh-cdn.stamp =
-              "sdns://AgQAAAAAAAAADDEwNC4yMS40Ni4xOAAQZG9oLnBhcmkubmV0d29yawovZG5zLXF1ZXJ5";
-            static.flymc-dns.stamp =
-              "sdns://AgQAAAAAAAAADjE3Mi42Ny4yMjIuMTM5ABBkbnMucGFyaS5uZXR3b3JrCi9kbnMtcXVlcnk";
+            static.zerotrust.stamp = lib.strings.removeSuffix "\n"
+              (builtins.readFile /etc/nixos/DOH_STAMP.txt);
             sources.public-resolvers = {
               urls = [
                 "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
@@ -302,6 +305,10 @@
           [ProxyList]
           socks5 127.0.0.1 1080
         '';
+        virtualisation.podman = {
+          enable = true;
+          dockerCompat = true;
+        };
         environment.shellAliases = { vi = "nvim"; };
         environment.systemPackages = with pkgs; [
           xz
@@ -309,7 +316,6 @@
           gcc
           fzf
           bat
-          gnumake
           fish
           btop
           ncdu
@@ -330,19 +336,10 @@
           ripgrep
           pciutils
           starship
+          distrobox
           fastfetch
           efibootmgr
           proxychains-ng
-          (let base = pkgs.appimageTools.defaultFhsEnvArgs;
-          in pkgs.buildFHSEnv (base // {
-            name = "fhs";
-            targetPkgs = pkgs:
-              # pkgs.appimageTools 提供了大多数程序常用的基础包，所以我们可以直接用它来补充
-              (base.targetPkgs pkgs) ++ (with pkgs; [ pkg-config ncurses ]);
-            profile = "export FHS=1";
-            runScript = "bash";
-            extraOutputsToInstall = [ "dev" ];
-          }))
         ];
         system.stateVersion = "25.11"; # Did you read the comment?
       };
@@ -679,8 +676,9 @@
               extraCompatPackages = with pkgs; [ steamtinkerlaunch ];
             };
           };
+          programs.throne.enable = true;
           programs.clash-verge = {
-            enable = false;
+            enable = true;
             serviceMode = true;
             package = pkgs.clash-verge-rev;
           };
