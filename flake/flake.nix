@@ -2,10 +2,9 @@
   description = "NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # nixpkgs.url = "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     adlist = {
@@ -31,11 +30,9 @@
       # Common NixOS configuration
       commonNixOSConfig = {
         nix.settings = {
+          auto-optimise-store = true;
           experimental-features = [ "nix-command" "flakes" ];
-          substituters = [
-            "https://xget.xi-xu.me/gh/NixOS/nixpkgs/archive/nixos-unstable.tar.gz"
-            "https://mirrors.ustc.edu.cn/nix-channels/store"
-          ];
+          substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
         };
         nixpkgs.config.allowUnfree = true;
         nix.optimise.automatic = true;
@@ -55,6 +52,9 @@
           efiSupport = true;
           secureBoot.enable = true;
           secureBoot.sbctl = pkgs.sbctl;
+          extraConfig = ''
+            timeout: no
+          '';
           extraEntries = ''
             /Windows
                 protocol: efi
@@ -308,32 +308,34 @@
         virtualisation.podman = {
           enable = true;
           dockerCompat = true;
+          autoPrune = {
+            enable = true;
+            dates = "weekly";
+            flags = [ "--all" ];
+          };
         };
         environment.shellAliases = { vi = "nvim"; };
         environment.systemPackages = with pkgs; [
           xz
           zip
-          gcc
           fzf
           bat
+          gdu
           fish
           btop
-          ncdu
           wget
           lsof
           yazi
           atuin
           unzip
           p7zip
-          cargo
-          nodejs
           zoxide
           neovim
-          python3
           mokutil
           lazygit
           chezmoi
           ripgrep
+          nix-tree
           pciutils
           starship
           distrobox
@@ -405,7 +407,7 @@
           };
           services.desktopManager = {
             cosmic = {
-              enable = false;
+              enable = true;
               xwayland.enable = true;
             };
             # gnome.enable = true;
@@ -415,9 +417,9 @@
             enable = true;
             xdgOpenUsePortal = true;
             extraPortals = [
-              # pkgs.xdg-desktop-portal-cosmic
-              pkgs.xdg-desktop-portal-gtk # niri
-              pkgs.xdg-desktop-portal-gnome # niri
+              pkgs.xdg-desktop-portal-cosmic
+              # pkgs.xdg-desktop-portal-gtk # niri
+              # pkgs.xdg-desktop-portal-gnome # niri
             ];
           };
           # Polkit
@@ -515,27 +517,33 @@
           };
           environment.systemPackages = with pkgs; [
             # file manager
-            xfce.thunar
-            xfce.thunar-archive-plugin
-            xarchiver
-            file-roller
+            # xfce.thunar
+            # xfce.thunar-archive-plugin
+            # xarchiver
+            # file-roller
             p7zip
             unzip
             zip
             unrar
             # file manager
 
-            ghostty
-            # davinci-resolve-studio
+            # Wayland compositor
+            xwayland-satellite
+            # networkmanagerapplet
+            brightnessctl
+            pavucontrol
+            playerctl
+            # blueman
+            # qt6ct
+            # mako
+            # waybar
+            # xfce.xfconf
+            # xfce.xfce4-panel
+            # xfce.xfce4-panel-profiles
+            # rofi
+
             yad # steamtinkerlaunch depend
-            mangohud
-            gamescope
             steam-devices-udev-rules
-            kdePackages.partitionmanager
-            gnomeExtensions.appindicator
-            gnomeExtensions.user-themes
-            gnomeExtensions.kimpanel
-            gnome-tweaks
 
             ## tools
             nvtopPackages.full
@@ -546,8 +554,14 @@
             read-edid
             clinfo
           ];
+          environment.plasma6.excludePackages = (with pkgs; [
+            kdePackages.elisa
+            kdePackages.gwenview
+            kdePackages.kwrited
+          ]);
+          environment.cosmic.excludePackages =
+            (with pkgs; [ cosmic-player cosmic-term cosmic-edit ]);
           environment.gnome.excludePackages = (with pkgs; [
-            ## gnome
             atomix # puzzle game
             cheese # webcam tool
             epiphany # web browser
@@ -563,13 +577,29 @@
             iagno # go game
             tali # poker game
             totem # video player
-
-            ## cosmic
-            cosmic-files
-            cosmic-player
-            cosmic-term
-            cosmic-edit
           ]);
+          # bluetooth
+          hardware.bluetooth = {
+            enable = true;
+            powerOnBoot = true;
+            settings = {
+              General = {
+                # Shows battery charge of connected devices on supported
+                # Bluetooth adapters. Defaults to 'false'.
+                Experimental = true;
+                # When enabled other devices can connect faster to us, however
+                # the tradeoff is increased power consumption. Defaults to
+                # 'false'.
+                FastConnectable = true;
+              };
+              Policy = {
+                # Enable all controllers when they are found. This includes
+                # adapters present on start as well as adapters that are plugged
+                # in later on. Defaults to 'true'.
+                AutoEnable = true;
+              };
+            };
+          };
           # GPU
           hardware.amdgpu.overdrive.enable = true;
           hardware.graphics = {
@@ -634,10 +664,10 @@
                 };
                 prime = {
                   offload = {
-                    enable = false; # conflict with sync
-                    enableOffloadCmd = false; # like `prime-run`
+                    enable = true; # conflict with sync
+                    enableOffloadCmd = true; # like `prime-run`
                   };
-                  sync.enable = true;
+                  sync.enable = false;
                   amdgpuBusId = "PCI:7@0:0:0";
                   nvidiaBusId = "PCI:1@0:0:0";
                 };
@@ -661,7 +691,7 @@
             extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
           };
           programs.zsh.enable = true;
-          programs.niri.enable = true;
+          # programs.niri.enable = true;
           programs = {
             gamescope = {
               enable = true;
