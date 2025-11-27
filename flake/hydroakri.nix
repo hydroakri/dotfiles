@@ -10,37 +10,27 @@ in {
   };
   programs.fish.enable = true;
   home.packages = with pkgs; [
-    # nix related
-    nix-output-monitor
-
-    #themes
+    # themes/shell/plugin
     bibata-cursors
     papirus-icon-theme
+    gnomeExtensions.appindicator
+    gnomeExtensions.user-themes
+    gnomeExtensions.kimpanel
+    gnome-tweaks
 
-    # Desktop APplications
+    # dev tools
+    gcc
+    cargo
+    nodejs
+    python3
+
+    # GUI APplications
     flatpak
     kdePackages.kate
-
-    # Wayland compositor
-    xwayland-satellite
-    # networkmanagerapplet
-    brightnessctl
-    pavucontrol
-    playerctl
-    # blueman
-    # qt6ct
-    # mako
-    # waybar
-    xfce.xfconf
-    xfce.xfce4-panel
-    xfce.xfce4-panel-profiles
-    rofi
-
-    # fonts
-    #source-han-sans
-    #inter
-    #nerd-fonts.symbols-only
-    #cascadia-code
+    kdePackages.partitionmanager
+    venera
+    ghostty
+    # davinci-resolve-studio
   ];
   home.stateVersion = "25.05";
   programs.home-manager.enable = true;
