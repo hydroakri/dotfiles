@@ -78,6 +78,12 @@
           "rd.udev.log_level=3"
           "vt.global_cursor_default=0"
           "rd.systemd.show_status=auto"
+          # hardware
+          "radeon.dpm=1"
+          "amd_pstate=active"
+          "nouveau.config=NvGspRm=1"
+          "nouveau.config=NvBoost=2"
+          "nouveau.modeset=1"
         ];
         boot.consoleLogLevel = 3;
         boot.initrd.verbose = false;
@@ -137,9 +143,18 @@
           "vm.max_map_count" = 262144;
         };
         services.udev.extraRules = ''
+          # 电源控制
           SUBSYSTEM=="pci", ATTR{power/control}="auto"
+
+          # NVMe SSD: 设置为 none
+          ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
+
+          # SATA SSD / eMMC: 设置为 mq-deadline
+          ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
+
+          # 旋转硬盘 HDD: 设置为 bfq
+          ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
         '';
-        zramSwap.enable = true;
         services.zram-generator.enable = true;
         services.zram-generator.settings.main = {
           name = "zram0";
@@ -154,6 +169,15 @@
         services.fstrim.enable = true;
         services.preload.enable = true;
         services.earlyoom.enable = true;
+        services.scx = {
+          enable = true;
+          scheduler = "scx_bpfland";
+        };
+        services.ananicy = {
+          enable = true;
+          package = pkgs.ananicy-cpp;
+          rulesProvider = pkgs.ananicy-rules-cachyos;
+        };
         systemd.oomd.enable = false;
         # services.auto-cpufreq.enable = true;
         services.power-profiles-daemon.enable = true;
@@ -362,13 +386,6 @@
           networking.hostName = "omen15";
           boot = {
             plymouth.enable = true;
-            kernelParams = [
-              "radeon.dpm=1"
-              "amd_pstate=active"
-              "nouveau.config=NvGspRm=1"
-              "nouveau.config=NvBoost=2"
-              "nouveau.modeset=1"
-            ];
             initrd.kernelModules = [ "amdgpu" ]; # Early KMS First stage of boot
             kernelModules = [ "zenpower" ]; # Second stage of boot process
             blacklistedKernelModules = [ "k10temp" ];
@@ -401,9 +418,9 @@
           };
           services.libinput.enable = true;
           services.displayManager = {
-            sddm.enable = true;
+            # sddm.enable = true;
             # gdm.enable = true;
-            # cosmic-greeter.enable = true;
+            cosmic-greeter.enable = true;
           };
           services.desktopManager = {
             cosmic = {
@@ -584,20 +601,10 @@
             powerOnBoot = true;
             settings = {
               General = {
-                # Shows battery charge of connected devices on supported
-                # Bluetooth adapters. Defaults to 'false'.
                 Experimental = true;
-                # When enabled other devices can connect faster to us, however
-                # the tradeoff is increased power consumption. Defaults to
-                # 'false'.
                 FastConnectable = true;
               };
-              Policy = {
-                # Enable all controllers when they are found. This includes
-                # adapters present on start as well as adapters that are plugged
-                # in later on. Defaults to 'true'.
-                AutoEnable = true;
-              };
+              Policy = { AutoEnable = true; };
             };
           };
           # GPU
@@ -650,7 +657,9 @@
                 [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
               boot.extraModprobeConfig = ''
                 options nvidia-drm modeset=1
+                options nvidia NVreg_EnableGpuFirmware=0
                 options nvidia NVreg_PreserveVideoMemoryAllocations=1
+                options nvidia NVreg_TemporaryFilePath=/var/tmp
               '';
               hardware.nvidia = {
                 open = true;
