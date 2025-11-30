@@ -30,7 +30,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
     ];
   };
@@ -47,7 +47,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
       "autodefrag"
     ];
@@ -65,7 +65,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
     ];
   };
@@ -82,7 +82,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
     ];
   };
@@ -99,7 +99,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
     ];
   };
@@ -115,7 +115,7 @@
       "noatime"
       "nodiratime"
       "commit=120"
-      "compress=zstd:1"
+      "compress=zstd:3"
       "discard=async"
       "autodefrag"
     ];

@@ -27,9 +27,9 @@ in {
     # GUI APplications
     flatpak
     kdePackages.kate
-    kdePackages.partitionmanager
     venera
     ghostty
+    code-cursor
     # davinci-resolve-studio
   ];
   home.stateVersion = "25.05";
