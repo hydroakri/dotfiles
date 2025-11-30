@@ -27,8 +27,7 @@
         config.allowUnfree = true;
       };
 
-      # Common NixOS configuration
-      commonNixOSConfig = {
+      baseConfig = {
         nix.settings = {
           auto-optimise-store = true;
           experimental-features = [ "nix-command" "flakes" ];
@@ -42,7 +41,6 @@
           options = "--delete-older-than 7d";
         };
         # Bootloader.
-        boot.kernelPackages = pkgs.linuxPackages_xanmod;
         hardware.cpu.amd.updateMicrocode = true;
         hardware.cpu.intel.updateMicrocode = true;
         boot.loader.efi.canTouchEfiVariables = true;
@@ -64,29 +62,11 @@
         boot.kernelParams = [
           "zswap.enabled=0"
           "processor.ignore_ppc=1"
-          "mem_sleep_default=s2idle"
-          "nowatchdog"
-          "nmi_watchdog=0"
-          "iwlwifi.power_save=1"
           "mitigations=auto"
           "random.trust_cpu=0"
           "lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
           "lockdown=integrity"
-          "quiet"
-          "splash"
-          "loglevel=3"
-          "rd.udev.log_level=3"
-          "vt.global_cursor_default=0"
-          "rd.systemd.show_status=auto"
-          # hardware
-          "radeon.dpm=1"
-          "amd_pstate=active"
-          "nouveau.config=NvGspRm=1"
-          "nouveau.config=NvBoost=2"
-          "nouveau.modeset=1"
         ];
-        boot.consoleLogLevel = 3;
-        boot.initrd.verbose = false;
         boot.kernel.sysctl = {
           #security
           "kernel.core_pattern" = "|/bin/false";
@@ -94,9 +74,7 @@
           "module.sig_enforce" = 1;
 
           # performance;
-          "kernel.nmi_watchdog" = 0;
           "kernel.printk_devkmsg" = "off";
-          "kernel.sched_autogroup_enabled" = 1; # 1 for desktop, 0 for server
           "kernel.sched_latency_ns" = 12000000; # 12 ms
           "kernel.sched_min_granularity_ns" = 1500000; # 1.5 ms
           "kernel.sched_wakeup_granularity_ns" = 2000000; # 2 ms
@@ -131,8 +109,6 @@
 
           "vm.swappiness" = 180;
           "vm.page-cluster" = 0;
-
-          "vm.laptop_mode" = 5;
           "vm.nr_hugepages" = 0;
           "vm.dirty_ratio" = 10;
           "vm.vfs_cache_pressure" = 50;
@@ -167,28 +143,9 @@
         };
         services.fwupd.enable = true;
         services.fstrim.enable = true;
-        services.preload.enable = true;
         services.earlyoom.enable = true;
-        services.scx = {
-          enable = true;
-          scheduler = "scx_bpfland";
-        };
-        services.ananicy = {
-          enable = true;
-          package = pkgs.ananicy-cpp;
-          rulesProvider = pkgs.ananicy-rules-cachyos;
-        };
         systemd.oomd.enable = false;
-        # services.auto-cpufreq.enable = true;
-        services.power-profiles-daemon.enable = true;
-        programs.gamemode.enable = true;
         security.apparmor.enable = true;
-        networking.interfaces.wlo1.wakeOnLan.enable = false;
-        networking.interfaces.eno1.wakeOnLan.enable = false;
-        networking.networkmanager = {
-          enable = true;
-          wifi.powersave = true;
-        };
         networking.firewall = {
           enable = true;
           allowedTCPPorts =
@@ -287,8 +244,6 @@
           servers = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
         };
         time.timeZone = "Australia/Perth";
-        # cuz of non-FHS need to export fonts dir to let normal app to read
-        fonts.fontDir.enable = true;
         i18n = {
           defaultLocale = "zh_CN.UTF-8";
           extraLocales = [ "en_AU.UTF-8/UTF-8" ];
@@ -345,6 +300,7 @@
           fzf
           bat
           gdu
+          file
           fish
           btop
           wget
@@ -370,12 +326,194 @@
         system.stateVersion = "25.11"; # Did you read the comment?
       };
 
-      # Host-specific overrides
-      hosts = {
+      commonDesktopConfig = {
+        boot.kernelPackages = pkgs.linuxPackages_xanmod;
+        services.scx = {
+          enable = true;
+          scheduler = "scx_bpfland";
+        };
+        boot.kernelParams = [
+          "nowatchdog"
+          "nmi_watchdog=0"
+          "mem_sleep_default=s2idle"
+          "iwlwifi.power_save=1"
+          "quiet"
+          "splash"
+          "loglevel=3"
+          "rd.udev.log_level=3"
+          "vt.global_cursor_default=0"
+          "rd.systemd.show_status=auto"
+          # hardware
+          "radeon.dpm=1"
+          "amd_pstate=active"
+          "nouveau.config=NvGspRm=1"
+          "nouveau.config=NvBoost=2"
+          "nouveau.modeset=1"
+        ];
+        boot.kernel.sysctl = {
+          "kernel.nmi_watchdog" = 0;
+          "kernel.sched_autogroup_enabled" = 1; # 1 for desktop
+          "vm.laptop_mode" = 5;
+        };
+        boot.consoleLogLevel = 3;
+        boot.initrd.verbose = false;
+        boot.plymouth.enable = true;
+        # services.auto-cpufreq.enable = true;
+        services.power-profiles-daemon.enable = true;
+        services.preload.enable = true;
+        services.ananicy = {
+          enable = true;
+          package = pkgs.ananicy-cpp;
+          rulesProvider = pkgs.ananicy-rules-cachyos;
+        };
+        programs.gamemode.enable = true;
+        networking.interfaces.wlo1.wakeOnLan.enable = false;
+        networking.interfaces.eno1.wakeOnLan.enable = false;
+        networking.networkmanager = {
+          enable = true;
+          wifi.powersave = true;
+        };
+        # cuz of non-FHS need to export fonts dir to let normal app to read
+        fonts.fontDir.enable = true;
+
+        # Input method (Chinese input)
+        i18n.inputMethod = {
+          type = "fcitx5";
+          enable = true;
+          fcitx5 = {
+            addons = with pkgs; [
+              fcitx5-rime
+              libsForQt5.fcitx5-qt
+              fcitx5-gtk
+              qt6Packages.fcitx5-configtool
+              qt6Packages.fcitx5-chinese-addons
+              fcitx5-lua
+            ];
+            waylandFrontend = true;
+          };
+        };
+
+        # X Server and input
+        services.xserver.enable = true;
+        services.libinput.enable = true;
+        services.xserver.xkb = {
+          layout = "us";
+          variant = "";
+        };
+
+        # Desktop portal
+        xdg.portal = {
+          enable = true;
+          xdgOpenUsePortal = true;
+          extraPortals = [
+            pkgs.xdg-desktop-portal-cosmic
+            # pkgs.xdg-desktop-portal-gtk # niri
+            # pkgs.xdg-desktop-portal-gnome # niri
+          ];
+        };
+
+        # Polkit (privilege elevation)
+        security.polkit.enable = true;
+        security.pam.services.polkit.enable = true;
+        systemd.user.services.polkit-agent = {
+          description = "polkit-agent";
+          wantedBy = [ "graphical-session.target" ];
+          wants = [ "graphical-session.target" ];
+          after = [ "graphical-session.target" ];
+          serviceConfig = {
+            Type = "simple";
+            ExecStart =
+              "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+            # ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
+            Restart = "on-failure";
+            RestartSec = 1;
+            TimeoutStopSec = 10;
+          };
+        };
+
+        # Secret service (keyring)
+        services.gnome.gnome-keyring.enable = true;
+        services.passSecretService.enable = true;
+        security.pam.services.login.enableGnomeKeyring = true;
+
+        # Printing
+        services.printing.enable = true;
+
+        # Audio (PipeWire)
+        security.rtkit.enable = true;
+        services.pipewire = {
+          enable = true;
+          alsa.enable = true;
+          alsa.support32Bit = true;
+          pulse.enable = true;
+        };
+
+        # Bluetooth
+        hardware.bluetooth = {
+          enable = true;
+          powerOnBoot = true;
+          settings = {
+            General = {
+              Experimental = true;
+              FastConnectable = true;
+            };
+            Policy = { AutoEnable = true; };
+          };
+        };
+
+        # Graphics support (base configuration)
+        hardware.graphics = {
+          enable = true;
+          enable32Bit = true;
+          extraPackages = with pkgs; [
+            ## Scheduling layer
+            vulkan-loader # Vulkan
+            libglvnd # OpenGL
+            ocl-icd # OpenCL
+
+            ## drivers
+            # amdvlk
+
+            ## LIBs & Layer driver
+            libva
+            libvdpau
+            libvdpau-va-gl
+            libva-vdpau-driver
+          ];
+          extraPackages32 = with pkgs; [
+            ## Scheduling layer
+            vulkan-loader # Vulkan
+            libglvnd # OpenGL
+            ocl-icd # OpenCL
+
+            ## drivers
+            # driversi686Linux.amdvlk
+
+            ## LIBs & Layer driver
+            libva
+            libvdpau
+            driversi686Linux.libva-vdpau-driver
+            driversi686Linux.libvdpau-va-gl
+          ];
+        };
+        # Flatpak
+        services.flatpak.enable = true;
+      };
+
+      # Common server configuration
+      commonServerConfig = {
+        # Server-optimized kernel (stable and hardened)
+        boot.kernelPackages = pkgs.linuxPackages_hardened;
+        boot.kernel.sysctl = {
+          "kernel.sched_autogroup_enabled" = 0; # 0 for server
+        };
+      };
+
+      # Desktop hosts
+      desktopHosts = {
         "omen15" = {
           imports = [
             ./omen15.nix
-            home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
@@ -384,8 +522,8 @@
             }
           ];
           networking.hostName = "omen15";
+          # Hardware-specific boot configuration
           boot = {
-            plymouth.enable = true;
             initrd.kernelModules = [ "amdgpu" ]; # Early KMS First stage of boot
             kernelModules = [ "zenpower" ]; # Second stage of boot process
             blacklistedKernelModules = [ "k10temp" ];
@@ -393,34 +531,10 @@
               options snd_hda_intel power_save=1
             '';
           };
-          i18n.inputMethod = {
-            type = "fcitx5";
-            enable = true;
-            fcitx5 = {
-              addons = with pkgs; [
-                fcitx5-rime
-                libsForQt5.fcitx5-qt
-                fcitx5-gtk
-                qt6Packages.fcitx5-configtool
-                qt6Packages.fcitx5-chinese-addons
-                fcitx5-lua
-              ];
-              waylandFrontend = true;
-            };
-          };
-          # Desktop needs
-          services.xserver = {
-            enable = true;
-            desktopManager.xfce = {
-              enable = false;
-              enableWaylandSession = true;
-            };
-          };
-          services.libinput.enable = true;
           services.displayManager = {
-            # sddm.enable = true;
+            sddm.enable = true;
             # gdm.enable = true;
-            cosmic-greeter.enable = true;
+            # cosmic-greeter.enable = true;
           };
           services.desktopManager = {
             cosmic = {
@@ -430,50 +544,9 @@
             # gnome.enable = true;
             plasma6.enable = true;
           };
-          xdg.portal = {
-            enable = true;
-            xdgOpenUsePortal = true;
-            extraPortals = [
-              pkgs.xdg-desktop-portal-cosmic
-              # pkgs.xdg-desktop-portal-gtk # niri
-              # pkgs.xdg-desktop-portal-gnome # niri
-            ];
-          };
-          # Polkit
-          security.polkit.enable = true;
-          security.pam.services.polkit.enable = true;
-          systemd.user.services.polkit-agent = {
-            description = "polkit-agent";
-            wantedBy = [ "graphical-session.target" ];
-            wants = [ "graphical-session.target" ];
-            after = [ "graphical-session.target" ];
-            serviceConfig = {
-              Type = "simple";
-              ExecStart =
-                "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-              # ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
-              Restart = "on-failure";
-              RestartSec = 1;
-              TimeoutStopSec = 10;
-            };
-          };
-
-          # secret service
-          services.gnome.gnome-keyring.enable = true;
-          services.passSecretService.enable = true;
-          security.pam.services.login.enableGnomeKeyring = true;
-
-          services.xserver.xkb = {
-            layout = "us";
-            variant = "";
-          };
-          services.printing.enable = true;
-          security.rtkit.enable = true;
-          services.pipewire = {
-            enable = true;
-            alsa.enable = true;
-            alsa.support32Bit = true;
-            pulse.enable = true;
+          services.xserver.desktopManager.xfce = {
+            enable = false;
+            enableWaylandSession = true;
           };
           services.dae = {
             enable = true;
@@ -595,56 +668,10 @@
             tali # poker game
             totem # video player
           ]);
-          # bluetooth
-          hardware.bluetooth = {
-            enable = true;
-            powerOnBoot = true;
-            settings = {
-              General = {
-                Experimental = true;
-                FastConnectable = true;
-              };
-              Policy = { AutoEnable = true; };
-            };
-          };
-          # GPU
           hardware.amdgpu.overdrive.enable = true;
-          hardware.graphics = {
-            enable = true;
-            enable32Bit = true;
-            extraPackages = with pkgs; [
-              ## Scheduling layer
-              vulkan-loader # Vulkan
-              libglvnd # OpenGL
-              ocl-icd # OpenCL
-              rocmPackages.clr.icd
-
-              ## drivers
-              # amdvlk
-
-              ## LIBs & Layer driver
-              libva
-              libvdpau
-              libvdpau-va-gl
-              libva-vdpau-driver
-            ];
-            extraPackages32 = with pkgs; [
-              ## Scheduling layer
-              vulkan-loader # Vulkan
-              libglvnd # OpenGL
-              ocl-icd # OpenCL
-              rocmPackages.clr.icd
-
-              ## drivers
-              # driversi686Linux.amdvlk
-
-              ## LIBs & Layer driver
-              libva
-              libvdpau
-              driversi686Linux.libva-vdpau-driver
-              driversi686Linux.libvdpau-va-gl
-            ];
-          };
+          hardware.graphics.extraPackages = with pkgs; [ rocmPackages.clr.icd ];
+          hardware.graphics.extraPackages32 = with pkgs;
+            [ rocmPackages.clr.icd ];
           specialisation = {
             nvidia-variant.configuration = {
               system.nixos.tags = [ "nvidia" ];
@@ -669,7 +696,7 @@
                 dynamicBoost.enable = true;
                 powerManagement = {
                   enable = true;
-                  finegrained = false; # conflict with sync
+                  finegrained = true; # conflict with sync
                 };
                 prime = {
                   offload = {
@@ -691,8 +718,9 @@
               };
             };
           };
+          # Video drivers (hardware-specific)
           services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
-          # User defination
+          # User definition
           users.users.hydroakri = {
             shell = pkgs.zsh;
             isNormalUser = true;
@@ -715,13 +743,14 @@
               extraCompatPackages = with pkgs; [ steamtinkerlaunch ];
             };
           };
+          # Application-specific programs (host-specific)
           programs.throne.enable = true;
           programs.clash-verge = {
             enable = true;
             serviceMode = true;
             package = pkgs.clash-verge-rev;
           };
-          services.flatpak.enable = true;
+          # AMD GPU control (hardware-specific)
           services.lact.enable = true;
           services.sunshine = {
             enable = true;
@@ -729,51 +758,68 @@
             capSysAdmin = true;
             openFirewall = true;
           };
+          # Optimized fan control using systemd timer (runs every minute instead of polling)
           systemd.services.fancontrol = {
             description = "Custom Fan Control Service";
-            wants = [ "multi-user.target" ];
-            after = [ "multi-user.target" ];
             serviceConfig = {
-              ExecStart = "${pkgs.writeShellScript "watch-store" ''
+              Type = "oneshot";
+              ExecStart = "${pkgs.writeShellScript "fancontrol" ''
                 #!/run/current-system/sw/bin/bash
+                set -euo pipefail
 
                 # 硬件接口路径
-                PWM_ENABLE="/sys/devices/platform/hp-wmi/hwmon/$(ls /sys/devices/platform/hp-wmi/hwmon/)/pwm1_enable"
-                PWM_CTRL="/sys/devices/platform/hp-wmi/hwmon/$(ls /sys/devices/platform/hp-wmi/hwmon/)/power/control"
+                HWMON_DIR="/sys/devices/platform/hp-wmi/hwmon"
+                if [ ! -d "$HWMON_DIR" ]; then
+                  exit 0
+                fi
+
+                HWMON_NAME=$(ls "$HWMON_DIR" | head -n1)
+                PWM_ENABLE="$HWMON_DIR/$HWMON_NAME/pwm1_enable"
+                PWM_CTRL="$HWMON_DIR/$HWMON_NAME/power/control"
                 CPU_TEMP="/sys/devices/virtual/thermal/thermal_zone0/temp"
                 GPU_TEMP="/sys/devices/virtual/thermal/thermal_zone1/temp"
 
-                # 先启用手动控制模式
-                echo on > "$PWM_CTRL"
-                echo 2 > "$PWM_ENABLE"
+                # 检查文件是否存在
+                [ -f "$PWM_ENABLE" ] || exit 0
+                [ -f "$CPU_TEMP" ] || exit 0
+                [ -f "$GPU_TEMP" ] || exit 0
 
-                while true; do
-                  # 读取 CPU（m°C）并转换为 ℃
-                  cpu_c=$(( $(cat "$CPU_TEMP") / 1000 ))
-                  # 读取 GPU 温度（整数 ℃）
-                  gpu_c=$(( $(cat "$GPU_TEMP") / 1000 ))
+                # 先启用手动控制模式（幂等操作）
+                echo on > "$PWM_CTRL" 2>/dev/null || true
+                echo 2 > "$PWM_ENABLE" 2>/dev/null || true
 
-                  # 取最大值
-                  temp=$(( cpu_c > gpu_c ? cpu_c : gpu_c ))
+                # 读取温度
+                cpu_c=$(( $(cat "$CPU_TEMP") / 1000 ))
+                gpu_c=$(( $(cat "$GPU_TEMP") / 1000 ))
 
-                  if [ "$temp" -gt 70 ]; then
-                    # 超过阈值 → 全速
-                    echo 0 > "$PWM_ENABLE"
-                  else
-                    # 否则维持自动低速
-                    echo 2 > "$PWM_ENABLE"
-                  fi
+                # 取最大值
+                temp=$(( cpu_c > gpu_c ? cpu_c : gpu_c ))
 
-                  sleep 5
-                done
+                # 根据温度调整风扇
+                if [ "$temp" -gt 70 ]; then
+                  # 超过阈值 → 全速
+                  echo 0 > "$PWM_ENABLE"
+                else
+                  # 否则维持自动低速
+                  echo 2 > "$PWM_ENABLE"
+                fi
               ''}";
-              Restart = "always";
-              RestartSec = "5";
-              Type = "simple";
             };
-            wantedBy = [ "multi-user.target" ];
+          };
+          systemd.timers.fancontrol = {
+            description = "Fan Control Timer";
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnBootSec = "1min";
+              OnUnitActiveSec = "1min";
+              AccuracySec = "10s";
+            };
           };
         };
+      };
+
+      # Server hosts
+      serverHosts = {
         "hostB" = {
           networking.hostName = "hostB";
           # hostB-specific adjustments
@@ -785,18 +831,36 @@
       blocklist_base = builtins.readFile inputs.adlist;
       blocklist_txt = pkgs.writeText "blocklist.txt" blocklist_base;
 
-    in {
-      # NixOS system configurations by hostname
-      nixosConfigurations = lib.mapAttrs (hostName: hostOverrides:
+      # Desktop NixOS configurations
+      desktopConfigurations = lib.mapAttrs (hostName: hostOverrides:
         nixpkgs.lib.nixosSystem {
           system = system;
-          # combine common defaults and host-specific overrides as modules:
+          # combine base config, desktop config, and host-specific overrides as modules:
           modules = [
-            commonNixOSConfig
+            baseConfig
+            commonDesktopConfig
             hostOverrides
             # you still need home-manager & hardware modules if used in hostOverrides:
             home-manager.nixosModules.home-manager
           ];
-        }) hosts;
+        }) desktopHosts;
+
+      # Server NixOS configurations
+      serverConfigurations = lib.mapAttrs (hostName: hostOverrides:
+        nixpkgs.lib.nixosSystem {
+          system = system;
+          # combine base config, server config, and host-specific overrides as modules:
+          modules = [
+            baseConfig
+            commonServerConfig
+            hostOverrides
+            # you still need home-manager & hardware modules if used in hostOverrides:
+            home-manager.nixosModules.home-manager
+          ];
+        }) serverHosts;
+
+    in {
+      # NixOS system configurations by hostname (combined)
+      nixosConfigurations = desktopConfigurations // serverConfigurations;
     };
 }

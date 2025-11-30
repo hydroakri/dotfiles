@@ -30,6 +30,7 @@ in {
     kdePackages.partitionmanager
     venera
     ghostty
+    code-cursor
     # davinci-resolve-studio
   ];
   home.stateVersion = "25.05";
