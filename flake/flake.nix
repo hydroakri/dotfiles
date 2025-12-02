@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    sops-nix.url = "github:Mic92/sops-nix";
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,19 +19,18 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, adlist, geodb, ... }@inputs:
+  outputs =
+    { self, nixpkgs, sops-nix, home-manager, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system = "x86_64-linux";
+      zeroTrust = "ZEROTRUST";
 
       baseConfig = { config, pkgs, ... }: {
         nix.settings = {
           auto-optimise-store = true;
           experimental-features = [ "nix-command" "flakes" ];
-          substituters = [
-            "https://cache.nixos.org"
-            "https://mirrors.ustc.edu.cn/nix-channels/store"
-          ];
+          substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
         };
         nixpkgs.config.allowUnfree = true;
         nix.optimise.automatic = true;
@@ -43,7 +43,7 @@
         hardware.cpu.amd.updateMicrocode = true;
         hardware.cpu.intel.updateMicrocode = true;
         boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
-        boot.kernelParams = [
+        boot.kernelParams = lib.mkDefault [
           # performance
           "lru_gen_enabled=1"
           "zswap.enabled=0"
@@ -124,14 +124,22 @@
           sudo-rs.enable = true;
           sudo.enable = false;
         };
+        services.openssh.enable = true;
         services.fwupd.enable = true;
         services.fstrim.enable = true;
+        services.btrfs.autoScrub = {
+          enable = true;
+          interval = "monthly";
+          fileSystems = [ "/" ];
+        };
         services.earlyoom.enable = true;
         systemd.oomd.enable = false;
         security.apparmor.enable = true;
         networking.firewall = {
           enable = true;
           allowedTCPPorts = [ 22 ];
+          backend = "firewalld";
+          package = pkgs.firewalld;
         };
         services.chrony = {
           enable = true;
@@ -150,11 +158,42 @@
             };
           };
         };
+        systemd = {
+          services.btrfs-balance = {
+            description = "Smart Btrfs balance";
+            requires = [ "local-fs.target" ];
+            after = [ "local-fs.target" ];
+            serviceConfig = {
+              Type = "oneshot";
+              ConditionACPower = true;
+              ExecStart = pkgs.writeShellScript "smart-balance" ''
+                set -e
+                echo "Starting smart Btrfs balance..."
+                ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=0 -musage=0 / || true
+                ${pkgs.btrfs-progs}/bin/btrfs balance start -musage=30 / || true
+                ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=10 / || true
+                echo "Balance complete. SSD remains happy."
+              '';
+            };
+          };
+          timers.btrfs-balance = {
+            description = "Run smart btrfs balance monthly";
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = "monthly";
+              Persistent = true;
+              RandomizedDelaySec = "1h";
+            };
+          };
+        };
         environment.systemPackages = with pkgs; [
           xz
+          age
           fzf
+          bat
           zip
           gdu
+          sops
           file
           fish
           wget
@@ -176,6 +215,7 @@
           pciutils
           fastfetch
           efibootmgr
+          ssh-to-age
         ];
         system.stateVersion = "25.11"; # Did you read the comment?
       };
@@ -512,6 +552,7 @@
         };
         services.dnscrypt-proxy = {
           enable = true;
+          configFile = config.sops.templates."dnscrypt-proxy.toml".path;
           settings = {
             cache = true;
             cache_size = 4096;
@@ -574,8 +615,7 @@
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
             static.flymc-doh.stamp =
               "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
-            static.zerotrust.stamp = lib.strings.removeSuffix "\n"
-              (builtins.readFile /etc/nixos/DOH_STAMP.txt);
+            static.zerotrust.stamp = zeroTrust;
             sources.public-resolvers = {
               urls = [
                 "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
@@ -586,6 +626,24 @@
                 "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
               refresh_delay = 72;
             };
+          };
+        };
+        sops = {
+          defaultSopsFile = ./secrets.yaml;
+          defaultSopsFormat = "yaml";
+          age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+          secrets.doh_stamp = { };
+          templates."dnscrypt-proxy.toml" = {
+            mode = "0444";
+            content = builtins.replaceStrings [ zeroTrust ]
+              [ config.sops.placeholder.doh_stamp ] (builtins.readFile
+                (pkgs.runCommand "to-toml" {
+                  nativeBuildInputs = [ pkgs.yj ];
+                } ''
+                  echo '${
+                    builtins.toJSON config.services.dnscrypt-proxy.settings
+                  }' | yj -jt > $out
+                ''));
           };
         };
       };
@@ -602,6 +660,7 @@
         services.irqbalance.enable = true;
         services.tuned.enable = true;
         services.tuned.profile = "throughput-performance";
+        services.fail2ban.enable = true;
       };
 
       # Desktop hosts
@@ -810,6 +869,7 @@
             commonDesktopConfig
             hostOverrides
             home-manager.nixosModules.home-manager
+            sops-nix.nixosModules.sops
           ];
         }) desktopHosts;
 
@@ -822,6 +882,7 @@
             commonServerConfig
             hostOverrides
             home-manager.nixosModules.home-manager
+            sops-nix.nixosModules.sops
           ];
         }) serverHosts;
 
