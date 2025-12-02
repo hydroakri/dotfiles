@@ -1,0 +1,10 @@
+keys:
+  - &hydroakri age13dfnenxe5k0wlyj5xt9xljul9gljylzg2wz06hlslz6xyk296qqs26twx0
+  - &omen15 age1sndl2ewalys8v7mk78fps8qkjq8azs49ymy25gnyamjv2f0qafsqdztsd8
+
+creation_rules:
+  - path_regex: secrets.yaml$
+    key_groups:
+      - age:
+          - *hydroakri
+          - *omen15
