@@ -325,8 +325,10 @@
           enable = true;
           wifi.powersave = true;
         };
-        # cuz of non-FHS need to export fonts dir to let normal app to read
-        fonts.fontDir.enable = true;
+        fonts.fontDir = {
+          enable = true;
+          decompressFonts = true;
+        };
 
         time.timeZone = "Australia/Perth";
         i18n = {

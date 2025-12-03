@@ -1,5 +1,5 @@
 [Context]
-filesystems=/nix/store:ro;/run/current-system/sw/share/X11/fonts:ro;xdg-run/portal;xdg-config/gtk-4.0:ro;
+filesystems=/nix/store:ro;/run/current-system/sw/share/X11/fonts;xdg-config/gtk-4.0:ro;/home/hydroakri/.icons:ro;xdg-run/portal;/home/hydroakri/.local/share/fonts:ro;
 
 [Session Bus Policy]
 org.freedesktop.portal.OpenURI=talk

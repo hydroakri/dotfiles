@@ -1,47 +1,376 @@
-/* == 全局生效，应用于所有网页 == */
-body,
+/* ==========================================================================
+   核心配置：渲染优化 (Rendering)
+   既然追求 Mac 质感，开启抗锯齿是必须的
+   ========================================================================== */
 html {
-    /* 默认先用 Inter Display，再回退到中文无衬线字体，最后系统无衬线 */
-    font-family: "Inter Display",
-    "Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC",
-    sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* ==== 强制 serif 场景 ==== */
-/* HTML 中常见的 serif 场景：标题、引用、斜体/强调、文章主体等 */
-h1,
-h2,
-blockquote {
-    font-family: "Libertinus Serif Display",
-    "FZFW ZhuZi MinchoS", "Noto Serif CJK SC",
-    serif !important;
+/* ==========================================================================
+   策略一：字体劫持 (Font Aliasing)
+   ========================================================================== */
+
+/* 1. 无衬线 (Sans) -> Inter + PingFang/Hiragino */
+/* 包含：Arial, Helvetica, Segoe UI, Roboto, system-ui, 微软雅黑, 黑体 */
+
+@font-face {
+  font-family: "Arial";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Trebuchet MS";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Verdana";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Tahoma";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Impact";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Helvetica";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Helvetica Neue";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+/* 关键补充：劫持系统默认字体栈 */
+@font-face {
+  font-family: "system-ui";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "-apple-system";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "BlinkMacSystemFont";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Segoe UI";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Roboto";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Ubuntu";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "DejaVu Sans";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Liberation Sans";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "Nimbus Sans L";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+/* 针对 Windows 用户的强力覆盖 */
+@font-face {
+  font-family: "Microsoft YaHei";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "Microsoft YaHei UI";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "SimHei";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "PingFang SC";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "Hiragino Sans GB";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "Heiti SC";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "STHeiti";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC");
+}
+@font-face {
+  font-family: "Noto Sans CJK SC";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
+}
+@font-face {
+  font-family: "WenQuanYi Micro Hei";
+  src:
+    local("Inter Display"), local("Inter"), local("Hiragino Sans GB"),
+    local("PingFang SC"), local("Microsoft YaHei");
 }
 
-/* ==== 强制 monospace 场景 ==== */
+/* 2. 衬线 (Serif) -> Source Serif 4 + ZhuZi Mincho */
+/* 包含：Times, Georgia, 宋体 */
+
+@font-face {
+  font-family: "Times New Roman";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "Georgia";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "Garamond";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "Liberation Serif";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "DejaVu Serif";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "Nimbus Roman";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "SimSun";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "FangSong";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "SongTi SC";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+/* 楷体/仿宋 -> 映射到筑紫明朝 (个人偏好保留) */
+@font-face {
+  font-family: "KaiTi";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "KaiTi SC";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+@font-face {
+  font-family: "Noto Serif CJK SC";
+  src:
+    local("Source Serif 4 Display"), local("Source Serif 4"),
+    local("FZFW ZhuZi MinchoS"), local("Noto Serif CJK SC");
+}
+
+/* 3. 等宽 (Mono) -> Cascadia Code */
+
+@font-face {
+  font-family: "Courier New";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "Consolas";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "Menlo";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "Monaco";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "DejaVu Sans Mono";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "Ubuntu Mono";
+  src: local("Cascadia Code"), monospace;
+}
+@font-face {
+  font-family: "Liberation Mono";
+  src: local("Cascadia Code"), monospace;
+}
+
+/* ==========================================================================
+   策略二：全局生效 (Global Application)
+   ========================================================================== */
+
+/* 使用 !important 覆盖内联样式，但只针对 html/body。
+   这样图标库如果在内部元素定义了 font-family，通常能通过 CSS 权重胜出。
+*/
+html,
+body {
+  font-family:
+    "Inter Display", "Inter", "Hiragino Sans GB", "PingFang SC",
+    "Microsoft YaHei", sans-serif !important;
+}
+
+/* ==========================================================================
+   策略三：语义保留与修正 (Semantic & Fixes)
+   ========================================================================== */
+
+/* 代码块强制等宽 */
 pre,
-pre *,
 code,
-code *,
-quoteblock,
-quoteblock *,
 kbd,
 samp,
-.blob-code-content *,
-div[data-test-selector="release-card"] details ul *,
-.highlighted-code *,
-.code-wrap *,
-/* .editor-container *, */
-.enlighter *,
-.CodeMirror {
-    font-family: "Cascadia Code",
-    monospace !important;
+var,
+.blob-code,
+.blob-code-content,
+.CodeMirror,
+.prism,
+.hljs,
+textarea {
+  font-family:
+    "Cascadia Code", "JetBrains Mono", "Fira Code", monospace !important;
 }
 
+/* [修正] 普通 input 输入框建议保留无衬线，
+  仅在明确是代码相关输入时才用 Mono，否则日常填表体验会很怪。
+  如果你确实喜欢全 Mono，可以把 input[type="text"] 加回上面的组。
+*/
+input,
+button,
+select,
+optgroup {
+  font-family: inherit;
+}
 
-/* ==== 如果想针对纯中文页面再微调 ==== */
-/* :lang(zh) * {
+/* 强制衬线区域 */
+.serif,
+.font-serif,
+.article-content,
+blockquote,
+.rich_media_content {
   font-family:
-    "Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC",
-    sans-serif
-  !important;
-} */
+    "Source Serif 4 Display", "Source Serif 4", "FZFW ZhuZi MinchoS",
+    "Noto Serif CJK SC", serif !important;
+}
+
+/* ==========================================================================
+   策略四：防御性保护 (Defensive Protection)
+   防止图标字体变成方块（即使我们没有用通配符 *，这也是一层额外保险）
+   ========================================================================== */
+body:not([class*="fa"]):not([class*="icon"]):not([class*="Icon"]):not(
+    [class*="symbol"]
+  ):not(i) {
+  font-family:
+    "Inter Display", "Inter", "Hiragino Sans GB", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+}
+body,
+.review_body,
+.release_page_header,
+#content,
+.page_stat_count {
+  font-family: "Inter Display", "Inter", sans-serif !important;
+
+  /* 关键修复：禁止网页乱用字体特性（ss05, ss06 等） */
+
+  font-feature-settings: normal !important;
+
+  font-variant: normal !important;
+}
+
+b,
+strong,
+.page_stat_count {
+  font-weight: 600 !important;
+}
+
+.mono {
+  font-family: "Cascadia Code", monospace !important;
+
+  font-feature-settings: normal !important;
+}
