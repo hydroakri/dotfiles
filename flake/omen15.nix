@@ -87,23 +87,6 @@
     ];
   };
 
-  fileSystems."/.snapshot" = {
-    device = "/dev/disk/by-uuid/fea890b4-cc85-476c-9f53-d988b156d514";
-    fsType = "btrfs";
-    options = [
-      "subvol=@snapshot"
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=120"
-      "compress=zstd:3"
-      "discard=async"
-    ];
-  };
-
   fileSystems."/steam-linux" = {
     label = "steam-linux";
     fsType = "btrfs";

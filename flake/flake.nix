@@ -293,6 +293,41 @@
           package = pkgs.ananicy-cpp;
           rulesProvider = pkgs.ananicy-rules-cachyos;
         };
+        services.snapper = {
+          # 自动创建定时快照的时间配置（默认即可，无需修改）
+          # snapshotInterval = "hourly"; 
+
+          # 清理服务定时器（建议开启，防止快照爆满）
+          cleanupInterval = "1h";
+
+          configs = {
+            home = {
+              SUBVOLUME = "/home";
+              ALLOW_USERS = [ "hydroakri" ];
+
+              TIMELINE_CREATE = true;
+              TIMELINE_CLEANUP = true;
+
+              TIMELINE_LIMIT_HOURLY = "24";
+              TIMELINE_LIMIT_DAILY = "3";
+              TIMELINE_LIMIT_MONTHLY = "1";
+              TIMELINE_LIMIT_YEARLY = "1";
+            };
+
+            varlog = {
+              SUBVOLUME = "/var/log";
+              ALLOW_USERS = [ "hydroakri" ];
+
+              TIMELINE_CREATE = true;
+              TIMELINE_CLEANUP = true;
+
+              TIMELINE_LIMIT_HOURLY = "24";
+              TIMELINE_LIMIT_DAILY = "3";
+              TIMELINE_LIMIT_MONTHLY = "1";
+              TIMELINE_LIMIT_YEARLY = "1";
+            };
+          };
+        };
         virtualisation.podman = {
           enable = true;
           dockerCompat = true;
@@ -318,6 +353,7 @@
 
           ## CLI / user tools
           distrobox
+          btrfs-assistant
         ];
         networking.interfaces.wlo1.wakeOnLan.enable = false;
         networking.interfaces.eno1.wakeOnLan.enable = false;
