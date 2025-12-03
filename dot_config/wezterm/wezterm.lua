@@ -50,10 +50,6 @@ local config = {
 					style = "Italic",
 				},
 				{
-					family = "Zhuque Fangsong (technical preview)",
-					style = "Italic",
-				},
-				{
 					family = "Noto Serif CJK SC",
 					style = "Italic",
 				},

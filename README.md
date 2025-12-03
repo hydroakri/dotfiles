@@ -20,7 +20,7 @@ LockScreen: hyprlock
 Wallpaper manager: swww  
 Icon: papirus-icon-theme  
 Cursor: bibata-cursor-theme  
-Font: Inter Display, HarmonyOS Sans/Zhuque Fangsong(CJK font)
+Font: Inter Display, Source Serif 4 Display, FZFW ZhuZi MinchoS, Hiragino Sans GB
 
 ## pywal config file
 
