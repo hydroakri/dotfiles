@@ -67,6 +67,8 @@ in {
 
     Service = {
       Type = "oneshot";
+      Restart = "on-failure";
+      RestartSec = "5m";
       ExecStart = "${pkgs.writeShellScript "watch-store" ''
         #!/run/current-system/sw/bin/bash
         mkdir -p "${rime-ice-path}"
