@@ -36,19 +36,19 @@ in {
   programs.home-manager.enable = true;
 
   home.file = {
-    ".zshrc".source = ../dot_zshrc;
+    ".zshrc".source = ../../dot_zshrc;
     ".config" = {
-      source = ../dot_config;
+      source = ../../dot_config;
       recursive = true;
       executable = true;
     };
     ".local" = {
-      source = ../dot_local;
+      source = ../../dot_local;
       recursive = true;
       executable = true;
     };
     ".ssh" = {
-      source = ../dot_ssh;
+      source = ../../dot_ssh;
       recursive = true;
       executable = true;
     };
