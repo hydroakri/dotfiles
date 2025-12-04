@@ -23,25 +23,29 @@
     { self, nixpkgs, sops-nix, home-manager, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
-      system = "x86_64-linux";
       zeroTrust = "ZEROTRUST";
 
       baseConfig = { config, pkgs, ... }: {
-        nix.settings = {
-          auto-optimise-store = true;
-          experimental-features = [ "nix-command" "flakes" ];
-          substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+        nix = {
+          settings = {
+            auto-optimise-store = true;
+            experimental-features = [ "nix-command" "flakes" ];
+            substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+          };
+          optimise.automatic = true;
+          gc = {
+            automatic = true;
+            dates = "weekly";
+            options = "--delete-older-than 7d";
+          };
+
         };
         nixpkgs.config.allowUnfree = true;
-        nix.optimise.automatic = true;
-        nix.gc = {
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 7d";
-        };
         # CPU microcode (common)
-        hardware.cpu.amd.updateMicrocode = true;
-        hardware.cpu.intel.updateMicrocode = true;
+        hardware.cpu.amd.updateMicrocode =
+          lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
+        hardware.cpu.intel.updateMicrocode =
+          lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
         boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
         boot.kernelParams = lib.mkDefault [
           # performance
@@ -49,12 +53,12 @@
           "zswap.enabled=0"
           "transparent_hugepage=madvise"
           # security
-          "processor.ignore_ppc=1"
           "mitigations=auto"
           "random.trust_cpu=0"
           "lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
           "lockdown=integrity"
-        ];
+        ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64
+          [ "processor.ignore_ppc=1" ];
         boot.kernel.sysctl = lib.mkDefault {
           # Security (common)
           "kernel.core_pattern" = "|/bin/false";
@@ -103,7 +107,7 @@
         };
         services.udev.extraRules = ''
           # NVMe SSD: 设置为 none
-          ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
+          ACTION=="add|change", KERNEL=="nvme[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="none"
 
           # SATA SSD / eMMC: 设置为 mq-deadline
           ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
@@ -163,9 +167,9 @@
             description = "Smart Btrfs balance";
             requires = [ "local-fs.target" ];
             after = [ "local-fs.target" ];
+            unitConfig.ConditionACPower = true;
             serviceConfig = {
               Type = "oneshot";
-              ConditionACPower = true;
               ExecStart = pkgs.writeShellScript "smart-balance" ''
                 set -e
                 echo "Starting smart Btrfs balance..."
@@ -186,37 +190,39 @@
             };
           };
         };
-        environment.systemPackages = with pkgs; [
-          xz
-          age
-          fzf
-          bat
-          zip
-          gdu
-          sops
-          file
-          fish
-          wget
-          lsof
-          btop
-          yazi
-          unzip
-          unrar
-          p7zip
-          atuin
-          neovim
-          zoxide
-          mokutil
-          chezmoi
-          lazygit
-          ripgrep
-          nix-tree
-          starship
-          pciutils
-          fastfetch
-          efibootmgr
-          ssh-to-age
-        ];
+        environment.systemPackages = with pkgs;
+          [
+            xz
+            age
+            fzf
+            bat
+            zip
+            gdu
+            sops
+            file
+            fish
+            wget
+            lsof
+            btop
+            yazi
+            unzip
+            unrar
+            p7zip
+            atuin
+            neovim
+            zoxide
+            chezmoi
+            lazygit
+            ripgrep
+            nix-tree
+            starship
+            pciutils
+            fastfetch
+            ssh-to-age
+          ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
+            efibootmgr
+            mokutil
+          ];
         system.stateVersion = "25.11"; # Did you read the comment?
       };
 
@@ -277,7 +283,6 @@
           # Desktop-specific scheduler tuning (low latency)
           "kernel.nmi_watchdog" = 0;
           "vm.laptop_mode" = 5;
-          "net.ipv4.tcp_congestion_control" = "bbr3";
         };
         boot.consoleLogLevel = 3;
         boot.initrd.verbose = false;
@@ -411,7 +416,7 @@
           enable = true;
           xdgOpenUsePortal = true;
           extraPortals = [
-            pkgs.xdg-desktop-portal-cosmic
+            # pkgs.xdg-desktop-portal-cosmic
             # pkgs.xdg-desktop-portal-gtk # niri
             # pkgs.xdg-desktop-portal-gnome # niri
           ];
@@ -427,9 +432,9 @@
           after = [ "graphical-session.target" ];
           serviceConfig = {
             Type = "simple";
+            # ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
             ExecStart =
-              "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-            # ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
+              "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
             Restart = "on-failure";
             RestartSec = 1;
             TimeoutStopSec = 10;
@@ -704,6 +709,7 @@
       # Desktop hosts
       desktopHosts = {
         "omen15" = { config, pkgs, ... }: {
+          system = "x86_64-linux";
           imports = [
             ./omen15.nix
             {
