@@ -4,10 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     sops-nix.url = "github:Mic92/sops-nix";
-    home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     adlist = {
       url =
         "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
@@ -20,7 +17,7 @@
   };
 
   outputs =
-    { self, nixpkgs, sops-nix, home-manager, adlist, geodb, ... }@inputs:
+    { self, nixpkgs, sops-nix, nixos-hardware, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
 
@@ -31,9 +28,11 @@
       nixosConfigurations = {
         omen15 = lib.nixosSystem {
           specialArgs = specialArgsForAll;
-          modules = [
-            ./hosts/omen15/omen15.nix
-          ];
+          modules = [ ./hosts/omen15/omen15.nix ];
+        };
+        rpi4 = lib.nixosSystem {
+          specialArgs = specialArgsForAll;
+          modules = [ ./hosts/rpi4/rpi4.nix ];
         };
       };
     };

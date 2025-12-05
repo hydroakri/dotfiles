@@ -1,4 +1,5 @@
 [".local/share/fcitx5/rime"]
     type = "git-repo"
     url = "https://github.com/iDvel/rime-ice.git"
-    refreshPeriod = "24h"
+    refreshPeriod = "168h"
+    clone.depth = 1
