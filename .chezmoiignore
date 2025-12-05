@@ -1,0 +1,21 @@
+# .chezmoiignore
+
+# 忽略 NixOS 系统配置目录
+flake/
+flake/**
+
+# 忽略工具脚本目录
+utils/
+utils/**
+
+# 忽略 Git 自身的文件
+.git/
+.gitignore
+.gitmodules
+
+# 忽略 Chezmoi 的配置文件（防止它们被复制到 Home）
+.chezmoiignore
+.chezmoiexternal.toml
+.chezmoiscripts/**
+README.md
+LICENSE

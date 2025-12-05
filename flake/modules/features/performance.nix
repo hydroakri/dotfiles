@@ -4,8 +4,6 @@
     "lru_gen_enabled=1"
     "zswap.enabled=0"
     "transparent_hugepage=madvise"
-    "preempt=full"
-    "mitigations=off"
     "nouveau.config=NvBoost=2"
     "nouveau.modeset=1"
   ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64
@@ -47,6 +45,9 @@
     "net.netfilter.nf_conntrack_tcp_timeout_established" = 120;
 
     # VM (common)
+    "vm.swappiness" = 100;
+    "vm.dirty_ratio" = 40;
+    "vm.dirty_background_ratio" = 10;
     "vm.page-cluster" = 0;
     "vm.nr_hugepages" = 0;
     "vm.vfs_cache_pressure" = 50;
@@ -54,10 +55,6 @@
     "vm.dirty_expire_centisecs" = 1500;
     "vm.min_free_kbytes" = 65536;
     "vm.max_map_count" = 262144;
-    # Desktop-specific VM tuning
-    "vm.swappiness" = 180;
-    "vm.dirty_ratio" = 10;
-    "vm.dirty_background_ratio" = 5;
   };
   services.udev.extraRules = ''
     # NVMe SSD: 设置为 none
@@ -69,6 +66,7 @@
     # 旋转硬盘 HDD: 设置为 bfq
     ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
   '';
+  boot.tmp.useTmpfs = true;
   services.zram-generator = {
     enable = true;
     settings = {
@@ -82,7 +80,7 @@
   services.fstrim.enable = true;
   services.earlyoom.enable = true;
   systemd.oomd.enable = false;
-  services.scx = {
+  services.scx = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
     enable = true;
     scheduler = "scx_rusty";
   };

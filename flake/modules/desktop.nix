@@ -1,4 +1,11 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, lib, ... }: {
+  boot.kernelParams = [ "preempt=full" ];
+  boot.kernel.sysctl = {
+    # Desktop-specific VM tuning
+    "vm.swappiness" = lib.mkForce 180;
+    "vm.dirty_ratio" = lib.mkForce 10;
+    "vm.dirty_background_ratio" = lib.mkForce 5;
+  };
   # X Server and input
   services.xserver.enable = true;
   services.libinput.enable = true;

@@ -5,8 +5,6 @@
     # Hardware configuration
     # Auto-generated hardware config (can be regenerated with nixos-generate-config)
     ./hardware-configuration.nix
-    # Custom hardware configuration (manual modifications and optimizations)
-    ./hardware-custom.nix
 
     # Core system modules
     ../../modules/core.nix
@@ -31,15 +29,6 @@
 
     # External modules
     inputs.sops-nix.nixosModules.sops
-    inputs.home-manager.nixosModules.home-manager
-
-    # Home manager configuration
-    {
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
-      home-manager.backupFileExtension = "backup";
-      home-manager.users.hydroakri = import ../../users/hydroakri.nix;
-    }
   ];
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;
@@ -151,6 +140,23 @@
     isNormalUser = true;
     description = "hydroakri";
     extraGroups = [ "networkmanager" "wheel" "video" ];
+    packages = with pkgs; [
+      # themes/shell/plugin
+      bibata-cursors
+      papirus-icon-theme
+      gnomeExtensions.appindicator
+      gnomeExtensions.user-themes
+      gnomeExtensions.kimpanel
+      gnome-tweaks
+
+      # GUI Applications
+      kdePackages.kate
+      venera
+      ghostty
+      code-cursor
+      yubikey-manager
+      # davinci-resolve-studio
+    ];
   };
   # programs.niri.enable = true;
   programs.zsh.enable = true;
@@ -167,5 +173,93 @@
     capSysAdmin = true;
     openFirewall = true;
   };
+  # ============================================================================
+  # Custom Hardware Configuration
+  # ============================================================================
+  # Add additional kernel modules for better hardware support
+  # sudo nixos-generate-config --show-hardware-config > ./hardware-configuration.nix (MUST be used in tty)
+  boot.initrd.availableKernelModules = lib.mkAfter [ "usb_storage" "sd_mod" ];
+
+  # Override filesystem mount options with performance optimizations
+  fileSystems."/" = {
+    options = lib.mkForce [
+      "subvol=@"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:3"
+      "discard=async"
+    ];
+  };
+
+  fileSystems."/nix" = {
+    options = lib.mkForce [
+      "subvol=@nix"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:3"
+      "discard=async"
+      "autodefrag"
+    ];
+  };
+
+  fileSystems."/home" = {
+    options = lib.mkForce [
+      "subvol=@home"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:3"
+      "discard=async"
+    ];
+  };
+
+  fileSystems."/var/log" = {
+    options = lib.mkForce [
+      "subvol=@log"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:3"
+      "discard=async"
+    ];
+  };
+
+  # Override steam-linux filesystem to use label instead of UUID
+  fileSystems."/steam-linux" = {
+    device = lib.mkForce "LABEL=steam-linux";
+    options = lib.mkForce [
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "commit=120"
+      "compress=zstd:3"
+      "discard=async"
+      "autodefrag"
+    ];
+  };
+
+  # Enable DHCP by default for network interfaces
+  networking.useDHCP = lib.mkDefault true;
 
 }
