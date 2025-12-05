@@ -104,24 +104,35 @@
   # Flatpak
   services.flatpak.enable = true;
 
-  # Desktop firewall (includes gaming ports)
+  # Desktop firewall (general application ports)
   networking.firewall = {
-    allowedTCPPorts =
-      [ 53 80 443 1080 5222 25565 27015 27036 27037 27040 53317 ];
-    allowedUDPPorts = [ 1080 7777 27015 27031 27036 53317 ];
-    allowedUDPPortRanges = [
-      {
-        from = 27031;
-        to = 27036;
-      }
-      {
-        from = 8000;
-        to = 8010;
-      }
-    ];
+    allowedTCPPorts = [ 53 80 443 1080 ];
+    allowedUDPPorts = [ 1080 ];
   };
-  environment.plasma6.excludePackages =
-    (with pkgs; [ kdePackages.elisa kdePackages.gwenview kdePackages.kwrited ]);
+  environment.plasma6.excludePackages = (with pkgs; [
+    kdePackages.elisa
+    kdePackages.gwenview
+    kdePackages.kwrited
+    kdePackages.khelpcenter
+    kdePackages.konqueror
+    kdePackages.oxygen
+    kdePackages.krdc
+    kdePackages.krfb
+    kdePackages.dragon
+    kdePackages.kcalc
+    kdePackages.kfind
+    kdePackages.kcharselect
+    kdePackages.keditbookmarks
+    kdePackages.drkonqi
+    kdePackages.kdebugsettings
+    kdePackages.kjournald
+    kdePackages.ksystemlog
+    kdePackages.kamera
+    kdePackages.audiocd-kio
+    kdePackages.ffmpegthumbs
+    kdePackages.kwallet
+    kdePackages.kwallet-pam
+  ]);
   environment.cosmic.excludePackages =
     (with pkgs; [ cosmic-player cosmic-term cosmic-edit ]);
   environment.gnome.excludePackages = (with pkgs; [
@@ -141,5 +152,26 @@
     tali # poker game
     totem # video player
   ]);
-
+  fonts = {
+    packages = with pkgs; [
+      noto-fonts-cjk-sans
+      noto-fonts-cjk-serif
+      noto-fonts-color-emoji
+      sarasa-gothic
+      nerd-fonts.symbols-only
+      cascadia-code # monospace
+      source-serif # serif
+      libertinus # math/latex
+      inter # sans
+    ];
+    fontDir = {
+      enable = true;
+      decompressFonts = true;
+    };
+  };
+  environment.systemPackages = with pkgs; [
+    #theme
+    darkly-qt5
+    darkly
+  ];
 }

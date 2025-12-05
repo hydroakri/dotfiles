@@ -1,11 +1,11 @@
 { config, lib, pkgs, ... }: {
-  boot.kernelParams = lib.mkDefault [
+  boot.kernelParams = [
     "mitigations=auto"
     "random.trust_cpu=0"
     "lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
     "lockdown=integrity"
   ];
-  boot.kernel.sysctl = lib.mkDefault {
+  boot.kernel.sysctl = {
     # Security (common)
     "kernel.core_pattern" = "|/bin/false";
     "kernel.unprivileged_bpf_disabled" = 1;

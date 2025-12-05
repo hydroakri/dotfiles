@@ -2,7 +2,7 @@
   boot.consoleLogLevel = 3;
   boot.initrd.verbose = false;
   boot.plymouth.enable = true;
-  boot.kernelParams = lib.mkDefault [
+  boot.kernelParams = [
     # boot screen
     "quiet"
     "splash"

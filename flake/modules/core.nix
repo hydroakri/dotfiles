@@ -14,6 +14,15 @@
       options = "--delete-older-than 7d";
     };
   };
+  console = {
+    enable = true;
+    earlySetup = true;
+    packages = with pkgs; [ terminus_font ];
+    # ter-v16n for 1080p below
+    # ter-v24n for 1080p
+    # ter-v32n for 2K/4K
+    font = "ter-v32n";
+  };
   services.chrony = {
     enable = true;
     servers = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];

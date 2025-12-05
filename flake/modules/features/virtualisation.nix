@@ -5,7 +5,7 @@
     autoPrune = {
       enable = true;
       dates = "weekly";
-      flags = [ "--all" ];
+      flags = [ "--filter" "label!=manager=distrobox" ];
     };
   };
   environment.systemPackages = with pkgs; [ distrobox ];
