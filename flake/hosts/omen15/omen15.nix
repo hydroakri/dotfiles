@@ -20,6 +20,7 @@
     ../../modules/features/security.nix
     ../../modules/features/utils.nix
     ../../modules/features/virtualisation.nix
+    ../../modules/features/gaming.nix
 
     # Filesystem modules
     ../../modules/filesystems/btrfs.nix
@@ -141,8 +142,6 @@
     # xfce.xfce4-panel-profiles
     # rofi
 
-    yad # steamtinkerlaunch depend
-    steam-devices-udev-rules
   ];
   # Video drivers (hardware-specific)
   services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
@@ -151,24 +150,10 @@
     shell = pkgs.zsh;
     isNormalUser = true;
     description = "hydroakri";
-    extraGroups = [ "networkmanager" "wheel" "video" "gamemode" ];
+    extraGroups = [ "networkmanager" "wheel" "video" ];
   };
   # programs.niri.enable = true;
   programs.zsh.enable = true;
-  programs = {
-    gamescope = {
-      enable = true;
-      capSysNice = true;
-    };
-    steam = {
-      enable = false;
-      remotePlay.openFirewall = true;
-      dedicatedServer.openFirewall = true;
-      localNetworkGameTransfers.openFirewall = true;
-      gamescopeSession.enable = true;
-      extraCompatPackages = with pkgs; [ steamtinkerlaunch ];
-    };
-  };
   # Application-specific programs (host-specific)
   programs.throne.enable = true;
   programs.clash-verge = {

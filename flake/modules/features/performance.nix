@@ -1,5 +1,5 @@
 { config, lib, pkgs, ... }: {
-  boot.kernelParams = lib.mkDefault ([
+  boot.kernelParams = ([
     # performance
     "lru_gen_enabled=1"
     "zswap.enabled=0"
@@ -8,16 +8,14 @@
     "mitigations=off"
     "nouveau.config=NvBoost=2"
     "nouveau.modeset=1"
-  ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
-    "processor.ignore_ppc=1"
-  ]);
+  ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64
+    [ "processor.ignore_ppc=1" ]);
   # CPU microcode (common)
   hardware.cpu.amd.updateMicrocode =
     lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
   hardware.cpu.intel.updateMicrocode =
     lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
-  boot.kernel.sysctl = lib.mkDefault {
+  boot.kernel.sysctl = {
     # Network (common)
     "net.core.default_qdisc" = "cake";
     "net.ipv4.tcp_congestion_control" = "bbr";
@@ -86,14 +84,7 @@
   systemd.oomd.enable = false;
   services.scx = {
     enable = true;
-    scheduler = "scx_lavd";
-    extraArgs = [ "--autopower" ];
+    scheduler = "scx_rusty";
   };
-  services.ananicy = {
-    enable = true;
-    package = pkgs.ananicy-cpp;
-    rulesProvider = pkgs.ananicy-rules-cachyos;
-  };
-  programs.gamemode.enable = true;
 
 }

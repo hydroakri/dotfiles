@@ -9,8 +9,4 @@
     read-edid
     clinfo
   ];
-  fonts.fontDir = {
-    enable = true;
-    decompressFonts = true;
-  };
 }
