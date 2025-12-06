@@ -154,7 +154,6 @@
       venera
       ghostty
       code-cursor
-      yubikey-manager
       # davinci-resolve-studio
     ];
   };

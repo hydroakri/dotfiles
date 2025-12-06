@@ -44,10 +44,10 @@
     };
   };
 
-  # Secret service (keyring)
-  services.gnome.gnome-keyring.enable = true;
-  services.passSecretService.enable = true;
-  security.pam.services.login.enableGnomeKeyring = true;
+  # Secret service (keyring) use keepassxc
+  services.gnome.gnome-keyring.enable = false;
+  security.pam.services.login.enableGnomeKeyring = false;
+  services.passSecretService.enable = false;
 
   # Printing
   services.printing.enable = true;
