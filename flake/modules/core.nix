@@ -32,6 +32,7 @@
   programs.nh.enable = true;
   programs.nix-ld.enable = true;
   programs.ssh = {
+    startAgent = true;
     extraConfig = ''
       Host github.com
         # ProxyCommand nc -X connect -x 127.0.0.1:1080 %h %p
@@ -87,8 +88,6 @@
       ripgrep
       nix-tree
       starship
-      fastfetch
-      ssh-to-age
     ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
       efibootmgr

@@ -22,5 +22,12 @@
     enable = true;
     allowedTCPPorts = [ 22 ];
   };
+  environment.systemPackages = with pkgs; [
+    yubikey-manager
+    libfido2
+    ssh-to-age
+    ssh-copy-id
+    # keepassxc # installed in flatpak
+  ];
 
 }
