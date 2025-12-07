@@ -1,4 +1,5 @@
 { config, lib, pkgs, ... }: {
+  imports = [ ./options.nix ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   nixpkgs.config.allowUnfree = true;
   nix = {
@@ -24,7 +25,6 @@
     # ter-v32n for 2K/4K
     font = "ter-v32n";
   };
-  services.openssh.enable = true;
   services.chrony = {
     enable = true;
     servers = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
@@ -39,16 +39,6 @@
         ServerAliveInterval 10
         Hostname ssh.github.com
         Port 443
-
-      Host *
-        # ForwardAgent yes # open only in trusted machine
-        AddKeysToAgent yes
-        ControlMaster auto
-        ControlPath /tmp/ssh_mux_%u_%C
-        ControlPersist 30m
-
-        # For Hardware Security Key
-        IdentitiesOnly yes
     '';
   };
   programs.git = {
@@ -65,12 +55,10 @@
   environment.systemPackages = with pkgs;
     [
       xz
-      age
       fzf
       bat
       zip
       gdu
-      sops
       file
       fish
       wget
@@ -94,5 +82,6 @@
       mokutil
       pciutils
     ];
-  system.stateVersion = "25.11"; # Did you read the comment?
+  # XXX: https://nixos.org/manual/nixos/unstable/release-notes
+  system.stateVersion = "25.11";
 }

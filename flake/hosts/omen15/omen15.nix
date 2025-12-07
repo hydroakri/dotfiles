@@ -135,10 +135,10 @@
   # Video drivers (hardware-specific)
   services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
   # User definition
-  users.users.hydroakri = {
+  users.users.${config.mainUser} = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    description = "hydroakri";
+    description = "${config.mainUser}";
     extraGroups = [ "networkmanager" "wheel" "video" ];
     packages = with pkgs; [
       # themes/shell/plugin

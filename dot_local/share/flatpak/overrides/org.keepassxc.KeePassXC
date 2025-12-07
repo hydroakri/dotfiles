@@ -1,0 +1,3 @@
+[Context]
+sockets=gpg-agent
+filesystems=/run/user

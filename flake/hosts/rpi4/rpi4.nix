@@ -55,15 +55,16 @@
     allowedUDPPorts = [ 53 1080 ];
   };
 
-  users.users.hydroakri = {
+  users.users.${config.mainUser} = {
     shell = pkgs.zsh;
     isNormalUser = true;
-    description = "hydroakri";
+    description = "${config.mainUser}";
     extraGroups = [ "networkmanager" "wheel" ];
   };
   # ============================================================================
   # Hardware Configuration
   # ============================================================================
+  # XXX: 强状态依赖 - 使用mkForce覆盖硬件配置，依赖于SD卡标签"NIXOS_SD"和"FIRMWARE"存在
   # File system configuration based on current labels
   fileSystems = {
     "/" = lib.mkForce {
