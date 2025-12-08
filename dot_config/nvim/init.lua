@@ -140,19 +140,19 @@ require("lazy").setup({
 				{
 					"nvim-telescope/telescope.nvim",
 					keys = {
-						{ mode = "n", "<leader>sf", ":Telescope find_files<cr>", desc = "Find files" },
+						{ mode = "n", "<leader>sf", ":Telescope find_files<cr>", desc = "Search files" },
 						{ mode = "n", "<leader>sg", ":Telescope live_grep<cr>", desc = "Live grep" },
-						{ mode = "n", "<leader>sb", ":Telescope buffers<cr>", desc = "Find buffer" },
-						{ mode = "n", "<leader>sh", ":Telescope help_tags<cr>", desc = "Find help" },
-						{ mode = "n", "<leader>ts", ":Telescope<cr>", desc = "Toggle Telescope" },
+						{ mode = "n", "<leader>sb", ":Telescope buffers<cr>", desc = "Search buffer" },
+						{ mode = "n", "<leader>sh", ":Telescope help_tags<cr>", desc = "Search help" },
+						{ mode = "n", "<leader>tt", ":Telescope<cr>", desc = "Toggle Telescope" },
 						-- telescope for lsp
-						{ mode = "n", "<leader>sq", ":Telescope quickfix<cr>", desc = "Find quickfix" },
-						{ mode = "n", "<leader>ss", ":Telescope lsp_document_symbols<cr>", desc = "Find symbols" },
+						{ mode = "n", "<leader>sq", ":Telescope quickfix<cr>", desc = "Search Quickfix" },
+						{ mode = "n", "<leader>ss", ":Telescope aerial<cr>", desc = "Search Symbols" }, -- require aerial.nvim
 						{
 							mode = "n",
 							"<leader>sS",
 							":Telescope lsp_workspace_symbols query=",
-							desc = "Find workspace symbols",
+							desc = "Search workspace symbols",
 						},
 					},
 					dependencies = {
@@ -650,6 +650,34 @@ require("lazy").setup({
 
 		-- VISUAL UTILS TO ENHANCE EDIT
 		{
+			-- UI ENHANCE
+			{
+				"folke/noice.nvim",
+				event = "VeryLazy",
+				dependencies = {
+					"MunifTanjim/nui.nvim",
+					"rcarriga/nvim-notify",
+				},
+				config = function()
+					require("noice").setup({
+						lsp = {
+							override = {
+								["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+								["vim.lsp.util.stylize_markdown"] = true,
+								["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+							},
+						},
+						presets = {
+							bottom_search = true,
+							command_palette = true,
+							long_message_to_split = true,
+							inc_rename = false,
+							lsp_doc_border = false,
+						},
+					})
+				end,
+			},
+
 			-- DISPLAY HEX
 			{ "NvChad/nvim-colorizer.lua", config = true, event = "BufReadPre" },
 
@@ -861,6 +889,7 @@ require("lazy").setup({
 			{ "michaelb/sniprun", build = "sh ./install.sh", cmd = "SnipRun" },
 			{
 				"Zeioth/markmap.nvim",
+				enabled = false,
 				ft = { "md", "markdown" },
 				build = "yarn global add markmap-cli",
 				cmd = { "MarkmapOpen", "MarkmapSave", "MarkmapWatch", "MarkmapWatchStop" },
@@ -1001,28 +1030,6 @@ require("lazy").setup({
 				"LunarVim/bigfile.nvim",
 				event = "BufReadPre",
 			},
-
-			-- LEETCODE
-			{
-				"Dhanus3133/LeetBuddy.nvim",
-				dependencies = {
-					"nvim-lua/plenary.nvim",
-					"nvim-telescope/telescope.nvim",
-				},
-				config = function()
-					require("leetbuddy").setup({
-						domain = "cn",
-						language = "cpp",
-					})
-				end,
-				keys = {
-					{ "<leader>lq", "<cmd>LBQuestions<cr>", desc = "List Questions" },
-					{ "<leader>ll", "<cmd>LBQuestion<cr>", desc = "View Question" },
-					{ "<leader>lr", "<cmd>LBReset<cr>", desc = "Reset Code" },
-					{ "<leader>lt", "<cmd>LBTest<cr>", desc = "Run Code" },
-					{ "<leader>ls", "<cmd>LBSubmit<cr>", desc = "Submit Code" },
-				},
-			},
 		},
 
 		-- COMPLETION CMP
@@ -1161,14 +1168,11 @@ require("lazy").setup({
 					"nvim-treesitter/nvim-treesitter",
 					"nvim-tree/nvim-web-devicons",
 				},
-				config = function()
-					require("aerial").setup({
-						on_attach = function(bufnr)
-							vim.keymap.set("n", "{", "<cmd>AerialPrev<CR>", { buffer = bufnr })
-							vim.keymap.set("n", "}", "<cmd>AerialNext<CR>", { buffer = bufnr })
-						end,
-					})
-				end,
+				keys = {
+					{ mode = "n", "{", ":AerialPrev<cr>", desc = "Previous symbol" },
+					{ mode = "n", "}", ":AerialNext<cr>", desc = "Next symbol" },
+					{ mode = "n", "<space>ts", ":AerialToggle! right<cr>", desc = "Toggle Symbol List" },
+				},
 			},
 
 			-- TREESITTER
@@ -1233,10 +1237,12 @@ require("lazy").setup({
 				{ mode = "n", "]d", vim.diagnostic.goto_next, desc = "Go to next diagnostic" },
 				-- { mode = "n", "<space>q", vim.diagnostic.setloclist, desc = "Open diagnostic loclist" },
 				{ mode = "n", "<space>q", ":Telescope loclist<CR>", desc = "Open diagnostic loclist" },
+
 				{ mode = "n", "gD", vim.lsp.buf.declaration, desc = "Go to declaration" },
 				-- { mode = "n", "gd", vim.lsp.buf.definition, desc = "Go to definition" },
 				{ mode = "n", "gd", ":Telescope lsp_definitions<CR>", desc = "Go to definition" },
-				{ mode = "n", "K", vim.lsp.buf.hover, desc = "Show hover information" },
+				-- { mode = "n", "K", vim.lsp.buf.hover, desc = "Show hover information" },
+				{ mode = "n", "K", ":Telescope lsp_document_symbols<cr>", desc = "Show hover information" },
 				-- { mode = "n", "gi", vim.lsp.buf.implementation, desc = "Show implementation" },
 				{ mode = "n", "gi", ":Telescope lsp_implementations<CR>", desc = "Show implementation" },
 				{ mode = "n", "<C-k>", vim.lsp.buf.signature_help, desc = "Show signature help" },
@@ -1275,22 +1281,6 @@ require("lazy").setup({
 
 				-- LSP-Enhancement
 				{
-					{
-						"ray-x/navigator.lua",
-						enabled = true,
-						config = function()
-							require("navigator").setup({
-								lsp = { format_on_save = false },
-								default_mapping = false,
-								keymaps = {},
-							})
-						end,
-						dependencies = {
-							{ "ray-x/guihua.lua", build = "cd lua/fzy && make" },
-							{ "neovim/nvim-lspconfig" },
-						},
-					},
-
 					-- LSP PACKAGE MANAGER
 					{
 						"mason-org/mason.nvim",
