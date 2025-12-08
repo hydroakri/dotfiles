@@ -25,7 +25,7 @@ local config = {
 		},
 		{
 			family = "Fira Code",
-			harfbuzz_features = { "cv01=1", "ss05=1", "ss10=1", "ss03=1", "cv02=1", "ss01=1", "zero=1" },
+			harfbuzz_features = { "cv02=1", "ss05=1", "ss10=1", "ss03=1", "cv02=1", "ss01=1", "cv11=1" },
 		},
 		-------- The quick brown fox jumps over the lazy dog
 		{

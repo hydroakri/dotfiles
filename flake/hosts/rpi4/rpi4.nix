@@ -17,11 +17,15 @@
 
     # Feature modules
     ../../modules/features/performance.nix
+    ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
+
+    # External modules
+    inputs.sops-nix.nixosModules.sops
   ];
 
-  boot.kernelParams = [ "console=ttyS0,115200n8" "panic=10" ];
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+  boot.kernelParams = [ "console=ttyS0,115200n8" "panic=10" ];
   hardware = {
     raspberry-pi."4".apply-overlays-dtmerge.enable = true;
     deviceTree = {
@@ -48,8 +52,11 @@
   '';
 
   # Enable NetworkManager
-  time.timeZone = "Australia/Perth";
-  networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    dns = "none";
+  };
+  networking.nameservers = [ "9.9.9.11" "223.5.5.5" ];
   networking.firewall = {
     allowedTCPPorts = [ 53 80 443 3000 ];
     allowedUDPPorts = [ 53 1080 ];
@@ -68,12 +75,12 @@
   # File system configuration based on current labels
   fileSystems = {
     "/" = lib.mkForce {
-      device = "/dev/disk/by-label/NIXOS_SD";
+      device = "/dev/disk/by-uuid/44444444-4444-4444-8888-888888888888";
       fsType = "ext4";
-      options = [ "noatime" "commit=120" ];
+      options = [ "noatime" "commit=60" ];
     };
     "/boot" = lib.mkForce {
-      device = "/dev/disk/by-label/FIRMWARE";
+      device = "/dev/disk/by-uuid/EE9C-5155";
       fsType = "vfat";
     };
   };

@@ -1,10 +1,6 @@
 { config, lib, pkgs, ... }:
 
 {
-  boot.kernelParams = [
-    # performance
-    "mitigations=off"
-  ];
   environment.systemPackages = with pkgs; [
     yad # steamtinkerlaunch dependency
     steam-devices-udev-rules

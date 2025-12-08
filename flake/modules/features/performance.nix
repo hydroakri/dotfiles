@@ -22,9 +22,7 @@
     "net.ipv4.tcp_fastopen" = 3;
     "net.core.somaxconn" = 4096;
     "net.core.netdev_max_backlog" = 2048;
-    "net.core.rmem_default" = 262144;
     "net.core.rmem_max" = 16777216;
-    "net.core.wmem_default" = 262144;
     "net.core.wmem_max" = 16777216;
     "net.core.optmem_max" = 65536;
     "net.ipv4.tcp_rmem" = "4096 87380 16777216";

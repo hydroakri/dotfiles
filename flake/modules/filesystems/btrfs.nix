@@ -48,6 +48,7 @@ in {
   services.snapper = {
     cleanupInterval = "1h";
     configs = { home = leanSnapperPolicy // { SUBVOLUME = "/home"; }; };
+    configs = { rootdir = leanSnapperPolicy // { SUBVOLUME = "/"; }; };
   };
 
 }

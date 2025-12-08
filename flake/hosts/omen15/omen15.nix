@@ -56,21 +56,7 @@
       '';
     };
   };
-  time.timeZone = "Australia/Perth";
   i18n = {
-    defaultLocale = "zh_CN.UTF-8";
-    extraLocales = [ "en_AU.UTF-8/UTF-8" ];
-    extraLocaleSettings = {
-      LC_ADDRESS = "en_AU.UTF-8";
-      LC_IDENTIFICATION = "en_AU.UTF-8";
-      LC_MEASUREMENT = "en_AU.UTF-8";
-      LC_MONETARY = "en_AU.UTF-8";
-      LC_NAME = "en_AU.UTF-8";
-      LC_NUMERIC = "en_AU.UTF-8";
-      LC_PAPER = "en_AU.UTF-8";
-      LC_TELEPHONE = "en_AU.UTF-8";
-      LC_TIME = "en_AU.UTF-8";
-    };
     inputMethod = {
       type = "fcitx5";
       enable = true;
@@ -94,12 +80,14 @@
   };
   services.desktopManager = {
     cosmic = {
-      enable = true;
+      enable = false;
       xwayland.enable = true;
     };
     # gnome.enable = true;
     plasma6.enable = true;
   };
+  # Video drivers (hardware-specific)
+  services.xserver.videoDrivers = lib.mkForce [ "nouveau" "amdgpu" ];
   services.xserver.desktopManager.xfce = {
     enable = false;
     enableWaylandSession = true;
@@ -117,7 +105,7 @@
     kdePackages.kpmcore
 
     # Wayland compositor
-    xwayland-satellite
+    # xwayland-satellite
     # networkmanagerapplet
     brightnessctl
     pavucontrol
@@ -132,8 +120,6 @@
     # rofi
 
   ];
-  # Video drivers (hardware-specific)
-  services.xserver.videoDrivers = [ "nouveau" "amdgpu" ];
   # User definition
   users.users.${config.mainUser} = {
     shell = pkgs.zsh;
@@ -152,7 +138,7 @@
       # GUI Applications
       kdePackages.kate
       venera
-      ghostty
+      wezterm
       code-cursor
       # davinci-resolve-studio
     ];
@@ -189,7 +175,7 @@
       "space_cache=v2"
       "noatime"
       "nodiratime"
-      "commit=120"
+      "commit=60"
       "compress=zstd:3"
       "discard=async"
     ];
@@ -204,7 +190,7 @@
       "space_cache=v2"
       "noatime"
       "nodiratime"
-      "commit=120"
+      "commit=60"
       "compress=zstd:3"
       "discard=async"
       "autodefrag"
@@ -220,7 +206,7 @@
       "space_cache=v2"
       "noatime"
       "nodiratime"
-      "commit=120"
+      "commit=60"
       "compress=zstd:3"
       "discard=async"
     ];
@@ -235,7 +221,7 @@
       "space_cache=v2"
       "noatime"
       "nodiratime"
-      "commit=120"
+      "commit=60"
       "compress=zstd:3"
       "discard=async"
     ];
@@ -251,7 +237,7 @@
       "space_cache=v2"
       "noatime"
       "nodiratime"
-      "commit=120"
+      "commit=60"
       "compress=zstd:3"
       "discard=async"
       "autodefrag"

@@ -666,13 +666,35 @@ require("lazy").setup({
 								["vim.lsp.util.stylize_markdown"] = true,
 								["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
 							},
+							hover = {
+								enabled = true,
+								silent = false,
+								view = nil,
+								opts = {},
+							},
+							signature = {
+								enabled = true,
+								auto_open = {
+									enabled = true,
+									trigger = true,
+									luasnip = true,
+									throttle = 50,
+								},
+								view = nil,
+								opts = {},
+							},
+							message = {
+								enabled = true,
+								view = "notify",
+								opts = {},
+							},
 						},
 						presets = {
 							bottom_search = true,
 							command_palette = true,
 							long_message_to_split = true,
 							inc_rename = false,
-							lsp_doc_border = false,
+							lsp_doc_border = true,
 						},
 					})
 				end,
@@ -1032,88 +1054,50 @@ require("lazy").setup({
 			},
 		},
 
-		-- COMPLETION CMP
+		-- COMPLETION CMP/blink.nvim
 		{
-			"hrsh7th/nvim-cmp",
-			event = "InsertEnter",
+			"saghen/blink.cmp",
+			version = "*",
 			dependencies = {
+				"saghen/blink.compat",
 				{
 					"L3MON4D3/LuaSnip",
+					version = "v2.*",
 					dependencies = { "rafamadriz/friendly-snippets" },
-					opts = { history = true, updateevents = "TextChanged,TextChangedI" },
 					config = function()
 						require("luasnip.loaders.from_vscode").lazy_load()
 					end,
 				},
 				{
 					"Exafunction/codeium.nvim",
-					config = function()
-						require("codeium").setup({})
-					end,
-				},
-				{
-					"hrsh7th/cmp-nvim-lsp",
-					"hrsh7th/cmp-buffer",
-					"hrsh7th/cmp-path",
-					"hrsh7th/cmp-cmdline",
-					"hrsh7th/cmp-nvim-lsp-signature-help",
-					"ray-x/cmp-treesitter",
-					"saadparwaiz1/cmp_luasnip",
+					cmd = "Codeium",
+					build = ":Codeium Auth",
+					opts = {},
 				},
 			},
-			config = function()
-				local cmp = require("cmp")
-				cmp.setup({
-					snippet = {
-						-- REQUIRED - you must specify a snippet engine
-						expand = function(args)
-							require("luasnip").lsp_expand(args.body)
-						end,
+			opts = {
+				keymap = { preset = "enter" },
+
+				appearance = {
+					use_nvim_cmp_as_default = true, -- 使用 nvim-cmp 的高亮组
+					nerd_font_variant = "mono",
+				},
+
+				signature = { enabled = true },
+
+				sources = {
+					default = { "lsp", "path", "snippets", "buffer", "codeium" },
+					providers = {
+						codeium = {
+							name = "codeium", -- 对应 codeium.nvim 注册的 source name
+							module = "blink.compat.source",
+							score_offset = 100, -- 给 AI 补全较高的优先级(可选)
+							async = true,
+						},
 					},
-					window = {},
-					mapping = cmp.mapping.preset.insert({
-						["<C-b>"] = cmp.mapping.scroll_docs(-4),
-						["<C-f>"] = cmp.mapping.scroll_docs(4),
-						["<C-Space>"] = cmp.mapping.complete(),
-						["<C-e>"] = cmp.mapping.abort(),
-						["<CR>"] = cmp.mapping.confirm({ select = true }),
-					}),
-					sources = cmp.config.sources({
-						{ name = "nvim_lsp" },
-						{ name = "buffer" },
-						{ name = "path" },
-						{ name = "cmdline" },
-						{ name = "nvim_lsp_signature_help" },
-						{ name = "luasnip" },
-						{ name = "treesitter" },
-						{ name = "codeium" },
-					}),
-				})
-
-				cmp.setup.filetype("gitcommit", {
-					sources = cmp.config.sources({
-						{ name = "git" },
-					}, {
-						{ name = "buffer" },
-					}),
-				})
-
-				cmp.setup.cmdline({ "/", "?" }, {
-					mapping = cmp.mapping.preset.cmdline(),
-					sources = {
-						{ name = "buffer" },
-					},
-				})
-
-				cmp.setup.cmdline(":", {
-					mapping = cmp.mapping.preset.cmdline(),
-					sources = cmp.config.sources({
-						{ name = "path" },
-					}, {
-						{ name = "cmdline" },
-					}),
-				})
-			end,
+				},
+				snippets = { preset = "luasnip" },
+			},
 		},
 
 		-- SYNATX HL TREESITTER
@@ -1297,7 +1281,8 @@ require("lazy").setup({
 					dynamicRegistration = false,
 					lineFoldingOnly = true,
 				}
-				local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
+				local capabilities = require("blink.cmp").get_lsp_capabilities()
+				local lspconfig = require("lspconfig")
 			end,
 		},
 

@@ -6,6 +6,7 @@
     "vm.dirty_ratio" = lib.mkForce 10;
     "vm.dirty_background_ratio" = lib.mkForce 5;
   };
+  networking.networkmanager.enable = true;
   # X Server and input
   services.xserver.enable = true;
   services.libinput.enable = true;
@@ -28,21 +29,22 @@
   # Polkit (privilege elevation)
   security.polkit.enable = true;
   security.pam.services.polkit.enable = true;
-  systemd.user.services.polkit-agent = {
-    description = "polkit-agent";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      # ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-      ExecStart =
-        "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
-      Restart = "on-failure";
-      RestartSec = 1;
-      TimeoutStopSec = 10;
+  systemd.user.services.polkit-agent =
+    lib.mkIf (!config.services.desktopManager.plasma6.enable) {
+      description = "polkit-agent";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "simple";
+        # ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+        ExecStart =
+          "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
+        Restart = "on-failure";
+        RestartSec = 1;
+        TimeoutStopSec = 10;
+      };
     };
-  };
 
   # Secret service (keyring) use keepassxc
   services.gnome.gnome-keyring.enable = false;

@@ -3,7 +3,7 @@ let
   skKey =
     "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIF31MN4S2Z4OlWgIXeuacwfUxDcNApQUkcS7kOTwyV3/AAAABHNzaDo= ${config.mainUser}";
   bakKey =
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u ${config.userEmail}";
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
 in {
   boot.kernelParams = [
     "mitigations=auto"
@@ -29,6 +29,7 @@ in {
     age-plugin-fido2-hmac
 
     # For fido2 security keys
+    pam_u2f
     libfido2
     yubikey-manager
   ];
@@ -43,7 +44,6 @@ in {
   };
   # ===========================================================================
   #PAM
-  services.pcscd.enable = true;
   security.pam = {
     u2f = {
       enable = true; # XXX INSTALLATION: Disable u2f.enable temporarily.
@@ -58,12 +58,14 @@ in {
     };
     u2f.settings.authfile = "/etc/u2f_mappings";
   };
+  # plug u2f device & use `pamu2fcfg -n`
   environment.etc."u2f_mappings".text = ''
-    ${config.mainUser}:8dACAvMEkhb0fSGpcJD0rZi+FEEdEWBcWOcs32b9oqc6RkIE0TVKT8bxduk9+k7vUzKTEZblGlumH6ivLW2gjjKIIEGM5Xe9ADlJfYAe4z++Os/sy7Zv73CaAYkECSSmTXrTUm5C345FweMWe60jfTsAelEomy+IkZ9aYVGqVUuE+I6jyXDZXOwZUfg3049kXlS4VPL09N90pUOW6mUbjJPAzHRC+hAkJsIY4gAKZuw6zw3L,QTlBZ9jkot2oHrxSvHDIKJPFe/Jg+af/EmD4ljs47Qf3kscQl6tQnmv9WODTxVENx+WMPXFzm8YQEGiNfZw1DA==,es256,+presence
+    ${config.mainUser}:8dACAhhnTEKOE88R+/IKyki9JEy+5rinQaCn/Mz/hJppc39O+8lE1X6hCPTQSYGxJqMsdd79r8VR3Sic7S/0goaTACdusvsFwFDenCVc7U6eoMiaSkDf7MoqJaoOh5L7n+I32NeiJnaAXm8Wp8COn8vQY0J6Y9iLUbzWtI9Ugst0bEDbSiOsHK/CWQfK9sf4Df4ONaGvcUFmhgKIyMmRO5aNMTOsqbiEKcRB+vl4kXp8KWzy,ebgHE/SJ/q1P3xk64KI8x560mq76bZJYQtc3YNJoio6zJUkMIXtNvXhcJt9MN2Fu6gB2MWgRsRXQKBZqWmutGg==,es256,+presence
   '';
 
   # ===========================================================================
   # who can login in THIS machine
+  services.pcscd.enable = true;
   services.openssh = {
     enable = true;
     settings = {
@@ -73,7 +75,15 @@ in {
         "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
     };
   };
-  users.users.root.openssh.authorizedKeys.keys = [ skKey bakKey ];
+  sops.templates."ssh/authorized_keys" = {
+    content = ''
+      ${skKey}
+      ${bakKey} ${config.sops.placeholder.email}
+    '';
+    mode = "0444";
+  };
+  environment.etc."ssh/authorized_keys".source =
+    config.sops.templates."ssh/authorized_keys".path;
   # =============================================================================
   # This machine can signing/control key from WHERE?
   programs.git.config = {
@@ -81,21 +91,25 @@ in {
     # GIT Signing
     # DISABLE Verified Signing by default
     # non-root User should use `git config --global commit.gpgsign true`
-    # signing need user's email dont't foget ``
+    # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
+    # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
     commit.gpgsign = false;
     gpg.format = "ssh";
-    user.signingkey = skKey;
 
     # GIT VERIFING
-    "gpg \"ssh\"".allowedSignersFile = "/etc/ssh/allowed_signers";
+    "gpg \"ssh\"".allowedSignersFile =
+      config.sops.templates."ssh/allowed_signers".path;
   };
   # GIT VERIFING
-  environment.etc."ssh/allowed_signers".text = ''
-    # 格式: <email> <public_key>
-    ${config.userEmail} ${skKey}
-  '';
+  sops.templates."ssh/allowed_signers" = {
+    content = ''
+      # 格式: <email> <public_key>
+      24475059+hydroakri@users.noreply.github.com ${skKey}
+      24475059+hydroakri@users.noreply.github.com ${bakKey} ${config.sops.placeholder.email}
+    '';
+    mode = "0444";
+  };
   programs.ssh = {
-    startAgent = true;
     extraConfig = ''
       Host *
         # ForwardAgent yes # open only in trusted machine
