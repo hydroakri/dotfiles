@@ -79,28 +79,35 @@
   };
   environment.systemPackages = with pkgs;
     [
-      xz
+      wget
+      curl
+      unar
+      _7zz
+      neovim
+      # net utils
+      lsof
+      iputils
+      dnsutils
+      nettools
+      #hardware
+      lshw
+      file
+      usbutils
+      # modern tools 
       fzf
       bat
-      zip
       gdu
-      file
-      fish
-      wget
-      lsof
       btop
       yazi
-      unzip
-      unrar
-      p7zip
       atuin
-      neovim
       zoxide
       chezmoi
       lazygit
       ripgrep
-      nix-tree
       starship
+      fastfetch
+      # nix utils
+      nix-tree
     ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
       efibootmgr

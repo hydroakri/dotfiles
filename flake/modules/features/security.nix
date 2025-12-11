@@ -8,8 +8,9 @@ in {
   boot.kernelParams = [
     "mitigations=auto"
     "random.trust_cpu=0"
-    "lsm=landlock,lockdown,yama,integrity,apparmor,bpf"
-    "lockdown=integrity"
+    "page_alloc.shuffle=1"
+    "init_on_alloc=1"
+    "init_on_free=1"
   ];
   boot.kernel.sysctl = {
     # Security (common)
@@ -17,6 +18,9 @@ in {
     "kernel.unprivileged_bpf_disabled" = 1;
     "module.sig_enforce" = 1;
     "kernel.printk_devkmsg" = "off";
+    "kernel.yama.ptrace_scope" = 1;
+    "kernel.kptr_restrict" = 2;
+    "kernel.dmesg_restrict" = 1;
   };
   environment.systemPackages = with pkgs; [
     ssh-copy-id
@@ -65,6 +69,10 @@ in {
 
   # ===========================================================================
   # who can login in THIS machine
+  # initialze security key: `ssh-keygen -t ed25519-sk -O resident -O verify-required`
+  # add sk: `ssh-add -K`
+  # get public key from sk: `ssh-keygen -K`
+  # set password: `ssh-keygen -p -f <file name>`
   services.pcscd.enable = true;
   services.openssh = {
     enable = true;
@@ -75,15 +83,10 @@ in {
         "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
     };
   };
-  sops.templates."ssh/authorized_keys" = {
-    content = ''
-      ${skKey}
-      ${bakKey} ${config.sops.placeholder.email}
-    '';
-    mode = "0444";
-  };
-  environment.etc."ssh/authorized_keys".source =
-    config.sops.templates."ssh/authorized_keys".path;
+  users.users.root.openssh.authorizedKeys.keys = [
+    skKey
+    "${bakKey} ${config.sops.placeholder.email}" # 如果你想要那个 email 占位符
+  ];
   # =============================================================================
   # This machine can signing/control key from WHERE?
   programs.git.config = {

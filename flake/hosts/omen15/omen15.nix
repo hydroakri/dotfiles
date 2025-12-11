@@ -1,3 +1,4 @@
+# nh os switch -H omen15 ./
 { config, lib, pkgs, inputs, ... }: {
   networking.hostName = "omen15";
   nixpkgs.system = "x86_64-linux";
