@@ -31,6 +31,12 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
   ];
+  modules.proxy = {
+    enable = true;
+    enableDnsCryptProxy = true;
+    enableDae = true;
+    enableSingbox = true;
+  };
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [ "zenpower" ];
@@ -93,6 +99,7 @@
     enable = false;
     enableWaylandSession = true;
   };
+  networking.nameservers = [ "172.64.36.2" "149.112.112.11" ];
   environment.etc."nixos/nbfc.json".text =
     builtins.toJSON { SelectedConfigId = "HP OMEN Laptop 15-en0xxx"; };
   environment.systemPackages = with pkgs; [
@@ -147,12 +154,14 @@
   # programs.niri.enable = true;
   programs.zsh.enable = true;
   # Application-specific programs (host-specific)
-  programs.throne.enable = true;
+  programs.throne.enable = false;
   programs.clash-verge = {
-    enable = true;
+    enable = false;
     serviceMode = true;
     package = pkgs.clash-verge-rev;
   };
+  systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
+  systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
   services.sunshine = {
     enable = true;
     autoStart = true;
