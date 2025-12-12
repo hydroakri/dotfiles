@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-/ctj7/tD0HAi4x+PSv13LlszBvZkFQMJrxEd+SjLbxk=",
+        "narHash": "sha256-yANmzrc6q/3OXepcg7rdcYCvg2Elzi2mQ4Rm5H0mdKY=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1765404994,
-        "narHash": "sha256-U+vNs/PQrPssSBnj83BHgMWDpXfPYRiJe0pazib4MJY=",
+        "lastModified": 1765577723,
+        "narHash": "sha256-MK1OdKXWng7VXm94vAJwzBScsxoSQtObZmn7sHZMA04=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "589abd6c8872f37018f3b14290f35c2e12110ca3",
+        "rev": "fa02fc4d0091fbee1161de64690dae16966efe50",
         "type": "github"
       },
       "original": {
@@ -91,11 +91,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1765231718,
-        "narHash": "sha256-qdBzo6puTgG4G2RHG0PkADg22ZnQo1JmSVFRxrD4QM4=",
+        "lastModified": 1765553226,
+        "narHash": "sha256-Ii16Nq5jL2wURXpV3D3tOM3vPpbKh18roHLkyZCHK4Q=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "7fd1416aba1865eddcdec5bb11339b7222c2363e",
+        "rev": "496a6f625f63b780ce849891868f2fad22fd49c6",
         "type": "github"
       },
       "original": {

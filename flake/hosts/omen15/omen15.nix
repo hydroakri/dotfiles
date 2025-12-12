@@ -31,6 +31,12 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
   ];
+  modules.proxy = {
+    enable = true;
+    enableDnsCryptProxy = true;
+    enableDae = true;
+    enableSingbox = true;
+  };
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [ "zenpower" ];
@@ -147,12 +153,13 @@
   # programs.niri.enable = true;
   programs.zsh.enable = true;
   # Application-specific programs (host-specific)
-  programs.throne.enable = true;
+  programs.throne.enable = false;
   programs.clash-verge = {
-    enable = true;
+    enable = false;
     serviceMode = true;
     package = pkgs.clash-verge-rev;
   };
+  systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
   services.sunshine = {
     enable = true;
     autoStart = true;
