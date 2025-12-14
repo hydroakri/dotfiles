@@ -5,8 +5,13 @@
     "vm.swappiness" = lib.mkForce 180;
     "vm.dirty_ratio" = lib.mkForce 10;
     "vm.dirty_background_ratio" = lib.mkForce 5;
+    # ipv6 privacy
+    "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
+    "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
   };
-  networking.networkmanager.enable = true;
+  networking.networkmanager.settings = {
+    "connection" = { "ipv6.ip6-privacy" = 0; };
+  };
   # X Server and input
   services.xserver.enable = true;
   services.libinput.enable = true;

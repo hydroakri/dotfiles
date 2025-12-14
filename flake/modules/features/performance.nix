@@ -42,6 +42,10 @@
     "net.netfilter.nf_conntrack_max" = 1048576;
     "net.netfilter.nf_conntrack_tcp_timeout_established" = 120;
 
+    # optimize ipv6
+    "net.ipv6.conf.all.accept_ra" = 2;
+    "net.ipv6.conf.default.accept_ra" = 2;
+
     # VM (common)
     "vm.swappiness" = 100;
     "vm.dirty_ratio" = 40;
