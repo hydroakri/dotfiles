@@ -45,6 +45,7 @@
     extraModulePackages = [ config.boot.kernelPackages.zenpower ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
+      options zenpower fast_ctemp=1
     '';
     loader.efi.canTouchEfiVariables = true;
     loader.limine = {
@@ -99,7 +100,7 @@
     enable = false;
     enableWaylandSession = true;
   };
-  networking.nameservers = [ "172.64.36.2" "149.112.112.11" ];
+  networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
   environment.etc."nixos/nbfc.json".text =
     builtins.toJSON { SelectedConfigId = "HP OMEN Laptop 15-en0xxx"; };
   environment.systemPackages = with pkgs; [

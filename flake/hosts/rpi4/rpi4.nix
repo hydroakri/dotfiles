@@ -78,8 +78,9 @@
     environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
     services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
     boot.kernel.sysfs = {
-      # enable net card RPS
+      # enable net card RPS & XPS
       class.net.end0.queues."rx-0".rps_cpus = "f";
+      class.net.end0.queues."tx-0".rps_cpus = "f";
     };
     networking.interfaces.end0.mtu = 1492;
     systemd.services.network-optimization = {
@@ -93,6 +94,7 @@
         ExecStart = pkgs.writeShellScript "optimize-network" ''
           # A. 关闭网卡卸载 (解决微突发抖动，让 RPi4 CPU 接管分包)
           ${pkgs.ethtool}/bin/ethtool -K end0 gso off tso off gro on
+          ${pkgs.ethtool}/bin/ethtool -K end0 rx-checksumming off tx-checksumming off sg off lro off
           # 1. 清除旧规则
           ${pkgs.iproute2}/bin/tc qdisc del dev end0 root 2>/dev/null || true
           # 2. 应用新规则：
@@ -105,19 +107,22 @@
     };
 
     hardware = {
-      raspberry-pi."4".apply-overlays-dtmerge.enable = true;
+      raspberry-pi."4" = {
+        apply-overlays-dtmerge.enable = true;
+        leds = {
+          eth.disable = true;
+          act.disable = true;
+          pwr.disable = true;
+        };
+      };
       deviceTree = {
         enable = true;
-        filter = "*rpi-4-*.dtb";
+        filter = "*-rpi-4-*.dtb";
       };
     };
 
     # Enable NetworkManager
-    networking.networkmanager = {
-      enable = true;
-      dns = "none";
-    };
-    networking.nameservers = [ "127.0.0.1" "172.64.36.2" ];
+    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
       allowedTCPPorts = [
         # adguardhome
@@ -165,29 +170,14 @@
       extraGroups = [ "networkmanager" "wheel" ];
     };
 
-    boot.kernel.sysfs = {
-      class.leds = {
-        ACT = {
-          trigger = "none";
-          brightness = 0;
-        };
-        PWR = {
-          trigger = "none";
-          brightness = 0;
-        };
-        "unimac-mdio--19:01:amber:lan" = {
-          trigger = "none";
-          brightness = 0;
-        };
-        "unimac-mdio--19:01:green:lan" = {
-          trigger = "none";
-          brightness = 0;
-        };
-      };
-    };
     # ============================================================================
     # Hardware Configuration
     # config.txt
+    #
+    # overclock
+    # over_voltage=6
+    # arm_freq=2000
+    # 
     # gpio=42=ip,pd
     # dtparam=eth_led0=4
     # dtparam=eth_led1=4

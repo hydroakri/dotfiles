@@ -11,6 +11,7 @@ in {
     "page_alloc.shuffle=1"
     "init_on_alloc=1"
     "init_on_free=1"
+    "lockdown=integrity"
   ];
   boot.kernel.sysctl = {
     # Security (common)
@@ -21,6 +22,7 @@ in {
     "kernel.yama.ptrace_scope" = 1;
     "kernel.kptr_restrict" = 2;
     "kernel.dmesg_restrict" = 1;
+    "kernel.kexec_load_disabled" = 1;
   };
   environment.systemPackages = with pkgs; [
     ssh-copy-id
