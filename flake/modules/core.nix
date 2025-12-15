@@ -1,5 +1,5 @@
-{ config, lib, pkgs, ... }: {
-  imports = [ ./options.nix ];
+{ config, lib, pkgs, inputs, ... }: {
+  imports = [ ./options.nix inputs.nix-index-database.nixosModules.default ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
@@ -13,7 +13,10 @@
       ];
       max-jobs = "auto";
       cores = 0;
+      allowed-users = [ "@wheel" ];
+      trusted-users = [ "root" "@wheel" ];
     };
+    registry.nixpkgs.flake = inputs.nixpkgs;
     optimise.automatic = true;
     gc = {
       automatic = true;
@@ -54,13 +57,18 @@
   networking.nameservers = [ "172.64.36.2" "149.112.112.11" ];
   services.chrony = {
     enable = true;
-    servers = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
+    servers = [ ];
     extraConfig = ''
+      server time.cloudflare.com iburst nts
+      server nts.netnod.se iburst nts
+
       makestep 1.0 3
+      ntsdumpdir /var/lib/chrony
     '';
   };
   programs.nh.enable = true;
   programs.nix-ld.enable = true;
+  programs.nix-index-database.comma.enable = true;
   programs.ssh = {
     startAgent = true;
     extraConfig = ''
@@ -113,6 +121,7 @@
       fastfetch
       # nix utils
       nix-tree
+      nix-output-monitor
     ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
       efibootmgr

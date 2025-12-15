@@ -5,6 +5,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     sops-nix.url = "github:Mic92/sops-nix";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     adlist = {
       url =
         "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
@@ -16,8 +18,8 @@
     };
   };
 
-  outputs =
-    { self, nixpkgs, sops-nix, nixos-hardware, adlist, geodb, ... }@inputs:
+  outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database
+    , adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
 

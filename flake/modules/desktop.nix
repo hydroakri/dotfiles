@@ -10,7 +10,7 @@
     "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
   };
   networking.networkmanager.settings = {
-    "connection" = { "ipv6.ip6-privacy" = 0; };
+    "connection" = { "ipv6.ip6-privacy" = 2; };
   };
   # X Server and input
   services.xserver.enable = true;
@@ -56,6 +56,18 @@
   security.pam.services.login.enableGnomeKeyring = false;
   services.passSecretService.enable = false;
 
+  #SMART monitor
+  services.smartd = {
+    enable = true;
+    defaults.monitored =
+      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
+    notifications = {
+      # System Bus notify should run by user
+      systembus-notify.enable = true;
+    };
+  };
+  services.systembus-notify.enable = lib.mkForce true;
+
   # Printing
   services.printing.enable = true;
 
@@ -66,6 +78,14 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    extraConfig.pipewire."92-low-latency" = {
+      "context.properties" = {
+        "default.clock.rate" = 48000;
+        "default.clock.quantum" = 32;
+        "default.clock.min-quantum" = 32;
+        "default.clock.max-quantum" = 32;
+      };
+    };
   };
   # Bluetooth
   hardware.bluetooth = {
@@ -120,7 +140,7 @@
 
   # Desktop firewall (general application ports)
   networking.firewall = {
-    allowedTCPPorts = [ 53 80 443 1080 ];
+    allowedTCPPorts = [ 1080 ];
     allowedUDPPorts = [ 1080 ];
   };
   environment.plasma6.excludePackages = (with pkgs; [
