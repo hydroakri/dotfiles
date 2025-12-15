@@ -35,9 +35,10 @@
   config = {
     modules.proxy = {
       enable = true;
+      enableAdGuardHome = true;
       enableDnsCryptProxy = false;
-      enableDae = true;
       enableSingbox = true;
+      enableDae = true;
     };
 
     networking.hostName = "rpi4";
@@ -109,7 +110,7 @@
     hardware = {
       raspberry-pi."4" = {
         apply-overlays-dtmerge.enable = true;
-        leds = {
+        leds = { # turn off led
           eth.disable = true;
           act.disable = true;
           pwr.disable = true;
@@ -124,27 +125,7 @@
     # Enable NetworkManager
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
-      allowedTCPPorts = [
-        # adguardhome
-        53
-        80
-        443
-        3000
-        # singbox
-        1080
-        9090
-      ];
-      allowedUDPPorts = [
-        #adguardhome
-        53
-        1080
-        # DHCP
-        67
-        68
-        547
-        546
-      ];
-      checkReversePath = false; # For dae transparent netgate
+      checkReversePath = false; # For dae transparent netgate, let date pass
     };
     environment.systemPackages = with pkgs; [
       libraspberrypi
@@ -152,11 +133,6 @@
       ethtool
     ];
     programs.zsh.enable = true;
-    services.adguardhome.enable = true;
-    systemd.services.adguardhome.serviceConfig = {
-      AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
-      CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
-    };
     services.journald.extraConfig = ''
       Storage=volatile
       SystemMaxUse=64M

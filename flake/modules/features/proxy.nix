@@ -4,137 +4,71 @@ with lib; {
   options.modules.proxy = {
     enable = mkEnableOption "Enable customized proxy stack (Sing-box + Dae)";
 
+    enableAdGuardHome = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable AdGuardHome as the DNS resolver backend.";
+    };
     enableDnsCryptProxy = mkOption {
       type = types.bool;
       default = false;
       description = "Enable dnscrypt-proxy as the DNS resolver backend.";
-    };
-    enableDae = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable dae as the Tproxy backend.";
     };
     enableSingbox = mkOption {
       type = types.bool;
       default = false;
       description = "Enable sing-box as the proxy backend.";
     };
+    enableDae = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable dae as the Tproxy backend.";
+    };
   };
   config = mkIf config.modules.proxy.enable {
-    services.sing-box = mkIf config.modules.proxy.enableSingbox {
-      enable = true;
-      package = pkgs.sing-box;
-      settings = {
-        log = {
-          level = "info";
-          timestamp = true;
-        };
-        dns = {
-          servers = [{
-            tag = "local-dns";
-            address = "local";
-            detour = "direct"; # DNS 流量直连发出
-          }];
-          rules = [{
-            outbound = "any";
-            server = "local-dns"; # 所有 DNS 请求都强制走这个 local-dns
-          }];
-        };
-        experimental = {
-          cache_file = {
-            enabled = true;
-            path = "cache.db"; # 默认在 /var/lib/sing-box/cache.db
-            store_fakeip = false;
-          };
-          clash_api = {
-            external_controller = "0.0.0.0:9090"; # 面板连接地址
-            external_ui = "ui"; # 如果你不需要本地托管面板界面，可删除此行
-            secret = ""; # 如果需要鉴权，在这里填写 API 密钥
-          };
-        };
-        inbounds = [{
-          type = "mixed";
-          tag = "mixed-in";
-          listen = "127.0.0.1"; # 仅监听本地，不暴露给局域网
-          listen_port = 1080;
-          set_system_proxy = false;
-        }];
-        route = {
-          rules = [{
-            protocol = "dns";
-            outbound = "dns-out";
-          }
-          # { geosite = "cn"; outbound = "direct"; }
-            ];
-          auto_detect_interface = true;
-        };
-        outbounds = "OUTBOUNDS_PLACEHOLDER";
+    # ----------------------------------------------------------------------------
+    # start order
+    # 1. 配置 Sing-box 的启动顺序：如果在该机器上启用了 AdGuardHome，则等待其启动
+
+    # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
+    systemd.services.dae = mkIf config.modules.proxy.enableDae {
+      after = [ "network-pre.target" ]
+        ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
+        ++ (lib.optional config.modules.proxy.enableAdGuardHome
+          "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
+          "dnscrypt-proxy.service");
+
+      wants = [ ]
+        ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
+        ++ (lib.optional config.modules.proxy.enableAdGuardHome
+          "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
+          "dnscrypt-proxy.service");
+    };
+    # start order
+    # ----------------------------------------------------------------------------
+    networking.firewall = lib.mkMerge [
+      # AdGuardHome 的端口规则
+      (mkIf config.modules.proxy.enableAdGuardHome {
+        allowedTCPPorts = [ 53 80 443 3000 ];
+        allowedUDPPorts = [ 53 1080 67 68 547 546 ];
+      })
+
+      # Sing-box 的端口规则
+      (mkIf config.modules.proxy.enableSingbox {
+        allowedTCPPorts = [ 1080 9090 ];
+      })
+    ];
+
+    services.adguardhome.enable =
+      mkIf config.modules.proxy.enableAdGuardHome true;
+    systemd.services.adguardhome.serviceConfig =
+      mkIf config.modules.proxy.enableAdGuardHome {
+        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
+        CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
       };
-    };
-    systemd.services.sing-box.serviceConfig.ExecStart =
-      mkIf config.modules.proxy.enableSingbox (lib.mkForce [
-        ""
-        "${pkgs.sing-box}/bin/sing-box run -c ${
-          config.sops.templates."config.json".path
-        }"
-      ]);
-    services.dae = mkIf config.modules.proxy.enableDae {
-      enable = true;
-      # configFile = "/etc/dae/config.dae";
-      assetsPath = toString (pkgs.symlinkJoin {
-        name = "dae-assets";
-        paths = [ "${inputs.geodb}" ];
-      });
-      config = ''
-        global {
-          dial_mode: domain
-          lan_interface: auto
-          wan_interface: auto
-          log_level: info
-          auto_config_kernel_parameter: true
-          tcp_check_url: 'http://cp.cloudflare.com,1.1.1.1,2606:4700:4700::1111'
-          tcp_check_http_method: HEAD
-          check_interval: 30s
-          check_tolerance: 50ms
-        }
 
-        node {
-          'socks5://localhost:1080'
-        }
-
-        dns {
-          upstream {
-            alih3: 'h3://dns.alidns.com:443/dns-query'
-            localdns: 'udp://127.0.0.1:53'
-          }
-          routing {
-            request {
-              qname(geosite:cn) -> alih3
-              fallback: localdns
-            }
-          }
-        }
-
-        group {
-            proxy {
-                policy: min_moving_avg
-            }
-        }
-
-        routing {
-          pname(NetworkManager, dnscrypt-proxy, AdGuardHome, nekoray, nekobox_core, sing-box, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
-          dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
-
-          dip(geoip:cn) -> direct 
-          ip(geoip:cn) -> direct 
-          domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:apple-cn, geosite:google-cn) -> direct
-
-          domain(geosite:gfw) -> proxy
-
-          fallback: proxy
-        }
-      '';
-    };
     services.dnscrypt-proxy = mkIf config.modules.proxy.enableDnsCryptProxy {
       enable = true;
       configFile = config.sops.templates."dnscrypt-proxy.toml".path;
@@ -212,6 +146,134 @@ with lib; {
           refresh_delay = 72;
         };
       };
+    };
+
+    services.sing-box = mkIf config.modules.proxy.enableSingbox {
+      enable = true;
+      package = pkgs.sing-box;
+      settings = {
+        log = {
+          level = "info";
+          timestamp = true;
+        };
+        dns = {
+          servers = [{
+            tag = "local-dns";
+            address = "local";
+            detour = "direct"; # DNS 流量直连发出
+          }];
+          rules = [{
+            outbound = "any";
+            server = "local-dns"; # 所有 DNS 请求都强制走这个 local-dns
+          }];
+        };
+        experimental = {
+          cache_file = {
+            enabled = true;
+            path = "cache.db"; # 默认在 /var/lib/sing-box/cache.db
+            store_fakeip = false;
+          };
+          clash_api = {
+            external_controller = "0.0.0.0:9090"; # 面板连接地址
+            external_ui = "ui"; # 如果你不需要本地托管面板界面，可删除此行
+            secret = ""; # 如果需要鉴权，在这里填写 API 密钥
+          };
+        };
+        inbounds = [{
+          type = "mixed";
+          tag = "mixed-in";
+          listen = "127.0.0.1"; # 仅监听本地，不暴露给局域网
+          listen_port = 1080;
+          set_system_proxy = false;
+        }];
+        route = {
+          rules = [{
+            protocol = "dns";
+            outbound = "dns-out";
+          }
+          # { geosite = "cn"; outbound = "direct"; }
+            ];
+          auto_detect_interface = true;
+        };
+        outbounds = "OUTBOUNDS_PLACEHOLDER";
+      };
+    };
+    systemd.services.sing-box = mkIf config.modules.proxy.enableSingbox {
+      after = [ "network-pre.target" ]
+        ++ (lib.optional config.modules.proxy.enableAdGuardHome
+          "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
+          "dnscrypt-proxy.service");
+
+      wants = [ ] ++ (lib.optional config.modules.proxy.enableAdGuardHome
+        "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
+          "dnscrypt-proxy.service");
+
+      serviceConfig.ExecStart = (lib.mkForce [
+        ""
+        "${pkgs.sing-box}/bin/sing-box run -c ${
+          config.sops.templates."config.json".path
+        }"
+      ]);
+    };
+
+    services.dae = mkIf config.modules.proxy.enableDae {
+      enable = true;
+      # configFile = "/etc/dae/config.dae";
+      assetsPath = toString (pkgs.symlinkJoin {
+        name = "dae-assets";
+        paths = [ "${inputs.geodb}" ];
+      });
+      config = ''
+        global {
+          dial_mode: domain
+          lan_interface: auto
+          wan_interface: auto
+          log_level: info
+          auto_config_kernel_parameter: true
+          tcp_check_url: 'http://cp.cloudflare.com,1.1.1.1,2606:4700:4700::1111'
+          tcp_check_http_method: HEAD
+          check_interval: 30s
+          check_tolerance: 50ms
+        }
+
+        node {
+          'socks5://localhost:1080'
+        }
+
+        dns {
+          upstream {
+            alih3: 'h3://dns.alidns.com:443/dns-query'
+            localdns: 'udp://127.0.0.1:53'
+          }
+          routing {
+            request {
+              qname(geosite:cn) -> alih3
+              fallback: localdns
+            }
+          }
+        }
+
+        group {
+            proxy {
+                policy: min_moving_avg
+            }
+        }
+
+        routing {
+          pname(NetworkManager, dnscrypt-proxy, AdGuardHome, nekoray, nekobox_core, sing-box, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
+          dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
+
+          dip(geoip:cn) -> direct 
+          ip(geoip:cn) -> direct 
+          domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:apple-cn, geosite:google-cn) -> direct
+
+          domain(geosite:gfw) -> proxy
+
+          fallback: proxy
+        }
+      '';
     };
 
     # ProxyChains configuration
