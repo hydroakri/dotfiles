@@ -122,6 +122,32 @@
       };
     };
 
+    # prevent chaotic time
+    systemd.services.fake-hwclock = {
+      description = "Restore system time on boot (Fake Hardware Clock)";
+      wantedBy = [ "sysinit.target" ];
+      before = [ "sysinit.target" "chronyd.service" ];
+      after = [ "local-fs.target" ];
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "restore-time" ''
+          if [ -f /var/lib/fake-hwclock ]; then
+            echo "Restoring time from /var/lib/fake-hwclock..."
+            ${pkgs.coreutils}/bin/date -s "$(cat /var/lib/fake-hwclock)" || true
+          else
+            echo "No saved time found, forcing default..."
+            ${pkgs.coreutils}/bin/date -s "2025-11-01 00:00:00" || true
+          fi
+        '';
+        # 关机/停止时：保存当前时间到文件
+        ExecStop = pkgs.writeShellScript "save-time" ''
+          ${pkgs.coreutils}/bin/date '+%Y-%m-%d %H:%M:%S' > /var/lib/fake-hwclock
+        '';
+      };
+    };
+
     # Enable NetworkManager
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
