@@ -59,12 +59,19 @@
     enable = true;
     servers = [ ];
     extraConfig = ''
+      server 129.6.15.27 iburst
       server time.cloudflare.com iburst nts
       server nts.netnod.se iburst nts
 
       makestep 1.0 3
       ntsdumpdir /var/lib/chrony
     '';
+  };
+  #SMART monitor
+  services.smartd = {
+    enable = true;
+    defaults.monitored =
+      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
   };
   programs.nh.enable = true;
   programs.nix-ld.enable = true;

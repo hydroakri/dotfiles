@@ -56,17 +56,9 @@
   security.pam.services.login.enableGnomeKeyring = false;
   services.passSecretService.enable = false;
 
-  #SMART monitor
-  services.smartd = {
-    enable = true;
-    defaults.monitored =
-      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
-    notifications = {
-      # System Bus notify should run by user
-      systembus-notify.enable = true;
-    };
-  };
+  # For earlyoom and smartd notices
   services.systembus-notify.enable = lib.mkForce true;
+  services.smartd.notifications.systembus-notify.enable = true;
 
   # Printing
   services.printing.enable = true;
@@ -78,14 +70,6 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    extraConfig.pipewire."92-low-latency" = {
-      "context.properties" = {
-        "default.clock.rate" = 48000;
-        "default.clock.quantum" = 32;
-        "default.clock.min-quantum" = 32;
-        "default.clock.max-quantum" = 32;
-      };
-    };
   };
   # Bluetooth
   hardware.bluetooth = {

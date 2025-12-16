@@ -49,14 +49,19 @@
     # VM (common)
     "vm.swappiness" = 100;
     "vm.dirty_ratio" = 40;
+    "vm.dirty_bytes" = 268435456;
     "vm.dirty_background_ratio" = 10;
+    "vm.dirty_background_bytes" = 67108864;
+    "vm.dirty_writeback_centisecs" = 1500;
+    "vm.dirty_expire_centisecs" = 1500;
+    "vm.watermark_boost_factor" = 0;
+    "vm.watermark_scale_factor" = 125;
     "vm.page-cluster" = 0;
     "vm.nr_hugepages" = 0;
     "vm.vfs_cache_pressure" = 50;
-    "vm.dirty_writeback_centisecs" = 1500;
-    "vm.dirty_expire_centisecs" = 1500;
     "vm.min_free_kbytes" = 65536;
-    "vm.max_map_count" = 262144;
+    "vm.max_map_count" = 1048576;
+    "fs.inotify.max_user_instances" = 1024;
   };
   services.udev.extraRules = ''
     # NVMe SSD: 设置为 none
@@ -67,6 +72,16 @@
 
     # 旋转硬盘 HDD: 设置为 bfq
     ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
+
+    # Prevent bumb noise
+    DEVPATH=="/devices/virtual/misc/cpu_dma_latency", OWNER="root", GROUP="audio", MODE="0660"
+
+    # HDD Performance Tuning to rotational disks.
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", \
+    ATTRS{id/bus}=="ata", RUN+="${pkgs.hdparm}/bin/hdparm -B 254 -S 0 /dev/%k"
+
+    # When used with ZRAM, it is better to prefer page out only anonymous pages
+    ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${pkgs.bash}/bin/bash -c 'echo N > /sys/module/zswap/parameters/enabled'"
   '';
   boot.tmp.useTmpfs = true;
   services.zram-generator = {
@@ -86,5 +101,12 @@
     enable = true;
     scheduler = "scx_rusty";
   };
+  services.journald.extraConfig = lib.mkDefault ''
+    SystemMaxUse=64M
+  '';
+  environment.systemPackages = with pkgs;
+    [
+      hdparm # udev rules require hdparm
+    ];
 
 }

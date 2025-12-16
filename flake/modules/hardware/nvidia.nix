@@ -12,6 +12,9 @@
         options nvidia NVreg_EnableGpuFirmware=1
         options nvidia NVreg_PreserveVideoMemoryAllocations=1
         options nvidia NVreg_TemporaryFilePath=/var/tmp
+        options nvidia NVreg_UsePageAttributeTable=1
+        options nvidia NVreg_InitializeSystemMemoryAllocations=0
+        options nvidia NVreg_DynamicPowerManagement=0x02
       '';
       hardware.nvidia = {
         open = true;
