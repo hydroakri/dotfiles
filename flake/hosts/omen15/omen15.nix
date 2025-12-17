@@ -145,15 +145,16 @@
       gnome-tweaks
 
       # GUI Applications
-      kdePackages.kate
       venera
       wezterm
       code-cursor
+      kdePackages.kate
       # davinci-resolve-studio
     ];
   };
   # programs.niri.enable = true;
   programs.zsh.enable = true;
+  programs.kdeconnect.enable = true;
   # Application-specific programs (host-specific)
   programs.throne.enable = false;
   programs.clash-verge = {
@@ -163,6 +164,7 @@
   };
   systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
   systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
+  services.cloudflare-warp.enable = true;
   services.sunshine = {
     enable = true;
     autoStart = true;

@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-zCdIpkK+9kN2B142ZreknJHVKFhZvq2T//1VK9qLcSA=",
+        "narHash": "sha256-l7FQtpKEJmoLY50NQtYf6fRxysZCZiV0ngSJJ5v/JKU=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1765862072,
-        "narHash": "sha256-c4wY37WrmVnPQrc9+sHZoM8ca5pDigcuH9i628SxvD4=",
+        "lastModified": 1766445289,
+        "narHash": "sha256-jN7J9BJfC8by/i3//cJQr7xafBlYPKZ3Hne/0Fk57mY=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "fe18bc9b12ad36a616d0bdc203cbd5c65ef886c9",
+        "rev": "ccaf6201306842411a46b4fdd4ae0e0a066508af",
         "type": "github"
       },
       "original": {
@@ -67,11 +67,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1765762245,
-        "narHash": "sha256-3iXM/zTqEskWtmZs3gqNiVtRTsEjYAedIaLL0mSBsrk=",
+        "lastModified": 1766201043,
+        "narHash": "sha256-eplAP+rorKKd0gNjV3rA6+0WMzb1X1i16F5m5pASnjA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "c8cfcd6ccd422e41cc631a0b73ed4d5a925c393d",
+        "rev": "b3aad468604d3e488d627c0b43984eb60e75e782",
         "type": "github"
       },
       "original": {
@@ -83,11 +83,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1765457389,
-        "narHash": "sha256-ddhDtNYvleZeYF7g7TRFSmuQuZh7HCgqstg5YBGwo5s=",
+        "lastModified": 1766125104,
+        "narHash": "sha256-l/YGrEpLromL4viUo5GmFH3K5M1j0Mb9O+LiaeCPWEM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f997fa0f94fb1ce55bccb97f60d41412ae8fde4c",
+        "rev": "7d853e518814cca2a657b72eeba67ae20ebf7059",
         "type": "github"
       },
       "original": {
@@ -112,11 +112,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1765836173,
-        "narHash": "sha256-hWRYfdH2ONI7HXbqZqW8Q1y9IRbnXWvtvt/ONZovSNY=",
+        "lastModified": 1766289575,
+        "narHash": "sha256-BOKCwOQQIP4p9z8DasT5r+qjri3x7sPCOq+FTjY8Z+o=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "443a7f2e7e118c4fc63b7fae05ab3080dd0e5c63",
+        "rev": "9836912e37aef546029e48c8749834735a6b9dad",
         "type": "github"
       },
       "original": {

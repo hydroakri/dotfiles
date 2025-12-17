@@ -66,6 +66,7 @@
     boot.kernel.sysctl = {
       "net.ipv4.ip_forward" = 1;
       "net.ipv6.conf.all.forwarding" = 1;
+      "net.ipv6.conf.default.forwarding" = 1;
 
       # optimize bufferbloat
       "net.core.netdev_max_backlog" = lib.mkForce 2000;
@@ -159,6 +160,7 @@
       ethtool
     ];
     programs.zsh.enable = true;
+    services.smartd.enable = lib.mkForce false;
     services.journald.extraConfig = ''
       Storage=volatile
       SystemMaxUse=64M

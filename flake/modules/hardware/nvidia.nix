@@ -15,6 +15,7 @@
         options nvidia NVreg_UsePageAttributeTable=1
         options nvidia NVreg_InitializeSystemMemoryAllocations=0
         options nvidia NVreg_DynamicPowerManagement=0x02
+        options nvidia NVreg_RegistryDwords=RmEnableAggressiveVblank=1
       '';
       hardware.nvidia = {
         open = true;

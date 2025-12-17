@@ -236,6 +236,7 @@ with lib; {
           tcp_check_http_method: HEAD
           check_interval: 30s
           check_tolerance: 50ms
+          auto_config_kernel_parameter: true
         }
 
         node {
@@ -243,13 +244,14 @@ with lib; {
         }
 
         dns {
+          ipversion_prefer: 4
           upstream {
             alih3: 'h3://dns.alidns.com:443/dns-query'
             localdns: 'udp://127.0.0.1:53'
           }
           routing {
             request {
-              qname(geosite:cn) -> alih3
+              qname(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> alih3
               fallback: localdns
             }
           }
@@ -262,14 +264,18 @@ with lib; {
         }
 
         routing {
-          pname(NetworkManager, dnscrypt-proxy, AdGuardHome, nekoray, nekobox_core, sing-box, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
+          pname(NetworkManager, chronyd, dnscrypt-proxy, AdGuardHome, nekoray, nekobox_core, sing-box, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
           dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
+          domain(geosite:private) -> must_direct
+          domain(geosite:category-ads-all) -> block
 
-          dip(geoip:cn) -> direct 
-          ip(geoip:cn) -> direct 
-          domain(geosite:cn, geosite:geolocation-cn, geosite:china-list, geosite:apple-cn, geosite:google-cn) -> direct
+          domain(geosite:google-cn, geosite:google, tradingview.com) -> proxy
+          domain(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn) -> direct
 
-          domain(geosite:gfw) -> proxy
+          domain(geosite:gfw, geosite:geolocation-!cn) -> proxy
+          !domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) -> proxy
+
+          domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> direct
 
           fallback: proxy
         }
