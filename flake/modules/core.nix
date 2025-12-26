@@ -103,6 +103,8 @@
       curl
       unar
       _7zz
+      tmux
+      python3Minimal
       neovim
       # net utils
       lsof

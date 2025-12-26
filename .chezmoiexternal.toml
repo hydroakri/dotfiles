@@ -3,3 +3,9 @@
     url = "https://github.com/iDvel/rime-ice.git"
     refreshPeriod = "168h"
     clone.depth = 1
+
+[".tmux/plugins/tpm"]
+    type = "git-repo"
+    url = "https://github.com/tmux-plugins/tpm.git"
+    refreshPeriod = "168h"
+    clone.depth = 1

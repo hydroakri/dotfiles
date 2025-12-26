@@ -45,6 +45,7 @@ eval "$(zoxide init zsh --cmd cd)"
 
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source ~/.zsh/fzf-tab/fzf-tab.plugin.zsh
 
 # detect zsh plugin update async
 (
@@ -67,6 +68,8 @@ source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
     }
     update_repo ~/.zsh/zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions &
     update_repo ~/.zsh/zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting &
+    update_repo ~/.zsh/fzf-tab https://github.com/Aloxaf/fzf-tab &
+
 ) > /dev/null 2>&1
 
 # if [[ $(ps --no-header --pid=$PPID --format=cmd) != "fish" ]]
