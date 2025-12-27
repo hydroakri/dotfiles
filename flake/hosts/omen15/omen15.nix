@@ -153,7 +153,6 @@
     ];
   };
   # programs.niri.enable = true;
-  programs.zsh.enable = true;
   programs.kdeconnect.enable = true;
   # Application-specific programs (host-specific)
   programs.throne.enable = false;

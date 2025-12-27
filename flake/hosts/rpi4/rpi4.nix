@@ -159,7 +159,6 @@
       raspberrypi-eeprom
       ethtool
     ];
-    programs.zsh.enable = true;
     services.smartd.enable = lib.mkForce false;
     services.journald.extraConfig = ''
       Storage=volatile

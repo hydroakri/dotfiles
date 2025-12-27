@@ -73,6 +73,8 @@
     defaults.monitored =
       "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
   };
+  users.users.root.shell = pkgs.zsh;
+  programs.zsh.enable = true;
   programs.nh.enable = true;
   programs.nix-ld.enable = true;
   programs.nix-index-database.comma.enable = true;
