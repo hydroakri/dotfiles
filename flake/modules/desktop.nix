@@ -191,5 +191,20 @@
     #theme
     darkly-qt5
     darkly
+    darkman
   ];
+
+  # Darkman for automatic theme switching
+  systemd.user.services.darkman = {
+    description = "Darkman daemon";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.darkman}/bin/darkman run";
+      Restart = "always";
+    };
+    environment = {
+      XDG_CONFIG_HOME = "%h/.config";
+    };
+  };
 }

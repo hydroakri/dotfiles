@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-Tu5tM8j22OFuMOlf8pB+5rP7r9OvAaV6XXWOz0GrirQ=",
+        "narHash": "sha256-t2zBZpP2wf1zv+sE11hIa9mZJd1YKR7n01/6T1khpXc=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1766614547,
-        "narHash": "sha256-iuaMOjdUvbWd/13XgLDfh8Uh2lchUa9Wqhuax21yxHE=",
+        "lastModified": 1766787330,
+        "narHash": "sha256-N2ihebSRg8rZ8uX4OSCZT1fSHZnVLu9Iwin7fLDqn1c=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "92befc5c78d0df8c9bac0aa4117bad958231b998",
+        "rev": "b640df728ecb6591324923efd9c438064319e757",
         "type": "github"
       },
       "original": {
@@ -67,16 +67,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1766473571,
-        "narHash": "sha256-5G1NDO2PulBx1RoaA6U1YoUDX0qZslpPxv+n5GX6Qto=",
+        "lastModified": 1766651565,
+        "narHash": "sha256-QEhk0eXgyIqTpJ/ehZKg9IKS7EtlWxF3N7DXy42zPfU=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "76701a179d3a98b07653e2b0409847499b2a07d3",
+        "rev": "3e2499d5539c16d0d173ba53552a4ff8547f4539",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-25.11",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
