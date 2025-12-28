@@ -32,14 +32,14 @@ with lib; {
 
     # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
     systemd.services.dae = mkIf config.modules.proxy.enableDae {
-      after = [ "network-pre.target" ]
+      after = [ "network-online.target" "systemd-networkd-wait-online.service" ]
         ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
         ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
           "dnscrypt-proxy.service");
 
-      wants = [ ]
+      wants = [ "network-online.target" ]
         ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
@@ -63,10 +63,19 @@ with lib; {
 
     services.adguardhome.enable =
       mkIf config.modules.proxy.enableAdGuardHome true;
-    systemd.services.adguardhome.serviceConfig =
-      mkIf config.modules.proxy.enableAdGuardHome {
+    systemd.services.adguardhome = mkIf config.modules.proxy.enableAdGuardHome {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
         AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
         CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
+      };
+    };
+
+    systemd.services.dnscrypt-proxy =
+      mkIf config.modules.proxy.enableDnsCryptProxy {
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
       };
 
     services.dnscrypt-proxy = mkIf config.modules.proxy.enableDnsCryptProxy {
@@ -199,16 +208,19 @@ with lib; {
       };
     };
     systemd.services.sing-box = mkIf config.modules.proxy.enableSingbox {
-      after = [ "network-pre.target" ]
+      after = [ "network-online.target" ]
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
         ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
           "dnscrypt-proxy.service");
 
-      wants = [ ] ++ (lib.optional config.modules.proxy.enableAdGuardHome
-        "adguardhome.service")
+      wants = [ "network-online.target" ]
+        ++ (lib.optional config.modules.proxy.enableAdGuardHome
+          "adguardhome.service")
         ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
           "dnscrypt-proxy.service");
+
+      restartTriggers = [ config.sops.templates."config.json".path ];
 
       serviceConfig.ExecStart = (lib.mkForce [
         ""
@@ -231,11 +243,26 @@ with lib; {
           lan_interface: auto
           wan_interface: auto
           log_level: info
-          auto_config_kernel_parameter: true
+
+          # health check
           tcp_check_url: 'http://cp.cloudflare.com,1.1.1.1,2606:4700:4700::1111'
           tcp_check_http_method: HEAD
+          udp_check_dns: 'dns9.quad9.net:53,9.9.9.9,2620:fe::fe'
           check_interval: 30s
           check_tolerance: 50ms
+
+          # safety & security
+          mptcp: false
+          so_mark_from_dae: 0
+          allow_insecure: false
+          tls_implementation: utls
+          utls_imitate: chrome_auto
+          disable_waiting_network: false
+
+          # performance
+          pprof_port: 0
+          sniffing_timeout: 100ms
+          tproxy_port_protect: true
           auto_config_kernel_parameter: true
         }
 
@@ -247,12 +274,18 @@ with lib; {
           ipversion_prefer: 4
           upstream {
             alih3: 'h3://dns.alidns.com:443/dns-query'
+            flymc: 'quic://dns.flymc.cc:853'
             localdns: 'udp://127.0.0.1:53'
           }
           routing {
             request {
               qname(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> alih3
               fallback: localdns
+            }
+            response {
+              !qname(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) && qtype(aaaa) -> reject
+              ip(geoip:private) && !qname(geosite:cn) -> flymc
+              fallback: accept
             }
           }
         }
@@ -269,13 +302,24 @@ with lib; {
           domain(geosite:private) -> must_direct
           domain(geosite:category-ads-all) -> block
 
+          # force abroad ipv6 proxy
+          ipversion(6) -> proxy
+
+          # bypass BT
+          dscp(0x4) -> direct
+          domain(keyword: tracker, announce, torrent) -> direct
+
+          # set specific situation
           domain(geosite:google-cn, geosite:google, tradingview.com) -> proxy
           domain(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn) -> direct
 
+          # set general abroad situation
           domain(geosite:gfw, geosite:geolocation-!cn) -> proxy
           !domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) -> proxy
 
+          # set general domestic situation
           domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> direct
+          dip(geoip:cn) -> direct
 
           fallback: proxy
         }
