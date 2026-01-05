@@ -47,7 +47,10 @@
       options snd_hda_intel power_save=1
       options zenpower fast_ctemp=1
     '';
-    loader.efi.canTouchEfiVariables = true;
+    loader.efi = {
+      canTouchEfiVariables = true;
+      efiSysMountPoint = "/boot/efi";
+    };
     loader.limine = {
       enable = true;
       biosDevice = "nodev";
@@ -253,6 +256,21 @@
       "compress=zstd:3"
       "discard=async"
       "autodefrag"
+    ];
+  };
+
+  fileSystems."/boot" = {
+    neededForBoot = true;
+    options = lib.mkForce [
+      "subvol=@boot"
+      "rw"
+      "relatime"
+      "ssd"
+      "space_cache=v2"
+      "noatime"
+      "nodiratime"
+      "compress=zstd:3"
+      "discard=async"
     ];
   };
 
