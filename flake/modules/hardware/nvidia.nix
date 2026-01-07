@@ -2,8 +2,9 @@
   specialisation = {
     nvidia-variant.configuration = {
       system.nixos.tags = [ "nvidia" ];
-      services.xserver.videoDrivers = lib.mkForce [ "nvidia" "amdgpu" ];
+      services.xserver.videoDrivers = [ "amdgpu" "nvidia" ];
       boot.kernelParams = [ "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1" ];
+      boot.blacklistedKernelModules = [ "nouveau" ];
       # Early KMS
       boot.initrd.kernelModules =
         [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];

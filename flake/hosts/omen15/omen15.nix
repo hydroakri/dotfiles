@@ -98,7 +98,7 @@
     plasma6.enable = true;
   };
   # Video drivers (hardware-specific)
-  services.xserver.videoDrivers = lib.mkForce [ "nouveau" "amdgpu" ];
+  services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];
   services.xserver.desktopManager.xfce = {
     enable = false;
     enableWaylandSession = true;
@@ -125,6 +125,7 @@
     # blueman
     # qt6ct
     # mako
+    # snixembed
     # waybar
     # xfce.xfconf
     # xfce.xfce4-panel
