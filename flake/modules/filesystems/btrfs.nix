@@ -9,6 +9,8 @@ let
     TIMELINE_LIMIT_MONTHLY = "0";
     TIMELINE_LIMIT_YEARLY = "1";
     ALLOW_USERS = [ config.mainUser ];
+    # 关键：禁用配额计算，防止卡顿
+    BACKGROUND_COMPARISON = "no";
   };
 in {
   environment.systemPackages = with pkgs; [ btrfs-assistant ];
@@ -25,6 +27,8 @@ in {
       unitConfig.ConditionACPower = true;
       serviceConfig = {
         Type = "oneshot";
+        Nice = 19;
+        IOSchedulingClass = "idle";
         ExecStart = pkgs.writeShellScript "smart-balance" ''
           set -e
           echo "Starting smart Btrfs balance..."
@@ -46,9 +50,31 @@ in {
     };
   };
   services.snapper = {
-    cleanupInterval = "1h";
-    configs = { home = leanSnapperPolicy // { SUBVOLUME = "/home"; }; };
-    configs = { rootdir = leanSnapperPolicy // { SUBVOLUME = "/"; }; };
+    snapshotInterval = "hourly";
+    cleanupInterval = "8h";
+    configs = {
+      home = leanSnapperPolicy // { SUBVOLUME = "/home"; };
+      rootdir = leanSnapperPolicy // { SUBVOLUME = "/"; };
+    };
+  };
+
+  # 降低 Snapper 相关服务的优先级，防止抢占桌面资源
+  systemd.services.snapper-timeline-cleanup = {
+    serviceConfig = {
+      IOWeight = 1;
+      CPUWeight = 1;
+      CPUSchedulingPolicy = "idle";
+      IOSchedulingClass = "idle";
+    };
+  };
+
+  systemd.services.snapper-timeline-create = {
+    serviceConfig = {
+      IOWeight = 1;
+      CPUWeight = 1;
+      CPUSchedulingPolicy = "idle";
+      IOSchedulingClass = "idle";
+    };
   };
 
 }

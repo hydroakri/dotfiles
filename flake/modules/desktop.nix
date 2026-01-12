@@ -71,6 +71,8 @@
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+  #I2C
+  hardware.i2c.enable = true;
   # Bluetooth
   hardware.bluetooth = {
     enable = true;
@@ -203,8 +205,6 @@
       ExecStart = "${pkgs.darkman}/bin/darkman run";
       Restart = "always";
     };
-    environment = {
-      XDG_CONFIG_HOME = "%h/.config";
-    };
+    environment = { XDG_CONFIG_HOME = "%h/.config"; };
   };
 }
