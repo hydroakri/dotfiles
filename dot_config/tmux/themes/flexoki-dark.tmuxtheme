@@ -86,3 +86,4 @@ setw -g window-status-current-format "#[bg=#$color_bg_1,fg=#$color_tx_1] #I  
 # Modes
 setw -g clock-mode-colour $color_blue
 setw -g mode-style fg=$color_orange,bg=$color_tx_1,bold
+

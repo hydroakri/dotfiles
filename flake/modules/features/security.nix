@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   skKey =
-    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIF31MN4S2Z4OlWgIXeuacwfUxDcNApQUkcS7kOTwyV3/AAAABHNzaDo= ${config.mainUser}";
+    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIEd6FL+qQky2WxOaOOB3LXijhswS1HVdD8bHvT0R+ZxtAAAABHNzaDo= ${config.mainUser}";
   bakKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
 in {
