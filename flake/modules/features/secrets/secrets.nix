@@ -14,6 +14,8 @@
       doh_stamp = { };
       email = { };
       sing-box-outbounds = { };
+      lastfm_username = { };
+      lastfm_api_key = { };
     };
 
     templates."dnscrypt-proxy.toml" = {
@@ -25,6 +27,22 @@
               builtins.toJSON config.services.dnscrypt-proxy.settings
             }' | yj -jt > $out
           ''));
+    };
+
+    templates."lastfm-env" = {
+      content = ''
+        LASTFM_USERNAME=${config.sops.placeholder.lastfm_username}
+        LASTFM_API_KEY=${config.sops.placeholder.lastfm_api_key}
+      '';
+    };
+
+    templates."glance-lastfm-config.json" = {
+      content = ''
+        {
+          "user": "${config.sops.placeholder.lastfm_username}",
+          "api_key": "${config.sops.placeholder.lastfm_api_key}"
+        }
+      '';
     };
 
     templates."config.json" = {
