@@ -31,11 +31,20 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
   ];
-  modules.proxy = {
-    enable = true;
-    enableDnsCryptProxy = true;
-    enableDae = true;
-    enableSingbox = true;
+  modules = {
+    proxy = {
+      enable = true;
+      enableDnsCryptProxy = true;
+      enableDae = true;
+      enableSingbox = true;
+    };
+    utils = {
+      enable = true;
+      enableGraphicTools = true;
+      enableGlance = true;
+      enableGrafana = true;
+      enablePrometheus = true;
+    };
   };
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;

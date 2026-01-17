@@ -15,6 +15,7 @@
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/proxy.nix
+    ../../modules/features/utils.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
@@ -33,12 +34,21 @@
   };
 
   config = {
-    modules.proxy = {
-      enable = true;
-      enableAdGuardHome = true;
-      enableDnsCryptProxy = false;
-      enableSingbox = true;
-      enableDae = true;
+    modules = {
+      proxy = {
+        enable = true;
+        enableAdGuardHome = true;
+        enableDnsCryptProxy = false;
+        enableSingbox = true;
+        enableDae = true;
+      };
+      utils = {
+        enable = true;
+        enableGlance = true;
+        enableGrafana = true;
+        enablePrometheus = true;
+        enableGraphicTools = false;
+      };
     };
 
     networking.hostName = "rpi4";
@@ -152,6 +162,10 @@
     # Enable NetworkManager
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
+      allowedTCPPorts = [
+        8080 # for glance
+        9006 # for grafana
+      ];
       checkReversePath = false; # For dae transparent netgate, let date pass
     };
     environment.systemPackages = with pkgs; [
