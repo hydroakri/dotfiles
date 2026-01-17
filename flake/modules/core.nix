@@ -21,7 +21,7 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 14d";
+      options = "--delete-older-than 7d";
     };
   };
   boot.kernel.sysctl = { "kernel.sysrq" = 246; };
