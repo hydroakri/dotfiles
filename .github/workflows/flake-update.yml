@@ -1,4 +1,4 @@
-name: "Auto update flake.lock"
+name: "nix flake update"
 
 on:
   workflow_dispatch:
@@ -49,8 +49,6 @@ jobs:
         shell: bash
         run: |
           PR_URL="${{ steps.update_step.outputs.pull-request-url }}"
-          # 自动批准 PR（可选，如果你的仓库开启了“必须有 Review 才能合并”）
-          gh pr review "$PR_URL" --approve
           # 开启自动 squash 合并，等待 CI 通过
           gh pr merge "$PR_URL" --auto --squash
         env:
