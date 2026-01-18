@@ -52,9 +52,7 @@ jobs:
           # 定义变量方便引用
           PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
           echo "Processing PR #$PR_NUM"
-          # 1. 批准 PR
-          gh pr review "$PR_NUM" --approve
-          # 2. 开启自动合并
+          # 开启自动合并
           gh pr merge "$PR_NUM" --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
