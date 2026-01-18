@@ -37,6 +37,7 @@ jobs:
         uses: DeterminateSystems/update-flake-lock@main
         with:
           path-to-flake-dir: flake
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
           inputs: ${{ steps.strategy.outputs.inputs }}
           pr-title: ${{ steps.strategy.outputs.pr_title }}
           pr-labels: |
