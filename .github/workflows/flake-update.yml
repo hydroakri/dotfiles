@@ -1,0 +1,57 @@
+name: "Auto update flake.lock"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  update-flake-lock:
+    runs-on: ubuntu-latest
+    # 仅保留必要的权限
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Determinate Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Determine update strategy
+        id: strategy
+        run: |
+          DAY_OF_WEEK=$(date +%u)
+          if [ "$DAY_OF_WEEK" = "7" ]; then
+            echo "inputs=" >> $GITHUB_OUTPUT
+            echo "pr_title=chore(deps): weekly full flake update" >> $GITHUB_OUTPUT
+          else
+            echo "inputs=adlist geodb" >> $GITHUB_OUTPUT
+            echo "pr_title=chore(deps): daily data update (adlist, geodb)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update flake.lock
+        id: update_step
+        uses: DeterminateSystems/update-flake-lock@main
+        with:
+          path-to-flake-dir: flake
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          inputs: ${{ steps.strategy.outputs.inputs }}
+          pr-title: ${{ steps.strategy.outputs.pr_title }}
+          pr-labels: |
+            automated
+            dependencies
+
+      - name: Approve and Enable Auto-merge
+        if: steps.update_step.outputs.pull-request-number != ''
+        shell: bash
+        run: |
+          PR_URL="${{ steps.update_step.outputs.pull-request-url }}"
+          # 自动批准 PR（可选，如果你的仓库开启了“必须有 Review 才能合并”）
+          gh pr review "$PR_URL" --approve
+          # 开启自动 squash 合并，等待 CI 通过
+          gh pr merge "$PR_URL" --auto --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
