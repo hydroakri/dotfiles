@@ -1,4 +1,4 @@
-name: "Flake Update: Auto-Discovery"
+name: "Flake Update: Pure Nix Check"
 
 on:
   workflow_dispatch:
@@ -17,6 +17,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
@@ -32,25 +35,23 @@ jobs:
             echo "pr_title=chore: Daily Data Update (adlist & geodb)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Auto-Discovery and Eval Check
+      - name: Update and Verify Flake
         run: |
           cd flake
-          # 更新
+          # 1. 执行更新
           if [ -z "${{ steps.strategy.outputs.target_inputs }}" ]; then
             nix flake update
           else
             nix flake update ${{ steps.strategy.outputs.target_inputs }}
           fi
           
-          # 枚举并校验
-          # ubuntu-latest 镜像自带 jq，无需手动安装
-          HOSTS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]')
-          for host in $HOSTS; do
-            echo "Checking $host..."
-            nix eval .#nixosConfigurations."$host".config.system.build.toplevel.drvPath
-          done
+          # 2. 核心：使用官方 check 命令
+          # --all-systems: 确保 x86 机器也会检查 aarch64 的定义 (配合 QEMU)
+          # --no-build: 只评估，不实际运行构建（非常重要，否则会超时）
+          echo "Running nix flake check --all-systems --no-build..."
+          nix flake check --all-systems --no-build --show-trace
 
-      - name: Update flake.lock
+      - name: Update flake.lock PR
         uses: DeterminateSystems/update-flake-lock@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
