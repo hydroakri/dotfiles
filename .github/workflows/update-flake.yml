@@ -43,3 +43,12 @@ jobs:
           pr-labels: |
             automated
             dependencies
+            
+      - name: Enable auto-merge for this PR
+        # 只有在创建了 PR 的情况下才执行
+        if: steps.update_step.outputs.pull-request-number != ''
+        run: |
+          # 使用 gh 命令行，根据编号直接开启自动合并
+          gh pr merge "${{ steps.update_step.outputs.pull-request-number }}" --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
