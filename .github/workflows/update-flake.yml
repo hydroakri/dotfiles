@@ -1,0 +1,62 @@
+name: "Flake Update: Auto-Discovery"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  nix-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Determinate Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Determine update strategy
+        id: strategy
+        run: |
+          DAY_OF_WEEK=$(date +%u)
+          if [ "$DAY_OF_WEEK" = "7" ]; then
+            echo "target_inputs=" >> $GITHUB_OUTPUT
+            echo "pr_title=chore: Weekly Full Flake Update" >> $GITHUB_OUTPUT
+          else
+            echo "target_inputs=adlist geodb" >> $GITHUB_OUTPUT
+            echo "pr_title=chore: Daily Data Update (adlist & geodb)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-Discovery and Eval Check
+        run: |
+          cd flake
+          # 更新
+          if [ -z "${{ steps.strategy.outputs.target_inputs }}" ]; then
+            nix flake update
+          else
+            nix flake update ${{ steps.strategy.outputs.target_inputs }}
+          fi
+          
+          # 枚举并校验
+          # ubuntu-latest 镜像自带 jq，无需手动安装
+          HOSTS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]')
+          for host in $HOSTS; do
+            echo "Checking $host..."
+            nix eval .#nixosConfigurations."$host".config.system.build.toplevel.drvPath
+          done
+
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-flake-dir: 'flake'
+          inputs: ${{ steps.strategy.outputs.target_inputs }}
+          pr-title: ${{ steps.strategy.outputs.pr_title }}
+          pr-labels: |
+            automated
+            dependencies
