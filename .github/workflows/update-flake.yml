@@ -47,9 +47,8 @@ jobs:
           
           # 2. 核心：使用官方 check 命令
           # --all-systems: 确保 x86 机器也会检查 aarch64 的定义 (配合 QEMU)
-          # --no-build: 只评估，不实际运行构建（非常重要，否则会超时）
           echo "Running nix flake check --all-systems --no-build..."
-          nix flake check --all-systems --no-build --show-trace
+          nix flake check --all-systems --show-trace
 
       - name: Update flake.lock PR
         uses: DeterminateSystems/update-flake-lock@main
