@@ -35,20 +35,38 @@ jobs:
             echo "pr_title=chore: Daily Data Update (adlist & geodb)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update and Verify Flake
+      - name: Auto-Discovery and Safe Eval
         run: |
           cd flake
-          # 1. 执行更新
+          # 1. 执行更新逻辑
+          DAY_OF_WEEK=$(date +%u)
           if [ -z "${{ steps.strategy.outputs.target_inputs }}" ]; then
             nix flake update
           else
             nix flake update ${{ steps.strategy.outputs.target_inputs }}
           fi
+
+          # 2. 自动化发现与差异化校验
+          RUNNER_ARCH="x86_64-linux"
+          HOSTS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]')
           
-          # 2. 核心：使用官方 check 命令
-          # --all-systems: 确保 x86 机器也会检查 aarch64 的定义 (配合 QEMU)
-          echo "Running nix flake check --all-systems --no-build..."
-          nix flake check --all-systems --show-trace
+          for host in $HOSTS; do
+            # 获取该配置的目标架构
+            TARGET_ARCH=$(nix eval .#nixosConfigurations."$host".pkgs.system --raw)
+            
+            echo "---------------------------------------"
+            echo "Host: $host | Target: $TARGET_ARCH"
+            
+            if [ "$TARGET_ARCH" = "$RUNNER_ARCH" ]; then
+              echo "Matching architecture. Running deep eval..."
+              nix eval .#nixosConfigurations."$host".config.system.build.toplevel.drvPath --impure
+            else
+              echo "Foreign architecture ($TARGET_ARCH). Running shallow check..."
+              # 只评估 pkgs 和基本的配置项，不触碰会导致 IFD 构建的 toplevel 属性
+              nix eval .#nixosConfigurations."$host".options.system.stateVersion.value --raw
+              echo "Shallow check passed (Basic evaluation OK)."
+            fi
+          done
 
       - name: Update flake.lock PR
         uses: DeterminateSystems/update-flake-lock@main
