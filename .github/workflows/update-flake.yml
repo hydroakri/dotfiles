@@ -17,8 +17,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          # 允许 Nix 运行 aarch64 的代码
+          additional-conf: |
+            extra-platforms = aarch64-linux
 
       - name: Determine update strategy
         id: strategy
