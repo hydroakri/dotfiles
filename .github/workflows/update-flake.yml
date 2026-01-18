@@ -34,6 +34,7 @@ jobs:
           fi
 
       - name: Update flake.lock
+        id: update_step  # 确保这个 ID 和下面引用的一致
         uses: DeterminateSystems/update-flake-lock@main
         with:
           path-to-flake-dir: flake
@@ -43,14 +44,17 @@ jobs:
           pr-labels: |
             automated
             dependencies
-            
-      - name: Auto Approve
-        uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
-          pull-request-number: ${{ steps.update_step.outputs.pull-request-number }}
 
-      - name: Enable auto-merge
-        run: gh pr merge "${{ steps.update_step.outputs.pull-request-number }}" --auto --merge
+      - name: Approve and Enable Auto-merge
+        # 这里的判断逻辑更健壮：只要有 PR 编号就执行
+        if: steps.update_step.outputs.pull-request-number != ''
+        run: |
+          # 定义变量方便引用
+          PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
+          echo "Processing PR #$PR_NUM"
+          # 1. 批准 PR
+          gh pr review "$PR_NUM" --approve
+          # 2. 开启自动合并
+          gh pr merge "$PR_NUM" --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
