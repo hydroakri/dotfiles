@@ -46,10 +46,10 @@ jobs:
 
       - name: Approve and Enable Auto-merge
         if: steps.update_step.outputs.pull-request-number != ''
-        shell: bash
         run: |
-          PR_URL="${{ steps.update_step.outputs.pull-request-url }}"
-          # 开启自动 squash 合并，等待 CI 通过
-          gh pr merge "$PR_URL" --auto --squash
+          PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
+          # 使用 --squash 将 PR 的所有 commit 压缩成一个，保持主线整洁
+          # 或者使用 --rebase 保持线性历史
+          gh pr merge "$PR_NUM" --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
