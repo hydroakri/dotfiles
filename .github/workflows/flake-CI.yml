@@ -1,9 +1,7 @@
-name: nix flake check (minimal)
+name: nix flake check
 
 on:
   pull_request:
-    paths:
-      - flake/**
   workflow_dispatch:
 
 jobs:
