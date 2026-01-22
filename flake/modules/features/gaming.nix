@@ -29,11 +29,11 @@
     package = pkgs.ananicy-cpp;
     rulesProvider = pkgs.ananicy-rules-cachyos;
   };
-  # services.scx = lib.mkForce {
-  #   enable = true;
-  #   scheduler = "scx_lavd";
-  #   extraArgs = [ "--autopower" ];
-  # };
+  services.scx = lib.mkForce {
+    enable = true;
+    scheduler = "scx_lavd";
+    extraArgs = [ "--autopower" ];
+  };
 
   networking.firewall = {
     allowedTCPPorts = [ 5222 25565 27015 27036 27037 27040 53317 ];
