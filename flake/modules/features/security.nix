@@ -1,7 +1,8 @@
 { config, lib, pkgs, ... }:
 let
+  mainUser = config.mainUser;
   skKey =
-    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${config.mainUser}";
+    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${mainUser}";
   bakKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
 in {
@@ -160,10 +161,16 @@ in {
         "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
     };
   };
-  users.users.root.openssh.authorizedKeys.keys = [
-    skKey
-    "${bakKey} ${config.sops.placeholder.email}" # 如果你想要那个 email 占位符
-  ];
+  sops.templates."root-ssh-keys" = {
+    content = ''
+      ${skKey}
+      ${bakKey} ${config.sops.placeholder.email}
+    '';
+    owner = "root";
+    group = "root";
+    mode = "0600";
+    path = "/root/.ssh/authorized_keys";
+  };
   # =============================================================================
   # This machine can signing/control key from WHERE?
   programs.git.config = {
