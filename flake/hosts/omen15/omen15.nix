@@ -175,7 +175,7 @@
     package = pkgs.clash-verge-rev;
   };
   systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
-  systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
+  # systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
   services.cloudflare-warp.enable = true;
   services.sunshine = {
     enable = true;
