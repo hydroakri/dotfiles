@@ -94,17 +94,18 @@
     };
   };
   services.displayManager = {
-    sddm.enable = true;
+    # sddm.enable = true;
+
     # gdm.enable = true;
-    # cosmic-greeter.enable = true;
+    cosmic-greeter.enable = true;
   };
   services.desktopManager = {
     cosmic = {
-      enable = false;
+      enable = true;
       xwayland.enable = true;
     };
     # gnome.enable = true;
-    plasma6.enable = true;
+    # plasma6.enable = true;
   };
   # Video drivers (hardware-specific)
   services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];

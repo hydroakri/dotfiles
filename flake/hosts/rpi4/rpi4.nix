@@ -89,33 +89,19 @@
     powerManagement.cpuFreqGovernor = "performance";
     environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
     services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
-    boot.kernel.sysfs = {
-      # enable net card RPS & XPS
-      class.net.end0.queues."rx-0".rps_cpus = "f";
-      class.net.end0.queues."tx-0".rps_cpus = "f";
-    };
     networking.interfaces.end0.mtu = 1492;
-    systemd.services.network-optimization = {
-      description = "Apply Network Optimizations (Ethtool, TC, MSS)";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = pkgs.writeShellScript "optimize-network" ''
-          # A. 关闭网卡卸载 (解决微突发抖动，让 RPi4 CPU 接管分包)
-          ${pkgs.ethtool}/bin/ethtool -K end0 gso off tso off gro on
-          ${pkgs.ethtool}/bin/ethtool -K end0 rx-checksumming off tx-checksumming off sg off lro off
-          # 1. 清除旧规则
-          ${pkgs.iproute2}/bin/tc qdisc del dev end0 root 2>/dev/null || true
-          # 2. 应用新规则：
-          # TODO bandwidth change depend on current network
-          ${pkgs.iproute2}/bin/tc qdisc add dev end0 root cake bandwidth 370mbit besteffort nat
-          #    确保 SS-2022 加密后的包不会撑爆 MTU
-          ${pkgs.iptables}/bin/iptables -t mangle -A POSTROUTING -o end0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412
-        '';
-      };
+    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
+    networking.firewall = {
+      allowedTCPPorts = [
+        8080 # for glance
+        9006 # for grafana
+      ];
+      checkReversePath = false; # For dae transparent netgate, let date pass
+      extraCommands = ''
+        # 确保 SS-2022 加密后的包不会撑爆 MTU
+        iptables -t mangle -D POSTROUTING -o end0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412 2>/dev/null || true
+        iptables -t mangle -A POSTROUTING -o end0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412
+      '';
     };
 
     hardware = {
@@ -159,15 +145,6 @@
       };
     };
 
-    # Enable NetworkManager
-    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
-    networking.firewall = {
-      allowedTCPPorts = [
-        8080 # for glance
-        9006 # for grafana
-      ];
-      checkReversePath = false; # For dae transparent netgate, let date pass
-    };
     environment.systemPackages = with pkgs; [
       libraspberrypi
       raspberrypi-eeprom
