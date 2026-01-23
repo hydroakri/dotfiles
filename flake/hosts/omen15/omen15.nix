@@ -93,8 +93,14 @@
       };
     };
   };
+  environment.variables = {
+    KWIN_FORCE_SW_CURSOR = "1";
+    KWIN_DRM_NO_AMS = "1";
+  };
   services.displayManager = {
     sddm.enable = true;
+    sddm.wayland.enable = false;
+
     # gdm.enable = true;
     # cosmic-greeter.enable = true;
   };
