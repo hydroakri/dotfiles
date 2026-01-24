@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1769120274,
-        "narHash": "sha256-v9xcVzHKg5rB9ADmIHhVuWmGolMxoWCShL8Ide3B7NE=",
+        "lastModified": 1769206456,
+        "narHash": "sha256-Si0jBb/U5pY2NLXwprEBZCtHcVk5wRcimdss9G7/gBQ=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "99d93e7bf20d0ab47ada8f5cf0e9993cc8e5a568",
+        "rev": "b4ce5a60cbe770f8db088439696302e01de1ddfb",
         "type": "github"
       },
       "original": {
