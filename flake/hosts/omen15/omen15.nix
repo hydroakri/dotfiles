@@ -75,6 +75,14 @@
             path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
       '';
     };
+    kernel.sysfs = {
+      # enable net card RPS & XPS
+      class.net.eno1.queues."rx-0".rps_cpus = "fe";
+      class.net.eno1.queues."tx-0".xps_cpus = "fe";
+
+      class.net.wlo1.queues."rx-0".rps_cpus = "fe";
+      class.net.wlo1.queues."tx-0".xps_cpus = "fe";
+    };
   };
   i18n = {
     inputMethod = {

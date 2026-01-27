@@ -86,6 +86,13 @@
       "net.ipv4.tcp_wmem" = lib.mkForce "4096 87380 4194304";
       "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
     };
+    boot.kernel.sysfs = {
+      # enable net card RPS & XPS
+      class.net.end0.queues."rx-0".rps_cpus = "f";
+
+      class.net.wlan0.queues."rx-0".rps_cpus = "f";
+      class.net.wlan0.queues."tx-0".xps_cpus = "f";
+    };
     powerManagement.cpuFreqGovernor = "performance";
     environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
     services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡

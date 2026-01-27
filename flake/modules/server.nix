@@ -5,11 +5,6 @@
     "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 0;
     "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 0;
   };
-  boot.kernel.sysfs = {
-    # enable net card RPS & XPS
-    class.net.end0.queues."rx-0".rps_cpus = "f";
-    class.net.end0.queues."tx-0".rps_cpus = "f";
-  };
   services.irqbalance.enable = true;
   services.fail2ban.enable = true;
   services.tuned.enable = true;
