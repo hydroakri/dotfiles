@@ -104,16 +104,16 @@
   services.displayManager = {
     # sddm.enable = true;
 
-    # gdm.enable = true;
-    cosmic-greeter.enable = true;
+    gdm.enable = true;
+    # cosmic-greeter.enable = true;
   };
   services.desktopManager = {
     cosmic = {
-      enable = true;
+      enable = false;
       xwayland.enable = true;
     };
     # gnome.enable = true;
-    # plasma6.enable = true;
+    plasma6.enable = true;
   };
   # Video drivers (hardware-specific)
   services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];

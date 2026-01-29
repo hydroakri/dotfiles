@@ -22,6 +22,7 @@ com.rustdesk.RustDesk
 com.spotify.Client
 com.tencent.WeChat
 com.tencent.wemeet
+com.tomjwatson.Emote
 com.tradingview.tradingview
 com.usebottles.bottles
 com.valvesoftware.Steam
@@ -30,7 +31,6 @@ com.visualstudio.code
 com.vysp3r.ProtonPlus
 com.yubico.yubioath
 dev.edfloreshz.CosmicTweaks
-dev.zed.Zed
 io.github.Archeb.opentrace
 io.github.electronstudio.WeylusCommunityEdition
 io.github.pwr_solaar.solaar
