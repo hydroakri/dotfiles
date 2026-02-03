@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-Kwaz/dr8ti4gbW87Zu/jIHR9ghCjXkUjJgOqZ7iQU6c=",
+        "narHash": "sha256-H7/EVks9GaP7haVuLAaG6QTLAlrkkIVYyZ1X0C2Ls28=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
