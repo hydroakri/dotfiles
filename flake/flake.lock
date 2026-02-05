@@ -3,7 +3,7 @@
     "adlist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-JtO2rlBmqZFugcXlK6ccBh0Ha4DYC/oAZe8IBuo3QTA=",
+        "narHash": "sha256-pKCSpWaCpQdc+BOPvbwFzMjtUmc21/TmytrCot368c0=",
         "type": "file",
         "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt"
       },
@@ -15,11 +15,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1770157503,
-        "narHash": "sha256-c0GVhOSRAgRDpTpaSFwLk227MRBA4wIk7EqQHQpl7s0=",
+        "lastModified": 1770243672,
+        "narHash": "sha256-cUmmm5z3PyVJ+0QRLSioTiAxymA/nRf4HU9MHoTUeVQ=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "a39226ceb1281325fe1e31085ba01f685d0b0207",
+        "rev": "8561120b4a5946a80b6480b996c1ea079c5c98bf",
         "type": "github"
       },
       "original": {
