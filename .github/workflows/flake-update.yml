@@ -27,10 +27,10 @@ jobs:
           if [ "$DAY_OF_WEEK" = "7" ]; then
             echo "inputs=" >> $GITHUB_OUTPUT
             echo "pr_title=chore(deps): weekly full flake update" >> $GITHUB_OUTPUT
-          else
-            echo "inputs=adlist geodb" >> $GITHUB_OUTPUT
-            echo "pr_title=chore(deps): daily data update (adlist, geodb)" >> $GITHUB_OUTPUT
-          fi
+#          else
+#            echo "inputs=adlist geodb" >> $GITHUB_OUTPUT
+#            echo "pr_title=chore(deps): daily data update (adlist, geodb)" >> $GITHUB_OUTPUT
+#          fi
 
       - name: Update flake.lock
         id: update_step
