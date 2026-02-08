@@ -3,7 +3,7 @@ name: "nix flake update"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 0'
 
 jobs:
   update-flake-lock:
@@ -19,18 +19,6 @@ jobs:
 
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
-
-      - name: Determine update strategy
-        id: strategy
-        run: |
-          DAY_OF_WEEK=$(date +%u)
-          if [ "$DAY_OF_WEEK" = "7" ]; then
-            echo "inputs=" >> $GITHUB_OUTPUT
-            echo "pr_title=chore(deps): weekly full flake update" >> $GITHUB_OUTPUT
-#          else
-#            echo "inputs=adlist geodb" >> $GITHUB_OUTPUT
-#            echo "pr_title=chore(deps): daily data update (adlist, geodb)" >> $GITHUB_OUTPUT
-          fi
 
       - name: Update flake.lock
         id: update_step
