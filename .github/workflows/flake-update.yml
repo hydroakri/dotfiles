@@ -26,8 +26,7 @@ jobs:
         with:
           path-to-flake-dir: flake
           token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
-          inputs: ${{ steps.strategy.outputs.inputs }}
-          pr-title: ${{ steps.strategy.outputs.pr_title }}
+          pr-title: "chore(deps): weekly full flake update"
           pr-labels: |
             automated
             dependencies
