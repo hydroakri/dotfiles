@@ -30,7 +30,7 @@ jobs:
 #          else
 #            echo "inputs=adlist geodb" >> $GITHUB_OUTPUT
 #            echo "pr_title=chore(deps): daily data update (adlist, geodb)" >> $GITHUB_OUTPUT
-#          fi
+          fi
 
       - name: Update flake.lock
         id: update_step
