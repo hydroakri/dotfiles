@@ -1,16 +1,19 @@
 {
-  "timeStamp": 1769662414940,
-  "version": "1.68.0",
+  "timeStamp": 1771328592375,
+  "version": "1.69.0",
   "userSettings": {
     "advancedUserEnabled": true,
     "cloudStorageEnabled": true,
-    "externalLists": "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt\nhttps://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt\nhttps://big.oisd.nl/domainswild\nhttps://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/pro-onlydomains.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
+    "externalLists": "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt\nhttps://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt\nhttps://big.oisd.nl/domainswild\nhttps://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/pro-onlydomains.txt\nhttps://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif-onlydomains.txt\nhttps://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt\nhttps://secure.fanboy.co.nz/fanboy-annoyance.txt\nhttps://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
     "importedLists": [
       "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt",
       "https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt",
       "https://big.oisd.nl/domainswild",
       "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/pro-onlydomains.txt",
-      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt"
+      "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif-onlydomains.txt",
+      "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
+      "https://secure.fanboy.co.nz/fanboy-annoyance.txt",
+      "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt"
     ],
     "popupPanelSections": 31,
     "webrtcIPAddressHidden": true
@@ -26,11 +29,20 @@
     "easyprivacy",
     "adguard-spyware-url",
     "urlhaus-1",
+    "plowe-0",
+    "dpollock-0",
+    "adguard-mobile-app-banners",
+    "adguard-other-annoyances",
+    "adguard-popup-overlays",
+    "adguard-widgets",
     "CHN-0",
     "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt",
     "https://adguardteam.github.io/HostlistsRegistry/assets/filter_29.txt",
     "https://adguardteam.github.io/HostlistsRegistry/assets/filter_21.txt",
+    "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
+    "https://secure.fanboy.co.nz/fanboy-annoyance.txt",
     "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/pro-onlydomains.txt",
+    "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif-onlydomains.txt",
     "https://big.oisd.nl/domainswild"
   ],
   "hiddenSettings": {},
