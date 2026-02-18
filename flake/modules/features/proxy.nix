@@ -83,6 +83,8 @@ with lib; {
             enabled = true
             listen_address = "0.0.0.0:9007"
             prometheus_enabled = true
+            username = ""
+            password = ""
 
             [sources]
             [sources.public-resolvers]
@@ -169,12 +171,14 @@ with lib; {
 
       # dnscrypt-proxy 的端口规则
       (mkIf config.modules.proxy.enableDnsCryptProxy {
-        allowedTCPPorts = [ 53 9007 ];
+        allowedTCPPorts = [ 9007 ];
+        allowedUDPPorts = [ 53 ];
       })
 
       # Sing-box 的端口规则
       (mkIf config.modules.proxy.enableSingbox {
         allowedTCPPorts = [ 1080 9090 ];
+        allowedUDPPorts = [ 1080 ];
       })
     ];
 

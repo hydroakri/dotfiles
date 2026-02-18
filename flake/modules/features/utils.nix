@@ -37,7 +37,7 @@ with lib; {
 
     networking.firewall = lib.mkMerge [
       # grafana 的端口规则
-      (mkIf config.modules.proxy.enableGrafana { allowedTCPPorts = [ 9006 ]; })
+      (mkIf config.modules.utils.enableGrafana { allowedTCPPorts = [ 9006 ]; })
     ];
 
     environment.systemPackages = mkIf config.modules.utils.enableGraphicTools
@@ -73,16 +73,24 @@ with lib; {
           "filesystem"
         ];
       };
-      scrapeConfigs = [{
-        job_name = "desktop-metrics";
-        static_configs = [{
-          targets = [
-            "127.0.0.1:${
-              toString config.services.prometheus.exporters.node.port
-            }"
-          ];
-        }];
-      }];
+      scrapeConfigs = [
+        {
+          job_name = "desktop-metrics";
+          static_configs = [{
+            targets = [
+              "127.0.0.1:${
+                toString config.services.prometheus.exporters.node.port
+              }"
+            ];
+          }];
+        }
+        {
+          job_name = "dnscrypt-proxy"; # 给你的 DNS 监控起个名字
+          static_configs = [{
+            targets = [ "127.0.0.1:9007" ]; # 直接指向 dnscrypt-proxy 暴露的端口
+          }];
+        }
+      ];
     };
 
     services.grafana = mkIf config.modules.utils.enableGrafana {
