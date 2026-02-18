@@ -35,6 +35,11 @@ with lib; {
       };
     };
 
+    networking.firewall = lib.mkMerge [
+      # grafana 的端口规则
+      (mkIf config.modules.proxy.enableGrafana { allowedTCPPorts = [ 9006 ]; })
+    ];
+
     environment.systemPackages = mkIf config.modules.utils.enableGraphicTools
       (with pkgs; [
         ## GPU / display tools

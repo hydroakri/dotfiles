@@ -58,6 +58,7 @@ with lib; {
         "dnscrypt-proxy.toml" = {
           mode = "0444";
           content = ''
+            listen_addresses = ['[::]:53']
             block_ipv6 = true
             cache = true
             cache_size = 4096
@@ -71,10 +72,17 @@ with lib; {
             require_dnssec = false
             require_nofilter = false
             require_nolog = false
-            server_names = ["cloudflare", "cloudflare-family", "cloudflare-security", "mullvad-adblock-doh", "mullvad-all-doh", "mullvad-base-doh", "mullvad-doh", "mullvad-extend-doh", "mullvad-family-doh", "nextdns", "nextdns-ultralow", "controld-block-malware", "controld-block-malware-ad", "controld-block-malware-ad-social", "controld-family-friendly", "controld-uncensored", "controld-unfiltered", "dns0", "dns0-kid", "dns0-unfiltered", "adguard-dns-doh", "adguard-dns-family-doh", "adguard-dns-unfiltered-doh", "quad9-dnscrypt-ip4-filter-ecs-pri", "quad9-dnscrypt-ip4-filter-pri", "quad9-dnscrypt-ip4-nofilter-ecs-pri", "quad9-dnscrypt-ip4-nofilter-pri", "quad9-doh-ip4-port443-filter-ecs-pri", "quad9-doh-ip4-port443-filter-pri", "quad9-doh-ip4-port443-nofilter-ecs-pri", "quad9-doh-ip4-port443-nofilter-pri", "quad9-doh-ip4-port5053-filter-ecs-pri", "quad9-doh-ip4-port5053-filter-pri", "quad9-doh-ip4-port5053-nofilter-ecs-pri", "quad9-doh-ip4-port5053-nofilter-pri", "rethinkdns-doh", "quad101", "flymc-doh-8443", "flymc-doh", "zerotrust"]
+            server_names = ["cloudflare", "cloudflare-security", "mullvad-adblock-doh", "mullvad-all-doh", "mullvad-base-doh", "mullvad-doh", "mullvad-extend-doh", "nextdns", "nextdns-ultralow", "controld-block-malware", "controld-block-malware-ad", "controld-block-malware-ad-social", "controld-uncensored", "controld-unfiltered", "dns0", "dns0-unfiltered", "adguard-dns-doh", "adguard-dns-unfiltered-doh", "quad9-dnscrypt-ip4-filter-ecs-pri", "quad9-dnscrypt-ip4-filter-pri", "quad9-dnscrypt-ip4-nofilter-ecs-pri", "quad9-dnscrypt-ip4-nofilter-pri", "quad9-doh-ip4-port443-filter-ecs-pri", "quad9-doh-ip4-port443-filter-pri", "quad9-doh-ip4-port443-nofilter-ecs-pri", "quad9-doh-ip4-port443-nofilter-pri", "quad9-doh-ip4-port5053-filter-ecs-pri", "quad9-doh-ip4-port5053-filter-pri", "quad9-doh-ip4-port5053-nofilter-ecs-pri", "quad9-doh-ip4-port5053-nofilter-pri", "rethinkdns-doh", "flymc-doh-8443", "flymc-doh", "zerotrust"]
 
             [blocked_names]
-            blocked_names_file = "/nix/store/2wzp33pk9zykipsvl1yk7wdyvi1j9w63-blocklist.txt"
+            blocked_names_file = "${
+              pkgs.writeText "blocklist.txt" (builtins.readFile inputs.adlist)
+            }"
+
+            [monitoring_ui]
+            enabled = true
+            listen_address = "0.0.0.0:9007"
+            prometheus_enabled = true
 
             [sources]
             [sources.public-resolvers]
@@ -157,6 +165,11 @@ with lib; {
       (mkIf config.modules.proxy.enableAdGuardHome {
         allowedTCPPorts = [ 53 80 443 3000 ];
         allowedUDPPorts = [ 53 1080 67 68 547 546 ];
+      })
+
+      # dnscrypt-proxy 的端口规则
+      (mkIf config.modules.proxy.enableDnsCryptProxy {
+        allowedTCPPorts = [ 53 9007 ];
       })
 
       # Sing-box 的端口规则

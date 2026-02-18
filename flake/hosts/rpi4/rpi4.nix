@@ -37,8 +37,8 @@
     modules = {
       proxy = {
         enable = true;
-        enableAdGuardHome = true;
-        enableDnsCryptProxy = false;
+        enableAdGuardHome = false;
+        enableDnsCryptProxy = true;
         enableSingbox = true;
         enableDae = true;
       };
@@ -99,10 +99,6 @@
     networking.interfaces.end0.mtu = 1492;
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
-      allowedTCPPorts = [
-        8080 # for glance
-        9006 # for grafana
-      ];
       checkReversePath = false; # For dae transparent netgate, let date pass
       extraCommands = ''
         # 确保 SS-2022 加密后的包不会撑爆 MTU
