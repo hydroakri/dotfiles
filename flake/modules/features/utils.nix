@@ -96,6 +96,8 @@ with lib; {
     services.grafana = mkIf config.modules.utils.enableGrafana {
       enable = true;
       settings = {
+        security.secret_key =
+          "d653a5995ae70d618bdc1752f289cca1cf5ca166b69d33074b64b8de0706c03c";
         server = {
           # 桌面环境：开放到局域网，方便家庭内多设备访问
           http_addr = "0.0.0.0";
