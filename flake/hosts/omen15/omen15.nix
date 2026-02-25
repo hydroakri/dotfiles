@@ -102,9 +102,9 @@
     };
   };
   services.displayManager = {
-    # sddm.enable = true;
+    plasma-login-manager.enable = true;
 
-    gdm.enable = true;
+    # gdm.enable = true;
     # cosmic-greeter.enable = true;
   };
   services.desktopManager = {
