@@ -8,8 +8,13 @@
       auto-optimise-store = true;
       experimental-features = [ "nix-command" "flakes" ];
       substituters = [
-        "https://mirrors.ustc.edu.cn/nix-channels/store"
+        # "https://mirrors.ustc.edu.cn/nix-channels/store"
         "https://cache.nixos.org/"
+        "https://ros.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo="
       ];
       max-jobs = "auto";
       cores = 0;
@@ -50,6 +55,13 @@
       LC_TIME = "en_US.UTF-8";
     };
   };
+  networking.firewall = {
+    allowedUDPPortRanges = [{
+      from = 7400;
+      to = 7500;
+    } # DDS 默认发现端口 allow multi-cast
+      ];
+  };
   networking.networkmanager = {
     enable = true;
     dns = "default";
@@ -77,6 +89,10 @@
   programs.zsh.enable = true;
   programs.nh.enable = true;
   programs.nix-ld.enable = true;
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
   programs.nix-index-database.comma.enable = true;
   programs.ssh = {
     startAgent = true;

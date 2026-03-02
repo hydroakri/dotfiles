@@ -41,7 +41,7 @@ zstyle ':completion:*' rehash true
 # plugins
 eval "$(starship init zsh)"
 eval "$(atuin init zsh)" # an awesome history/implement plugin !
-eval "$(zoxide init zsh --cmd cd)"
+eval "$(zoxide init zsh)"
 
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

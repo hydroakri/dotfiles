@@ -20,8 +20,8 @@
     };
   };
 
-  outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database, nixos-generators
-    , adlist, geodb, ... }@inputs:
+  outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database
+    , nixos-generators, adlist, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
 
@@ -56,6 +56,14 @@
             modules = [ ./hosts/rpi-image/rpi-image.nix ];
             format = "sd-aarch64";
           };
+        };
+      };
+
+      templates = {
+        ros2 = {
+          path = ./templates/ros2;
+          description = # use `nix flake init -t ~/dotfiles#ros2` OR `nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2' --refresh` to init a ros project
+            "Robust ROS 2 Humble development environment with GUI and FHS support";
         };
       };
     };
