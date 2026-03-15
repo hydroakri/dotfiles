@@ -29,7 +29,7 @@ jobs:
 
           # 1. 获取本地 lock 中锁定的内核哈希
           # ⚠️⚠️⚠️ 请务必将 YOUR_HOSTNAME 替换为你在 flake.nix 中定义的主机名 ⚠️⚠️⚠️
-          CURRENT_HASH=$(nix eval .#nixosConfigurations.YOUR_HOSTNAME.config.boot.kernelPackages.kernel.outPath --raw)
+          CURRENT_HASH=$(nix eval .#nixosConfigurations.omen15.config.boot.kernelPackages.kernel.outPath --raw)
 
           # 2. 获取上游 nixos-unstable 最新的 Xanmod 内核哈希
           REMOTE_HASH=$(nix eval github:NixOS/nixpkgs/nixos-unstable#linuxPackages_xanmod.kernel.outPath --raw)
