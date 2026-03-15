@@ -1,9 +1,9 @@
 name: "nix flake update"
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 保留最基础的手动触发按钮，不带任何额外参数
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: '0 0 * * 0' # 每周日运行
 
 jobs:
   update-flake-lock:
@@ -20,7 +20,35 @@ jobs:
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
+      # === 核心逻辑：智能探测内核是否更新 ===
+      - name: Check if Kernel (Xanmod) needs update
+        id: check_kernel
+        run: |
+          # 进入 flake 所在目录 (对应你下方的 path-to-flake-dir: flake)
+          cd flake
+
+          # 1. 获取本地 lock 中锁定的内核哈希
+          # ⚠️⚠️⚠️ 请务必将 YOUR_HOSTNAME 替换为你在 flake.nix 中定义的主机名 ⚠️⚠️⚠️
+          CURRENT_HASH=$(nix eval .#nixosConfigurations.YOUR_HOSTNAME.config.boot.kernelPackages.kernel.outPath --raw)
+
+          # 2. 获取上游 nixos-unstable 最新的 Xanmod 内核哈希
+          REMOTE_HASH=$(nix eval github:NixOS/nixpkgs/nixos-unstable#linuxPackages_xanmod.kernel.outPath --raw)
+
+          echo "当前系统锁定的内核版本哈希: $CURRENT_HASH"
+          echo "上游云端最新的内核版本哈希: $REMOTE_HASH"
+
+          # 3. 严格判断：只有哈希不同才放行
+          if [ "$CURRENT_HASH" != "$REMOTE_HASH" ]; then
+            echo "检测到内核变动，准备执行 flake update。"
+            echo "should_update=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "内核哈希一致，跳过本次更新。"
+            echo "should_update=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # === 仅在 should_update 为 true 时执行 ===
       - name: Update flake.lock
+        if: steps.check_kernel.outputs.should_update == 'true'
         id: update_step
         uses: DeterminateSystems/update-flake-lock@main
         with:
@@ -31,12 +59,12 @@ jobs:
             automated
             dependencies
 
+      # === 仅在 should_update 为 true 且 PR 成功创建时执行 ===
       - name: Approve and Enable Auto-merge
-        if: steps.update_step.outputs.pull-request-number != ''
+        if: steps.check_kernel.outputs.should_update == 'true' && steps.update_step.outputs.pull-request-number != ''
         run: |
           PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
-          # 使用 --squash 将 PR 的所有 commit 压缩成一个，保持主线整洁
-          # 或者使用 --rebase 保持线性历史
+          # 使用 --squash 将 PR 的所有 commit 压缩成一个
           gh pr merge "$PR_NUM" --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
