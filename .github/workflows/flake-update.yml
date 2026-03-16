@@ -3,7 +3,7 @@ name: "nix flake update"
 on:
   workflow_dispatch: # 保留最基础的手动触发按钮，不带任何额外参数
   schedule:
-    - cron: '0 0 * * 0' # 每周日运行
+    - cron: '0 0 * * *' # 每周日运行
 
 jobs:
   update-flake-lock:
