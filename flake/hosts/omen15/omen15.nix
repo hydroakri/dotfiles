@@ -34,7 +34,7 @@
   modules = {
     proxy = {
       enable = true;
-      enableDnsCryptProxy = true;
+      enableDnsCryptProxy = false;
       enableDae = true;
       enableSingbox = true;
     };

@@ -52,6 +52,8 @@ with lib; {
     sops = {
       secrets = {
         doh_stamp = { };
+        zerotrust = { };
+        sing-box-endpoints = { };
         sing-box-outbounds = { };
       };
       templates = {
@@ -107,55 +109,471 @@ with lib; {
           restartUnits = [ "sing-box.service" ]; # 模板变化时重启服务
           content = ''
             {
+              "log": {
+                "level": "info",
+                "timestamp": true
+              },
               "dns": {
-                "rules": [
-                  {
-                    "outbound": "any",
-                    "server": "local-dns"
-                  }
-                ],
                 "servers": [
                   {
-                    "address": "local",
+                    "type": "fakeip",
+                    "tag": "fakeip",
+                    "inet4_range": "198.18.0.0/15",
+                    "inet6_range": "fc00::/18"
+                  },
+                  {
+                    "type": "h3",
+                    "tag": "dns-local",
                     "detour": "direct",
-                    "tag": "local-dns"
+                    "server": "172.64.36.2",
+                    "tls": {
+                      "enabled": true,
+                      "server_name": "${config.sops.placeholder.zerotrust}",
+                      "ech": {
+                        "enabled": true,
+                        "query_server_name": "cloudflare-gateway.com"
+                      }
+                    }
+                  },
+                  {
+                    "type": "h3",
+                    "tag": "dns-remote",
+                    "detour": "default",
+                    "server": "149.112.112.11",
+                    "tls": {
+                      "enabled": true,
+                      "server_name": "dns11.quad9.net",
+                      "ech": {
+                        "enabled": true,
+                        "query_server_name": "dns.quad9.net"
+                      }
+                    }
                   }
-                ]
+                ],
+                "rules": [
+                  {
+                    "rule_set": "adblock-dns",
+                    "action": "reject"
+                  },
+                  {
+                    "query_type": [
+                      "A",
+                      "AAAA"
+                    ],
+                    "server": "fakeip"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-apple@cn",
+                      "geosite-category-games-cn",
+                      "geosite-category-game-accelerator-cn",
+                      "geosite-category-game-platforms-download",
+                      "geosite-category-bank-cn",
+                      "geosite-category-finance",
+                      "geosite-category-securities-cn",
+                      "geosite-category-cryptocurrency",
+                      "geosite-tld-cn",
+                      "geosite-geolocation-cn",
+                      "geosite-cn"
+                    ],
+                    "server": "dns-local"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "and",
+                    "rules": [
+                      {
+                        "domain_regex": ".*"
+                      },
+                      {
+                        "rule_set": [
+                          "geosite-tld-cn",
+                          "geosite-geolocation-cn",
+                          "geosite-cn"
+                        ],
+                        "invert": true
+                      }
+                    ],
+                    "server": "dns-remote"
+                  }
+                ],
+                "final": "dns-local",
+                "strategy": "prefer_ipv4",
+                "independent_cache": true
+              },
+              "endpoints": ${config.sops.placeholder.sing-box-endpoints},
+              "inbounds": [
+                {
+                  "type": "direct",
+                  "tag": "dns-in",
+                  "listen": "127.0.0.1",
+                  "listen_port": 53
+                },
+                {
+                  "type": "tun",
+                  "tag": "tun-in",
+                  "interface_name": "tun0",
+                  "address": [
+                    "172.19.0.1/30",
+                    "fdfe:dcba:9876::1/126"
+                  ],
+                  "auto_route": true,
+                  "auto_redirect": true,
+                  "strict_route": true,
+                  "stack": "system",
+                  "sniff": true,
+                },
+                {
+                  "type": "mixed",
+                  "tag": "mixed-in",
+                  "listen": "127.0.0.1",
+                  "listen_port": 2080,
+                  "sniff": true
+                }
+              ],
+              "outbounds": ${config.sops.placeholder.sing-box-outbounds},
+              "route": {
+                "rules": [
+                  {
+                    "inbound": "dns-in",
+                    "action": "hijack-dns"
+                  },
+                  {
+                    "port": 53,
+                    "action": "hijack-dns"
+                  },
+                  {
+                    "protocol": "dns",
+                    "action": "hijack-dns"
+                  },
+                  {
+                    "rule_set": "adblock-dns",
+                    "action": "reject"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      {
+                        "ip_cidr": [
+                          "224.0.0.0/3",
+                          "10.0.0.0/8",
+                          "172.16.0.0/12",
+                          "192.168.0.0/16",
+                          "fc00::/7",
+                          "ff00::/8",
+                          "fe80::/10"
+                        ]
+                      },
+                      {
+                        "rule_set": [
+                          "geoip-private",
+                          "geosite-private"
+                        ]
+                      }
+                    ],
+                    "outbound": "direct"
+                  },
+                  {
+                    "protocol": [
+                      "bittorrent",
+                      "stun"
+                    ],
+                    "outbound": "webrtc-bt-proxy"
+                  },
+                  {
+                    "domain_keyword": [
+                      "tracker",
+                      "announce",
+                      "torrent"
+                    ],
+                    "outbound": "webrtc-bt-proxy"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-category-pt",
+                      "geosite-category-public-tracker"
+                    ],
+                    "outbound": "webrtc-bt-proxy"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      {
+                        "domain_suffix": "tradingview.com"
+                      },
+                      {
+                        "rule_set": [
+                          "geosite-google",
+                          "geosite-google-cn"
+                        ]
+                      }
+                    ],
+                    "outbound": "default"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-category-ai-chat-!cn",
+                      "geosite-category-ai-!cn",
+                      "geosite-category-ai-chat-!cn@!cn",
+                      "geosite-category-media",
+                      "geosite-category-entertainment",
+                      "geosite-category-entertainment@!cn",
+                      "geosite-category-emby",
+                      "geosite-category-social-media-!cn",
+                      "geosite-category-social-media-!cn@cn"
+                    ],
+                    "outbound": "ai-media-social"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-apple@cn",
+                      "geosite-category-games-cn",
+                      "geosite-category-game-accelerator-cn",
+                      "geosite-category-game-platforms-download",
+                      "geosite-category-bank-cn",
+                      "geosite-category-finance",
+                      "geosite-category-securities-cn",
+                      "geosite-category-cryptocurrency"
+                    ],
+                    "outbound": "direct"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-gfw",
+                      "geosite-geolocation-!cn"
+                    ],
+                    "outbound": "default"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "and",
+                    "rules": [
+                      {
+                        "domain_regex": ".*"
+                      },
+                      {
+                        "rule_set": [
+                          "geosite-tld-cn",
+                          "geosite-geolocation-cn",
+                          "geosite-cn"
+                        ],
+                        "invert": true
+                      }
+                    ],
+                    "outbound": "default"
+                  },
+                  {
+                    "rule_set": [
+                      "geosite-tld-cn",
+                      "geosite-geolocation-cn",
+                      "geosite-cn"
+                    ],
+                    "outbound": "direct"
+                  },
+                  {
+                    "rule_set": "geoip-cn",
+                    "outbound": "direct"
+                  }
+                ],
+                "rule_set": [
+                  {
+                    "type": "remote",
+                    "tag": "adblock-dns",
+                    "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geoip-private",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/private.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geoip-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-private",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/private.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-google-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-google",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-apple@cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/apple@cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-games-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-games-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-game-accelerator-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-game-accelerator-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-game-platforms-download",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-game-platforms-download.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-pt",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-pt.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-public-tracker",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-public-tracker.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-bank-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-bank-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-finance",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-finance.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-securities-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-securities-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-gfw",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-geolocation-!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-tld-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tld-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-geolocation-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-cryptocurrency",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-cryptocurrency.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-ai-chat-!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ai-chat-!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-ai-!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ai-!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-ai-chat-!cn@!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ai-chat-!cn@!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-media",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-media.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-entertainment",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-entertainment.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-entertainment@!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-entertainment@!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-emby",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-emby.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-social-media-!cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-social-media-!cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-category-social-media-!cn@cn",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-social-media-!cn@cn.srs",
+                    "update_interval": "24h0m0s"
+                  }
+                ],
+                "final": "default",
+                "auto_detect_interface": true,
+                "default_domain_resolver": "dns-local"
               },
               "experimental": {
                 "cache_file": {
                   "enabled": true,
                   "path": "cache.db",
-                  "store_fakeip": false
+                  "store_fakeip": true
                 },
                 "clash_api": {
                   "external_controller": "0.0.0.0:9090",
                   "external_ui": "ui",
                   "secret": ""
                 }
-              },
-              "inbounds": [
-                {
-                  "listen": "127.0.0.1",
-                  "listen_port": 1080,
-                  "set_system_proxy": false,
-                  "tag": "mixed-in",
-                  "type": "mixed"
-                }
-              ],
-              "log": {
-                "level": "info",
-                "timestamp": true
-              },
-              "outbounds": ${config.sops.placeholder.sing-box-outbounds},
-              "route": {
-                "auto_detect_interface": true,
-                "rules": [
-                  {
-                    "outbound": "dns-out",
-                    "protocol": "dns"
-                  }
-                ]
               }
             }
           '';
