@@ -18,6 +18,7 @@
         options nvidia NVreg_DynamicPowerManagement=0x02
         options nvidia NVreg_RegistryDwords=RmEnableAggressiveVblank=1
       '';
+      hardware.nvidia-container-toolkit.enable = true;
       hardware.nvidia = {
         open = true;
         modesetting.enable = true;
@@ -38,7 +39,10 @@
           nvidiaBusId = "PCI:1@0:0:0";
         };
       };
-      environment.systemPackages = with pkgs; [ cudaPackages.cudatoolkit ];
+      environment.systemPackages = with pkgs; [
+        cudaPackages.cudatoolkit
+        nvidia-container-toolkit
+      ];
       hardware.graphics = {
         enable = true;
         enable32Bit = true;

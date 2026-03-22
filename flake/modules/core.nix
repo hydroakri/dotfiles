@@ -61,6 +61,11 @@
       to = 7500;
     } # DDS 默认发现端口 allow multi-cast
       ];
+    extraCommands = ''
+      ip46tables -A nixos-fw -d 224.0.0.0/4 -p udp -j nixos-fw-accept
+      ip46tables -A nixos-fw -p igmp -j nixos-fw-accept
+    '';
+    checkReversePath = false;
   };
   networking.networkmanager = {
     enable = true;
