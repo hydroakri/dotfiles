@@ -118,7 +118,7 @@ with lib; {
                   {
                     "type": "fakeip",
                     "tag": "fakeip",
-                    "inet4_range": "198.18.0.0/15",
+                    "inet4_range": "198.18.0.0/16",
                     "inet6_range": "fc00::/18"
                   },
                   {
@@ -154,6 +154,85 @@ with lib; {
                   {
                     "rule_set": "adblock-dns",
                     "action": "reject"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      {
+                        "domain": [
+                          "localhost.ptlogin2.qq.com",
+                          "localhost.sec.qq.com",
+                          "proxy.golang.org",
+                          "lens.l.google.com"
+                        ]
+                      },
+                      {
+                        "domain_suffix": [
+                          ".lan",
+                          ".localdomain",
+                          ".example",
+                          ".invalid",
+                          ".localhost",
+                          ".test",
+                          ".local",
+                          ".home.arpa",
+                          ".msftconnecttest.com",
+                          ".msftncsi.com",
+                          ".music.163.com",
+                          ".126.net",
+                          ".kuwo.cn",
+                          ".y.qq.com",
+                          ".xiami.com",
+                          ".music.migu.cn",
+                          ".srv.nintendo.net",
+                          ".stun.playstation.net",
+                          ".xboxlive.com",
+                          ".battlenet.com.cn",
+                          ".wotgame.cn",
+                          ".wggames.cn",
+                          ".wowsgame.cn",
+                          ".wargaming.net",
+                          ".linksys.com",
+                          ".linksyssmartwifi.com",
+                          ".router.asus.com",
+                          ".nflxvideo.net",
+                          ".square-enix.com",
+                          ".finalfantasyxiv.com",
+                          ".ffxiv.com",
+                          ".mcdn.bilivideo.cn",
+                          "music.163.com",
+                          "music.taihe.com",
+                          "musicapi.taihe.com",
+                          "songsearch.kugou.com",
+                          "trackercdn.kugou.com",
+                          "api.joox.com",
+                          "joox.com",
+                          "y.qq.com",
+                          "music.migu.cn",
+                          "msftconnecttest.com",
+                          "msftncsi.com"
+                        ]
+                      },
+                      {
+                        "domain_keyword": [
+                          "ntp",
+                          "time",
+                          "stun"
+                        ]
+                      },
+                      {
+                        "domain_regex": [
+                          "^xbox\\..*\\.microsoft\\.com$"
+                        ]
+                      },
+                      {
+                        "rule_set": [
+                          "geosite-private"
+                        ]
+                      }
+                    ],
+                    "server": "dns-local"
                   },
                   {
                     "query_type": [
@@ -221,7 +300,7 @@ with lib; {
                   "auto_redirect": true,
                   "strict_route": true,
                   "stack": "system",
-                  "sniff": true,
+                  "sniff": true
                 },
                 {
                   "type": "mixed",
@@ -575,7 +654,7 @@ with lib; {
                   "secret": ""
                 }
               }
-            }
+            } 
           '';
         };
       };
