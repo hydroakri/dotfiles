@@ -1,6 +1,6 @@
 {
-  "timeStamp": 1771328592375,
-  "version": "1.69.0",
+  "timeStamp": 1774234999316,
+  "version": "1.70.0",
   "userSettings": {
     "advancedUserEnabled": true,
     "cloudStorageEnabled": true,
@@ -52,7 +52,6 @@
     "accounts.spotify.com",
     "centro.zjlll.net",
     "chrome-extension-scheme",
-    "cn.pornhub.com",
     "cv88af.jjkko.com",
     "godaddy.com",
     "https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&ec=65620&hl=en&ifkv=Ab5oB3rQXbyv80N2BK2D_4vYl3aUWdfjJgzfjLD5y1mgmpgciIHznQiH0--W5xMCewlc2khInlrvgQ&passive=true&service=youtube&uilel=3&flowName=GlifWebSignIn&flowEntry=ServiceLogin&ddm=0",
@@ -65,6 +64,7 @@
     "ifttt.com",
     "infinitynikki.infoldgames.com",
     "login.xueanquan.com",
+    "notebooklm.google.com",
     "osu.ppy.sh",
     "pay.seagm.com",
     "services.sheerid.com",
@@ -79,7 +79,7 @@
     "www.tiktok.com",
     "zhuanlan.zhihu.com"
   ],
-  "dynamicFilteringString": "behind-the-scene * * noop\nbehind-the-scene * inline-script noop\nbehind-the-scene * 1p-script noop\nbehind-the-scene * 3p-script noop\nbehind-the-scene * 3p-frame noop\nbehind-the-scene * image noop\nbehind-the-scene * 3p noop\nnewtab.about-scheme * 3p-script noop\n2baab069-10d1-49c2-b794-3240bd7299af.moz-extension-scheme * 3p-script noop\naccount.bilibili.com * 3p-script noop\nspace.bilibili.com * 3p-script noop\nmail.qq.com * 3p-script noop\npassport.bilibili.com * 3p-script noop\nchromewebstore.google.com * 3p-script noop\nopen.spotify.com * 3p-script noop\nwww.last.fm * 3p-script noop\ntool.chinaz.com * 3p-script noop\ndash.cloudflare.com * 3p-script noop\noutlook.live.com * 3p-script noop\nlogin.live.com * 3p-script noop\nwww.adobe.com * 3p-script noop\nwww.facebook.com * 3p-script noop\nwww.instagram.com * 3p-script noop\naccountscenter.facebook.com * 3p-script noop\nifttt.com * 3p-script noop\nosu.ppy.sh * 3p-script noop\nsteamcommunity.com * 3p-script noop\nfonts.google.com * 3p-frame noop\nlinux.do * 3p-frame noop\n* * 3p-frame block\n* cloudflare.com * noop\nwww.youtube.com * 3p-script noop\nwww.youtube.com * 3p-frame noop\nchatgpt.com * 3p-script noop\nchatgpt.com * 3p-frame noop\ngemini.google.com * 3p-script noop\ngithub.com * 3p-script noop\nwww.tiktok.com * 3p-script noop\nwww.tiktok.com * 3p-frame noop\nnstool.netease.com * 3p-script noop\nauthenticator.cursor.sh * 3p-frame noop\nwww.reddit.com * 3p-script noop\nwww.reddit.com * 3p-frame noop\nstore.epicgames.com * 3p-script noop\nkeep.google.com * 3p-script noop\nwww.duolingo.com * 3p-script noop\nwww.privacyguides.org * 3p-script noop\nwww.bilibili.com * 3p-script noop\nrateyourmusic.com * 3p-script noop\nrateyourmusic.com * 3p-frame noop\nwww.epicgames.com * 3p-script noop\nwww.epicgames.com * 3p-frame noop\nwww.duolingo.com recaptcha.net * noop\nmp.weixin.qq.com * 3p-frame noop\ncoursespy.com * 3p-frame noop\nwww.student.auckland.ac.nz * 3p-frame noop\npayment.flywire.com * 3p-frame noop\nlmarena.ai * 3p-frame noop\n* recaptcha.net * noop\n* onetrust.com * noop\n* stripe.com * noop\n* google.com * noop\n192.168.101.2 * 3p-frame noop\nhydroakri.cc * 3p-frame noop\ntools.chizunet.cc * 3p-frame noop\nwww.figma.com * 3p-frame noop\nauth.openai.com * 3p-frame noop",
+  "dynamicFilteringString": "behind-the-scene * * noop\nbehind-the-scene * inline-script noop\nbehind-the-scene * 1p-script noop\nbehind-the-scene * 3p-script noop\nbehind-the-scene * 3p-frame noop\nbehind-the-scene * image noop\nbehind-the-scene * 3p noop\nnewtab.about-scheme * 3p-script noop\n2baab069-10d1-49c2-b794-3240bd7299af.moz-extension-scheme * 3p-script noop\naccount.bilibili.com * 3p-script noop\nspace.bilibili.com * 3p-script noop\nmail.qq.com * 3p-script noop\npassport.bilibili.com * 3p-script noop\nchromewebstore.google.com * 3p-script noop\nopen.spotify.com * 3p-script noop\nwww.last.fm * 3p-script noop\ntool.chinaz.com * 3p-script noop\ndash.cloudflare.com * 3p-script noop\noutlook.live.com * 3p-script noop\nlogin.live.com * 3p-script noop\nwww.adobe.com * 3p-script noop\nwww.facebook.com * 3p-script noop\nwww.instagram.com * 3p-script noop\naccountscenter.facebook.com * 3p-script noop\nifttt.com * 3p-script noop\nosu.ppy.sh * 3p-script noop\nsteamcommunity.com * 3p-script noop\nfonts.google.com * 3p-frame noop\nlinux.do * 3p-frame noop\n* * 3p-frame block\n* cloudflare.com * noop\nwww.youtube.com * 3p-script noop\nwww.youtube.com * 3p-frame noop\nchatgpt.com * 3p-script noop\nchatgpt.com * 3p-frame noop\ngemini.google.com * 3p-script noop\ngithub.com * 3p-script noop\nwww.tiktok.com * 3p-script noop\nwww.tiktok.com * 3p-frame noop\nnstool.netease.com * 3p-script noop\nauthenticator.cursor.sh * 3p-frame noop\nwww.reddit.com * 3p-script noop\nwww.reddit.com * 3p-frame noop\nstore.epicgames.com * 3p-script noop\nkeep.google.com * 3p-script noop\nwww.duolingo.com * 3p-script noop\nwww.privacyguides.org * 3p-script noop\nwww.bilibili.com * 3p-script noop\nwww.bilibili.com * 3p-frame noop\nrateyourmusic.com * 3p-script noop\nrateyourmusic.com * 3p-frame noop\nwww.epicgames.com * 3p-script noop\nwww.epicgames.com * 3p-frame noop\nwww.duolingo.com recaptcha.net * noop\nmp.weixin.qq.com * 3p-frame noop\ncoursespy.com * 3p-frame noop\nwww.student.auckland.ac.nz * 3p-frame noop\npayment.flywire.com * 3p-frame noop\nlmarena.ai * 3p-frame noop\n* recaptcha.net * noop\n* onetrust.com * noop\n* stripe.com * noop\n* google.com * noop\n192.168.101.2 * 3p-frame noop\nhydroakri.cc * 3p-frame noop\ntools.chizunet.cc * 3p-frame noop\nwww.figma.com * 3p-frame noop\nauth.openai.com * 3p-frame noop\ncanvas.auckland.ac.nz * 3p-frame noop\n* hcaptcha.com * noop\n* stripecdn.com * noop\n* stripe.network * noop\n* cardinalcommerce.com * noop",
   "urlFilteringString": "",
   "hostnameSwitchesString": "no-large-media: behind-the-scene false\nno-csp-reports: * true\nno-strict-blocking: www.facebook.com true\nno-strict-blocking: wl.spotify.com true",
   "userFilters": ""
