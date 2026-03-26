@@ -110,7 +110,7 @@ with lib; {
           content = ''
             {
               "log": {
-                "level": "info",
+                "level": "error",
                 "timestamp": true
               },
               "dns": {
@@ -299,30 +299,48 @@ with lib; {
                   "auto_route": true,
                   "auto_redirect": true,
                   "strict_route": true,
-                  "stack": "system",
-                  "sniff": true
+                  "stack": "system"
                 },
                 {
                   "type": "mixed",
                   "tag": "mixed-in",
                   "listen": "127.0.0.1",
-                  "listen_port": 2080,
-                  "sniff": true
+                  "listen_port": 2080
                 }
               ],
               "outbounds": ${config.sops.placeholder.sing-box-outbounds},
               "route": {
                 "rules": [
                   {
-                    "inbound": "dns-in",
-                    "action": "hijack-dns"
+                    "inbound": [
+                      "tun-in",
+                      "mixed-in"
+                    ],
+                    "action": "resolve",
+                    "strategy": "prefer_ipv4"
                   },
                   {
-                    "port": 53,
-                    "action": "hijack-dns"
+                    "inbound": [
+                      "tun-in",
+                      "mixed-in"
+                    ],
+                    "action": "sniff",
+                    "timeout": "1s"
                   },
                   {
-                    "protocol": "dns",
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      {
+                        "inbound": "dns-in"
+                      },
+                      {
+                        "port": 53
+                      },
+                      {
+                        "protocol": "dns"
+                      }
+                    ],
                     "action": "hijack-dns"
                   },
                   {
@@ -354,24 +372,28 @@ with lib; {
                     "outbound": "direct"
                   },
                   {
-                    "protocol": [
-                      "bittorrent",
-                      "stun"
-                    ],
-                    "outbound": "webrtc-bt-proxy"
-                  },
-                  {
-                    "domain_keyword": [
-                      "tracker",
-                      "announce",
-                      "torrent"
-                    ],
-                    "outbound": "webrtc-bt-proxy"
-                  },
-                  {
-                    "rule_set": [
-                      "geosite-category-pt",
-                      "geosite-category-public-tracker"
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      {
+                        "protocol": [
+                          "bittorrent",
+                          "stun"
+                        ]
+                      },
+                      {
+                        "domain_keyword": [
+                          "tracker",
+                          "announce",
+                          "torrent"
+                        ]
+                      },
+                      {
+                        "rule_set": [
+                          "geosite-category-pt",
+                          "geosite-category-public-tracker"
+                        ]
+                      }
                     ],
                     "outbound": "webrtc-bt-proxy"
                   },
@@ -447,13 +469,10 @@ with lib; {
                     "rule_set": [
                       "geosite-tld-cn",
                       "geosite-geolocation-cn",
-                      "geosite-cn"
+                      "geosite-cn",
+                      "geoip-cn"
                     ],
-                    "outbound": "direct"
-                  },
-                  {
-                    "rule_set": "geoip-cn",
-                    "outbound": "direct"
+                    "outbound": "cn"
                   }
                 ],
                 "rule_set": [
