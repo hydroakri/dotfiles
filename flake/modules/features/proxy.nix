@@ -138,7 +138,7 @@ with lib; {
                   {
                     "type": "h3",
                     "tag": "dns-remote",
-                    "detour": "default",
+                    "detour": "oversea",
                     "server": "149.112.112.11",
                     "tls": {
                       "enabled": true,
@@ -411,7 +411,7 @@ with lib; {
                         ]
                       }
                     ],
-                    "outbound": "default"
+                    "outbound": "oversea"
                   },
                   {
                     "rule_set": [
@@ -445,7 +445,7 @@ with lib; {
                       "geosite-gfw",
                       "geosite-geolocation-!cn"
                     ],
-                    "outbound": "default"
+                    "outbound": "oversea"
                   },
                   {
                     "type": "logical",
@@ -463,7 +463,7 @@ with lib; {
                         "invert": true
                       }
                     ],
-                    "outbound": "default"
+                    "outbound": "oversea"
                   },
                   {
                     "rule_set": [
@@ -657,7 +657,7 @@ with lib; {
                     "update_interval": "24h0m0s"
                   }
                 ],
-                "final": "default",
+                "final": "oversea",
                 "auto_detect_interface": true,
                 "default_domain_resolver": "dns-local"
               },
