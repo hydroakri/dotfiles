@@ -77,9 +77,7 @@ with lib; {
             server_names = ["cloudflare", "cloudflare-security", "mullvad-adblock-doh", "mullvad-all-doh", "mullvad-base-doh", "mullvad-doh", "mullvad-extend-doh", "nextdns", "nextdns-ultralow", "controld-block-malware", "controld-block-malware-ad", "controld-block-malware-ad-social", "controld-uncensored", "controld-unfiltered", "dns0", "dns0-unfiltered", "adguard-dns-doh", "adguard-dns-unfiltered-doh", "quad9-dnscrypt-ip4-filter-ecs-pri", "quad9-dnscrypt-ip4-filter-pri", "quad9-dnscrypt-ip4-nofilter-ecs-pri", "quad9-dnscrypt-ip4-nofilter-pri", "quad9-doh-ip4-port443-filter-ecs-pri", "quad9-doh-ip4-port443-filter-pri", "quad9-doh-ip4-port443-nofilter-ecs-pri", "quad9-doh-ip4-port443-nofilter-pri", "quad9-doh-ip4-port5053-filter-ecs-pri", "quad9-doh-ip4-port5053-filter-pri", "quad9-doh-ip4-port5053-nofilter-ecs-pri", "quad9-doh-ip4-port5053-nofilter-pri", "rethinkdns-doh", "flymc-doh-8443", "flymc-doh", "zerotrust"]
 
             [blocked_names]
-            blocked_names_file = "${
-              pkgs.writeText "blocklist.txt" (builtins.readFile inputs.adlist)
-            }"
+            blocked_names_file = "/var/lib/dnscrypt-proxy/blocklist.txt"
 
             [monitoring_ui]
             enabled = true
@@ -128,11 +126,8 @@ with lib; {
                     "server": "172.64.36.2",
                     "tls": {
                       "enabled": true,
-                      "server_name": "${config.sops.placeholder.zerotrust}",
-                      "ech": {
-                        "enabled": true,
-                        "query_server_name": "cloudflare-gateway.com"
-                      }
+                      "record_fragment": true,
+                      "server_name": "${config.sops.placeholder.zerotrust}"
                     }
                   },
                   {
@@ -142,11 +137,8 @@ with lib; {
                     "server": "149.112.112.11",
                     "tls": {
                       "enabled": true,
-                      "server_name": "dns11.quad9.net",
-                      "ech": {
-                        "enabled": true,
-                        "query_server_name": "dns.quad9.net"
-                      }
+                      "record_fragment": true,
+                      "server_name": "dns11.quad9.net"
                     }
                   }
                 ],
@@ -665,7 +657,8 @@ with lib; {
                 "cache_file": {
                   "enabled": true,
                   "path": "cache.db",
-                  "store_fakeip": true
+                  "store_fakeip": true,
+                  "store_rdrc": true
                 },
                 "clash_api": {
                   "external_controller": "0.0.0.0:9090",
@@ -709,10 +702,23 @@ with lib; {
       };
     };
 
-    services.dnscrypt-proxy = mkIf config.modules.proxy.enableDnsCryptProxy {
-      enable = true;
-      configFile = config.sops.templates."dnscrypt-proxy.toml".path;
-    };
+    systemd.tmpfiles.rules = mkIf config.modules.proxy.enableDnsCryptProxy
+      [ "d /var/lib/dnscrypt-proxy 0755 dnscrypt-proxy dnscrypt-proxy - -" ];
+    systemd.services.update-dnscrypt-blocklist =
+      mkIf config.modules.proxy.enableDnsCryptProxy {
+        description = "Update dnscrypt-proxy blocklist";
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        script = ''
+          ${pkgs.curl}/bin/curl -L -o /var/lib/dnscrypt-proxy/blocklist.txt https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt
+          # 如果需要，可以在这里重启服务或发送信号
+          # systemctl kill -s HUP dnscrypt-proxy
+        '';
+        serviceConfig = {
+          Type = "oneshot";
+          User = "dnscrypt-proxy";
+        };
+      };
 
     services.sing-box = mkIf config.modules.proxy.enableSingbox {
       enable = true;

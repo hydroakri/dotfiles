@@ -9,11 +9,6 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
-    adlist = {
-      url =
-        "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt";
-      flake = false;
-    };
     geodb = {
       url = "github:Loyalsoldier/v2ray-rules-dat/release";
       flake = false;
@@ -21,7 +16,7 @@
   };
 
   outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database
-    , nixos-generators, adlist, geodb, ... }@inputs:
+    , nixos-generators, geodb, ... }@inputs:
     let
       lib = nixpkgs.lib;
 
