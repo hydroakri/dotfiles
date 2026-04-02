@@ -243,6 +243,7 @@
     darkly-qt5
     darkly
     darkman
+    appimage-run
     ethtool
     iproute2
   ];

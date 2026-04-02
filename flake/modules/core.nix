@@ -77,6 +77,7 @@
     servers = [ ];
     extraConfig = ''
       server 129.6.15.27 iburst
+      server time.grapheneos.org iburst nts
       server time.cloudflare.com iburst nts
       server nts.netnod.se iburst nts
 
