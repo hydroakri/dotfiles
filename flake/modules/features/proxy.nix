@@ -55,6 +55,8 @@ with lib; {
         zerotrust = { };
         sing-box-endpoints = { };
         sing-box-outbounds = { };
+        oracle_ip = { };
+        oracle_domain = { };
       };
       templates = {
         "dnscrypt-proxy.toml" = {
@@ -338,6 +340,23 @@ with lib; {
                   {
                     "rule_set": "adblock-dns",
                     "action": "reject"
+                  },
+                  {
+                    "ip_cidr": [
+                      "100.64.0.0/10",
+                      "fd7a:115c:a1e0::/48"
+                    ],
+                    "outbound": "tailscale-in"
+                  },
+                  {
+                    "type": "logical",
+                    "mode": "or",
+                    "rules": [
+                      { "domain": ["${config.sops.placeholder.oracle_domain}", "geosite-tailscale"] },
+                      { "ip_cidr": ["${config.sops.placeholder.oracle_ip}/32"] },
+                      { "protocol": "stun" }
+                    ],
+                    "outbound": "tailscale-out" 
                   },
                   {
                     "type": "logical",
@@ -646,6 +665,12 @@ with lib; {
                     "type": "remote",
                     "tag": "geosite-category-social-media-!cn@cn",
                     "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-social-media-!cn@cn.srs",
+                    "update_interval": "24h0m0s"
+                  },
+                  {
+                    "type": "remote",
+                    "tag": "geosite-tailscale",
+                    "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tailscale.srs",
                     "update_interval": "24h0m0s"
                   }
                 ],

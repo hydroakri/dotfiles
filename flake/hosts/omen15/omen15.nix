@@ -42,8 +42,9 @@
       enable = true;
       enableGraphicTools = true;
       enableGlance = true;
-      enableGrafana = true;
-      enablePrometheus = true;
+      enableUptime = true;
+      enableGrafana = false;
+      enablePrometheus = false;
     };
   };
   boot = {

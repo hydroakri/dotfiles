@@ -9,6 +9,10 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     geodb = {
       url = "github:Loyalsoldier/v2ray-rules-dat/release";
       flake = false;
@@ -32,6 +36,10 @@
         rpi4 = lib.nixosSystem {
           specialArgs = specialArgsForAll;
           modules = [ ./hosts/rpi4/rpi4.nix ];
+        };
+        oci = lib.nixosSystem {
+          specialArgs = specialArgsForAll;
+          modules = [ ./hosts/oci/oci.nix ];
         };
       };
 

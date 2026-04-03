@@ -11,6 +11,10 @@ with lib; {
       type = types.bool;
       default = false;
     };
+    enableUptime = mkOption {
+      type = types.bool;
+      default = false;
+    };
     enableGrafana = mkOption {
       type = types.bool;
       default = false;
@@ -51,6 +55,11 @@ with lib; {
         read-edid
         clinfo
       ]);
+
+    services.uptime-kuma = mkIf config.modules.utils.enableUptime {
+      enable = true;
+      # 默认监听 3001 端口
+    };
 
     services.prometheus = mkIf config.modules.utils.enablePrometheus {
       enable = true;
@@ -855,28 +864,10 @@ with lib; {
                   type = "monitor";
                   title = "Services";
                   cache = "1m";
-                  sites = [
-                    {
-                      title = "Netgate";
-                      url = "http://192.168.1.1";
-                    }
-                    {
-                      title = "Sing-box";
-                      url = "http://127.0.0.1:9090";
-                    }
-                    {
-                      title = "Adguard Home";
-                      url = "http://127.0.0.1:80";
-                    }
-                    {
-                      title = "Prometheus";
-                      url = "http://127.0.0.1:9005";
-                    }
-                    {
-                      title = "Grafana";
-                      url = "http://127.0.0.1:9006";
-                    }
-                  ];
+                  sites = [{
+                    title = "Uptime Kuma";
+                    url = "http://127.0.0.1:3001";
+                  }];
                 }
                 {
                   type = "markets";

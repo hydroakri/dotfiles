@@ -1,0 +1,403 @@
+{ config, lib, pkgs, inputs, ... }: {
+
+  imports = [
+    # Hardware modules
+    ./disko-config.nix
+    # ./hardware-configuration.nix
+
+    # Core system modules
+    ../../modules/core.nix
+    ../../modules/server.nix
+
+    # Feature modules
+    ../../modules/features/performance.nix
+    ../../modules/features/secrets/secrets.nix
+    ../../modules/features/security.nix
+    ../../modules/features/utils.nix
+
+    # External modules
+    inputs.sops-nix.nixosModules.sops
+    inputs.disko.nixosModules.disko
+  ];
+
+  config = {
+    sops = {
+      secrets = {
+        vault_token = { };
+        cf_oracle = { };
+      };
+      templates."vaultwarden.env" = {
+        owner = config.users.users.vaultwarden.name;
+        content = ''
+          ADMIN_TOKEN=${config.sops.placeholder.vault_token}
+        '';
+      };
+      templates."cf_oracle.env" = {
+        owner = config.users.users.acme.name;
+        content = ''
+          CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder.cf_oracle}
+        '';
+      };
+    };
+    disko.devices.disk.main.device = "/dev/sda";
+    modules = {
+      utils = {
+        enable = true;
+        enableGlance = true;
+        enableUptime = true;
+        enableGrafana = false;
+        enablePrometheus = false;
+        enableGraphicTools = false;
+      };
+    };
+
+    networking.hostName = "oci";
+    nixpkgs.system = "aarch64-linux";
+    # Boot loader configuration for RPi4
+    boot.loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = false;
+    };
+    boot.plymouth.enable = false;
+    boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+    # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+    boot.initrd.supportedFilesystems = [ "vfat" "ext4" "xfs" ];
+    boot.initrd.availableKernelModules = [
+      "virtio_pci"
+      "virtio_scsi"
+      "virtio_blk"
+      "virtio_net"
+      "nvme"
+      "sd_mod"
+      "sr_mod"
+      "xhci_pci"
+      "usbhid"
+    ];
+    console.font = lib.mkForce "ter-v16n";
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+      "net.ipv6.conf.all.forwarding" = 1;
+      "net.ipv6.conf.default.forwarding" = 1;
+
+      # optimize bufferbloat
+      "net.core.netdev_max_backlog" = lib.mkForce 2000;
+      "net.core.rmem_max" = lib.mkForce 4194304;
+      "net.core.wmem_max" = lib.mkForce 4194304;
+      "net.ipv4.tcp_rmem" = lib.mkForce "4096 87380 4194304";
+      "net.ipv4.tcp_wmem" = lib.mkForce "4096 87380 4194304";
+      "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
+    };
+    # boot.kernel.sysfs = {
+    #   # enable net card RPS & XPS
+    #   class.net.enp0s6.queues."rx-0".rps_cpus = "f";
+    # };
+    powerManagement.cpuFreqGovernor = "performance";
+    environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
+    services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
+    networking.interfaces.enp0s6.mtu = 1492;
+    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
+    networking.firewall = {
+      allowedTCPPorts = [ 80 443 ];
+      checkReversePath = false; # For dae transparent netgate, let date pass
+      extraCommands = ''
+        # 确保 SS-2022 加密后的包不会撑爆 MTU
+        iptables -t mangle -D POSTROUTING -o enp0s6 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412 2>/dev/null || true
+        iptables -t mangle -A POSTROUTING -o enp0s6 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412
+      '';
+    };
+
+    environment.systemPackages = with pkgs; [ ethtool ];
+    services.smartd.enable = lib.mkForce false;
+    services.journald.extraConfig = ''
+      Storage=volatile
+      SystemMaxUse=64M
+      MaxRetentionSec=1week
+    '';
+
+    users.users.${config.mainUser} = {
+      shell = pkgs.zsh;
+      isNormalUser = true;
+      description = "${config.mainUser}";
+      extraGroups = [ "networkmanager" "wheel" ];
+    };
+
+    services.tailscale.enable = true;
+    services.headscale = {
+      enable = true;
+      address = "127.0.0.1";
+      port = 6313;
+      settings = {
+        server_url = "https://headscale.hydroakri.cc";
+        dns = {
+          magic_dns = true;
+          base_domain = "ts.hydroakri.cc";
+          nameservers.global = [ "172.64.36.2" "149.112.112.11" ];
+        };
+        prefixes = {
+          v4 = "100.64.0.0/10";
+          v6 = "fd7a:115c:a1e0::/48";
+        };
+      };
+    };
+
+    services.searx = {
+      enable = true;
+      package = pkgs.searxng;
+      redisCreateLocally = true;
+      settings = {
+        server = {
+          port = 8888;
+          bind_address = "127.0.0.1";
+          secret_key =
+            "j9y78uU7iQ9sXDOE7/n0QNcWyKyOczKIX/TZIWjF2k05nnFMqfBA1qVGAxLdBlWm";
+          base_url = "https://searx.hydroakri.cc";
+          method = "POST";
+          image_proxy = true;
+        };
+        search = {
+          safe_search = 0;
+          autocomplete = "duckduckgo";
+        };
+        ui = {
+          hotkeys = "default";
+          contact_url = "null";
+        };
+        enabled_plugins = [ "Tracker Protection" "Hostnames replace" ];
+
+        engines = [
+          {
+            name = "google";
+            disabled = true;
+          }
+          {
+            name = "bing";
+            disabled = true;
+          }
+          {
+            name = "yahoo";
+            disabled = true;
+          }
+          {
+            name = "yandex";
+            disabled = true;
+          }
+          {
+            name = "duckduckgo";
+            disabled = false;
+            weight = 2;
+          }
+          {
+            name = "startpage";
+            disabled = false;
+            weight = 2;
+          }
+          {
+            name = "brave";
+            disabled = false;
+            weight = 2;
+          }
+        ];
+      };
+    };
+
+    services.filebrowser = {
+      enable = true;
+
+      settings = {
+        port = 8082;
+        address = "127.0.0.1";
+        database = "/var/lib/filebrowser/filebrowser.db";
+        root = "/var/lib/filebrowser/my-files";
+        noauth = true;
+      };
+    };
+
+    services.vaultwarden = {
+      enable = true;
+      dbBackend = "sqlite";
+      environmentFile = config.sops.templates."vaultwarden.env".path;
+      config = {
+        DOMAIN = "https://vault.hydroakri.cc";
+        SIGNUPS_ALLOWED = false; # 建议直接关掉，或者注册完就关掉
+        ROCKET_ADDRESS = "127.0.0.1";
+        ROCKET_PORT = 8222;
+      };
+    };
+
+    services.stirling-pdf = {
+      enable = true;
+      environment = {
+        SERVER_PORT = 8081;
+        SECURITY_ENABLE_LOGIN = "false";
+        INSTALLATION_NAME = "Private PDF Station";
+        APP_LOCALE = "zh_CN";
+      };
+    };
+
+    services.minecraft-server = {
+      enable = true;
+      eula = true;
+      package = pkgs.papermc;
+      jvmOpts = toString [
+        "-Xms8G"
+        "-Xmx8G"
+        "-XX:+UseZGC"
+        "-XX:+ZGenerational"
+        "-XX:+UnlockExperimentalVMOptions"
+        "-XX:+UnlockDiagnosticVMOptions"
+        "-XX:+AlwaysActAsServerClassMachine"
+        "-XX:+AlwaysPreTouch"
+        "-XX:+DisableExplicitGC"
+        "-XX:+UseNUMA"
+        "-XX:NmethodSweepActivity=1"
+        "-XX:ReservedCodeCacheSize=400M"
+        "-XX:NonNMethodCodeHeapSize=12M"
+        "-XX:ProfiledCodeHeapSize=194M"
+        "-XX:NonProfiledCodeHeapSize=194M"
+        "-XX:-DontCompileHugeMethods"
+        "-XX:MaxNodeLimit=240000"
+        "-XX:NodeLimitFudgeFactor=8000"
+        "-XX:+UseVectorCmov"
+        "-XX:+PerfDisableSharedMem"
+        "-XX:+UseFastUnorderedTimeStamps"
+        "-XX:+UseCriticalJavaThreadPriority"
+        "-XX:ThreadPriorityPolicy=1"
+        "-XX:AllocatePrefetchStyle=3"
+      ];
+      openFirewall = true;
+      declarative = true;
+      serverProperties = {
+        server-port = 25565;
+        motd = ":3";
+        difficulty = "normal";
+        gamemode = "survival";
+        max-players = 10;
+        view-distance = 12;
+        simulation-distance = 8;
+
+        online-mode = false;
+      };
+    };
+
+    security.acme = {
+      acceptTerms = true;
+      defaults.email = "admin@hydroakri.cc";
+
+      certs."hydroakri.cc" = {
+        domain = "*.hydroakri.cc";
+        dnsProvider = "cloudflare";
+        # 记得将 Cloudflare API Token 放在这个文件里，并设置权限 600
+        environmentFile = config.sops.templates."cf_oracle.env".path;
+        reloadServices = [ "nginx.service" ];
+      };
+    };
+    users.users.nginx.extraGroups = [ "acme" ];
+    services.nginx = {
+      enable = true;
+      recommendedProxySettings = true;
+      recommendedTlsSettings = true;
+      recommendedGzipSettings = true;
+      recommendedOptimisation = true;
+
+      virtualHosts."headscale.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:6313";
+          proxyWebsockets = true;
+        };
+      };
+      virtualHosts."searx.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8888";
+          proxyWebsockets = true;
+        };
+        extraConfig = ''
+          allow 100.64.0.0/10;
+          allow fd7a:115c:a1e0::/48;
+          deny all;
+        '';
+      };
+
+      virtualHosts."file.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        extraConfig = "allow 100.64.0.0/10; deny all;";
+        locations."/" = { proxyPass = "http://127.0.0.1:8082"; };
+      };
+
+      virtualHosts."vault.hydroakri.cc" = {
+        # enableACME = true;
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8222";
+          proxyWebsockets = true;
+        };
+      };
+
+      virtualHosts."pdf.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        extraConfig = ''
+          allow 100.64.0.0/10;
+          deny all;
+        '';
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8081";
+          proxyWebsockets = true;
+        };
+      };
+
+      virtualHosts."tools.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        extraConfig = ''
+          allow 100.64.0.0/10;
+          deny all;
+        '';
+        root = "${pkgs.it-tools}/lib";
+        locations."/" = {
+          index = "index.html";
+          tryFiles = "$uri $uri/ /index.html";
+          extraConfig = ''
+            add_header X-Frame-Options "SAMEORIGIN";
+            add_header X-Content-Type-Options "nosniff";
+          '';
+        };
+      };
+
+      virtualHosts."glance.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8080";
+          proxyWebsockets = true;
+        };
+        extraConfig = ''
+          allow 100.64.0.0/10;
+          allow fd7a:115c:a1e0::/48;
+          deny all;
+        '';
+      };
+
+      virtualHosts."status.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:3001";
+          proxyWebsockets = true;
+        };
+      };
+    };
+
+  };
+
+}

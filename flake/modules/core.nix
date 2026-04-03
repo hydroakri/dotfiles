@@ -62,8 +62,12 @@
     } # DDS 默认发现端口 allow multi-cast
       ];
     extraCommands = ''
-      ip46tables -A nixos-fw -d 224.0.0.0/4 -p udp -j nixos-fw-accept
-      ip46tables -A nixos-fw -p igmp -j nixos-fw-accept
+      # --- IPv4 组播规则 ---
+      iptables -A nixos-fw -d 224.0.0.0/4 -p udp -j nixos-fw-accept
+      iptables -A nixos-fw -p igmp -j nixos-fw-accept
+
+      # --- IPv6 组播规则 (可选，如果你需要 IPv6 通信) ---
+      ip6tables -A nixos-fw -d ff00::/8 -p udp -j nixos-fw-accept
     '';
     checkReversePath = false;
   };
