@@ -18,9 +18,11 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
     inputs.disko.nixosModules.disko
+    inputs.nix-minecraft.nixosModules.minecraft-servers
   ];
 
   config = {
+    nixpkgs.overlays = [ inputs.nix-minecraft.overlay ];
     sops = {
       secrets = {
         vault_token = { };
@@ -234,48 +236,49 @@
       };
     };
 
-    services.minecraft-server = {
+    services.minecraft-servers = {
       enable = true;
       eula = true;
-      package = pkgs.papermc;
-      jvmOpts = toString [
-        "-Xms8G"
-        "-Xmx8G"
-        "-XX:+UseZGC"
-        "-XX:+ZGenerational"
-        "-XX:+UnlockExperimentalVMOptions"
-        "-XX:+UnlockDiagnosticVMOptions"
-        "-XX:+AlwaysActAsServerClassMachine"
-        "-XX:+AlwaysPreTouch"
-        "-XX:+DisableExplicitGC"
-        "-XX:+UseNUMA"
-        "-XX:NmethodSweepActivity=1"
-        "-XX:ReservedCodeCacheSize=400M"
-        "-XX:NonNMethodCodeHeapSize=12M"
-        "-XX:ProfiledCodeHeapSize=194M"
-        "-XX:NonProfiledCodeHeapSize=194M"
-        "-XX:-DontCompileHugeMethods"
-        "-XX:MaxNodeLimit=240000"
-        "-XX:NodeLimitFudgeFactor=8000"
-        "-XX:+UseVectorCmov"
-        "-XX:+PerfDisableSharedMem"
-        "-XX:+UseFastUnorderedTimeStamps"
-        "-XX:+UseCriticalJavaThreadPriority"
-        "-XX:ThreadPriorityPolicy=1"
-        "-XX:AllocatePrefetchStyle=3"
-      ];
       openFirewall = true;
-      declarative = true;
-      serverProperties = {
-        server-port = 25565;
-        motd = ":3";
-        difficulty = "normal";
-        gamemode = "survival";
-        max-players = 10;
-        view-distance = 12;
-        simulation-distance = 8;
-
-        online-mode = false;
+      servers.myserver = {
+        enable = true;
+        package = pkgs.neoforgeServers.neoforge-1_21_1-21_1_219;
+        jvmOpts = toString [
+          "-Xms8G"
+          "-Xmx8G"
+          "-XX:+UseZGC"
+          "-XX:+ZGenerational"
+          "-XX:+UnlockExperimentalVMOptions"
+          "-XX:+UnlockDiagnosticVMOptions"
+          "-XX:+AlwaysActAsServerClassMachine"
+          "-XX:+AlwaysPreTouch"
+          "-XX:+DisableExplicitGC"
+          "-XX:+UseNUMA"
+          "-XX:NmethodSweepActivity=1"
+          "-XX:ReservedCodeCacheSize=400M"
+          "-XX:NonNMethodCodeHeapSize=12M"
+          "-XX:ProfiledCodeHeapSize=194M"
+          "-XX:NonProfiledCodeHeapSize=194M"
+          "-XX:-DontCompileHugeMethods"
+          "-XX:MaxNodeLimit=240000"
+          "-XX:NodeLimitFudgeFactor=8000"
+          "-XX:+UseVectorCmov"
+          "-XX:+PerfDisableSharedMem"
+          "-XX:+UseFastUnorderedTimeStamps"
+          "-XX:+UseCriticalJavaThreadPriority"
+          "-XX:ThreadPriorityPolicy=1"
+          "-XX:AllocatePrefetchStyle=3"
+        ];
+        serverProperties = {
+          server-port = 25565;
+          motd = ":3";
+          difficulty = "normal";
+          gamemode = "survival";
+          max-players = 10;
+          view-distance = 12;
+          simulation-distance = 8;
+          online-mode = false;
+        };
       };
     };
 

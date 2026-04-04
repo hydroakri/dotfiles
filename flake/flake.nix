@@ -17,10 +17,11 @@
       url = "github:Loyalsoldier/v2ray-rules-dat/release";
       flake = false;
     };
+    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
   };
 
   outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database
-    , nixos-generators, geodb, ... }@inputs:
+    , nixos-generators, geodb, nix-minecraft, ... }@inputs:
     let
       lib = nixpkgs.lib;
 
