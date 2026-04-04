@@ -101,9 +101,12 @@
     };
 
   # Secret service (keyring) use keepassxc
-  services.gnome.gnome-keyring.enable = false;
-  security.pam.services.login.enableGnomeKeyring = false;
-  services.passSecretService.enable = false;
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.login.enableGnomeKeyring = true;
+  services.passSecretService.enable = true;
+  services.gnome.gcr-ssh-agent.enable =
+    false; # disable ssh function managed by gnome-keyring
+  services.dbus.packages = [ pkgs.gcr ];
 
   # For earlyoom and smartd notices
   services.systembus-notify.enable = lib.mkForce true;
