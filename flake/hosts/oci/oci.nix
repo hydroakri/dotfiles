@@ -142,11 +142,21 @@
       };
     };
 
+    services.cloudflare-warp.enable = true;
     services.searx = {
       enable = true;
       package = pkgs.searxng;
       redisCreateLocally = true;
       settings = {
+        outgoing = {
+          proxies = {
+            http = "socks5h://127.0.0.1:40000";
+            https = "socks5h://127.0.0.1:40000";
+          };
+          request_timeout = 5.0;
+          pool_connections = 100;
+          pool_maxsize = 10;
+        };
         server = {
           port = 8888;
           bind_address = "127.0.0.1";
@@ -159,13 +169,18 @@
         search = {
           safe_search = 0;
           autocomplete = "duckduckgo";
+          favicon_resolver = "duckduckgo";
         };
         ui = {
           hotkeys = "default";
           contact_url = "null";
+          show_thumbnails = true;
+          theme_args = {
+            simple_style = "auto"; # 或者是 "dark" / "light"
+          };
         };
-        enabled_plugins = [ "Tracker Protection" "Hostnames replace" ];
-
+        enabled_plugins =
+          [ "Tracker Protection" "Hostnames replace" "Favicons" ];
         engines = [
           {
             name = "google";
@@ -318,18 +333,24 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:8888";
           proxyWebsockets = true;
+          extraConfig = ''
+            proxy_cookie_path / "/; secure; SameSite=Lax";
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $host;
+          '';
         };
-        extraConfig = ''
-          allow 100.64.0.0/10;
-          allow fd7a:115c:a1e0::/48;
-          deny all;
-        '';
       };
 
       virtualHosts."file.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        extraConfig = "allow 100.64.0.0/10; deny all;";
+        extraConfig = ''
+          allow 100.64.0.0/10;
+          allow fd7a:115c:a1e0::/48;
+          deny all;
+        '';
         locations."/" = { proxyPass = "http://127.0.0.1:8082"; };
       };
 
@@ -349,6 +370,7 @@
         forceSSL = true;
         extraConfig = ''
           allow 100.64.0.0/10;
+          allow fd7a:115c:a1e0::/48;
           deny all;
         '';
         locations."/" = {
@@ -360,10 +382,6 @@
       virtualHosts."tools.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        extraConfig = ''
-          allow 100.64.0.0/10;
-          deny all;
-        '';
         root = "${pkgs.it-tools}/lib";
         locations."/" = {
           index = "index.html";
