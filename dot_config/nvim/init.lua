@@ -79,7 +79,7 @@ vim.opt.list = true
 -- vim.opt.listchars:append("space:␣")
 vim.opt.listchars:append("eol:↵")
 -- vim.opt.listchars:append("tab:▏ ")
-vim.opt.clipboard = unamedplus --see :help clipboard
+vim.opt.clipboard = "unnamedplus" --see :help clipboard
 vim.opt.cmdheight = 0
 -- 开启 Folding
 vim.o.foldcolumn = "1" -- '0' is not bad
@@ -1290,24 +1290,52 @@ require("lazy").setup({
 		{
 			"catppuccin/nvim",
 			name = "catppuccin",
-			setup = function()
-				-- change theme accroding to system color mode
-				local handle = io.popen([[
-                THEME=$(gsettings get org.gnome.desktop.interface color-scheme) echo $THEME ]])
-				local theme = handle:read("*a")
-				handle:close()
-				if string.match(theme, "prefer-dark") then
-					vim.o.background = "dark"
-				else
-					vim.o.background = "light"
+			lazy = false, -- 主题必须立即加载
+			priority = 1000, -- 最高优先级
+			init = function()
+				local handle = io.popen("gsettings get org.gnome.desktop.interface color-scheme")
+				if handle then
+					local theme = handle:read("*a")
+					handle:close()
+					if theme and string.match(theme, "prefer-dark") then
+						vim.o.background = "dark"
+					else
+						vim.o.background = "light"
+					end
 				end
 			end,
+			config = function(_, opts)
+				require("catppuccin").setup(opts)
+				vim.cmd.colorscheme("catppuccin")
+			end,
 			opts = {
-				background = { -- :h background
-					light = "latte",
-					dark = "mocha",
+				compile_path = vim.fn.stdpath("cache") .. "/catppuccin",
+				compile = false, -- 彻底禁用编译缓存以解决 "could not load cache" 并确保颜色覆盖生效
+				transparent_background = false,
+				show_end_of_buffer = false,
+				term_colors = true,
+				dim_inactive = {
+					enabled = false,
+					shade = "dark",
+					percentage = 0.15,
 				},
-				-- transparent_background = true,
+				no_italic = false,
+				no_bold = false,
+				no_underline = false,
+				styles = {
+					comments = { "italic" },
+					conditionals = { "italic" },
+					loops = {},
+					functions = {},
+					keywords = {},
+					strings = {},
+					variables = {},
+					numbers = {},
+					booleans = {},
+					properties = {},
+					types = {},
+					operators = {},
+				},
 				color_overrides = {
 					all = {
 						rosewater = "#CE5D97",
@@ -1580,4 +1608,3 @@ require("lazy").setup({
 		},
 	},
 })
-vim.cmd("colorscheme catppuccin")

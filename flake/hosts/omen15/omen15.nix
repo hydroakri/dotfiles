@@ -134,6 +134,7 @@
     # file manager
     kdePackages.partitionmanager
     kdePackages.kpmcore
+    opencode-desktop
 
     # Wayland compositor
     # xwayland-satellite
