@@ -27,6 +27,11 @@
       secrets = {
         vault_token = { };
         cf_oracle = { };
+        r2_access_key_id = { };
+        r2_secret_access_key = { };
+        r2_endpoint = { };
+        r2_bucket = { };
+        webdav_htpasswd = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -39,6 +44,22 @@
         content = ''
           CLOUDFLARE_DNS_API_TOKEN=${config.sops.placeholder.cf_oracle}
         '';
+      };
+      templates."rclone-r2.env" = {
+        owner = "nginx";
+        content = ''
+          RCLONE_CONFIG_R2_TYPE=s3
+          RCLONE_CONFIG_R2_PROVIDER=Cloudflare
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RCLONE_CONFIG_R2_ENDPOINT=${config.sops.placeholder.r2_endpoint}
+          R2_BUCKET_NAME=${config.sops.placeholder.r2_bucket}
+          RCLONE_CONFIG_R2_ACL=private
+        '';
+      };
+      templates."webdav-auth" = {
+        owner = config.services.nginx.user;
+        content = config.sops.placeholder.webdav_htpasswd;
       };
     };
     disko.devices.disk.main.device = "/dev/sda";
@@ -108,7 +129,11 @@
       '';
     };
 
-    environment.systemPackages = with pkgs; [ ethtool ];
+    environment.systemPackages = with pkgs; [
+      ethtool
+      rclone
+      apacheHttpd # 为了方便以后在命令行生成 htpasswd
+    ];
     services.smartd.enable = lib.mkForce false;
     services.journald.extraConfig = ''
       Storage=volatile
@@ -251,6 +276,25 @@
       };
     };
 
+    systemd.services.rclone-webdav = {
+      after = [ "network.target" "sops-nix.service" ]; # 确保在 sops 渲染后启动
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        EnvironmentFile = config.sops.templates."rclone-r2.env".path;
+        CacheDirectory = "rclone-webdav";
+        User = "nginx";
+        Group = "nginx";
+        Restart = "always";
+      };
+      script = ''
+        ${pkgs.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME \
+          --addr 127.0.0.1:8083 \
+          --vfs-cache-mode writes \
+          --cache-dir /var/cache/rclone-webdav \
+          --dir-cache-time 1m
+      '';
+    };
+
     services.minecraft-servers = {
       enable = true;
       eula = true;
@@ -316,6 +360,18 @@
       recommendedTlsSettings = true;
       recommendedGzipSettings = true;
       recommendedOptimisation = true;
+      commonHttpConfig = ''
+        client_header_buffer_size 128k;
+        large_client_header_buffers 8 128k;
+        http2_max_header_size 128k;
+        http2_max_field_size 128k;
+        proxy_headers_hash_max_size 4096;
+        proxy_headers_hash_bucket_size 256;
+        map $http_destination $webdav_dest {
+            ~^https://(.*)$ http://$1;
+            default $http_destination;
+        }
+      '';
 
       virtualHosts."headscale.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
@@ -415,6 +471,29 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:3001";
           proxyWebsockets = true;
+        };
+      };
+
+      virtualHosts."dav.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8083";
+          basicAuthFile = config.sops.templates."webdav-auth".path;
+
+          extraConfig = ''
+            client_max_body_size 0;
+
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+
+            proxy_set_header Destination $webdav_dest;
+
+            proxy_set_header Authorization "";
+
+            proxy_buffering off;
+            proxy_request_buffering off;
+          '';
         };
       };
     };
