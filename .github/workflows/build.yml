@@ -11,16 +11,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 1. 编译你的甲骨文服务器 (ARM 架构)
-          # 使用 GitHub 免费的原生 ARM runner，速度极快！
           - arch: aarch64-linux
             runner: ubuntu-24.04-arm
             target: .#nixosConfigurations.oci.config.system.build.toplevel
 
-          # 2. 如果你有其他 x86 服务器或桌面，可以在这里加 (可选)
-          # - arch: x86_64-linux
-          #   runner: ubuntu-latest
-          #   target: .#nixosConfigurations.my-desktop.config.system.build.toplevel
+          - arch: aarch64-linux
+            runner: ubuntu-24.04-arm
+            target: .#nixosConfigurations.rpi4.config.system.build.toplevel
+          
+          - arch: x86_64-linux
+            runner: ubuntu-latest
+            target: .#nixosConfigurations.omen15.config.system.build.toplevel
 
     runs-on: ${{ matrix.runner }}
 
