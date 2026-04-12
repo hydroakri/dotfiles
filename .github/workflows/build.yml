@@ -34,7 +34,7 @@ jobs:
           extra-conf: |
             # 允许 Github Action 在构建自身时也白嫖你的缓存（加速构建）
             substituters = https://cache.nixos.org https://cache.hydroakri.cc/cachix
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cachix:这里替换成你第一步获取的公钥
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4=
 
       # 魔法缓存：缓存 Nix 的求值过程，进一步提速
       - name: Magic Nix Cache
