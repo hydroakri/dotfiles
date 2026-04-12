@@ -50,6 +50,7 @@ jobs:
 
       # 核心构建步骤
       - name: Build System (${{ matrix.arch }})
+        working-directory: ./flake
         run: |
           # 开始编译！ryanccn/attic-action 会在后台自动监听
           # 只要有新的 store path 产生，它就会在构建完成后自动将其切片并 push 到你的 R2 桶里！
