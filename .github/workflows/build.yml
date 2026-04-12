@@ -1,0 +1,56 @@
+name: Build and Push to Attic Cache
+
+on:
+  push:
+    branches: [ main ] # 每次推送到主分支时触发
+  workflow_dispatch: # 允许在 GitHub 网页端手动点击运行
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1. 编译你的甲骨文服务器 (ARM 架构)
+          # 使用 GitHub 免费的原生 ARM runner，速度极快！
+          - arch: aarch64-linux
+            runner: ubuntu-24.04-arm
+            target: .#nixosConfigurations.oci.config.system.build.toplevel
+
+          # 2. 如果你有其他 x86 服务器或桌面，可以在这里加 (可选)
+          # - arch: x86_64-linux
+          #   runner: ubuntu-latest
+          #   target: .#nixosConfigurations.my-desktop.config.system.build.toplevel
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            # 允许 Github Action 在构建自身时也白嫖你的缓存（加速构建）
+            substituters = https://cache.nixos.org https://cache.hydroakri.cc/cachix
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cachix:这里替换成你第一步获取的公钥
+
+      # 魔法缓存：缓存 Nix 的求值过程，进一步提速
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # 配置 Attic 并自动接管推送！
+      - name: Setup Attic Cache
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: https://cache.hydroakri.cc
+          cache: cachix
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      # 核心构建步骤
+      - name: Build System (${{ matrix.arch }})
+        run: |
+          # 开始编译！ryanccn/attic-action 会在后台自动监听
+          # 只要有新的 store path 产生，它就会在构建完成后自动将其切片并 push 到你的 R2 桶里！
+          nix build ${{ matrix.target }} --accept-flake-config
