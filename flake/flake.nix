@@ -34,9 +34,13 @@
           specialArgs = specialArgsForAll;
           modules = [ ./hosts/omen15/omen15.nix ];
         };
-        rpi4 = lib.nixosSystem {
+        rpi4-side-gateway = lib.nixosSystem {
           specialArgs = specialArgsForAll;
-          modules = [ ./hosts/rpi4/rpi4.nix ];
+          modules = [ ./hosts/rpi4/rpi4-side-gateway.nix ];
+        };
+        rpi4-switch = lib.nixosSystem {
+          specialArgs = specialArgsForAll;
+          modules = [ ./hosts/rpi4/rpi4-switch.nix ];
         };
         oci = lib.nixosSystem {
           specialArgs = specialArgsForAll;

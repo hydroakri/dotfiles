@@ -59,7 +59,7 @@
       grub.enable = false;
     };
     boot.plymouth.enable = false;
-    boot.kernelPackages = lib.mkForce pkgs.linuxPackages_rpi4;
+    boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
     boot.initrd.supportedFilesystems = [ "vfat" "ext4" ];
     console.font = lib.mkForce "ter-v16n";
