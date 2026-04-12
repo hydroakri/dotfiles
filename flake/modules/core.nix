@@ -8,11 +8,13 @@
       auto-optimise-store = true;
       experimental-features = [ "nix-command" "flakes" ];
       substituters = [
+        "https://cache.hydroakri.cc/cachix"
         # "https://mirrors.ustc.edu.cn/nix-channels/store"
         "https://cache.nixos.org/"
         "https://ros.cachix.org"
       ];
       trusted-public-keys = [
+        "cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo="
       ];
