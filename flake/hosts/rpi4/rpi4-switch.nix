@@ -22,7 +22,6 @@
   ];
 
   config = {
-    # 关闭所有代理模块，恢复为纯净路由器
     modules = {
       proxy = {
         enable = false;
@@ -129,7 +128,7 @@
           ssid = "RPi4_WIFI";
           authentication = {
             mode = "wpa2-sha1";
-            wpaPassword = "1234567890"; # 请修改密码
+            wpaPassword = "1234567890";
           };
         };
       };

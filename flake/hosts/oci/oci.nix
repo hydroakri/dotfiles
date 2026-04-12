@@ -33,6 +33,7 @@
         r2_bucket = { };
         webdav_htpasswd = { };
         attic_jwt_secret = { };
+        searx_secret_key = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -219,8 +220,7 @@
         server = {
           port = 8888;
           bind_address = "127.0.0.1";
-          secret_key =
-            "j9y78uU7iQ9sXDOE7/n0QNcWyKyOczKIX/TZIWjF2k05nnFMqfBA1qVGAxLdBlWm";
+          secret_key = config.sops.placeholder.searx_secret_key;
           base_url = "https://searx.hydroakri.cc";
           method = "POST";
           image_proxy = true;
@@ -283,7 +283,7 @@
         address = "127.0.0.1";
         database = "/var/lib/filebrowser/filebrowser.db";
         root = "/var/lib/filebrowser/my-files";
-        noauth = true;
+        noauth = false;
       };
     };
 
@@ -303,7 +303,7 @@
       enable = true;
       environment = {
         SERVER_PORT = 8081;
-        SECURITY_ENABLE_LOGIN = "false";
+        SECURITY_ENABLE_LOGIN = "true";
         INSTALLATION_NAME = "Private PDF Station";
         APP_LOCALE = "zh_CN";
       };
@@ -435,6 +435,7 @@
         http2_max_field_size 128k;
         proxy_headers_hash_max_size 4096;
         proxy_headers_hash_bucket_size 256;
+
         map $http_destination $webdav_dest {
             ~^https://(.*)$ http://$1;
             default $http_destination;
