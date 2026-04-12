@@ -32,6 +32,7 @@
         r2_endpoint = { };
         r2_bucket = { };
         webdav_htpasswd = { };
+        attic_jwt_secret = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -61,6 +62,39 @@
         owner = config.services.nginx.user;
         content = config.sops.placeholder.webdav_htpasswd;
       };
+      templates."attic-env" = {
+        content = ''
+          ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64=${config.sops.placeholder.attic_jwt_secret}
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+        '';
+      };
+      # 渲染完整的 TOML 配置文件
+      templates."attic-server.toml" = {
+        owner = "atticd";
+        group = "atticd";
+        restartUnits = [ "atticd.service" ];
+        content = ''
+          listen = "127.0.0.1:8088"
+          allowed-hosts =["cache.hydroakri.cc"]
+
+          [database]
+          url = "postgresql:///atticd?host=/run/postgresql"
+
+          [storage]
+          type = "s3"
+          region = "us-east-1"
+          bucket = "${config.sops.placeholder.r2_bucket}"
+          endpoint = "${config.sops.placeholder.r2_endpoint}"
+
+          [chunking]
+          nar-size-threshold = 65536
+          min-size = 16384
+          avg-size = 65536
+          max-size = 262144
+        '';
+      };
+
     };
     disko.devices.disk.main.device = "/dev/sda";
     modules = {
@@ -244,7 +278,6 @@
 
     services.filebrowser = {
       enable = true;
-
       settings = {
         port = 8082;
         address = "127.0.0.1";
@@ -287,12 +320,47 @@
         Restart = "always";
       };
       script = ''
-        ${pkgs.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME \
+        ${pkgs.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME/webdav \
           --addr 127.0.0.1:8083 \
           --vfs-cache-mode writes \
           --cache-dir /var/cache/rclone-webdav \
           --dir-cache-time 1m
       '';
+    };
+
+    services.atticd = {
+      enable = true;
+      environmentFile = config.sops.templates."attic-env".path;
+    };
+    users.users.atticd = {
+      isSystemUser = true;
+      group = "atticd";
+    };
+    users.groups.atticd = { };
+    systemd.services.atticd = {
+      after = [ "sops-nix.service" ];
+      wants = [ "sops-nix.service" ];
+      restartTriggers = [
+        config.sops.templates."attic-server.toml".path
+        config.sops.templates."attic-env".path
+      ];
+
+      serviceConfig = {
+        DynamicUser = lib.mkForce false;
+        EnvironmentFile = config.sops.templates."attic-env".path;
+        ExecStart = lib.mkForce
+          "${config.services.atticd.package}/bin/atticd -f ${
+            config.sops.templates."attic-server.toml".path
+          } --mode monolithic";
+      };
+    };
+    services.postgresql = {
+      enable = true;
+      ensureDatabases = [ "atticd" ];
+      ensureUsers = [{
+        name = "atticd";
+        ensureDBOwnership = true;
+      }];
     };
 
     services.minecraft-servers = {
@@ -496,6 +564,23 @@
           '';
         };
       };
+
+      virtualHosts."cache.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8088";
+          extraConfig = ''
+            client_max_body_size 512M;
+            proxy_set_header Authorization $http_authorization;
+            proxy_pass_header Authorization;
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+          '';
+        };
+      };
+
     };
 
   };

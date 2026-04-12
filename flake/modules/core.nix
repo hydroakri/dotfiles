@@ -155,7 +155,7 @@
       lazygit
       ripgrep
       starship
-      fastfetch
+      attic-client
       # nix utils
       nix-tree
       nix-output-monitor
