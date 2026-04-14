@@ -59,7 +59,7 @@ with lib; {
         oracle_domain = { };
       };
       templates = {
-        "dnscrypt-proxy.toml" = {
+        "dnscrypt-proxy.toml" = lib.mkIf config.modules.proxy.enableDnsCryptProxy {
           mode = "0444";
           content = ''
             listen_addresses = ['[::]:53']
@@ -104,7 +104,7 @@ with lib; {
             stamp = "${config.sops.placeholder.doh_stamp}"
           '';
         };
-        "config.json" = {
+        "config.json" = lib.mkIf config.modules.proxy.enableSingbox {
           owner = "sing-box"; # 确保 sing-box 进程有权读取
           restartUnits = [ "sing-box.service" ]; # 模板变化时重启服务
           content = ''

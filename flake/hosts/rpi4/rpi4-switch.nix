@@ -24,9 +24,9 @@
   config = {
     modules = {
       proxy = {
-        enable = false;
+        enable = true;
         enableAdGuardHome = false;
-        enableDnsCryptProxy = false;
+        enableDnsCryptProxy = true;
         enableSingbox = false;
         enableDae = false;
       };
@@ -119,6 +119,8 @@
       trustedInterfaces = [ "enp1s0u1" ];
     };
 
+    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
+
     # 6. 配置 DHCP 和 DNS 服务 (dnsmasq) 
     services.resolved.enable = lib.mkForce false;
     services.dnsmasq = {
@@ -129,10 +131,7 @@
         bind-dynamic = true;
         dhcp-authoritative = true;
         dhcp-range = "192.168.10.10,192.168.10.100,24h";
-        port = 53;
-        domain-needed = true;
-        bogus-priv = true;
-        server = [ "172.64.36.2" "149.112.112.11" ];
+        port = 0;
       };
     };
 
