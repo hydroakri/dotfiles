@@ -39,7 +39,7 @@
       };
     };
 
-    networking.hostName = "rpi4";
+    networking.hostName = "rpi4-switch";
     nixpkgs.system = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {
@@ -78,14 +78,14 @@
       # enable net card RPS & XPS
       class.net.end0.queues."rx-0".rps_cpus = "f";
 
-      class.net.wlan0.queues."rx-0".rps_cpus = "f";
-      class.net.wlan0.queues."tx-0".xps_cpus = "f";
+      class.net.enp1s0u1.queues."rx-0".rps_cpus = "f";
+      class.net.enp1s0u1.queues."tx-0".xps_cpus = "f";
     };
     powerManagement.cpuFreqGovernor = "performance";
     environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
     services.irqbalance.enable = lib.mkForce false;
 
-    networking.networkmanager.unmanaged = [ "end0" "vlan10" "wlan0" ];
+    networking.networkmanager.unmanaged = [ "end0" "vlan10" "enp1s0u1" ];
     networking.wireless.enable = lib.mkForce false;
 
     # 1. 物理网卡与 VLAN 10 设置 (WAN口 / 光纤直连)
@@ -97,41 +97,26 @@
     };
     networking.interfaces.end0.useDHCP = false;
     networking.interfaces.vlan10.useDHCP = true; # DHCP 获取外网 IP (IPoE免密)
-    # 2. 局域网接口 (wlan0) 强制固定 IP
-    networking.interfaces.wlan0.useDHCP = false;
-    networking.interfaces.wlan0.ipv4.addresses = lib.mkForce [{
+    # 2. 局域网接口 (enp1s0u1) 强制固定 IP
+    networking.interfaces.enp1s0u1.useDHCP = false;
+    networking.interfaces.enp1s0u1.ipv4.addresses = lib.mkForce [{
       address = "192.168.10.1";
       prefixLength = 24;
     }];
-    # 3. NAT 流量伪装 (把手机的流量伪装成光纤接口的流量)
+    # 3. NAT 流量伪装
     networking.nat = {
       enable = true;
       externalInterface = "vlan10";
-      internalInterfaces = [ "wlan0" ];
+      internalInterfaces = [ "enp1s0u1" ];
+      # 开启 MSS Clamping，防止因 VLAN 带来的 MTU 问题导致网页无法打开
+      extraCommands = ''
+        iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -o vlan10 -j TCPMSS --clamp-mss-to-pmtu
+      '';
     };
     # 4. 防火墙完全放行局域网
     networking.firewall = {
       enable = true;
-      trustedInterfaces = [ "wlan0" ];
-    };
-
-    services.hostapd = {
-      enable = true;
-      radios.wlan0 = {
-        band = "2g";
-        channel = 6;
-        countryCode = "NZ";
-
-        wifi4.enable = true;
-
-        networks.wlan0 = {
-          ssid = "RPi4_WIFI";
-          authentication = {
-            mode = "wpa2-sha1";
-            wpaPassword = "1234567890";
-          };
-        };
-      };
+      trustedInterfaces = [ "enp1s0u1" ];
     };
 
     # 6. 配置 DHCP 和 DNS 服务 (dnsmasq) 
@@ -140,8 +125,9 @@
       enable = true;
       resolveLocalQueries = false;
       settings = {
-        interface = "wlan0";
+        interface = "enp1s0u1";
         bind-dynamic = true;
+        dhcp-authoritative = true;
         dhcp-range = "192.168.10.10,192.168.10.100,24h";
         port = 53;
         domain-needed = true;
@@ -157,8 +143,7 @@
         Restart = "on-failure";
         RestartSec = "5s";
       };
-      after = [ "network.target" "hostapd.service" ];
-      wants = [ "hostapd.service" ];
+      after = [ "network.target" ];
     };
 
     # ============================================================================
