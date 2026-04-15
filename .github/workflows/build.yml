@@ -1,5 +1,8 @@
 name: Build and Push to Attic Cache
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [ main ] # 每次推送到主分支时触发
@@ -44,6 +47,8 @@ jobs:
       # 魔法缓存：缓存 Nix 的求值过程，进一步提速
       - name: Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
 
       # 配置 Attic 并自动接管推送！
       - name: Setup Attic Cache
