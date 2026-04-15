@@ -10,7 +10,7 @@
           firmwareSize = 512;
         };
         system.stateVersion = "25.11";
-        nixpkgs.system = "aarch64-linux";
+        nixpkgs.hostPlatform = "aarch64-linux";
         nixpkgs.config.allowUnfree = true;
 
         # Hardware configuration

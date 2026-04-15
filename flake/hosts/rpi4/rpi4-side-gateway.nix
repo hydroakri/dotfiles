@@ -52,7 +52,6 @@
     };
 
     networking.hostName = "rpi4";
-    nixpkgs.system = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {
       generic-extlinux-compatible.enable = true;

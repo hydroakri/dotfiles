@@ -51,7 +51,7 @@
       packages = {
         x86_64-linux = {
           iso-installer = nixos-generators.nixosGenerate {
-            system = "x86_64-linux";
+            hostPlatform = "x86_64-linux";
             specialArgs = specialArgsForAll;
             modules = [ ./hosts/isolive/isolive.nix ];
             format = "install-iso";
@@ -59,7 +59,7 @@
         };
         aarch64-linux = {
           rpi-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
+            hostPlatform = "aarch64-linux";
             specialArgs = specialArgsForAll;
             modules = [ ./hosts/rpi-image/rpi-image.nix ];
             format = "sd-aarch64";

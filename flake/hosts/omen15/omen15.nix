@@ -1,7 +1,7 @@
 # nh os switch -H omen15 ./
 { config, lib, pkgs, inputs, ... }: {
   networking.hostName = "omen15";
-  nixpkgs.system = "x86_64-linux";
+  nixpkgs.hostPlatform = "x86_64-linux";
   imports = [
     # Hardware configuration
     # Auto-generated hardware config (can be regenerated with nixos-generate-config)

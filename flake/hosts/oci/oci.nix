@@ -110,7 +110,7 @@
     };
 
     networking.hostName = "oci";
-    nixpkgs.system = "aarch64-linux";
+    nixpkgs.hostPlatform = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {
       systemd-boot.enable = true;
