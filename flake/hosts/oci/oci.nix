@@ -572,12 +572,13 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:8088";
           extraConfig = ''
-            client_max_body_size 512M;
+            client_max_body_size 0;
             proxy_set_header Authorization $http_authorization;
             proxy_pass_header Authorization;
             proxy_buffer_size 128k;
             proxy_buffers 4 256k;
             proxy_busy_buffers_size 256k;
+            proxy_request_buffering off;
           '';
         };
       };
