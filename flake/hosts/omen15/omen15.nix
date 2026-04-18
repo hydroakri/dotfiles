@@ -32,6 +32,7 @@
     inputs.sops-nix.nixosModules.sops
   ];
   modules = {
+    nvidia.enable = true;
     proxy = {
       enable = true;
       enableDnsCryptProxy = false;
@@ -48,6 +49,7 @@
     };
   };
   boot = {
+    initrd.systemd.enable = false;
     kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [ "zenpower" ];
     blacklistedKernelModules = [ "k10temp" ];
@@ -59,7 +61,7 @@
     '';
     loader.efi = {
       canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot/efi";
+      efiSysMountPoint = "/boot";
     };
     loader.limine = {
       enable = true;
@@ -117,7 +119,7 @@
     plasma6.enable = true;
   };
   # Video drivers (hardware-specific)
-  services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];
+  # services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];
   services.xserver.desktopManager.xfce = {
     enable = false;
     enableWaylandSession = true;
@@ -277,21 +279,6 @@
       "compress=zstd:3"
       "discard=async"
       "autodefrag"
-    ];
-  };
-
-  fileSystems."/boot" = {
-    neededForBoot = true;
-    options = lib.mkForce [
-      "subvol=@boot"
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "compress=zstd:3"
-      "discard=async"
     ];
   };
 

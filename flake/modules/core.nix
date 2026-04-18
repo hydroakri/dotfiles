@@ -163,6 +163,7 @@
       nix-output-monitor
     ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
+      sbctl
       efibootmgr
       mokutil
       pciutils
