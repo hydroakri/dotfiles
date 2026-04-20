@@ -49,7 +49,6 @@
     };
   };
   boot = {
-    initrd.systemd.enable = false;
     kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [ "zenpower" ];
     blacklistedKernelModules = [ "k10temp" ];
@@ -205,8 +204,7 @@
 
   # Override filesystem mount options with performance optimizations
   fileSystems."/" = {
-    options = lib.mkForce [
-      "subvol=@"
+    options = [
       "rw"
       "relatime"
       "ssd"
@@ -220,8 +218,8 @@
   };
 
   fileSystems."/nix" = {
-    options = lib.mkForce [
-      "subvol=@nix"
+    neededForBoot = true;
+    options = [
       "rw"
       "relatime"
       "ssd"
@@ -236,8 +234,7 @@
   };
 
   fileSystems."/home" = {
-    options = lib.mkForce [
-      "subvol=@home"
+    options = [
       "rw"
       "relatime"
       "ssd"
@@ -251,8 +248,7 @@
   };
 
   fileSystems."/var/log" = {
-    options = lib.mkForce [
-      "subvol=@log"
+    options = [
       "rw"
       "relatime"
       "ssd"
@@ -268,7 +264,7 @@
   # Override steam-linux filesystem to use label instead of UUID
   fileSystems."/steam-linux" = {
     device = lib.mkForce "LABEL=steam-linux";
-    options = lib.mkForce [
+    options = [
       "rw"
       "relatime"
       "ssd"
