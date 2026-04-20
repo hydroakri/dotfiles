@@ -4,8 +4,7 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   imports = [
     # Hardware configuration
-    # Auto-generated hardware config (can be regenerated with nixos-generate-config)
-    ./hardware-configuration.nix
+    ./disko.nix
 
     # Core system modules
     ../../modules/core.nix
@@ -30,6 +29,7 @@
 
     # External modules
     inputs.sops-nix.nixosModules.sops
+    inputs.disko.nixosModules.disko
   ];
   modules = {
     nvidia.enable = true;
@@ -50,9 +50,11 @@
   };
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;
-    kernelModules = [ "zenpower" ];
-    blacklistedKernelModules = [ "k10temp" ];
+    kernelModules = [ "zenpower" "kvm-amd" ];
     initrd.kernelModules = [ "amdgpu" ];
+    initrd.availableKernelModules =
+      [ "nvme" "xhci_pci" "usbhid" "sdhci_pci" "usb_storage" "sd_mod" ];
+    blacklistedKernelModules = [ "k10temp" ];
     extraModulePackages = [ config.boot.kernelPackages.zenpower ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
@@ -198,86 +200,6 @@
   # ============================================================================
   # Custom Hardware Configuration
   # ============================================================================
-  # Add additional kernel modules for better hardware support
-  # sudo nixos-generate-config --show-hardware-config > ./hardware-configuration.nix (MUST be used in tty)
-  boot.initrd.availableKernelModules = lib.mkAfter [ "usb_storage" "sd_mod" ];
-
-  # Override filesystem mount options with performance optimizations
-  fileSystems."/" = {
-    options = [
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=60"
-      "compress=zstd:3"
-      "discard=async"
-    ];
-  };
-
-  fileSystems."/nix" = {
-    neededForBoot = true;
-    options = [
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=60"
-      "compress=zstd:3"
-      "discard=async"
-      "autodefrag"
-    ];
-  };
-
-  fileSystems."/home" = {
-    options = [
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=60"
-      "compress=zstd:3"
-      "discard=async"
-    ];
-  };
-
-  fileSystems."/var/log" = {
-    options = [
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=60"
-      "compress=zstd:3"
-      "discard=async"
-    ];
-  };
-
-  # Override steam-linux filesystem to use label instead of UUID
-  fileSystems."/steam-linux" = {
-    device = lib.mkForce "LABEL=steam-linux";
-    options = [
-      "rw"
-      "relatime"
-      "ssd"
-      "space_cache=v2"
-      "noatime"
-      "nodiratime"
-      "commit=60"
-      "compress=zstd:3"
-      "discard=async"
-      "autodefrag"
-    ];
-  };
-
   # Enable DHCP by default for network interfaces
   networking.useDHCP = lib.mkDefault true;
 
