@@ -322,9 +322,16 @@
       script = ''
         ${pkgs.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME/webdav \
           --addr 127.0.0.1:8083 \
-          --vfs-cache-mode writes \
+          --vfs-cache-mode full \
           --cache-dir /var/cache/rclone-webdav \
-          --dir-cache-time 1m
+          --vfs-read-chunk-size 128M \
+          --vfs-read-chunk-size-limit off \
+          --buffer-size 64M \
+          --transfers 8 \
+          --s3-upload-concurrency 8 \
+          --s3-chunk-size 16M \
+          --dir-cache-time 10m \
+          --vfs-cache-max-age 24h
       '';
     };
 
@@ -552,16 +559,21 @@
 
           extraConfig = ''
             client_max_body_size 0;
+            client_body_buffer_size 512k;
 
             proxy_http_version 1.1;
             proxy_set_header Connection "";
+            proxy_set_header Expect "";
 
             proxy_set_header Destination $webdav_dest;
-
             proxy_set_header Authorization "";
 
             proxy_buffering off;
             proxy_request_buffering off;
+
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
           '';
         };
       };
