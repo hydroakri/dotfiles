@@ -37,7 +37,8 @@ in {
   boot.kernel.sysctl = {
     # Security (common)
     "kernel.printk_devkmsg" = "off";
-    "kernel.yama.ptrace_scope" = 3;
+    # when '3' can cause steam games stop working
+    "kernel.yama.ptrace_scope" = 1;
     "kernel.io_uring_disabled" = 2;
     "dev.tty.legacy_tiocsti" = 0;
     # 开启 SYN Cookies，防御 SYN Flood 洪水攻击

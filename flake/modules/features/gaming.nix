@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
 {
+  boot.kernelModules = [ "ntsync" ];
   environment.systemPackages = with pkgs; [
     yad # steamtinkerlaunch dependency
     steam-devices-udev-rules
