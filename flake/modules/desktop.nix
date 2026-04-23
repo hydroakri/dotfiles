@@ -138,6 +138,12 @@
     };
   };
 
+  # Appimage
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
+
   # Graphics support (base configuration)
   hardware.graphics = {
     enable = true;
@@ -246,7 +252,6 @@
     darkly-qt5
     darkly
     darkman
-    appimage-run
     ethtool
     iproute2
   ];
