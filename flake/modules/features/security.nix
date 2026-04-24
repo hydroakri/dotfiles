@@ -68,8 +68,6 @@ in {
     "net.ipv4.conf.all.drop_gratuitous_arp" = 1;
     # 忽略违规的 ICMP 错误消息;
     "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
-    "net.ipv4.icmp_echo_ignore_all" = 1;
-    "net.ipv6.icmp.echo_ignore_all" = 1;
     "net.ipv4.conf.all.secure_redirects" = 1;
     "net.ipv4.conf.default.secure_redirects" = 1;
     "net.ipv4.tcp_dsack" = 0;

@@ -96,6 +96,17 @@
     };
     networking.interfaces.end0.useDHCP = false;
     networking.interfaces.vlan10.useDHCP = true; # DHCP 获取外网 IP (IPoE免密)
+
+    networking.dhcpcd = {
+      enable = true;
+      extraConfig = ''
+        noipv6rs
+        interface vlan10
+          ipv6rs
+          ia_pd 1 enp1s0u1/0
+      '';
+    };
+
     # 2. 局域网接口 (enp1s0u1) 强制固定 IP
     networking.interfaces.enp1s0u1.useDHCP = false;
     networking.interfaces.enp1s0u1.ipv4.addresses = lib.mkForce [{
@@ -129,7 +140,11 @@
         interface = "enp1s0u1";
         bind-dynamic = true;
         dhcp-authoritative = true;
-        dhcp-range = "192.168.10.10,192.168.10.100,24h";
+        enable-ra = true;
+        dhcp-range = [
+          "192.168.10.10,192.168.10.100,24h"
+          "::,constructor:enp1s0u1,ra-stateless"
+        ];
         port = 0;
       };
     };
