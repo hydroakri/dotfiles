@@ -229,13 +229,19 @@
           safe_search = 0;
           autocomplete = "duckduckgo";
           favicon_resolver = "duckduckgo";
+          autocomplete_min_chars = 1;
+          formats = [ "html" "json" "rss" ];
         };
         ui = {
           hotkeys = "default";
           contact_url = "null";
           show_thumbnails = true;
+          infinite_scroll = true;
+          query_in_title = false;
+          results_on_new_tab = true;
           theme_args = {
-            simple_style = "auto"; # 或者是 "dark" / "light"
+            simple_style = "auto";
+            center_alignment = false;
           };
         };
         enabled_plugins =
@@ -271,6 +277,22 @@
             name = "brave";
             disabled = false;
             weight = 2;
+          }
+          {
+            name = "mojeek";
+            disabled = true;
+          }
+          {
+            name = "qwant";
+            disabled = true;
+          }
+          {
+            name = "ecosia";
+            disabled = true;
+          }
+          {
+            name = "karmasearch";
+            disabled = true;
           }
         ];
       };

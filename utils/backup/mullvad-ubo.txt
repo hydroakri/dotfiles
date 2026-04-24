@@ -1,22 +1,21 @@
 {
-  "timeStamp": 1776930169964,
+  "timeStamp": 1777004249118,
   "version": "1.70.0",
   "userSettings": {
-    "importedLists": [],
-    "popupPanelSections": 63
+    "importedLists": []
   },
   "selectedFilterLists": [
     "ublock-filters",
     "ublock-badware",
     "ublock-privacy",
-    "ublock-unbreak",
     "ublock-quick-fixes",
+    "ublock-unbreak",
     "easylist",
-    "adguard-spyware-url",
     "easyprivacy",
+    "adguard-spyware-url",
     "urlhaus-1",
-    "fanboy-cookiemonster",
-    "plowe-0"
+    "plowe-0",
+    "fanboy-cookiemonster"
   ],
   "hiddenSettings": {},
   "whitelist": [

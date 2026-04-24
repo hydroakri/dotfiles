@@ -155,6 +155,20 @@ in {
     enable = true;
     allowedTCPPorts = [ 22 ];
   };
+  fileSystems = lib.mkIf config.services.flatpak.enable {
+    "/home/${config.mainUser}/.var/app/net.mullvad.MullvadBrowser" = {
+      device = "tmpfs";
+      fsType = "tmpfs";
+      options = [
+        "size=1G"
+        "mode=0755"
+        "uid=${config.mainUser}"
+        "gid=users"
+        "nofail"
+        "x-systemd.automount"
+      ];
+    };
+  };
   # ===========================================================================
   #PAM
   security.pam = {
