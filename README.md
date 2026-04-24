@@ -2,8 +2,6 @@
 
 > *Declarative systems, modular user environments, and reasonable defaults.*
 
-![Preview](./preview.png)
-
 ## Overview
 
 This repository is primarily centered around a **declarative, multi-host NixOS configuration** utilizing Flakes, coupled with [Chezmoi](https://www.chezmoi.io/) for managing imperative user-space dotfiles across different platforms.

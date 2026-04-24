@@ -82,10 +82,10 @@
     enable = true;
     servers = [ ];
     extraConfig = ''
-      server 129.6.15.27 iburst
-      server time.grapheneos.org iburst nts
+      server time.grapheneos.org iburst
       server time.cloudflare.com iburst nts
       server nts.netnod.se iburst nts
+      server 129.6.15.27 iburst
 
       makestep 1.0 3
       ntsdumpdir /var/lib/chrony
@@ -95,7 +95,7 @@
   services.smartd = {
     enable = true;
     defaults.monitored =
-      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
+      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,55,65";
   };
   users.users.root.shell = pkgs.zsh;
   programs.zsh.enable = true;

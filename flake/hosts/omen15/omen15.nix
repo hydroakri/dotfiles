@@ -161,7 +161,7 @@
     shell = pkgs.zsh;
     isNormalUser = true;
     description = "${config.mainUser}";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ];
     packages = with pkgs; [
       # themes/shell/plugin
       bibata-cursors
