@@ -169,6 +169,4 @@
       mokutil
       pciutils
     ];
-  # XXX: https://nixos.org/manual/nixos/unstable/release-notes
-  system.stateVersion = "25.11";
 }

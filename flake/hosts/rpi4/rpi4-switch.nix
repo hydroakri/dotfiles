@@ -224,5 +224,6 @@
         options = [ "noatime" "commit=60" ];
       };
     };
+    system.stateVersion = "25.11";
   };
 }

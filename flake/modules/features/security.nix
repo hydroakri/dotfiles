@@ -146,8 +146,11 @@ in {
   security = {
     sudo-rs.enable = true;
     sudo.enable = false;
-    apparmor.enable = true;
-    apparmor.killUnconfinedConfinables = true;
+    apparmor = {
+      enable = false;
+      killUnconfinedConfinables = true;
+      packages = [ pkgs.apparmor-profiles ];
+    };
   };
   networking.firewall = {
     enable = true;
@@ -172,19 +175,22 @@ in {
   security.pam = {
     u2f = {
       enable = true; # XXX INSTALLATION: Disable u2f.enable temporarily.
-      settings.cue = true;
+      settings = {
+        cue = true;
+        authfile = "/etc/u2f_mappings";
+        interactive = true;
+      };
     };
     services = {
       # XXX INSTALLATION: Disable sudo.u2fAuth, login.u2fAuth temporarily. 
       sudo.u2fAuth = true;
       login.u2fAuth = true;
-      sddm.u2fAuth = true;
-      cosmic-greeter.u2fAuth = true;
-      passwd.rules.password.unix.settings.rounds = 65536;
+
+      system-login.failDelay.enable = true;
       system-login.failDelay.delay = 4000000;
+      passwd.rules.password.unix.settings.rounds = 65536;
       su.requireWheel = true;
     };
-    u2f.settings.authfile = "/etc/u2f_mappings";
   };
   # plug u2f device & use `pamu2fcfg -n`
   environment.etc."u2f_mappings".text = ''

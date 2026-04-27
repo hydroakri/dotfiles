@@ -203,4 +203,5 @@
   # Enable DHCP by default for network interfaces
   networking.useDHCP = lib.mkDefault true;
 
+  system.stateVersion = "25.11";
 }
