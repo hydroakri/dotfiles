@@ -1,0 +1,5 @@
+[Context]
+sockets=session-bus;
+
+[Session Bus Policy]
+org.freedesktop.secrets=talk

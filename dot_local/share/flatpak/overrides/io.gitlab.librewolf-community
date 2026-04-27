@@ -1,12 +1,13 @@
 [Context]
-filesystems=!/home/hydroakri/.local/share/fonts;!xdg-run/portal;!/home/hydroakri/.icons;!xdg-config/gtk-4.0;!/run/current-system/sw/share/X11/fonts;!/nix/store
+filesystems=!/nix/store;!xdg-run/portal;!/home/hydroakri/.icons;!xdg-config/gtk-4.0;!/home/hydroakri/.local/share/fonts;!/run/current-system/sw/share/X11/fonts;
 
-[System Bus Policy]
+[Session Bus Policy]
 org.freedesktop.portal.OpenURI=none
+org.kde.plasma.browser.integration=talk
 org.freedesktop.portal.Desktop=none
 org.freedesktop.portal.Secret=none
 
-[Session Bus Policy]
+[System Bus Policy]
 org.freedesktop.portal.OpenURI=none
 org.freedesktop.portal.Desktop=none
 org.freedesktop.portal.Secret=none

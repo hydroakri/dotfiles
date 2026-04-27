@@ -1,16 +1,3 @@
-[Context]
-filesystems=/nix/store:ro;/run/current-system/sw/share/X11/fonts;xdg-config/gtk-4.0:ro;/home/hydroakri/.icons:ro;xdg-run/portal;/home/hydroakri/.local/share/fonts:ro;
-
-[Session Bus Policy]
-org.freedesktop.portal.OpenURI=talk
-org.freedesktop.portal.Desktop=talk
-org.freedesktop.portal.Secret=talk
-
-[System Bus Policy]
-org.freedesktop.portal.OpenURI=talk
-org.freedesktop.portal.Desktop=talk
-org.freedesktop.portal.Secret=talk
-
 [Environment]
 XMODIFIERS=@im=fcitx
 QT_IM_MODULE=fcitx
