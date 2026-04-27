@@ -14,15 +14,25 @@ with lib; {
       default = false;
       description = "Enable dnscrypt-proxy as the DNS resolver backend.";
     };
-    enableSingbox = mkOption {
+    singbox.enable = mkOption {
       type = types.bool;
       default = false;
       description = "Enable sing-box as the proxy backend.";
     };
-    enableDae = mkOption {
+    dae.enable = mkOption {
       type = types.bool;
       default = false;
       description = "Enable dae as the Tproxy backend.";
+    };
+    dae.interfaces.wan = mkOption {
+      type = types.str;
+      default = "auto";
+      description = "WAN interface for dae.";
+    };
+    dae.interfaces.lan = mkOption {
+      type = types.str;
+      default = "auto";
+      description = "LAN interface for dae.";
     };
   };
 
@@ -32,16 +42,16 @@ with lib; {
     # 1. 配置 Sing-box 的启动顺序：如果在该机器上启用了 AdGuardHome，则等待其启动
 
     # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
-    systemd.services.dae = mkIf config.modules.proxy.enableDae {
+    systemd.services.dae = mkIf config.modules.proxy.dae.enable {
       after = [ "network-online.target" "systemd-networkd-wait-online.service" ]
-        ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
+        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
         ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
           "dnscrypt-proxy.service");
 
       wants = [ "network-online.target" ]
-        ++ (lib.optional config.modules.proxy.enableSingbox "sing-box.service")
+        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
         ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
@@ -104,7 +114,7 @@ with lib; {
             stamp = "${config.sops.placeholder.doh_stamp}"
           '';
         };
-        "config.json" = lib.mkIf config.modules.proxy.enableSingbox {
+        "config.json" = lib.mkIf config.modules.proxy.singbox.enable {
           owner = "sing-box"; # 确保 sing-box 进程有权读取
           restartUnits = [ "sing-box.service" ]; # 模板变化时重启服务
           content = ''
@@ -710,7 +720,7 @@ with lib; {
       })
 
       # Sing-box 的端口规则
-      (mkIf config.modules.proxy.enableSingbox {
+      (mkIf config.modules.proxy.singbox.enable {
         allowedTCPPorts = [ 1080 9090 ];
         allowedUDPPorts = [ 1080 ];
       })
@@ -745,11 +755,11 @@ with lib; {
         };
       };
 
-    services.sing-box = mkIf config.modules.proxy.enableSingbox {
+    services.sing-box = mkIf config.modules.proxy.singbox.enable {
       enable = true;
       package = pkgs.sing-box;
     };
-    systemd.services.sing-box = mkIf config.modules.proxy.enableSingbox {
+    systemd.services.sing-box = mkIf config.modules.proxy.singbox.enable {
       after = [ "network-online.target" ]
         ++ (lib.optional config.modules.proxy.enableAdGuardHome
           "adguardhome.service")
@@ -772,7 +782,7 @@ with lib; {
       ]);
     };
 
-    services.dae = mkIf config.modules.proxy.enableDae {
+    services.dae = mkIf config.modules.proxy.dae.enable {
       enable = true;
       # configFile = "/etc/dae/config.dae";
       assetsPath = toString (pkgs.symlinkJoin {
@@ -782,8 +792,8 @@ with lib; {
       config = ''
         global {
           dial_mode: domain
-          lan_interface: auto
-          wan_interface: auto
+          lan_interface: ${config.modules.proxy.dae.interfaces.lan}
+          wan_interface: ${config.modules.proxy.dae.interfaces.wan}
           log_level: info
 
           # health check

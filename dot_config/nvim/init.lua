@@ -14,6 +14,18 @@ if not vim.loop.fs_stat(data .. "/lazy/lazy.nvim") then
 end
 vim.opt.rtp:prepend(data .. "/lazy/lazy.nvim")
 
+-- (Environment Detection)
+local env = {
+	has_lua = vim.fn.executable("lua") == 1,
+	has_luarocks = vim.fn.executable("luarocks") == 1,
+	has_compiler = vim.fn.executable("gcc") == 1 or vim.fn.executable("clang") == 1 or vim.fn.executable("cc") == 1,
+	has_unzip = vim.fn.executable("unzip") == 1,
+	has_python3 = vim.fn.executable("python3") == 1 or vim.fn.executable("python") == 1,
+	has_java = vim.fn.executable("java") == 1,
+	has_cargo = vim.fn.executable("cargo") == 1,
+	has_node = vim.fn.executable("node") == 1 and vim.fn.executable("npm") == 1,
+}
+
 -- utf8
 vim.g.encoding = "UTF-8"
 vim.o.fileencoding = "utf-8"
@@ -128,6 +140,9 @@ vim.keymap.set("n", "]b", ":bnext<CR>")
 
 -- LAZY
 require("lazy").setup({
+	rocks = {
+		enabled = env.has_luarocks,
+	},
 	git = { timeout = 600 },
 	defaults = {
 		lazy = true,
@@ -386,35 +401,34 @@ require("lazy").setup({
 					-- Define your formatters
 					--c, c++, rust, go, java, python, c#, javascript, jsx, typescript, html, css, kotlin, dart, lua
 					formatters_by_ft = {
-						c = { "ast-grep" },
-						cpp = { "ast-grep" },
-						rust = { "ast-grep" },
-						go = { "ast-grep" },
-						java = { "ast-grep" },
-						csharp = { "ast-grep" },
-						kotlin = { "ast-grep" },
-						dart = { "ast-grep" },
-						css = { "prettierd", "ast-grep" },
-						flow = { "prettierd" },
-						graphql = { "prettierd" },
-						html = { "prettierd", "ast-grep" },
-						json = { "prettierd" },
-						jsx = { "prettierd", "ast-grep" },
-						javascript = { "prettierd", "ast-grep" },
-						less = { "prettierd" },
-						markdown = { "prettierd" },
-						scss = { "prettierd" },
-						typescript = { "prettierd", "ast-grep" },
+						-- 1. 静态编译语言：使用各自的官方/标准工具
+						c = { "clang-format" },
+						cpp = { "clang-format" },
+						rust = { "rustfmt" },
+						go = { "goimports", "gofmt" },
+						java = { "google-java-format" },
+						csharp = { "csharpier" },
+						kotlin = { "ktlint" },
+						-- 2. Python：目前 Ruff 是绝对的最优解
+						python = { "ruff_format" },
+						-- 3. Lua：Stylua 是标准
+						lua = { "stylua" },
+						-- 4. Web 生态：Prettierd 统一处理
+						javascript = { "prettierd", "prettier", stop_after_first = true },
+						typescript = { "prettierd", "prettier", stop_after_first = true },
 						vue = { "prettierd" },
+						css = { "prettierd" },
+						scss = { "prettierd" },
+						html = { "prettierd" },
+						json = { "prettierd" },
 						yaml = { "prettierd" },
-						lua = { "stylua", "ast-grep" },
-						python = { "ast-grep" },
-						bash = { "beautysh" },
-						ksh = { "beautysh" },
-						csh = { "beautysh" },
-						zsh = { "beautysh" },
-						sh = { "beautysh" },
-						nix = { "nixfmt" },
+						markdown = { "prettierd" },
+						-- 5. Shell
+						sh = { "shfmt" },
+						bash = { "shfmt" },
+						zsh = { "shfmt" },
+						-- 6. Nix
+						nix = { "nixfmt" }, -- 或者 alejandra
 					},
 					-- Set up format-on-save
 					format_on_save = { timeout_ms = 500, lsp_fallback = true },
@@ -437,19 +451,27 @@ require("lazy").setup({
 				event = "BufReadPost",
 				config = function()
 					require("lint").linters_by_ft = {
-						lua = { "luacheck" },
-						markdown = { "write_good" },
+						-- 1. 编程语言 (逻辑与语法检查)
+						python = { "ruff" },
+						javascript = { "eslint_d" },
+						typescript = { "eslint_d" },
+						javascriptreact = { "eslint_d" },
+						typescriptreact = { "eslint_d" },
+						go = { "golangci-lint" },
+						lua = { "selene" },
+						sh = { "shellcheck" },
 						bash = { "shellcheck" },
-						c = { "trivy" },
-						cpp = { "trivy" },
+
+						-- 2. 标记与样式语言
 						css = { "stylelint" },
-						python = { "trivy" },
-						javascript = { "trivy" },
-						java = { "trivy" },
-						rust = { "trivy" },
-						go = { "trivy" },
-						typescript = { "trivy" },
+						markdown = { "markdownlint" }, -- 如果你喜欢文风建议，可以保留 { "markdownlint", "write_good" }
+						json = { "jsonlint" },
+
+						-- 3. 专业领域 (文档/安全)
 						tex = { "vale" },
+						-- 扫描安全漏洞，可以在 dockerfile 或 terraform 中使用 trivy
+						dockerfile = { "trivy" },
+						terraform = { "trivy" },
 					}
 				end,
 			},
@@ -940,6 +962,7 @@ require("lazy").setup({
 			-- JAVA_lsp_dap_support
 			{
 				"mfussenegger/nvim-jdtls",
+				enabled = env.has_java,
 				ft = { "java" },
 				dependencies = {
 					{ "mfussenegger/nvim-dap" },
@@ -1068,12 +1091,6 @@ require("lazy").setup({
 						require("luasnip.loaders.from_vscode").lazy_load()
 					end,
 				},
-				{
-					"Exafunction/codeium.nvim",
-					cmd = "Codeium",
-					build = ":Codeium Auth",
-					opts = {},
-				},
 			},
 			opts = {
 				keymap = { preset = "enter" },
@@ -1086,15 +1103,7 @@ require("lazy").setup({
 				signature = { enabled = true },
 
 				sources = {
-					default = { "lsp", "path", "snippets", "buffer", "codeium" },
-					providers = {
-						codeium = {
-							name = "codeium", -- 对应 codeium.nvim 注册的 source name
-							module = "blink.compat.source",
-							score_offset = 100, -- 给 AI 补全较高的优先级(可选)
-							async = true,
-						},
-					},
+					default = { "lsp", "path", "snippets", "buffer" },
 				},
 				snippets = { preset = "luasnip" },
 			},
@@ -1163,16 +1172,20 @@ require("lazy").setup({
 			{
 				"nvim-treesitter/nvim-treesitter",
 				build = ":TSUpdate",
+				event = { "BufReadPost", "BufNewFile" },
 				cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
 				dependencies = {
 					{ "nvim-treesitter/nvim-treesitter-context", config = true },
 				},
 				config = function()
-					require("nvim-treesitter.configs").setup({
+					require("nvim-treesitter").setup({
 						ensure_installed = {
 							"c",
 							"lua",
 							"vim",
+							"vimdoc",
+							"markdown",
+							"markdown_inline",
 							"nix",
 							"query",
 							"bash",
@@ -1191,10 +1204,10 @@ require("lazy").setup({
 							"yaml",
 							"toml",
 						},
-						auto_install = true,
+						auto_install = env.has_compiler,
 						highlight = {
 							enable = true,
-							additional_vim_regex_highlighting = true,
+							additional_vim_regex_highlighting = false,
 						},
 						incremental_selection = {
 							enable = true,
@@ -1213,7 +1226,7 @@ require("lazy").setup({
 		-- LSP
 		{
 			"neovim/nvim-lspconfig",
-			event = "BufReadPre",
+			event = { "BufReadPre", "BufNewFile" },
 			keys = {
 				-- { mode = "n", "<space>e", vim.diagnostic.open_float, desc = "Open diagnostic float" },
 				{ mode = "n", "<space>e", ":Telescope diagnostics<CR>", desc = "Open diagnostic float" },
@@ -1271,6 +1284,51 @@ require("lazy").setup({
 						cmd = "Mason",
 						config = function()
 							require("mason").setup({})
+						end,
+					},
+					{
+						"WhoIsSethDaniel/mason-tool-installer.nvim",
+						config = function()
+							require("mason-tool-installer").setup({
+								ensure_installed = {
+									-- === 1. 核心 LSP 服务器 (代码补全与导航) ===
+									"lua-language-server",
+									"nil", -- nix LSP
+									"pyright", -- Python LSP
+									"typescript-language-server",
+									"gopls", -- Go LSP
+									"clangd", -- C/C++ LSP
+									"rust-analyzer", -- Rust LSP
+									"marksman", -- Markdown LSP
+									"bash-language-server",
+
+									-- === 2. 格式化工具 (Conform.nvim 使用) ===
+									"stylua", -- Lua
+									"ruff", -- Python (同时支持 Lint 和 Format，极快)
+									"prettierd", -- JS/TS/HTML/CSS/JSON/YAML/MD (带守护进程，快)
+									"shfmt", -- Shell (比 beautysh 更标准)
+									"clang-format", -- C/C++/Java
+									"csharpier", -- C#
+									"gofumpt", -- Go (比 gofmt 更严格的格式化)
+									"goimports", -- Go (自动处理 import)
+									"nixfmt", -- Nix
+									-- 'ast-grep',              -- (可选) 仅用于结构化重构
+
+									-- === 3. 静态检查工具 (nvim-lint 使用) ===
+									"selene", -- Lua (比 luacheck 更现代)
+									"eslint_d", -- JS/TS (带守护进程，快)
+									"shellcheck", -- Shell (必备)
+									"golangci-lint", -- Go (集合了多种检查器)
+									"markdownlint", -- Markdown (结构检查)
+									"write-good", -- Markdown
+									"stylelint", -- CSS/SCSS
+									"vale", -- 文档/文风检查 (针对 TeX/Markdown)
+									"trivy", -- 安全扫描 (建议仅用于 Dockerfile/Nix/IaC)
+								},
+								auto_update = true,
+								run_on_start = true,
+								start_delay = 3000,
+							})
 						end,
 					},
 				},

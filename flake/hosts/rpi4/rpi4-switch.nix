@@ -27,8 +27,8 @@
         enable = true;
         enableAdGuardHome = false;
         enableDnsCryptProxy = true;
-        enableSingbox = false;
-        enableDae = false;
+        singbox.enable = false;
+        dae.enable = false;
       };
       utils = {
         enable = false;

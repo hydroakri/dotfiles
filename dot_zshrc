@@ -13,7 +13,7 @@ setopt HIST_FIND_NO_DUPS
 setopt HIST_IGNORE_ALL_DUPS
 
 # some personal variables
-export PATH="$PATH:/home/$USER/script:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
+export PATH="$PATH:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
 export XDG_DATA_DIRS="$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:/home/$USER/.local/share/flatpak/exports/share"
 export EDITOR=nvim
 alias vi='nvim'
@@ -22,9 +22,6 @@ alias ack='ag'
 alias zj='zellij'
 alias tmux='tmux -u'
 alias fzf='fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" '
-alias p='proxychains -q'
-alias p4='proxychains4 -q'
-alias x='env GTK_IM_MODULE=fcitx QT_QPA_PLATFORM=xcb GDK_BACKEND=x11 XDG_SESSION_TYPE=x11 -u=WAYLAND_DISPLAY '
 
 # vim bindkey
 bindkey -v

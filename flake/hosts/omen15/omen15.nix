@@ -33,11 +33,12 @@
   ];
   modules = {
     nvidia.enable = true;
+    networking.sqm.enable = true;
     proxy = {
       enable = true;
       enableDnsCryptProxy = false;
-      enableDae = false;
-      enableSingbox = true;
+      dae.enable = false;
+      singbox.enable = true;
     };
     utils = {
       enable = true;
@@ -174,7 +175,6 @@
       # GUI Applications
       venera
       wezterm
-      code-cursor
       kdePackages.kate
       # davinci-resolve-studio
     ];

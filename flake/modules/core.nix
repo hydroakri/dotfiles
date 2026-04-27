@@ -1,5 +1,5 @@
 { config, lib, pkgs, inputs, ... }: {
-  imports = [ ./options.nix inputs.nix-index-database.nixosModules.default ];
+  imports = [ ./options.nix ./features/networking/sqm.nix inputs.nix-index-database.nixosModules.default ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;

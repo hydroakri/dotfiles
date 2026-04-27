@@ -20,27 +20,20 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
   ];
-  options.services.dae.config = lib.mkOption {
-    apply = finalConfig:
-      if finalConfig == null then
-        null
-      else
-        builtins.replaceStrings [
-          "lan_interface: auto"
-          "wan_interface: auto"
-        ] # 前面：要被替换掉的原始值（需与 proxy.nix 完全一致）
-        [ "lan_interface: end0" "wan_interface: end0" ] # 后面：你想要的新值
-        finalConfig;
-  };
-
   config = {
     modules = {
       proxy = {
         enable = true;
         enableAdGuardHome = false;
         enableDnsCryptProxy = true;
-        enableSingbox = true;
-        enableDae = true;
+        singbox.enable = true;
+        dae = {
+          enable = true;
+          interfaces = {
+            wan = "end0";
+            lan = "end0";
+          };
+        };
       };
       utils = {
         enable = true;
