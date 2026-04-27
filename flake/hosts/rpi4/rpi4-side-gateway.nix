@@ -5,6 +5,7 @@
     # Hardware modules
     inputs.nixos-hardware.nixosModules.raspberry-pi-4
     ./hardware-configuration.nix
+    ../../modules/hardware/rpi4-base.nix
 
     # Core system modules
     ../../modules/core.nix
@@ -16,10 +17,12 @@
     ../../modules/features/security.nix
     ../../modules/features/proxy.nix
     ../../modules/features/utils.nix
+    ../../modules/features/router.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
   ];
+
   config = {
     modules = {
       proxy = {
@@ -42,156 +45,30 @@
         enablePrometheus = true;
         enableGraphicTools = false;
       };
+      router = {
+        enable = true;
+        wan = {
+          interface = "end0";
+          mtu = 1492;
+        };
+        lan = {
+          interfaces = [];
+          ipv4Address = null;
+        };
+        dhcp.enable = false;
+        nat.enable = false;
+        mssClamping = {
+          enable = true;
+          mss = 1412;
+        };
+        sysfsTuning = {
+          rx = [ "end0" "wlan0" ];
+          tx = [ "wlan0" ];
+        };
+      };
     };
 
     networking.hostName = "rpi4";
-    # Boot loader configuration for RPi4
-    boot.loader = {
-      generic-extlinux-compatible.enable = true;
-      grub.enable = false;
-    };
-    boot.plymouth.enable = false;
-    boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
-    # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
-    boot.initrd.supportedFilesystems = [ "vfat" "ext4" ];
-    console.font = lib.mkForce "ter-v16n";
-    boot.initrd.kernelModules = [
-      "usbhid"
-      "usb_storage"
-      "vc4"
-      "pcie-brcmstb" # RPi4 USB 控制器关键驱动
-      "reset-raspberrypi"
-      "mmc_block" # 识别为存储设备
-      "sdhci_iproc" # RPi4 SD控制器驱动
-      "bcm2835_dma" # DMA 加速
-    ];
-    boot.kernel.sysctl = {
-      "net.ipv4.ip_forward" = 1;
-      "net.ipv6.conf.all.forwarding" = 1;
-      "net.ipv6.conf.default.forwarding" = 1;
-
-      # optimize bufferbloat
-      "net.core.netdev_max_backlog" = lib.mkForce 2000;
-      "net.core.rmem_max" = lib.mkForce 4194304;
-      "net.core.wmem_max" = lib.mkForce 4194304;
-      "net.ipv4.tcp_rmem" = lib.mkForce "4096 87380 4194304";
-      "net.ipv4.tcp_wmem" = lib.mkForce "4096 87380 4194304";
-      "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
-    };
-    boot.kernel.sysfs = {
-      # enable net card RPS & XPS
-      class.net.end0.queues."rx-0".rps_cpus = "f";
-
-      class.net.wlan0.queues."rx-0".rps_cpus = "f";
-      class.net.wlan0.queues."tx-0".xps_cpus = "f";
-    };
-    powerManagement.cpuFreqGovernor = "performance";
-    environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
-    services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
-    networking.interfaces.end0.mtu = 1492;
-    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
-    networking.firewall = {
-      checkReversePath = false; # For dae transparent netgate, let date pass
-      extraCommands = ''
-        # 确保 SS-2022 加密后的包不会撑爆 MTU
-        iptables -t mangle -D POSTROUTING -o end0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412 2>/dev/null || true
-        iptables -t mangle -A POSTROUTING -o end0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412
-      '';
-    };
-
-    hardware = {
-      raspberry-pi."4" = {
-        apply-overlays-dtmerge.enable = true;
-        leds = { # turn off led
-          eth.disable = true;
-          act.disable = true;
-          pwr.disable = true;
-        };
-      };
-      deviceTree = {
-        enable = true;
-        filter = "*-rpi-4-*.dtb";
-      };
-    };
-
-    # prevent chaotic time
-    systemd.services.fake-hwclock = {
-      description = "Restore system time on boot (Fake Hardware Clock)";
-      wantedBy = [ "sysinit.target" ];
-      before = [ "sysinit.target" "chronyd.service" ];
-      after = [ "local-fs.target" ];
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = pkgs.writeShellScript "restore-time" ''
-          if [ -f /var/lib/fake-hwclock ]; then
-            echo "Restoring time from /var/lib/fake-hwclock..."
-            ${pkgs.coreutils}/bin/date -s "$(cat /var/lib/fake-hwclock)" || true
-          else
-            echo "No saved time found, forcing default..."
-            ${pkgs.coreutils}/bin/date -s "2025-11-01 00:00:00" || true
-          fi
-        '';
-        # 关机/停止时：保存当前时间到文件
-        ExecStop = pkgs.writeShellScript "save-time" ''
-          ${pkgs.coreutils}/bin/date '+%Y-%m-%d %H:%M:%S' > /var/lib/fake-hwclock
-        '';
-      };
-    };
-
-    environment.systemPackages = with pkgs; [
-      libraspberrypi
-      raspberrypi-eeprom
-      ethtool
-    ];
-    services.smartd.enable = lib.mkForce false;
-    services.journald.extraConfig = ''
-      Storage=volatile
-      SystemMaxUse=64M
-      MaxRetentionSec=1week
-    '';
-
-    users.users.${config.mainUser} = {
-      shell = pkgs.zsh;
-      isNormalUser = true;
-      description = "${config.mainUser}";
-      extraGroups = [ "networkmanager" "wheel" ];
-    };
-
-    # ============================================================================
-    # Hardware Configuration
-    # config.txt
-    #
-    # overclock
-    # over_voltage=6
-    # arm_freq=2000
-    # 
-    # gpio=42=ip,pd
-    # dtparam=eth_led0=4
-    # dtparam=eth_led1=4
-    # dtparam=pwr_led_trigger=none
-    # dtparam=pwr_led_activelow=off
-    # dtparam=act_led_trigger=none
-    # dtparam=act_led_activelow=off
-    # max_usb_current=1
-    # hdmi_group=2
-    # hdmi_mode=87
-    # hdmi_cvt 800 480 60 6 0 0 0
-    # hdmi_drive=1
-    # config_hdmi_boost=7
-    # hdmi_ignore_edid=0xa5000080
-    # ============================================================================
-    # XXX: INSTALLATION
-    # File system configuration based on current labels
-    fileSystems = {
-      "/" = lib.mkForce {
-        device = "/dev/disk/by-label/NIXOS_SD";
-        fsType = "ext4";
-        options = [ "noatime" "commit=60" ];
-      };
-    };
-
-    system.stateVersion = "25.11";
+    networking.firewall.checkReversePath = false; # For dae transparent netgate, let date pass
   };
 }
