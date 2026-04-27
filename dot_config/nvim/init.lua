@@ -1288,22 +1288,27 @@ require("lazy").setup({
 
 		-- THEME
 		{
+			"f-person/auto-dark-mode.nvim",
+			lazy = false, -- 必须在启动时加载以检测主题
+			priority = 1001, -- 优先级比主题更高或者同级
+			opts = {
+				update_body_background = true,
+				set_dark_mode = function()
+					vim.api.nvim_set_option_value("background", "dark", {})
+					vim.cmd("colorscheme catppuccin")
+				end,
+				set_light_mode = function()
+					vim.api.nvim_set_option_value("background", "light", {})
+					vim.cmd("colorscheme catppuccin")
+				end,
+			},
+		},
+
+		{
 			"catppuccin/nvim",
 			name = "catppuccin",
 			lazy = false, -- 主题必须立即加载
 			priority = 1000, -- 最高优先级
-			init = function()
-				local handle = io.popen("gsettings get org.gnome.desktop.interface color-scheme")
-				if handle then
-					local theme = handle:read("*a")
-					handle:close()
-					if theme and string.match(theme, "prefer-dark") then
-						vim.o.background = "dark"
-					else
-						vim.o.background = "light"
-					end
-				end
-			end,
 			config = function(_, opts)
 				require("catppuccin").setup(opts)
 				vim.cmd.colorscheme("catppuccin")
