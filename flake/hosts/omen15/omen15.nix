@@ -1,5 +1,12 @@
 # nh os switch -H omen15 ./
-{ config, lib, pkgs, inputs, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+{
   networking.hostName = "omen15";
   nixpkgs.hostPlatform = "x86_64-linux";
   imports = [
@@ -13,7 +20,7 @@
     # Feature modules
     ../../modules/features/performance.nix
     ../../modules/features/powersave.nix
-    ../../modules/features/proxy.nix
+    ../../modules/features/networking/proxy.nix
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/utils.nix
@@ -37,8 +44,14 @@
     networking.sysfsTuning = {
       enable = true;
       interfaces = {
-        eno1 = { rps_cpus = "fe"; xps_cpus = "fe"; };
-        wlo1 = { rps_cpus = "fe"; xps_cpus = "fe"; };
+        eno1 = {
+          rps_cpus = "fe";
+          xps_cpus = "fe";
+        };
+        wlo1 = {
+          rps_cpus = "fe";
+          xps_cpus = "fe";
+        };
       };
     };
     proxy = {
@@ -58,10 +71,19 @@
   };
   boot = {
     kernelPackages = pkgs.linuxPackages_xanmod;
-    kernelModules = [ "zenpower" "kvm-amd" ];
+    kernelModules = [
+      "zenpower"
+      "kvm-amd"
+    ];
     initrd.kernelModules = [ "amdgpu" ];
-    initrd.availableKernelModules =
-      [ "nvme" "xhci_pci" "usbhid" "sdhci_pci" "usb_storage" "sd_mod" ];
+    initrd.availableKernelModules = [
+      "nvme"
+      "xhci_pci"
+      "usbhid"
+      "sdhci_pci"
+      "usb_storage"
+      "sd_mod"
+    ];
     blacklistedKernelModules = [ "k10temp" ];
     extraModulePackages = [ config.boot.kernelPackages.zenpower ];
     extraModprobeConfig = ''
@@ -126,8 +148,9 @@
     enableWaylandSession = true;
   };
   networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
-  environment.etc."nixos/nbfc.json".text =
-    builtins.toJSON { SelectedConfigId = "HP OMEN Laptop 15-en0xxx"; };
+  environment.etc."nixos/nbfc.json".text = builtins.toJSON {
+    SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
+  };
   environment.systemPackages = with pkgs; [
     # file manager
     # xfce.thunar

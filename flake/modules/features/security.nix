@@ -1,11 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   mainUser = config.mainUser;
-  skKey =
-    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${mainUser}";
-  bakKey =
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
-in {
+  skKey = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${mainUser}";
+  bakKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
+in
+{
   boot.kernelParams = [
     "mitigations=auto"
     "module.sig_enforce=1"
@@ -29,7 +33,8 @@ in {
     "random.trust_bootloader=0"
     "oops=panic"
     "kfence.sample_interval=100"
-  ] ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
+  ]
+  ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
     "vsyscall=none"
     "efi=disable_early_pci_dma"
     "efi_pstore.pstore_disable=1"
@@ -117,15 +122,16 @@ in {
     "fs.protected_fifos" = 2;
     "fs.protected_hardlinks" = 1;
     "fs.protected_symlinks" = 1;
-  } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isx86_64 {
+  }
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isx86_64 {
     "vm.mmap_rnd_bits" = 32;
-  } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isAarch64 {
+  }
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isAarch64 {
     "vm.mmap_rnd_bits" = 24;
   };
   systemd.coredump.enable = false;
   security.unprivilegedUsernsClone = false;
-  environment.memoryAllocator.provider =
-    "mimalloc"; # balance:scudo performance:mimalloc security:graphene-hardened-light
+  environment.memoryAllocator.provider = "mimalloc"; # balance:scudo performance:mimalloc security:graphene-hardened-light
   environment.variables.SCUDO_OPTIONS = lib.mkDefault "delete_size_mismatch=0";
   environment.systemPackages = with pkgs; [
     ssh-copy-id
@@ -182,7 +188,7 @@ in {
       };
     };
     services = {
-      # XXX INSTALLATION: Disable sudo.u2fAuth, login.u2fAuth temporarily. 
+      # XXX INSTALLATION: Disable sudo.u2fAuth, login.u2fAuth temporarily.
       sudo.u2fAuth = true;
       login.u2fAuth = true;
 
@@ -210,8 +216,7 @@ in {
     settings = {
       PasswordAuthentication = false; # XXX INSTALLATION: set true temporarily
       KbdInteractiveAuthentication = false;
-      PermitRootLogin =
-        "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
+      PermitRootLogin = "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
     };
   };
   users.users.root.openssh.authorizedKeys.keys = [
@@ -231,8 +236,7 @@ in {
     gpg.format = "ssh";
 
     # GIT VERIFING
-    "gpg \"ssh\"".allowedSignersFile =
-      config.sops.templates."ssh/allowed_signers".path;
+    "gpg \"ssh\"".allowedSignersFile = config.sops.templates."ssh/allowed_signers".path;
   };
   # GIT VERIFING
   sops.templates."ssh/allowed_signers" = {

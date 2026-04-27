@@ -12,7 +12,8 @@ let
     # 关键：禁用配额计算，防止卡顿
     BACKGROUND_COMPARISON = "no";
   };
-in {
+in
+{
   environment.systemPackages = with pkgs; [ btrfs-assistant ];
   services.btrfs.autoScrub = {
     enable = true;
@@ -53,8 +54,12 @@ in {
     snapshotInterval = "hourly";
     cleanupInterval = "8h";
     configs = {
-      home = leanSnapperPolicy // { SUBVOLUME = "/home"; };
-      rootdir = leanSnapperPolicy // { SUBVOLUME = "/"; };
+      home = leanSnapperPolicy // {
+        SUBVOLUME = "/home";
+      };
+      rootdir = leanSnapperPolicy // {
+        SUBVOLUME = "/";
+      };
     };
   };
 

@@ -1,4 +1,10 @@
-{ config, pkgs, lib, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
   boot.kernelParams = [ "preempt=voluntary" ];
   boot.kernel.sysctl = {
     # ipv6 privacy

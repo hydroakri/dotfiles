@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.modules.router;
@@ -93,26 +98,46 @@ in
       };
     };
 
-    networking.interfaces = (let
-      wanIface = cfg.wan.interface;
-      extIface = if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else wanIface;
-    in {
-      ${wanIface} = lib.mkMerge [
-        (lib.mkIf (cfg.wan.vlanId != null) { useDHCP = false; })
-        (lib.mkIf (cfg.wan.vlanId == null) { useDHCP = cfg.wan.useDHCP; })
-        (lib.mkIf (cfg.wan.mtu != null) { mtu = cfg.wan.mtu; })
-      ];
-    } // lib.optionalAttrs (cfg.wan.vlanId != null) {
-      ${extIface} = {
-        useDHCP = cfg.wan.useDHCP;
-      };
-    }) // (if (cfg.lan.interfaces != []) then (lib.listToAttrs (map (iface: lib.nameValuePair iface {
-      useDHCP = false;
-      ipv4.addresses = lib.mkIf (cfg.lan.ipv4Address != null) (lib.mkForce [{
-        address = cfg.lan.ipv4Address;
-        prefixLength = cfg.lan.ipv4PrefixLength;
-      }]);
-    }) cfg.lan.interfaces)) else {});
+    networking.interfaces =
+      (
+        let
+          wanIface = cfg.wan.interface;
+          extIface = if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else wanIface;
+        in
+        {
+          ${wanIface} = lib.mkMerge [
+            (lib.mkIf (cfg.wan.vlanId != null) { useDHCP = false; })
+            (lib.mkIf (cfg.wan.vlanId == null) { useDHCP = cfg.wan.useDHCP; })
+            (lib.mkIf (cfg.wan.mtu != null) { mtu = cfg.wan.mtu; })
+          ];
+        }
+        // lib.optionalAttrs (cfg.wan.vlanId != null) {
+          ${extIface} = {
+            useDHCP = cfg.wan.useDHCP;
+          };
+        }
+      )
+      // (
+        if (cfg.lan.interfaces != [ ]) then
+          (lib.listToAttrs (
+            map (
+              iface:
+              lib.nameValuePair iface {
+                useDHCP = false;
+                ipv4.addresses = lib.mkIf (cfg.lan.ipv4Address != null) (
+                  lib.mkForce [
+                    {
+                      address = cfg.lan.ipv4Address;
+                      prefixLength = cfg.lan.ipv4PrefixLength;
+                    }
+                  ]
+                );
+              }
+            ) cfg.lan.interfaces
+          ))
+        else
+          { }
+      );
 
     services.resolved.enable = lib.mkIf cfg.dhcp.enable (lib.mkForce false);
     services.dnsmasq = lib.mkIf cfg.dhcp.enable {
@@ -143,18 +168,24 @@ in
 
     networking.nat = lib.mkIf cfg.nat.enable {
       enable = true;
-      externalInterface = if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else cfg.wan.interface;
+      externalInterface =
+        if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else cfg.wan.interface;
       internalInterfaces = cfg.lan.interfaces;
     };
 
     networking.firewall.extraCommands = lib.mkIf cfg.mssClamping.enable (
       let
         extIface = if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else cfg.wan.interface;
-        mssCmd = if (cfg.mssClamping.mss != null) 
-                 then "-j TCPMSS --set-mss ${toString cfg.mssClamping.mss}"
-                 else "-j TCPMSS --clamp-mss-to-pmtu";
-      in ''
-        ${lib.optionalString (cfg.mssClamping.mss != null) "iptables -t mangle -D POSTROUTING -o ${extIface} -p tcp --tcp-flags SYN,RST SYN ${mssCmd} 2>/dev/null || true"}
+        mssCmd =
+          if (cfg.mssClamping.mss != null) then
+            "-j TCPMSS --set-mss ${toString cfg.mssClamping.mss}"
+          else
+            "-j TCPMSS --clamp-mss-to-pmtu";
+      in
+      ''
+        ${lib.optionalString (cfg.mssClamping.mss != null)
+          "iptables -t mangle -D POSTROUTING -o ${extIface} -p tcp --tcp-flags SYN,RST SYN ${mssCmd} 2>/dev/null || true"
+        }
         iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -o ${extIface} ${mssCmd}
       ''
     );

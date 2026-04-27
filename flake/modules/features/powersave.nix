@@ -1,4 +1,10 @@
-{ config, lib, pkgs, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   boot.consoleLogLevel = 3;
   boot.initrd.verbose = false;
   boot.plymouth.enable = true;
@@ -26,8 +32,7 @@
     # To hide any kernel messages from the console
     "kernel.printk" = "3 3 3 3";
   };
-  powerManagement.cpuFreqGovernor =
-    "powersave"; # active 模式下 powersave 实际上是将控制权交给固件
+  powerManagement.cpuFreqGovernor = "powersave"; # active 模式下 powersave 实际上是将控制权交给固件
   services.udev.extraRules = ''
     # 电源控制
     SUBSYSTEM=="pci", ATTR{power/control}="auto"

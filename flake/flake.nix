@@ -20,15 +20,26 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
   };
 
-  outputs = { self, nixpkgs, sops-nix, nixos-hardware, nix-index-database
-    , nixos-generators, geodb, nix-minecraft, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      sops-nix,
+      nixos-hardware,
+      nix-index-database,
+      nixos-generators,
+      geodb,
+      nix-minecraft,
+      ...
+    }@inputs:
     let
       lib = nixpkgs.lib;
 
       # Make inputs available to all modules
       specialArgsForAll = { inherit inputs; };
 
-    in {
+    in
+    {
       nixosConfigurations = {
         omen15 = lib.nixosSystem {
           specialArgs = specialArgsForAll;

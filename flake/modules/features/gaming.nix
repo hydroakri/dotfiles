@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   boot.kernelModules = [ "ntsync" ];
@@ -38,8 +43,22 @@
   };
 
   networking.firewall = {
-    allowedTCPPorts = [ 5222 25565 27015 27036 27037 27040 53317 ];
-    allowedUDPPorts = [ 7777 27015 27031 27036 53317 ];
+    allowedTCPPorts = [
+      5222
+      25565
+      27015
+      27036
+      27037
+      27040
+      53317
+    ];
+    allowedUDPPorts = [
+      7777
+      27015
+      27031
+      27036
+      53317
+    ];
     allowedUDPPortRanges = [
       {
         from = 27031;

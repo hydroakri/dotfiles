@@ -1,18 +1,24 @@
-{ config, lib, pkgs, ... }: {
-  boot.kernelParams = ([
-    # performance
-    "lru_gen_enabled=1"
-    "zswap.enabled=0"
-    "transparent_hugepage=madvise"
-    "nouveau.config=NvBoost=2"
-    "nouveau.modeset=1"
-  ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64
-    [ "processor.ignore_ppc=1" ]);
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  boot.kernelParams = (
+    [
+      # performance
+      "lru_gen_enabled=1"
+      "zswap.enabled=0"
+      "transparent_hugepage=madvise"
+      "nouveau.config=NvBoost=2"
+      "nouveau.modeset=1"
+    ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [ "processor.ignore_ppc=1" ]
+  );
   # CPU microcode (common)
-  hardware.cpu.amd.updateMicrocode =
-    lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
-  hardware.cpu.intel.updateMicrocode =
-    lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
+  hardware.cpu.amd.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
+  hardware.cpu.intel.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
   boot.kernel.sysctl = {
     # Network (common)
     "net.core.default_qdisc" = "cake";
@@ -104,9 +110,8 @@
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=64M
   '';
-  environment.systemPackages = with pkgs;
-    [
-      hdparm # udev rules require hdparm
-    ];
+  environment.systemPackages = with pkgs; [
+    hdparm # udev rules require hdparm
+  ];
 
 }

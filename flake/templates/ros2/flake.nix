@@ -4,8 +4,14 @@
     nixpkgs.follows = "nix-ros-overlay/nixpkgs";
   };
 
-  outputs = { self, nix-ros-overlay, nixpkgs }:
-    nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nix-ros-overlay,
+      nixpkgs,
+    }:
+    nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -31,7 +37,8 @@
         # 2. 创建一个集成的 ROS 环境
         # 使用 buildEnv 的好处是它会将所有包的路径并入一个虚拟根目录，减少环境变量长度
         rosEnv = pkgs.rosPackages.humble.buildEnv { paths = rosPkgs; };
-      in {
+      in
+      {
         devShells.default = pkgs.mkShell {
           name = "Robust ROS2 Project";
 
@@ -74,11 +81,11 @@
             echo "Checking GPU: $(glxinfo | grep 'Device:' || echo 'No GPU detected')"
           '';
         };
-      });
+      }
+    );
 
   nixConfig = {
     extra-substituters = [ "https://ros.cachix.org" ];
-    extra-trusted-public-keys =
-      [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];
+    extra-trusted-public-keys = [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];
   };
 }

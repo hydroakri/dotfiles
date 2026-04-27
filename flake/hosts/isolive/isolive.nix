@@ -1,5 +1,12 @@
 # nix build '.#packages.x86_64-linux.iso-installer'
-{ config, lib, pkgs, modulesPath, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+{
   imports = [
     # 官方 ISO 基础模块
     "${modulesPath}/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"

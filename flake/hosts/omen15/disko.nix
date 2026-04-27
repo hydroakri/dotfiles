@@ -16,19 +16,60 @@
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";
-                    mountOptions = [ "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=60" "compress=zstd:3" "discard=async" ];
+                    mountOptions = [
+                      "rw"
+                      "relatime"
+                      "ssd"
+                      "space_cache=v2"
+                      "noatime"
+                      "nodiratime"
+                      "commit=60"
+                      "compress=zstd:3"
+                      "discard=async"
+                    ];
                   };
                   "@nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [ "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=60" "compress=zstd:3" "discard=async" "autodefrag" ];
+                    mountOptions = [
+                      "rw"
+                      "relatime"
+                      "ssd"
+                      "space_cache=v2"
+                      "noatime"
+                      "nodiratime"
+                      "commit=60"
+                      "compress=zstd:3"
+                      "discard=async"
+                      "autodefrag"
+                    ];
                   };
                   "@home" = {
                     mountpoint = "/home";
-                    mountOptions = [ "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=60" "compress=zstd:3" "discard=async" ];
+                    mountOptions = [
+                      "rw"
+                      "relatime"
+                      "ssd"
+                      "space_cache=v2"
+                      "noatime"
+                      "nodiratime"
+                      "commit=60"
+                      "compress=zstd:3"
+                      "discard=async"
+                    ];
                   };
                   "@log" = {
                     mountpoint = "/var/log";
-                    mountOptions = [ "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=60" "compress=zstd:3" "discard=async" ];
+                    mountOptions = [
+                      "rw"
+                      "relatime"
+                      "ssd"
+                      "space_cache=v2"
+                      "noatime"
+                      "nodiratime"
+                      "commit=60"
+                      "compress=zstd:3"
+                      "discard=async"
+                    ];
                   };
                 };
               };
@@ -42,7 +83,10 @@
                 format = "vfat";
                 device = "/dev/disk/by-uuid/5652-348E";
                 mountpoint = "/boot";
-                mountOptions = [ "fmask=0077" "dmask=0077" ];
+                mountOptions = [
+                  "fmask=0077"
+                  "dmask=0077"
+                ];
               };
             };
             MSR = {
@@ -82,7 +126,18 @@
                 type = "btrfs";
                 device = "/dev/disk/by-uuid/47f2fc2f-c4b1-49b4-b2d1-a147c59aa44e";
                 mountpoint = "/steam-linux";
-                mountOptions = [ "rw" "relatime" "ssd" "space_cache=v2" "noatime" "nodiratime" "commit=60" "compress=zstd:3" "discard=async" "autodefrag" ];
+                mountOptions = [
+                  "rw"
+                  "relatime"
+                  "ssd"
+                  "space_cache=v2"
+                  "noatime"
+                  "nodiratime"
+                  "commit=60"
+                  "compress=zstd:3"
+                  "discard=async"
+                  "autodefrag"
+                ];
               };
             };
             ext4-placeholder = {

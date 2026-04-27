@@ -1,6 +1,13 @@
-{ config, lib, pkgs, inputs, ... }:
-with lib; {
-  imports = [ ./secrets/secrets.nix ];
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+with lib;
+{
+  imports = [ ../secrets/secrets.nix ];
   options.modules.proxy = {
     enable = mkEnableOption "Enable customized proxy stack (Sing-box + Dae)";
 
@@ -43,19 +50,20 @@ with lib; {
 
     # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
     systemd.services.dae = mkIf config.modules.proxy.dae.enable {
-      after = [ "network-online.target" "systemd-networkd-wait-online.service" ]
-        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.enableAdGuardHome
-          "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
-          "dnscrypt-proxy.service");
+      after = [
+        "network-online.target"
+        "systemd-networkd-wait-online.service"
+      ]
+      ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
+      ++ (lib.optional config.modules.proxy.enableAdGuardHome "adguardhome.service")
+      ++ (lib.optional config.modules.proxy.enableDnsCryptProxy "dnscrypt-proxy.service");
 
-      wants = [ "network-online.target" ]
-        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.enableAdGuardHome
-          "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
-          "dnscrypt-proxy.service");
+      wants = [
+        "network-online.target"
+      ]
+      ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
+      ++ (lib.optional config.modules.proxy.enableAdGuardHome "adguardhome.service")
+      ++ (lib.optional config.modules.proxy.enableDnsCryptProxy "dnscrypt-proxy.service");
     };
     # start order
     # ----------------------------------------------------------------------------
@@ -709,8 +717,20 @@ with lib; {
     networking.firewall = lib.mkMerge [
       # AdGuardHome 的端口规则
       (mkIf config.modules.proxy.enableAdGuardHome {
-        allowedTCPPorts = [ 53 80 443 3000 ];
-        allowedUDPPorts = [ 53 1080 67 68 547 546 ];
+        allowedTCPPorts = [
+          53
+          80
+          443
+          3000
+        ];
+        allowedUDPPorts = [
+          53
+          1080
+          67
+          68
+          547
+          546
+        ];
       })
 
       # dnscrypt-proxy 的端口规则
@@ -721,74 +741,84 @@ with lib; {
 
       # Sing-box 的端口规则
       (mkIf config.modules.proxy.singbox.enable {
-        allowedTCPPorts = [ 1080 9090 ];
+        allowedTCPPorts = [
+          1080
+          9090
+        ];
         allowedUDPPorts = [ 1080 ];
       })
     ];
 
-    services.adguardhome.enable =
-      mkIf config.modules.proxy.enableAdGuardHome true;
+    services.adguardhome.enable = mkIf config.modules.proxy.enableAdGuardHome true;
     systemd.services.adguardhome = mkIf config.modules.proxy.enableAdGuardHome {
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       serviceConfig = {
-        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
-        CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" "CAP_NET_RAW" ];
+        AmbientCapabilities = [
+          "CAP_NET_BIND_SERVICE"
+          "CAP_NET_RAW"
+        ];
+        CapabilityBoundingSet = [
+          "CAP_NET_BIND_SERVICE"
+          "CAP_NET_RAW"
+        ];
       };
     };
 
-    systemd.tmpfiles.rules = mkIf config.modules.proxy.enableDnsCryptProxy
-      [ "d /var/lib/dnscrypt-proxy 0755 dnscrypt-proxy dnscrypt-proxy - -" ];
-    systemd.services.update-dnscrypt-blocklist =
-      mkIf config.modules.proxy.enableDnsCryptProxy {
-        description = "Update dnscrypt-proxy blocklist";
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        script = ''
-          ${pkgs.curl}/bin/curl -L -o /var/lib/dnscrypt-proxy/blocklist.txt https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt
-          # 如果需要，可以在这里重启服务或发送信号
-          # systemctl kill -s HUP dnscrypt-proxy
-        '';
-        serviceConfig = {
-          Type = "oneshot";
-          User = "dnscrypt-proxy";
-        };
+    systemd.tmpfiles.rules = mkIf config.modules.proxy.enableDnsCryptProxy [
+      "d /var/lib/dnscrypt-proxy 0755 dnscrypt-proxy dnscrypt-proxy - -"
+    ];
+    systemd.services.update-dnscrypt-blocklist = mkIf config.modules.proxy.enableDnsCryptProxy {
+      description = "Update dnscrypt-proxy blocklist";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      script = ''
+        ${pkgs.curl}/bin/curl -L -o /var/lib/dnscrypt-proxy/blocklist.txt https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt
+        # 如果需要，可以在这里重启服务或发送信号
+        # systemctl kill -s HUP dnscrypt-proxy
+      '';
+      serviceConfig = {
+        Type = "oneshot";
+        User = "dnscrypt-proxy";
       };
+    };
 
     services.sing-box = mkIf config.modules.proxy.singbox.enable {
       enable = true;
       package = pkgs.sing-box;
     };
     systemd.services.sing-box = mkIf config.modules.proxy.singbox.enable {
-      after = [ "network-online.target" ]
-        ++ (lib.optional config.modules.proxy.enableAdGuardHome
-          "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
-          "dnscrypt-proxy.service");
+      after = [
+        "network-online.target"
+      ]
+      ++ (lib.optional config.modules.proxy.enableAdGuardHome "adguardhome.service")
+      ++ (lib.optional config.modules.proxy.enableDnsCryptProxy "dnscrypt-proxy.service");
 
-      wants = [ "network-online.target" ]
-        ++ (lib.optional config.modules.proxy.enableAdGuardHome
-          "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.enableDnsCryptProxy
-          "dnscrypt-proxy.service");
+      wants = [
+        "network-online.target"
+      ]
+      ++ (lib.optional config.modules.proxy.enableAdGuardHome "adguardhome.service")
+      ++ (lib.optional config.modules.proxy.enableDnsCryptProxy "dnscrypt-proxy.service");
 
       restartTriggers = [ config.sops.templates."config.json".path ];
 
-      serviceConfig.ExecStart = (lib.mkForce [
-        ""
-        "${pkgs.sing-box}/bin/sing-box run -c ${
-          config.sops.templates."config.json".path
-        }"
-      ]);
+      serviceConfig.ExecStart = (
+        lib.mkForce [
+          ""
+          "${pkgs.sing-box}/bin/sing-box run -c ${config.sops.templates."config.json".path}"
+        ]
+      );
     };
 
     services.dae = mkIf config.modules.proxy.dae.enable {
       enable = true;
       # configFile = "/etc/dae/config.dae";
-      assetsPath = toString (pkgs.symlinkJoin {
-        name = "dae-assets";
-        paths = [ "${inputs.geodb}" ];
-      });
+      assetsPath = toString (
+        pkgs.symlinkJoin {
+          name = "dae-assets";
+          paths = [ "${inputs.geodb}" ];
+        }
+      );
       config = ''
         global {
           dial_mode: domain

@@ -1,4 +1,10 @@
-{ config, pkgs, lib, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
   boot.kernelParams = [ "preempt=full" ];
   boot.kernel.sysctl = {
     # Desktop-specific VM tuning
@@ -10,9 +16,10 @@
     "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
   };
   networking.networkmanager.settings = {
-    "connection" = { "ipv6.ip6-privacy" = 2; };
+    "connection" = {
+      "ipv6.ip6-privacy" = 2;
+    };
   };
-
 
   # X Server and input
   services.xserver.enable = true;
@@ -36,29 +43,26 @@
   # Polkit (privilege elevation)
   security.polkit.enable = true;
   security.pam.services.polkit.enable = true;
-  systemd.user.services.polkit-agent =
-    lib.mkIf (!config.services.desktopManager.plasma6.enable) {
-      description = "polkit-agent";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "simple";
-        # ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-        ExecStart =
-          "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
-        Restart = "on-failure";
-        RestartSec = 1;
-        TimeoutStopSec = 10;
-      };
+  systemd.user.services.polkit-agent = lib.mkIf (!config.services.desktopManager.plasma6.enable) {
+    description = "polkit-agent";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      # ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      ExecStart = "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+      TimeoutStopSec = 10;
     };
+  };
 
   # Secret service (keyring) use keepassxc
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
   services.passSecretService.enable = true;
-  services.gnome.gcr-ssh-agent.enable =
-    false; # disable ssh function managed by gnome-keyring
+  services.gnome.gcr-ssh-agent.enable = false; # disable ssh function managed by gnome-keyring
   services.dbus.packages = [ pkgs.gcr ];
 
   # For earlyoom and smartd notices
@@ -87,7 +91,9 @@
         Experimental = true;
         FastConnectable = true;
       };
-      Policy = { AutoEnable = true; };
+      Policy = {
+        AutoEnable = true;
+      };
     };
   };
 
@@ -140,49 +146,61 @@
     allowedTCPPorts = [ 1080 ];
     allowedUDPPorts = [ 1080 ];
   };
-  environment.plasma6.excludePackages = (with pkgs; [
-    kdePackages.elisa
-    kdePackages.gwenview
-    kdePackages.kwrited
-    kdePackages.khelpcenter
-    kdePackages.konqueror
-    kdePackages.oxygen
-    kdePackages.krdc
-    kdePackages.krfb
-    kdePackages.dragon
-    kdePackages.kcalc
-    kdePackages.kfind
-    kdePackages.kcharselect
-    kdePackages.keditbookmarks
-    kdePackages.drkonqi
-    kdePackages.kdebugsettings
-    kdePackages.kjournald
-    kdePackages.ksystemlog
-    kdePackages.kamera
-    kdePackages.audiocd-kio
-    kdePackages.ffmpegthumbs
-    kdePackages.kwallet
-    kdePackages.kwallet-pam
-  ]);
-  environment.cosmic.excludePackages =
-    (with pkgs; [ cosmic-player cosmic-term cosmic-edit ]);
-  environment.gnome.excludePackages = (with pkgs; [
-    atomix # puzzle game
-    cheese # webcam tool
-    epiphany # web browser
-    evince # document viewer
-    geary # email reader
-    gedit # text editor
-    gnome-characters
-    gnome-music
-    gnome-photos
-    gnome-terminal
-    gnome-tour
-    hitori # sudoku game
-    iagno # go game
-    tali # poker game
-    totem # video player
-  ]);
+  environment.plasma6.excludePackages = (
+    with pkgs;
+    [
+      kdePackages.elisa
+      kdePackages.gwenview
+      kdePackages.kwrited
+      kdePackages.khelpcenter
+      kdePackages.konqueror
+      kdePackages.oxygen
+      kdePackages.krdc
+      kdePackages.krfb
+      kdePackages.dragon
+      kdePackages.kcalc
+      kdePackages.kfind
+      kdePackages.kcharselect
+      kdePackages.keditbookmarks
+      kdePackages.drkonqi
+      kdePackages.kdebugsettings
+      kdePackages.kjournald
+      kdePackages.ksystemlog
+      kdePackages.kamera
+      kdePackages.audiocd-kio
+      kdePackages.ffmpegthumbs
+      kdePackages.kwallet
+      kdePackages.kwallet-pam
+    ]
+  );
+  environment.cosmic.excludePackages = (
+    with pkgs;
+    [
+      cosmic-player
+      cosmic-term
+      cosmic-edit
+    ]
+  );
+  environment.gnome.excludePackages = (
+    with pkgs;
+    [
+      atomix # puzzle game
+      cheese # webcam tool
+      epiphany # web browser
+      evince # document viewer
+      geary # email reader
+      gedit # text editor
+      gnome-characters
+      gnome-music
+      gnome-photos
+      gnome-terminal
+      gnome-tour
+      hitori # sudoku game
+      iagno # go game
+      tali # poker game
+      totem # video player
+    ]
+  );
   fonts = {
     packages = with pkgs; [
       noto-fonts-cjk-sans
@@ -216,12 +234,17 @@
       ExecStart = "${pkgs.darkman}/bin/darkman run";
       Restart = "always";
     };
-    environment = { XDG_CONFIG_HOME = "%h/.config"; };
+    environment = {
+      XDG_CONFIG_HOME = "%h/.config";
+    };
   };
 
   # GUI User profile
   users.users.${config.mainUser} = {
-    extraGroups = [ "video" "i2c" ];
+    extraGroups = [
+      "video"
+      "i2c"
+    ];
     packages = with pkgs; [
       # themes/shell/plugin
       bibata-cursors

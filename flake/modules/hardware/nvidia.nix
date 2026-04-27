@@ -1,13 +1,26 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
-let cfg = config.modules.nvidia;
-in {
+let
+  cfg = config.modules.nvidia;
+in
+{
   options.modules.nvidia.enable = mkEnableOption "NVIDIA support";
 
   config = mkIf cfg.enable {
     system.nixos.tags = [ "nvidia" ];
-    services.xserver.videoDrivers = [ "amdgpu" "nvidia" ];
-    boot.kernelParams = [ "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1" ];
+    services.xserver.videoDrivers = [
+      "amdgpu"
+      "nvidia"
+    ];
+    boot.kernelParams = [
+      "nvidia_drm.modeset=1"
+      "nvidia_drm.fbdev=1"
+    ];
     boot.blacklistedKernelModules = [ "nouveau" ];
     # boot.initrd.kernelModules =
     #  [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];

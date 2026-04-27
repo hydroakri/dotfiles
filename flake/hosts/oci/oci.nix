@@ -1,4 +1,11 @@
-{ config, lib, pkgs, inputs, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+{
 
   imports = [
     # Hardware modules
@@ -119,7 +126,11 @@
     boot.plymouth.enable = false;
     boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
-    boot.initrd.supportedFilesystems = [ "vfat" "ext4" "xfs" ];
+    boot.initrd.supportedFilesystems = [
+      "vfat"
+      "ext4"
+      "xfs"
+    ];
     boot.initrd.availableKernelModules = [
       "virtio_pci"
       "virtio_scsi"
@@ -155,7 +166,10 @@
     networking.interfaces.enp0s6.mtu = 1492;
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
-      allowedTCPPorts = [ 80 443 ];
+      allowedTCPPorts = [
+        80
+        443
+      ];
       checkReversePath = false; # For dae transparent netgate, let date pass
       extraCommands = ''
         # 确保 SS-2022 加密后的包不会撑爆 MTU
@@ -176,13 +190,6 @@
       MaxRetentionSec=1week
     '';
 
-    users.users.${config.mainUser} = {
-      shell = pkgs.zsh;
-      isNormalUser = true;
-      description = "${config.mainUser}";
-      extraGroups = [ "networkmanager" "wheel" ];
-    };
-
     services.tailscale.enable = true;
     services.headscale = {
       enable = true;
@@ -193,7 +200,10 @@
         dns = {
           magic_dns = true;
           base_domain = "ts.hydroakri.cc";
-          nameservers.global = [ "172.64.36.2" "149.112.112.11" ];
+          nameservers.global = [
+            "172.64.36.2"
+            "149.112.112.11"
+          ];
         };
         prefixes = {
           v4 = "100.64.0.0/10";
@@ -230,7 +240,11 @@
           autocomplete = "duckduckgo";
           favicon_resolver = "duckduckgo";
           autocomplete_min_chars = 1;
-          formats = [ "html" "json" "rss" ];
+          formats = [
+            "html"
+            "json"
+            "rss"
+          ];
         };
         ui = {
           hotkeys = "default";
@@ -244,8 +258,11 @@
             center_alignment = false;
           };
         };
-        enabled_plugins =
-          [ "Tracker Protection" "Hostnames replace" "Favicons" ];
+        enabled_plugins = [
+          "Tracker Protection"
+          "Hostnames replace"
+          "Favicons"
+        ];
         engines = [
           {
             name = "google";
@@ -332,7 +349,10 @@
     };
 
     systemd.services.rclone-webdav = {
-      after = [ "network.target" "sops-nix.service" ]; # 确保在 sops 渲染后启动
+      after = [
+        "network.target"
+        "sops-nix.service"
+      ]; # 确保在 sops 渲染后启动
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         EnvironmentFile = config.sops.templates."rclone-r2.env".path;
@@ -377,19 +397,20 @@
       serviceConfig = {
         DynamicUser = lib.mkForce false;
         EnvironmentFile = config.sops.templates."attic-env".path;
-        ExecStart = lib.mkForce
-          "${config.services.atticd.package}/bin/atticd -f ${
-            config.sops.templates."attic-server.toml".path
-          } --mode monolithic";
+        ExecStart = lib.mkForce "${config.services.atticd.package}/bin/atticd -f ${
+          config.sops.templates."attic-server.toml".path
+        } --mode monolithic";
       };
     };
     services.postgresql = {
       enable = true;
       ensureDatabases = [ "atticd" ];
-      ensureUsers = [{
-        name = "atticd";
-        ensureDBOwnership = true;
-      }];
+      ensureUsers = [
+        {
+          name = "atticd";
+          ensureDBOwnership = true;
+        }
+      ];
     };
 
     services.minecraft-servers = {
@@ -505,7 +526,9 @@
           allow fd7a:115c:a1e0::/48;
           deny all;
         '';
-        locations."/" = { proxyPass = "http://127.0.0.1:8082"; };
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8082";
+        };
       };
 
       virtualHosts."vault.hydroakri.cc" = {

@@ -1,5 +1,17 @@
-{ config, lib, pkgs, inputs, ... }: {
-  imports = [ ./options.nix ./features/networking/sqm.nix ./features/networking/tuning.nix inputs.nix-index-database.nixosModules.default ];
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+{
+  imports = [
+    ./options.nix
+    ./features/networking/sqm.nix
+    ./features/networking/tuning.nix
+    inputs.nix-index-database.nixosModules.default
+  ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
@@ -7,7 +19,10 @@
     package = pkgs.lix;
     settings = {
       auto-optimise-store = true;
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       substituters = [
         "https://cache.hydroakri.cc/cachix"
         # "https://mirrors.ustc.edu.cn/nix-channels/store"
@@ -22,7 +37,10 @@
       max-jobs = "auto";
       cores = 0;
       allowed-users = [ "@wheel" ];
-      trusted-users = [ "root" "@wheel" ];
+      trusted-users = [
+        "root"
+        "@wheel"
+      ];
     };
     registry.nixpkgs.flake = inputs.nixpkgs;
     optimise.automatic = true;
@@ -32,7 +50,9 @@
       options = "--delete-older-than 7d";
     };
   };
-  boot.kernel.sysctl = { "kernel.sysrq" = 246; };
+  boot.kernel.sysctl = {
+    "kernel.sysrq" = 246;
+  };
   console = {
     enable = true;
     earlySetup = true;
@@ -59,11 +79,13 @@
     };
   };
   networking.firewall = {
-    allowedUDPPortRanges = [{
-      from = 7400;
-      to = 7500;
-    } # DDS 默认发现端口 allow multi-cast
-      ];
+    allowedUDPPortRanges = [
+      {
+        from = 7400;
+        to = 7500;
+      }
+      # DDS 默认发现端口 allow multi-cast
+    ];
     extraCommands = ''
       # --- IPv4 组播规则 ---
       iptables -A nixos-fw -d 224.0.0.0/4 -p udp -j nixos-fw-accept
@@ -78,11 +100,16 @@
     enable = true;
     dns = "default";
   };
-  networking.nameservers = [ "172.64.36.2" "149.112.112.11" ];
+  networking.nameservers = [
+    "172.64.36.2"
+    "149.112.112.11"
+  ];
   services.chrony = {
     enable = true;
     servers = [ ];
     extraConfig = ''
+      driftfile /var/lib/chrony/chrony.drift
+
       server time.grapheneos.org iburst
       server time.cloudflare.com iburst nts
       server nts.netnod.se iburst nts
@@ -95,15 +122,17 @@
   #SMART monitor
   services.smartd = {
     enable = true;
-    defaults.monitored =
-      "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,55,65";
+    defaults.monitored = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,55,65";
   };
   users.users.root.shell = pkgs.zsh;
   users.users.${config.mainUser} = {
     shell = pkgs.zsh;
     isNormalUser = true;
     description = "${config.mainUser}";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
   };
   programs.zsh.enable = true;
   programs.nh.enable = true;
@@ -126,7 +155,9 @@
   programs.git = {
     enable = true;
     config = {
-      init = { defaultBranch = "main"; };
+      init = {
+        defaultBranch = "main";
+      };
       url = {
         "ssh://git@github.com/" = {
           pushInsteadOf = [ "https://github.com/" ];
@@ -134,7 +165,8 @@
       };
     };
   };
-  environment.systemPackages = with pkgs;
+  environment.systemPackages =
+    with pkgs;
     [
       wget
       curl
@@ -152,7 +184,7 @@
       lshw
       file
       usbutils
-      # modern tools 
+      # modern tools
       fzf
       bat
       gdu
@@ -168,7 +200,8 @@
       # nix utils
       nix-tree
       nix-output-monitor
-    ] ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
+    ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
       sbctl
       efibootmgr
