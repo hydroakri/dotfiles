@@ -75,12 +75,6 @@
     MaxRetentionSec=1week
   '';
 
-  users.users.${config.mainUser} = {
-    shell = pkgs.zsh;
-    isNormalUser = true;
-    description = "${config.mainUser}";
-    extraGroups = [ "networkmanager" "wheel" ];
-  };
 
   fileSystems = {
     "/" = lib.mkForce {

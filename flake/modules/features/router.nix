@@ -68,19 +68,6 @@ in
         default = null; # null means clamp-mss-to-pmtu
       };
     };
-
-    sysfsTuning = {
-      rx = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Interfaces to tune RX queues (rps_cpus)";
-      };
-      tx = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        description = "Interfaces to tune TX queues (xps_cpus)";
-      };
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -96,12 +83,6 @@ in
       "net.ipv4.tcp_wmem" = lib.mkForce "4096 87380 4194304";
       "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
     };
-
-    boot.kernel.sysfs = 
-      let
-        rx = lib.foldr lib.recursiveUpdate {} (map (iface: lib.setAttrByPath ["class" "net" iface "queues" "rx-0" "rps_cpus"] "f") cfg.sysfsTuning.rx);
-        tx = lib.foldr lib.recursiveUpdate {} (map (iface: lib.setAttrByPath ["class" "net" iface "queues" "tx-0" "xps_cpus"] "f") cfg.sysfsTuning.tx);
-      in lib.recursiveUpdate rx tx;
 
     networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
 

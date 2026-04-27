@@ -219,4 +219,23 @@
     environment = { XDG_CONFIG_HOME = "%h/.config"; };
   };
 
+  # GUI User profile
+  users.users.${config.mainUser} = {
+    extraGroups = [ "video" "i2c" ];
+    packages = with pkgs; [
+      # themes/shell/plugin
+      bibata-cursors
+      papirus-icon-theme
+      gnomeExtensions.appindicator
+      gnomeExtensions.user-themes
+      gnomeExtensions.kimpanel
+      gnome-tweaks
+
+      # GUI Applications
+      venera
+      wezterm
+      kdePackages.kate
+      # davinci-resolve-studio
+    ];
+  };
 }

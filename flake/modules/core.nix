@@ -1,5 +1,5 @@
 { config, lib, pkgs, inputs, ... }: {
-  imports = [ ./options.nix ./features/networking/sqm.nix inputs.nix-index-database.nixosModules.default ];
+  imports = [ ./options.nix ./features/networking/sqm.nix ./features/networking/tuning.nix inputs.nix-index-database.nixosModules.default ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
@@ -99,6 +99,12 @@
       "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,55,65";
   };
   users.users.root.shell = pkgs.zsh;
+  users.users.${config.mainUser} = {
+    shell = pkgs.zsh;
+    isNormalUser = true;
+    description = "${config.mainUser}";
+    extraGroups = [ "networkmanager" "wheel" ];
+  };
   programs.zsh.enable = true;
   programs.nh.enable = true;
   programs.nix-ld.enable = true;

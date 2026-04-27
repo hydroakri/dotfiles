@@ -34,6 +34,13 @@
   modules = {
     nvidia.enable = true;
     networking.sqm.enable = true;
+    networking.sysfsTuning = {
+      enable = true;
+      interfaces = {
+        eno1 = { rps_cpus = "fe"; xps_cpus = "fe"; };
+        wlo1 = { rps_cpus = "fe"; xps_cpus = "fe"; };
+      };
+    };
     proxy = {
       enable = true;
       enableDnsCryptProxy = false;
@@ -79,14 +86,6 @@
             protocol: efi
             path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
       '';
-    };
-    kernel.sysfs = {
-      # enable net card RPS & XPS
-      class.net.eno1.queues."rx-0".rps_cpus = "fe";
-      class.net.eno1.queues."tx-0".xps_cpus = "fe";
-
-      class.net.wlo1.queues."rx-0".rps_cpus = "fe";
-      class.net.wlo1.queues."tx-0".xps_cpus = "fe";
     };
   };
   i18n = {
@@ -157,28 +156,6 @@
     # rofi
 
   ];
-  # User definition
-  users.users.${config.mainUser} = {
-    shell = pkgs.zsh;
-    isNormalUser = true;
-    description = "${config.mainUser}";
-    extraGroups = [ "networkmanager" "wheel" "video" "i2c" ];
-    packages = with pkgs; [
-      # themes/shell/plugin
-      bibata-cursors
-      papirus-icon-theme
-      gnomeExtensions.appindicator
-      gnomeExtensions.user-themes
-      gnomeExtensions.kimpanel
-      gnome-tweaks
-
-      # GUI Applications
-      venera
-      wezterm
-      kdePackages.kate
-      # davinci-resolve-studio
-    ];
-  };
   # programs.niri.enable = true;
   programs.kdeconnect.enable = true;
   # Application-specific programs (host-specific)

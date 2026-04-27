@@ -39,6 +39,13 @@
         enablePrometheus = false;
         enableGraphicTools = false;
       };
+      networking.sysfsTuning = {
+        enable = true;
+        interfaces = {
+          end0 = { rps_cpus = "f"; };
+          enp1s0u1 = { rps_cpus = "f"; xps_cpus = "f"; };
+        };
+      };
       router = {
         enable = true;
         wan = {
@@ -56,10 +63,6 @@
         };
         nat.enable = true;
         mssClamping.enable = true;
-        sysfsTuning = {
-          rx = [ "end0" "enp1s0u1" ];
-          tx = [ "enp1s0u1" ];
-        };
       };
     };
 

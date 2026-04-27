@@ -45,6 +45,13 @@
         enablePrometheus = true;
         enableGraphicTools = false;
       };
+      networking.sysfsTuning = {
+        enable = true;
+        interfaces = {
+          end0 = { rps_cpus = "f"; };
+          wlan0 = { rps_cpus = "f"; xps_cpus = "f"; };
+        };
+      };
       router = {
         enable = true;
         wan = {
@@ -60,10 +67,6 @@
         mssClamping = {
           enable = true;
           mss = 1412;
-        };
-        sysfsTuning = {
-          rx = [ "end0" "wlan0" ];
-          tx = [ "wlan0" ];
         };
       };
     };
