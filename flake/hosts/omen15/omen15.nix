@@ -40,7 +40,13 @@
   ];
   modules = {
     nvidia.enable = true;
-    networking.sqm.enable = true;
+    networking.sqm = {
+      enable = true;
+      wanInterface = "wlo1";
+      lanInterface = "wlo1";
+      downloadBandwidth = "98mbit";
+      uploadBandwidth = "23mbit";
+    };
     networking.sysfsTuning = {
       enable = true;
       interfaces = {
@@ -56,17 +62,14 @@
     };
     proxy = {
       enable = true;
-      enableDnsCryptProxy = false;
-      dae.enable = false;
       singbox.enable = true;
+      singbox.dns = true;
     };
     utils = {
       enable = true;
       enableGraphicTools = true;
       enableGlance = true;
       enableUptime = true;
-      enableGrafana = false;
-      enablePrometheus = false;
     };
   };
   boot = {
@@ -147,7 +150,6 @@
     enable = false;
     enableWaylandSession = true;
   };
-  networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };

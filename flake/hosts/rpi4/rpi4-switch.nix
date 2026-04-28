@@ -34,10 +34,7 @@
     modules = {
       proxy = {
         enable = true;
-        enableAdGuardHome = false;
-        enableDnsCryptProxy = true;
-        singbox.enable = false;
-        dae.enable = false;
+        dnscrypt-proxy.enable = true;
       };
       utils = {
         enable = false;
@@ -45,6 +42,13 @@
         enableGrafana = false;
         enablePrometheus = false;
         enableGraphicTools = false;
+      };
+      networking.sqm = {
+        enable = true;
+        wanInterface = "end0"; # 连路由器的口，控制上传
+        lanInterface = "enp1s0u1"; # 连电脑的口，控制下载
+        downloadBandwidth = "98mbit";
+        uploadBandwidth = "23mbit";
       };
       networking.sysfsTuning = {
         enable = true;

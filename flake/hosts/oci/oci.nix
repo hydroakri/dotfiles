@@ -164,7 +164,6 @@
     environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
     services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
     networking.interfaces.enp0s6.mtu = 1492;
-    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
     networking.firewall = {
       allowedTCPPorts = [
         80

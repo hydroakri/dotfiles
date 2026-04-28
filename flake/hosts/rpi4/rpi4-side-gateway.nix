@@ -34,8 +34,7 @@
     modules = {
       proxy = {
         enable = true;
-        enableAdGuardHome = false;
-        enableDnsCryptProxy = true;
+        dnscrypt-proxy.enable = true;
         singbox.enable = true;
         dae = {
           enable = true;

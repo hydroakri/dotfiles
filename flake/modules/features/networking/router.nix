@@ -89,8 +89,6 @@ in
       "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
     };
 
-    networking.networkmanager.insertNameservers = [ "127.0.0.1" ];
-
     networking.vlans = lib.mkIf (cfg.wan.vlanId != null) {
       "vlan${toString cfg.wan.vlanId}" = {
         id = cfg.wan.vlanId;

@@ -11,15 +11,30 @@ in
 {
   options.modules.networking.sqm = {
     enable = lib.mkEnableOption "SQM (Smart Queue Management) for gaming/networking";
-    wifiBandwidth = lib.mkOption {
+    wanInterface = lib.mkOption {
       type = lib.types.str;
-      default = "370mbit";
-      description = "Bandwidth limit for Wi-Fi interface in CAKE qdisc.";
+      default = "enp1s0";
+      description = "WAN interface (connected to router/internet). Controls UPLOAD.";
     };
-    ethernetBandwidth = lib.mkOption {
+    lanInterface = lib.mkOption {
       type = lib.types.str;
-      default = "500mbit";
-      description = "Bandwidth limit for Ethernet interface in CAKE qdisc.";
+      default = "enp1s1";
+      description = "LAN interface (connected to devices). Controls DOWNLOAD.";
+    };
+    uploadBandwidth = lib.mkOption {
+      type = lib.types.str;
+      default = "22mbit";
+      description = "Upload bandwidth limit (90-95% of line rate).";
+    };
+    downloadBandwidth = lib.mkOption {
+      type = lib.types.str;
+      default = "95mbit";
+      description = "Download bandwidth limit (90-95% of line rate).";
+    };
+    overhead = lib.mkOption {
+      type = lib.types.int;
+      default = 0;
+      description = "Framing overhead (Set to 0 to disable).";
     };
   };
 
@@ -46,34 +61,38 @@ in
           # 简单的日志记录，方便用 journalctl -u NetworkManager 查看
           $LOGGER -t gaming-sqm "Configuring gaming network stack for $IFACE..."
 
-          case "$IFACE" in
-            wlo*|wl*)
-              # Wi-Fi 优化
-              # 关 GRO 可能导致瞬时重连，部分驱动不支持，加 true 忽略错误
-              $ETHTOOL -K "$IFACE" gro off || true
-              
-              $TC qdisc del dev "$IFACE" root 2>/dev/null || true
-              $TC qdisc add dev "$IFACE" root cake \
-                bandwidth ${cfg.wifiBandwidth} \
-                besteffort \
-                wash
-              $LOGGER -t gaming-sqm "Applied Wi-Fi (Safe) CAKE policy to $IFACE"
-              ;;
+          # 构建参数字符串
+          OVERHEAD_ARG=""
+          [ ${toString cfg.overhead} -gt 0 ] && OVERHEAD_ARG="overhead ${toString cfg.overhead}"
 
-            enp*|eth*|en*)
-              # 以太网优化
+          if [ "$IFACE" = "${cfg.wanInterface}" ]; then
+              # 上传优化 (流向外网)
               $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
-              
               $TC qdisc del dev "$IFACE" root 2>/dev/null || true
               $TC qdisc add dev "$IFACE" root cake \
-                bandwidth ${cfg.ethernetBandwidth} \
+                bandwidth ${cfg.uploadBandwidth} \
                 diffserv4 \
                 triple-isolate \
                 wash \
-                ack-filter
-              $LOGGER -t gaming-sqm "Applied Ethernet (Aggressive) CAKE policy to $IFACE"
-              ;;
-          esac
+                ack-filter \
+                $OVERHEAD_ARG \
+                nat
+              $LOGGER -t gaming-sqm "Applied UPLOAD CAKE policy to $IFACE (via WAN)"
+          fi
+
+          if [ "$IFACE" = "${cfg.lanInterface}" ] && [ "${cfg.lanInterface}" != "${cfg.wanInterface}" ]; then
+              # 下载优化 (流向内网)
+              $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
+              $TC qdisc del dev "$IFACE" root 2>/dev/null || true
+              $TC qdisc add dev "$IFACE" root cake \
+                bandwidth ${cfg.downloadBandwidth} \
+                besteffort \
+                triple-isolate \
+                wash \
+                $OVERHEAD_ARG \
+                nat
+              $LOGGER -t gaming-sqm "Applied DOWNLOAD CAKE policy to $IFACE (via LAN)"
+          fi
         '';
       }
     ];
