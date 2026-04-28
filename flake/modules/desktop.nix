@@ -11,9 +11,6 @@
     "vm.swappiness" = lib.mkForce 180;
     "vm.dirty_ratio" = lib.mkForce 10;
     "vm.dirty_background_ratio" = lib.mkForce 5;
-    # ipv6 privacy
-    "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
-    "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
   };
   networking.networkmanager.settings = {
     "connection" = {

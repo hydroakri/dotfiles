@@ -78,8 +78,8 @@ in
     "net.ipv4.tcp_dsack" = 0;
     "net.ipv4.tcp_fack" = 0;
     # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪;
-    "net.ipv6.conf.all.use_tempaddr" = 2;
-    "net.ipv6.conf.default.use_tempaddr" = 2;
+    "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
+    "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
     # 增加 BPF JIT 编译器的安全性，消除某些侧信道攻击;
     "net.core.bpf_jit_harden" = 2;
     # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启);

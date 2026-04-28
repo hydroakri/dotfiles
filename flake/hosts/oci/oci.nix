@@ -142,52 +142,17 @@
       "xhci_pci"
       "usbhid"
     ];
-    console.font = lib.mkForce "ter-v16n";
-    boot.kernel.sysctl = {
-      "net.ipv4.ip_forward" = 1;
-      "net.ipv6.conf.all.forwarding" = 1;
-      "net.ipv6.conf.default.forwarding" = 1;
-
-      # optimize bufferbloat
-      "net.core.netdev_max_backlog" = lib.mkForce 2000;
-      "net.core.rmem_max" = lib.mkForce 4194304;
-      "net.core.wmem_max" = lib.mkForce 4194304;
-      "net.ipv4.tcp_rmem" = lib.mkForce "4096 87380 4194304";
-      "net.ipv4.tcp_wmem" = lib.mkForce "4096 87380 4194304";
-      "net.ipv4.tcp_mem" = lib.mkForce "4194304 4194304 4194304";
-    };
-    # boot.kernel.sysfs = {
-    #   # enable net card RPS & XPS
-    #   class.net.enp0s6.queues."rx-0".rps_cpus = "f";
-    # };
-    powerManagement.cpuFreqGovernor = "performance";
-    environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
-    services.irqbalance.enable = lib.mkForce false; # 禁用自动平衡
-    networking.interfaces.enp0s6.mtu = 1492;
     networking.firewall = {
       allowedTCPPorts = [
         80
         443
       ];
-      checkReversePath = false; # For dae transparent netgate, let date pass
-      extraCommands = ''
-        # 确保 SS-2022 加密后的包不会撑爆 MTU
-        iptables -t mangle -D POSTROUTING -o enp0s6 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412 2>/dev/null || true
-        iptables -t mangle -A POSTROUTING -o enp0s6 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1412
-      '';
     };
 
     environment.systemPackages = with pkgs; [
-      ethtool
       rclone
       apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
-    services.smartd.enable = lib.mkForce false;
-    services.journald.extraConfig = ''
-      Storage=volatile
-      SystemMaxUse=64M
-      MaxRetentionSec=1week
-    '';
 
     services.tailscale.enable = true;
     services.headscale = {

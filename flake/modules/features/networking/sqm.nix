@@ -22,14 +22,16 @@ in
       description = "LAN interface (connected to devices). Controls DOWNLOAD.";
     };
     uploadBandwidth = lib.mkOption {
-      type = lib.types.str;
-      default = "22mbit";
-      description = "Upload bandwidth limit (90-95% of line rate).";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "30mbit";
+      description = "Upload bandwidth limit (90-95% of line rate). Leave null to run at interface line rate.";
     };
     downloadBandwidth = lib.mkOption {
-      type = lib.types.str;
-      default = "95mbit";
-      description = "Download bandwidth limit (90-95% of line rate).";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "500mbit";
+      description = "Download bandwidth limit (90-95% of line rate). Leave null to run at interface line rate.";
     };
     overhead = lib.mkOption {
       type = lib.types.int;
@@ -67,30 +69,37 @@ in
 
           if [ "$IFACE" = "${cfg.wanInterface}" ]; then
               # 上传优化 (流向外网)
-              $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
+              if [[ "$IFACE" == wl* ]]; then
+                  # Wi-Fi 特定优化
+                  $ETHTOOL -K "$IFACE" gro off || true
+              else
+                  # 以太网优化
+                  $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
+              fi
               $TC qdisc del dev "$IFACE" root 2>/dev/null || true
-              $TC qdisc add dev "$IFACE" root cake \
-                bandwidth ${cfg.uploadBandwidth} \
-                diffserv4 \
-                triple-isolate \
-                wash \
-                ack-filter \
-                $OVERHEAD_ARG \
-                nat
+              CAKE_ARGS="diffserv4 triple-isolate wash ack-filter $OVERHEAD_ARG nat"
+              ${lib.optionalString (
+                cfg.uploadBandwidth != null
+              ) "CAKE_ARGS=\"bandwidth ${cfg.uploadBandwidth} $CAKE_ARGS\""}
+              $TC qdisc add dev "$IFACE" root cake $CAKE_ARGS
               $LOGGER -t gaming-sqm "Applied UPLOAD CAKE policy to $IFACE (via WAN)"
           fi
 
           if [ "$IFACE" = "${cfg.lanInterface}" ] && [ "${cfg.lanInterface}" != "${cfg.wanInterface}" ]; then
               # 下载优化 (流向内网)
-              $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
+              if [[ "$IFACE" == wl* ]]; then
+                  # Wi-Fi 特定优化
+                  $ETHTOOL -K "$IFACE" gro off || true
+              else
+                  # 以太网优化
+                  $ETHTOOL -K "$IFACE" gro off gso off tso off lro off || true
+              fi
               $TC qdisc del dev "$IFACE" root 2>/dev/null || true
-              $TC qdisc add dev "$IFACE" root cake \
-                bandwidth ${cfg.downloadBandwidth} \
-                besteffort \
-                triple-isolate \
-                wash \
-                $OVERHEAD_ARG \
-                nat
+              CAKE_ARGS="besteffort triple-isolate wash $OVERHEAD_ARG nat"
+              ${lib.optionalString (
+                cfg.downloadBandwidth != null
+              ) "CAKE_ARGS=\"bandwidth ${cfg.downloadBandwidth} $CAKE_ARGS\""}
+              $TC qdisc add dev "$IFACE" root cake $CAKE_ARGS
               $LOGGER -t gaming-sqm "Applied DOWNLOAD CAKE policy to $IFACE (via LAN)"
           fi
         '';

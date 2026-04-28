@@ -33,6 +33,11 @@ with lib;
       default = false;
       description = "Enable sing-box dns-in inbound (127.0.0.1:53).";
     };
+    singbox.tun = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable sing-box tun-in inbound.";
+    };
 
     dae.enable = mkOption {
       type = types.bool;
@@ -310,6 +315,7 @@ with lib;
                     "listen_port": 53
                   },
                 ''}
+                ${lib.optionalString config.modules.proxy.singbox.tun ''
                 {
                   "type": "tun",
                   "tag": "tun-in",
@@ -323,6 +329,7 @@ with lib;
                   "strict_route": true,
                   "stack": "system"
                 },
+                ''}
                 {
                   "type": "mixed",
                   "tag": "mixed-in",
@@ -335,7 +342,7 @@ with lib;
                 "rules": [
                   {
                     "inbound": [
-                      "tun-in",
+                      ${lib.optionalString config.modules.proxy.singbox.tun ''"tun-in",''}
                       "mixed-in"
                     ],
                     "action": "resolve",
@@ -343,7 +350,7 @@ with lib;
                   },
                   {
                     "inbound": [
-                      "tun-in",
+                      ${lib.optionalString config.modules.proxy.singbox.tun ''"tun-in",''}
                       "mixed-in"
                     ],
                     "action": "sniff",
