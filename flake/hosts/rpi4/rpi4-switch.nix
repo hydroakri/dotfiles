@@ -75,7 +75,6 @@
         };
         dhcp = {
           enable = true;
-          range = "192.168.10.10,192.168.10.100,24h";
         };
         nat.enable = true;
         mssClamping.enable = true;

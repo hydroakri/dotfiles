@@ -83,6 +83,5 @@
     };
 
     networking.hostName = "rpi4";
-    networking.firewall.checkReversePath = false; # For dae transparent netgate, let date pass
   };
 }

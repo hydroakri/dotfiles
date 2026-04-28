@@ -44,8 +44,6 @@
       enable = true;
       wanInterface = "wlo1";
       lanInterface = "wlo1";
-      downloadBandwidth = "98mbit";
-      uploadBandwidth = "23mbit";
     };
     networking.sysfsTuning = {
       enable = true;
@@ -150,6 +148,10 @@
     enable = false;
     enableWaylandSession = true;
   };
+  users.users.${config.mainUser}.extraGroups = [
+    "video"
+    "i2c"
+  ];
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };

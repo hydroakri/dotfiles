@@ -94,7 +94,8 @@
       # --- IPv6 组播规则 (可选，如果你需要 IPv6 通信) ---
       ip6tables -A nixos-fw -d ff00::/8 -p udp -j nixos-fw-accept
     '';
-    checkReversePath = false;
+    # 如果 ROS (Robot Operating System) 连不上机器人，可能需要在装了 ROS 的机器上启用这个
+    # checkReversePath = false;
   };
   networking.networkmanager = {
     enable = true;
