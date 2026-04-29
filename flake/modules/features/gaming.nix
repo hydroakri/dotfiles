@@ -36,7 +36,7 @@
     package = pkgs.ananicy-cpp;
     rulesProvider = pkgs.ananicy-rules-cachyos;
   };
-  services.scx = lib.mkForce {
+  services.scx = {
     enable = true;
     scheduler = "scx_lavd";
     extraArgs = [ "--autopower" ];

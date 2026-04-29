@@ -11,12 +11,12 @@
     grub.enable = false;
   };
   boot.plymouth.enable = false;
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+  boot.kernelPackages = pkgs.linuxPackages;
   boot.initrd.supportedFilesystems = [
     "vfat"
     "ext4"
   ];
-  console.font = lib.mkForce "ter-v16n";
+  console.font = "ter-v16n";
   boot.initrd.kernelModules = [
     "usbhid"
     "usb_storage"
@@ -29,8 +29,8 @@
   ];
 
   powerManagement.cpuFreqGovernor = "performance";
-  environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
-  services.irqbalance.enable = lib.mkForce false;
+  environment.etc."tuned/active_profile".text = "network-latency";
+  services.irqbalance.enable = false;
 
   hardware = {
     raspberry-pi."4" = {
@@ -52,7 +52,7 @@
     raspberrypi-eeprom
     ethtool
   ];
-  services.smartd.enable = lib.mkForce false;
+  services.smartd.enable = false;
   services.journald.extraConfig = ''
     Storage=volatile
     SystemMaxUse=64M

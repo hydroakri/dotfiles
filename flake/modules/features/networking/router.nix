@@ -101,7 +101,7 @@ in
         }
       ];
 
-      environment.etc."tuned/active_profile".text = lib.mkForce "network-latency";
+      environment.etc."tuned/active_profile".text = "network-latency";
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;

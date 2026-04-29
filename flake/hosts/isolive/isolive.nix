@@ -20,7 +20,7 @@
   networking.hostName = "nixos-installer";
 
   # 禁用一些服务以简化ISO
-  services.smartd.enable = lib.mkForce false;
+  services.smartd.enable = false;
 
   networking.networkmanager.enable = true;
 

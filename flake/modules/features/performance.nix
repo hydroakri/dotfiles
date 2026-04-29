@@ -53,21 +53,21 @@
     "net.ipv6.conf.default.accept_ra" = 2;
 
     # VM (common)
-    "vm.swappiness" = 100;
-    "vm.dirty_ratio" = 40;
-    "vm.dirty_bytes" = 268435456;
-    "vm.dirty_background_ratio" = 10;
-    "vm.dirty_background_bytes" = 67108864;
-    "vm.dirty_writeback_centisecs" = 1500;
-    "vm.dirty_expire_centisecs" = 1500;
-    "vm.watermark_boost_factor" = 0;
-    "vm.watermark_scale_factor" = 125;
-    "vm.page-cluster" = 0;
-    "vm.nr_hugepages" = 0;
-    "vm.vfs_cache_pressure" = 50;
-    "vm.min_free_kbytes" = 65536;
-    "vm.max_map_count" = 1048576;
-    "fs.inotify.max_user_instances" = 1024;
+    "vm.swappiness" = lib.mkDefault 100;
+    "vm.dirty_ratio" = lib.mkDefault 40;
+    "vm.dirty_bytes" = lib.mkDefault 268435456;
+    "vm.dirty_background_ratio" = lib.mkDefault 10;
+    "vm.dirty_background_bytes" = lib.mkDefault 67108864;
+    "vm.dirty_writeback_centisecs" = lib.mkDefault 1500;
+    "vm.dirty_expire_centisecs" = lib.mkDefault 1500;
+    "vm.watermark_boost_factor" = lib.mkDefault 0;
+    "vm.watermark_scale_factor" = lib.mkDefault 125;
+    "vm.page-cluster" = lib.mkDefault 0;
+    "vm.nr_hugepages" = lib.mkDefault 0;
+    "vm.vfs_cache_pressure" = lib.mkDefault 50;
+    "vm.min_free_kbytes" = lib.mkDefault 65536;
+    "vm.max_map_count" = lib.mkOverride 900 1048576;
+    "fs.inotify.max_user_instances" = lib.mkOverride 900 1024;
   };
   services.udev.extraRules = ''
     # NVMe SSD: 设置为 none
@@ -104,8 +104,8 @@
   services.earlyoom.enable = true;
   systemd.oomd.enable = false;
   services.scx = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
-    enable = true;
-    scheduler = "scx_rusty";
+    enable = lib.mkDefault true;
+    scheduler = lib.mkDefault "scx_rusty";
   };
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=64M

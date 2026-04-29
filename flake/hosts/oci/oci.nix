@@ -124,7 +124,7 @@
       efi.canTouchEfiVariables = false;
     };
     boot.plymouth.enable = false;
-    boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
+
     # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
     boot.initrd.supportedFilesystems = [
       "vfat"

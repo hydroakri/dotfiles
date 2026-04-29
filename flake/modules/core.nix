@@ -60,7 +60,7 @@
     # ter-v16n for 1080p below
     # ter-v24n for 1080p
     # ter-v32n for 2K/4K
-    font = "ter-v32n";
+    font = lib.mkDefault "ter-v32n";
   };
   time.timeZone = "UTC";
   i18n = {
@@ -122,7 +122,7 @@
   };
   #SMART monitor
   services.smartd = {
-    enable = true;
+    enable = lib.mkDefault true;
     defaults.monitored = "-a -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,55,65";
   };
   users.users.root.shell = pkgs.zsh;

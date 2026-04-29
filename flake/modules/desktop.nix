@@ -8,9 +8,9 @@
   boot.kernelParams = [ "preempt=full" ];
   boot.kernel.sysctl = {
     # Desktop-specific VM tuning
-    "vm.swappiness" = lib.mkForce 180;
-    "vm.dirty_ratio" = lib.mkForce 10;
-    "vm.dirty_background_ratio" = lib.mkForce 5;
+    "vm.swappiness" = 180;
+    "vm.dirty_ratio" = 10;
+    "vm.dirty_background_ratio" = 5;
   };
   networking.networkmanager.settings = {
     "connection" = {
@@ -63,7 +63,7 @@
   services.dbus.packages = [ pkgs.gcr ];
 
   # For earlyoom and smartd notices
-  services.systembus-notify.enable = lib.mkForce true;
+  services.systembus-notify.enable = true;
   services.smartd.notifications.systembus-notify.enable = true;
 
   # Printing

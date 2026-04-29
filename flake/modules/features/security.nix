@@ -53,10 +53,10 @@ in
     # 记录火星包是安全的，它不丢包，只记日志
     "net.ipv4.conf.all.log_martians" = 1;
     "net.ipv4.conf.default.log_martians" = 1;
-    # 改为松散模式 (2)，以兼容 sing-box 的 TUN/TProxy 路由
-    # 既保留了基本的防欺骗能力，又不会导致代理流量被拦截
-    "net.ipv4.conf.all.rp_filter" = 2;
-    "net.ipv4.conf.default.rp_filter" = 2;
+    # 严格模式 (1)，这是安全的默认基线
+    # (如果开启了透明代理，proxy.nix 会自动将其覆盖为松散模式 2)
+    "net.ipv4.conf.all.rp_filter" = lib.mkDefault 1;
+    "net.ipv4.conf.default.rp_filter" = lib.mkDefault 1;
     # 禁止接受 ICMP 重定向 (防止中间人攻击篡改路由表);
     # 普通主机不需要接受重定向，除非充当路由器;
     "net.ipv4.conf.*.accept_redirects" = 0;
@@ -78,8 +78,8 @@ in
     "net.ipv4.tcp_dsack" = 0;
     "net.ipv4.tcp_fack" = 0;
     # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪;
-    "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
-    "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
+    "net.ipv6.conf.all.use_tempaddr" = lib.mkDefault 2;
+    "net.ipv6.conf.default.use_tempaddr" = lib.mkDefault 2;
     # 增加 BPF JIT 编译器的安全性，消除某些侧信道攻击;
     "net.core.bpf_jit_harden" = 2;
     # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启);

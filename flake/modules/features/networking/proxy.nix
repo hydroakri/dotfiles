@@ -57,6 +57,13 @@ with lib;
   };
 
   config = mkIf config.modules.proxy.enable {
+    # 当开启透明代理 (TUN/TProxy) 时，必须优化内核与防火墙以支持非对称路由（如游戏 UDP）
+    boot.kernel.sysctl = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) {
+      "net.ipv4.conf.all.rp_filter" = 2;
+      "net.ipv4.conf.default.rp_filter" = 2;
+    };
+
+
     # ----------------------------------------------------------------------------
     # start order
     # 1. 配置 Sing-box 的启动顺序：如果在该机器上启用了 AdGuardHome，则等待其启动
@@ -740,6 +747,7 @@ with lib;
     ) [ "127.0.0.1" ];
 
     networking.firewall = lib.mkMerge [
+      { checkReversePath = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) (lib.mkDefault false); }
       # AdGuardHome 的端口规则
       (mkIf config.modules.proxy.adguardhome.enable {
         allowedTCPPorts = [
