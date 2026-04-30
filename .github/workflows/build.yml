@@ -39,6 +39,7 @@ jobs:
       - name: Free Disk Space (x86_64 only)
         if: runner.arch == 'X64'
         run: |
+          # 手动清理 GitHub Runner 预装的大型软件，腾出约 20-30GB 空间
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
@@ -65,12 +66,10 @@ jobs:
           endpoint: https://cache.hydroakri.cc
           cache: cachix
           token: ${{ secrets.ATTIC_TOKEN }}
-          watch-store: true
 
       - name: Build System (${{ matrix.arch }})
         working-directory: ./flake
         run: |
-          # 开启 --print-build-logs 方便调试，--fallback 增加容错
           nix build ${{ matrix.target }} \
             --accept-flake-config \
             --print-build-logs \

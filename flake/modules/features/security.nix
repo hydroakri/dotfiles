@@ -8,6 +8,52 @@ let
   mainUser = config.mainUser;
   skKey = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${mainUser}";
   bakKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHf4CJVym33NvIXKx7/W9Ga+Qbp22a86PvelLvjLup3u";
+  bravePolicy = pkgs.writeText "castration.json" (
+    builtins.toJSON {
+      # ======= 1. Shields (护盾 - 对应 PG 清单第一部分) =======
+      "DefaultBraveAdblockSetting" = 2; # Trackers & ads: Aggressive
+      "DefaultBraveHttpsUpgradeSetting" = 2; # Upgrade connections: Strict
+      "DefaultBraveFingerprintingV2Setting" = 2; # Block fingerprinting: Strict
+      "BlockThirdPartyCookies" = true; # Block third-party cookies
+      "DefaultCookiesSetting" = 4; # Forget me when I close this site
+      "DefaultBraveReferrersSetting" = 2; # 引荐来源保护
+      "BraveDebouncingEnabled" = true; # 自动跳过中间追踪链接
+      "BraveGlobalPrivacyControlEnabled" = true; # 开启 GPC (Global Privacy Control)
+
+      # ======= 2. 隐私与安全 (对应 PG 清单第二部分) =======
+      "DefaultJavaScriptOptimizerSetting" = 2; # Don’t allow JS optimization (防JIT)
+      "WebRtcIPHandling" = "disable_non_proxied_udp"; # WebRTC IP Policy: Disable non-proxied UDP
+      "BraveDeAmpEnabled" = true; # Auto-redirect AMP pages
+      "BraveTrackingQueryParametersFilteringEnabled" = true; # Auto-redirect tracking URLs
+      "BraveReduceLanguageEnabled" = true; # Language preferences fingerprinting protection
+
+      # ======= 3. Web3、Tor 与商业组件 (对应 PG 清单 Web3/Tor 部分) =======
+      "BraveWalletDisabled" = true; # 禁用所有 Web3 (Extensions no fallback)
+      "TorDisabled" = true; # 禁用内置 Tor
+      "IPFSEnabled" = false;
+      "BraveAIChatEnabled" = false; # 禁用 Leo AI
+      "BraveTalkDisabled" = true; # 禁用视频会议
+      "BraveNewsDisabled" = true; # 禁用新闻流
+      "BravePlaylistEnabled" = false; # 禁用播放列表
+      "BraveRewardsDisabled" = true;
+      "BraveVPNDisabled" = true;
+      "PromotionalTabsEnabled" = false;
+
+      # ======= 4. 数据收集 (对应 PG 清单数据收集部分) =======
+      "BraveP3AEnabled" = false; # Uncheck P3A
+      "BraveStatsPingEnabled" = false; # Uncheck daily usage ping
+      "MetricsReportingEnabled" = false; # Uncheck diagnostic reports
+      "BraveWebDiscoveryEnabled" = false; # 彻底禁掉 WDP 采集
+
+      # ======= 5. 系统与搜索 (对应 PG 清单最后部分) =======
+      "SearchSuggestEnabled" = false; # Uncheck search suggestions
+      "BackgroundModeEnabled" = false; # Uncheck background apps
+      "PromotionsEnabled" = false; # 禁用 Promotions
+      "SafeBrowsingExtendedReportingEnabled" = false;
+      "SpellCheckServiceEnabled" = false;
+      "EnableMediaRouter" = false; # 彻底禁用 Chromecast 相关的 Media Router
+    }
+  );
 in
 {
   boot.kernelParams = [
@@ -176,6 +222,10 @@ in
       ];
     };
   };
+  systemd.tmpfiles.rules = [
+    "d /etc/brave/policies/managed 0755 root root"
+    "C /etc/brave/policies/managed/castration.json 0644 root root - ${bravePolicy}"
+  ];
   # ===========================================================================
   #PAM
   security.pam = {
