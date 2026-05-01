@@ -117,13 +117,13 @@
       type = "fcitx5";
       enable = true;
       fcitx5 = {
-        addons = with pkgs; [
-          fcitx5-rime
-          libsForQt5.fcitx5-qt
-          fcitx5-gtk
-          qt6Packages.fcitx5-configtool
-          qt6Packages.fcitx5-chinese-addons
-          fcitx5-lua
+        addons = [
+          pkgs.fcitx5-rime
+          pkgs.libsForQt5.fcitx5-qt
+          pkgs.fcitx5-gtk
+          pkgs.qt6Packages.fcitx5-configtool
+          pkgs.qt6Packages.fcitx5-chinese-addons
+          pkgs.fcitx5-lua
         ];
         waylandFrontend = true;
       };
@@ -156,23 +156,23 @@
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = [
     # file manager
     # xfce.thunar
     # xfce.thunar-archive-plugin
     # xarchiver
     # file-roller
     # file manager
-    kdePackages.partitionmanager
-    kdePackages.kpmcore
-    opencode-desktop
+    pkgs.kdePackages.partitionmanager
+    pkgs.kdePackages.kpmcore
+    pkgs.opencode-desktop
 
     # Wayland compositor
     # xwayland-satellite
     # networkmanagerapplet
-    brightnessctl
-    pavucontrol
-    playerctl
+    pkgs.brightnessctl
+    pkgs.pavucontrol
+    pkgs.playerctl
     # blueman
     # qt6ct
     # mako

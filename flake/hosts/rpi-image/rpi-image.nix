@@ -52,11 +52,11 @@
       networks."example".psk = "1234567890";
     };
   };
-  environment.systemPackages = with pkgs; [
-    libraspberrypi
-    raspberrypi-eeprom
-    vim
-    git
+  environment.systemPackages = [
+    pkgs.libraspberrypi
+    pkgs.raspberrypi-eeprom
+    pkgs.vim
+    pkgs.git
   ];
 
   # Basic services

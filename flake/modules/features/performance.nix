@@ -110,8 +110,8 @@
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=64M
   '';
-  environment.systemPackages = with pkgs; [
-    hdparm # udev rules require hdparm
+  environment.systemPackages = [
+    pkgs.hdparm # udev rules require hdparm
   ];
 
 }

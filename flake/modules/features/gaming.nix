@@ -7,10 +7,10 @@
 
 {
   boot.kernelModules = [ "ntsync" ];
-  environment.systemPackages = with pkgs; [
-    yad # steamtinkerlaunch dependency
-    steam-devices-udev-rules
-    ethtool
+  environment.systemPackages = [
+    pkgs.yad # steamtinkerlaunch dependency
+    pkgs.steam-devices-udev-rules
+    pkgs.ethtool
   ];
 
   programs.gamescope = {
@@ -24,7 +24,7 @@
     dedicatedServer.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
     gamescopeSession.enable = true;
-    extraCompatPackages = with pkgs; [ steamtinkerlaunch ];
+    extraCompatPackages = [ pkgs.steamtinkerlaunch ];
   };
 
   programs.gamemode.enable = true;

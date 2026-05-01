@@ -24,48 +24,48 @@
 
   networking.networkmanager.enable = true;
 
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = [
     # === 🛠️ 分区与文件系统工具 ===
-    testdisk
-    exfatprogs
-    ddrescue
-    gparted
-    parted
-    cryptsetup
-    dosfstools
-    ntfsprogs
-    btrfs-progs
-    xfsprogs
-    e2fsprogs
+    pkgs.testdisk
+    pkgs.exfatprogs
+    pkgs.ddrescue
+    pkgs.gparted
+    pkgs.parted
+    pkgs.cryptsetup
+    pkgs.dosfstools
+    pkgs.ntfsprogs
+    pkgs.btrfs-progs
+    pkgs.xfsprogs
+    pkgs.e2fsprogs
 
     # === 🔧 Windows急救工具 ===
-    chntpw
-    ntfs3g
-    wimlib
+    pkgs.chntpw
+    pkgs.ntfs3g
+    pkgs.wimlib
 
     # === 🖥️ EFI/引导修复工具 ===
-    efibootmgr
-    os-prober
-    grub2_efi
+    pkgs.efibootmgr
+    pkgs.os-prober
+    pkgs.grub2_efi
 
     # === 🔍 系统诊断工具 ===
-    memtest86plus
-    smartmontools
-    lshw
-    hwinfo
-    pciutils
-    usbutils
-    inxi
-    dmidecode
-    lsof
+    pkgs.memtest86plus
+    pkgs.smartmontools
+    pkgs.lshw
+    pkgs.hwinfo
+    pkgs.pciutils
+    pkgs.usbutils
+    pkgs.inxi
+    pkgs.dmidecode
+    pkgs.lsof
 
     # === Nix 安装工具 ===
-    nixos-install-tools
-    nixos-generators
+    pkgs.nixos-install-tools
+    pkgs.nixos-generators
 
     # === 图形工具 ===
-    librewolf
-    wezterm
+    pkgs.librewolf
+    pkgs.wezterm
   ];
 
   # === 安全配置调整 ===

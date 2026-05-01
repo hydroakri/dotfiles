@@ -47,10 +47,10 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    libraspberrypi
-    raspberrypi-eeprom
-    ethtool
+  environment.systemPackages = [
+    pkgs.libraspberrypi
+    pkgs.raspberrypi-eeprom
+    pkgs.ethtool
   ];
   services.smartd.enable = false;
   services.journald.extraConfig = ''

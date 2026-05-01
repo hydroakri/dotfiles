@@ -57,7 +57,7 @@
   '';
   # services.auto-cpufreq.enable = true;
   services.power-profiles-daemon.enable = true;
-  environment.systemPackages = with pkgs; [ nbfc-linux ];
+  environment.systemPackages = [ pkgs.nbfc-linux ];
   networking.interfaces.wlo1.wakeOnLan.enable = false;
   networking.interfaces.eno1.wakeOnLan.enable = false;
   networking.networkmanager.wifi.powersave = true;

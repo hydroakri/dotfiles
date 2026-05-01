@@ -149,9 +149,9 @@
       ];
     };
 
-    environment.systemPackages = with pkgs; [
-      rclone
-      apacheHttpd # 为了方便以后在命令行生成 htpasswd
+    environment.systemPackages = [
+      pkgs.rclone
+      pkgs.apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
 
     services.tailscale.enable = true;

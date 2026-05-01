@@ -56,7 +56,7 @@
   console = {
     enable = true;
     earlySetup = true;
-    packages = with pkgs; [ terminus_font ];
+    packages = [ pkgs.terminus_font ];
     # ter-v16n for 1080p below
     # ter-v24n for 1080p
     # ter-v32n for 2K/4K
@@ -167,46 +167,45 @@
     };
   };
   environment.systemPackages =
-    with pkgs;
     [
-      wget
-      curl
-      unar
-      _7zz
-      tmux
-      python3Minimal
-      neovim
+      pkgs.wget
+      pkgs.curl
+      pkgs.unar
+      pkgs._7zz
+      pkgs.tmux
+      pkgs.python3Minimal
+      pkgs.neovim
       # net utils
-      lsof
-      iputils
-      dnsutils
-      nettools
+      pkgs.lsof
+      pkgs.iputils
+      pkgs.dnsutils
+      pkgs.nettools
       #hardware
-      lshw
-      file
-      usbutils
+      pkgs.lshw
+      pkgs.file
+      pkgs.usbutils
       # modern tools
-      fzf
-      bat
-      gdu
-      btop
-      yazi
-      atuin
-      zoxide
-      chezmoi
-      lazygit
-      ripgrep
-      starship
-      attic-client
+      pkgs.fzf
+      pkgs.bat
+      pkgs.gdu
+      pkgs.btop
+      pkgs.yazi
+      pkgs.atuin
+      pkgs.zoxide
+      pkgs.chezmoi
+      pkgs.lazygit
+      pkgs.ripgrep
+      pkgs.starship
+      pkgs.attic-client
       # nix utils
-      nix-tree
-      nix-output-monitor
+      pkgs.nix-tree
+      pkgs.nix-output-monitor
     ]
     ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools
-      sbctl
-      efibootmgr
-      mokutil
-      pciutils
+      pkgs.sbctl
+      pkgs.efibootmgr
+      pkgs.mokutil
+      pkgs.pciutils
     ];
 }

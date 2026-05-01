@@ -179,20 +179,20 @@ in
   security.unprivilegedUsernsClone = false;
   environment.memoryAllocator.provider = "mimalloc"; # balance:scudo performance:mimalloc security:graphene-hardened-light
   environment.variables.SCUDO_OPTIONS = lib.mkDefault "delete_size_mismatch=0";
-  environment.systemPackages = with pkgs; [
-    ssh-copy-id
+  environment.systemPackages = [
+    pkgs.ssh-copy-id
     # keepassxc # installed in flatpak
 
     # For sops-nix
-    age
-    sops
-    ssh-to-age
-    age-plugin-fido2-hmac
+    pkgs.age
+    pkgs.sops
+    pkgs.ssh-to-age
+    pkgs.age-plugin-fido2-hmac
 
     # For fido2 security keys
-    pam_u2f
-    libfido2
-    yubikey-manager
+    pkgs.pam_u2f
+    pkgs.libfido2
+    pkgs.yubikey-manager
 
   ];
   security = {

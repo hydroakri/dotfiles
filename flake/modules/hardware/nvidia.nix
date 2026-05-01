@@ -55,15 +55,15 @@ in
         nvidiaBusId = "PCI:1@0:0:0";
       };
     };
-    environment.systemPackages = with pkgs; [
-      cudaPackages.cudatoolkit
-      nvidia-container-toolkit
+    environment.systemPackages = [
+      pkgs.cudaPackages.cudatoolkit
+      pkgs.nvidia-container-toolkit
     ];
     hardware.graphics = {
       enable = true;
       enable32Bit = true;
-      extraPackages = with pkgs; [ nvidia-vaapi-driver ];
-      extraPackages32 = with pkgs; [ nvidia-vaapi-driver ];
+      extraPackages = [ pkgs.nvidia-vaapi-driver ];
+      extraPackages32 = [ pkgs.nvidia-vaapi-driver ];
     };
   };
 }

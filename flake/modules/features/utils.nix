@@ -52,16 +52,15 @@ with lib;
     ];
 
     environment.systemPackages = mkIf config.modules.utils.enableGraphicTools (
-      with pkgs;
       [
         ## GPU / display tools
-        nvtopPackages.full
-        virtualglLib
-        vulkan-tools
-        libva-utils
-        vdpauinfo
-        read-edid
-        clinfo
+        pkgs.nvtopPackages.full
+        pkgs.virtualglLib
+        pkgs.vulkan-tools
+        pkgs.libva-utils
+        pkgs.vdpauinfo
+        pkgs.read-edid
+        pkgs.clinfo
       ]
     );
 

@@ -104,35 +104,35 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
-    extraPackages = with pkgs; [
+    extraPackages = [
       ## Scheduling layer
-      vulkan-loader # Vulkan
-      libglvnd # OpenGL
-      ocl-icd # OpenCL
+      pkgs.vulkan-loader # Vulkan
+      pkgs.libglvnd # OpenGL
+      pkgs.ocl-icd # OpenCL
 
       ## drivers
       # amdvlk
 
       ## LIBs & Layer driver
-      libva
-      libvdpau
-      libvdpau-va-gl
-      libva-vdpau-driver
+      pkgs.libva
+      pkgs.libvdpau
+      pkgs.libvdpau-va-gl
+      pkgs.libva-vdpau-driver
     ];
-    extraPackages32 = with pkgs; [
+    extraPackages32 = [
       ## Scheduling layer
-      vulkan-loader # Vulkan
-      libglvnd # OpenGL
-      ocl-icd # OpenCL
+      pkgs.vulkan-loader # Vulkan
+      pkgs.libglvnd # OpenGL
+      pkgs.ocl-icd # OpenCL
 
       ## drivers
       # driversi686Linux.amdvlk
 
       ## LIBs & Layer driver
-      libva
-      libvdpau
-      driversi686Linux.libva-vdpau-driver
-      driversi686Linux.libvdpau-va-gl
+      pkgs.libva
+      pkgs.libvdpau
+      pkgs.driversi686Linux.libva-vdpau-driver
+      pkgs.driversi686Linux.libvdpau-va-gl
     ];
   };
   # Flatpak
@@ -144,82 +144,79 @@
     allowedUDPPorts = [ 1080 ];
   };
   environment.plasma6.excludePackages = (
-    with pkgs;
     [
-      kdePackages.elisa
-      kdePackages.gwenview
-      kdePackages.kwrited
-      kdePackages.khelpcenter
-      kdePackages.konqueror
-      kdePackages.oxygen
-      kdePackages.krdc
-      kdePackages.krfb
-      kdePackages.dragon
-      kdePackages.kcalc
-      kdePackages.kfind
-      kdePackages.kcharselect
-      kdePackages.keditbookmarks
-      kdePackages.drkonqi
-      kdePackages.kdebugsettings
-      kdePackages.kjournald
-      kdePackages.ksystemlog
-      kdePackages.kamera
-      kdePackages.audiocd-kio
-      kdePackages.ffmpegthumbs
-      kdePackages.kwallet
-      kdePackages.kwallet-pam
+      pkgs.kdePackages.elisa
+      pkgs.kdePackages.gwenview
+      pkgs.kdePackages.kwrited
+      pkgs.kdePackages.khelpcenter
+      pkgs.kdePackages.konqueror
+      pkgs.kdePackages.oxygen
+      pkgs.kdePackages.krdc
+      pkgs.kdePackages.krfb
+      pkgs.kdePackages.dragon
+      pkgs.kdePackages.kcalc
+      pkgs.kdePackages.kfind
+      pkgs.kdePackages.kcharselect
+      pkgs.kdePackages.keditbookmarks
+      pkgs.kdePackages.drkonqi
+      pkgs.kdePackages.kdebugsettings
+      pkgs.kdePackages.kjournald
+      pkgs.kdePackages.ksystemlog
+      pkgs.kdePackages.kamera
+      pkgs.kdePackages.audiocd-kio
+      pkgs.kdePackages.ffmpegthumbs
+      pkgs.kdePackages.kwallet
+      pkgs.kdePackages.kwallet-pam
     ]
   );
   environment.cosmic.excludePackages = (
-    with pkgs;
     [
-      cosmic-player
-      cosmic-term
-      cosmic-edit
+      pkgs.cosmic-player
+      pkgs.cosmic-term
+      pkgs.cosmic-edit
     ]
   );
   environment.gnome.excludePackages = (
-    with pkgs;
     [
-      atomix # puzzle game
-      cheese # webcam tool
-      epiphany # web browser
-      evince # document viewer
-      geary # email reader
-      gedit # text editor
-      gnome-characters
-      gnome-music
-      gnome-photos
-      gnome-terminal
-      gnome-tour
-      hitori # sudoku game
-      iagno # go game
-      tali # poker game
-      totem # video player
+      pkgs.atomix # puzzle game
+      pkgs.cheese # webcam tool
+      pkgs.epiphany # web browser
+      pkgs.evince # document viewer
+      pkgs.geary # email reader
+      pkgs.gedit # text editor
+      pkgs.gnome-characters
+      pkgs.gnome-music
+      pkgs.gnome-photos
+      pkgs.gnome-terminal
+      pkgs.gnome-tour
+      pkgs.hitori # sudoku game
+      pkgs.iagno # go game
+      pkgs.tali # poker game
+      pkgs.totem # video player
     ]
   );
   fonts = {
-    packages = with pkgs; [
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
-      noto-fonts-color-emoji
-      sarasa-gothic
-      nerd-fonts.symbols-only
-      cascadia-code # monospace
-      source-serif # serif
-      libertinus # math/latex
-      inter # sans
+    packages = [
+      pkgs.noto-fonts-cjk-sans
+      pkgs.noto-fonts-cjk-serif
+      pkgs.noto-fonts-color-emoji
+      pkgs.sarasa-gothic
+      pkgs.nerd-fonts.symbols-only
+      pkgs.cascadia-code # monospace
+      pkgs.source-serif # serif
+      pkgs.libertinus # math/latex
+      pkgs.inter # sans
     ];
     fontDir = {
       enable = true;
       decompressFonts = true;
     };
   };
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = [
     #theme
-    darkly-qt5
-    darkly
-    darkman
+    pkgs.darkly-qt5
+    pkgs.darkly
+    pkgs.darkman
   ];
 
   # Darkman for automatic theme switching
@@ -242,19 +239,19 @@
       "video"
       "i2c"
     ];
-    packages = with pkgs; [
+    packages = [
       # themes/shell/plugin
-      bibata-cursors
-      papirus-icon-theme
-      gnomeExtensions.appindicator
-      gnomeExtensions.user-themes
-      gnomeExtensions.kimpanel
-      gnome-tweaks
+      pkgs.bibata-cursors
+      pkgs.papirus-icon-theme
+      pkgs.gnomeExtensions.appindicator
+      pkgs.gnomeExtensions.user-themes
+      pkgs.gnomeExtensions.kimpanel
+      pkgs.gnome-tweaks
 
       # GUI Applications
-      venera
-      wezterm
-      kdePackages.kate
+      pkgs.venera
+      pkgs.wezterm
+      pkgs.kdePackages.kate
       # davinci-resolve-studio
     ];
   };

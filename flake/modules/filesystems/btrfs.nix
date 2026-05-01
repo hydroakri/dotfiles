@@ -14,7 +14,7 @@ let
   };
 in
 {
-  environment.systemPackages = with pkgs; [ btrfs-assistant ];
+  environment.systemPackages = [ pkgs.btrfs-assistant ];
   services.btrfs.autoScrub = {
     enable = true;
     interval = "monthly";

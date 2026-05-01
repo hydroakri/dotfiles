@@ -41,9 +41,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      ethtool
-      iproute2
+    environment.systemPackages = [
+      pkgs.ethtool
+      pkgs.iproute2
     ];
 
     networking.networkmanager.dispatcherScripts = [
