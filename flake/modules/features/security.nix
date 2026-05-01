@@ -15,7 +15,6 @@ let
       "DefaultBraveHttpsUpgradeSetting" = 2; # Upgrade connections: Strict
       "DefaultBraveFingerprintingV2Setting" = 2; # Block fingerprinting: Strict
       "BlockThirdPartyCookies" = true; # Block third-party cookies
-      "DefaultCookiesSetting" = 4; # Forget me when I close this site
       "DefaultBraveReferrersSetting" = 2; # 引荐来源保护
       "BraveDebouncingEnabled" = true; # 自动跳过中间追踪链接
       "BraveGlobalPrivacyControlEnabled" = true; # 开启 GPC (Global Privacy Control)
@@ -30,14 +29,13 @@ let
       # ======= 3. Web3、Tor 与商业组件 (对应 PG 清单 Web3/Tor 部分) =======
       "BraveWalletDisabled" = true; # 禁用所有 Web3 (Extensions no fallback)
       "TorDisabled" = true; # 禁用内置 Tor
-      "IPFSEnabled" = false;
       "BraveAIChatEnabled" = false; # 禁用 Leo AI
       "BraveTalkDisabled" = true; # 禁用视频会议
       "BraveNewsDisabled" = true; # 禁用新闻流
       "BravePlaylistEnabled" = false; # 禁用播放列表
       "BraveRewardsDisabled" = true;
       "BraveVPNDisabled" = true;
-      "PromotionalTabsEnabled" = false;
+      "PromotionsEnabled" = false; # 禁用 Promotions
 
       # ======= 4. 数据收集 (对应 PG 清单数据收集部分) =======
       "BraveP3AEnabled" = false; # Uncheck P3A
@@ -48,10 +46,10 @@ let
       # ======= 5. 系统与搜索 (对应 PG 清单最后部分) =======
       "SearchSuggestEnabled" = false; # Uncheck search suggestions
       "BackgroundModeEnabled" = false; # Uncheck background apps
-      "PromotionsEnabled" = false; # 禁用 Promotions
       "SafeBrowsingExtendedReportingEnabled" = false;
       "SpellCheckServiceEnabled" = false;
       "EnableMediaRouter" = false; # 彻底禁用 Chromecast 相关的 Media Router
+      "PasswordManagerEnabled" = true;
     }
   );
 in
