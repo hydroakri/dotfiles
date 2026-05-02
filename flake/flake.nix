@@ -23,6 +23,7 @@
       flake = false;
     };
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+    hermes-agent.url = "github:nousresearch/hermes-agent";
   };
 
   outputs =
@@ -35,6 +36,7 @@
       nixos-generators,
       geodb,
       nix-minecraft,
+      hermes-agent,
       ...
     }@inputs:
     let

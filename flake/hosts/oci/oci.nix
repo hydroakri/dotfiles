@@ -21,6 +21,7 @@
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/utils.nix
+    ../../modules/features/agent.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
@@ -193,7 +194,7 @@
         };
         server = {
           port = 8888;
-          bind_address = "127.0.0.1";
+          bind_address = "0.0.0.0";
           secret_key = config.sops.placeholder.searx_secret_key;
           base_url = "https://searx.hydroakri.cc";
           method = "POST";
