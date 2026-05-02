@@ -34,7 +34,8 @@
     modules = {
       proxy = {
         enable = true;
-        dnscrypt-proxy.enable = true;
+        singbox.enable = true;
+        singbox.dns = true;
       };
       utils = {
         enable = false;

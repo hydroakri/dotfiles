@@ -38,6 +38,16 @@ with lib;
       default = false;
       description = "Enable sing-box tun-in inbound.";
     };
+    singbox.endpoints = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable sops secret for sing-box endpoints.";
+    };
+    singbox.outbounds = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable sops secret for sing-box outbounds.";
+    };
 
     dae.enable = mkOption {
       type = types.bool;
@@ -62,7 +72,6 @@ with lib;
       "net.ipv4.conf.all.rp_filter" = 2;
       "net.ipv4.conf.default.rp_filter" = 2;
     };
-
 
     # ----------------------------------------------------------------------------
     # start order
@@ -91,8 +100,8 @@ with lib;
       secrets = {
         doh_stamp = { };
         zerotrust = { };
-        sing-box-endpoints = { };
-        sing-box-outbounds = { };
+        sing-box-endpoints = mkIf config.modules.proxy.singbox.endpoints { };
+        sing-box-outbounds = mkIf config.modules.proxy.singbox.outbounds { };
         oracle_ip = { };
         oracle_domain = { };
       };
@@ -117,7 +126,7 @@ with lib;
             server_names = ["cloudflare", "cloudflare-security", "mullvad-adblock-doh", "mullvad-all-doh", "mullvad-base-doh", "mullvad-doh", "mullvad-extend-doh", "nextdns", "nextdns-ultralow", "controld-block-malware", "controld-block-malware-ad", "controld-block-malware-ad-social", "controld-uncensored", "controld-unfiltered", "dns0", "dns0-unfiltered", "adguard-dns-doh", "adguard-dns-unfiltered-doh", "quad9-dnscrypt-ip4-filter-ecs-pri", "quad9-dnscrypt-ip4-filter-pri", "quad9-dnscrypt-ip4-nofilter-ecs-pri", "quad9-dnscrypt-ip4-nofilter-pri", "quad9-doh-ip4-port443-filter-ecs-pri", "quad9-doh-ip4-port443-filter-pri", "quad9-doh-ip4-port443-nofilter-ecs-pri", "quad9-doh-ip4-port443-nofilter-pri", "quad9-doh-ip4-port5053-filter-ecs-pri", "quad9-doh-ip4-port5053-filter-pri", "quad9-doh-ip4-port5053-nofilter-ecs-pri", "quad9-doh-ip4-port5053-nofilter-pri", "rethinkdns-doh", "flymc-doh-8443", "flymc-doh", "zerotrust"]
 
             [blocked_names]
-            blocked_names_file = "/var/lib/dnscrypt-proxy/blocklist.txt"
+            blocked_names_file = "${inputs.dnscrypt-blocklist}"
 
             [monitoring_ui]
             enabled = true
@@ -312,7 +321,9 @@ with lib;
                 "strategy": "prefer_ipv4",
                 "independent_cache": true
               },
-              "endpoints": ${config.sops.placeholder.sing-box-endpoints},
+              "endpoints": ${
+                if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
+              },
               "inbounds": [
                 ${lib.optionalString config.modules.proxy.singbox.dns ''
                   {
@@ -323,19 +334,19 @@ with lib;
                   },
                 ''}
                 ${lib.optionalString config.modules.proxy.singbox.tun ''
-                {
-                  "type": "tun",
-                  "tag": "tun-in",
-                  "interface_name": "tun0",
-                  "address": [
-                    "172.19.0.1/30",
-                    "fdfe:dcba:9876::1/126"
-                  ],
-                  "auto_route": true,
-                  "auto_redirect": true,
-                  "strict_route": true,
-                  "stack": "system"
-                },
+                  {
+                    "type": "tun",
+                    "tag": "tun-in",
+                    "interface_name": "tun0",
+                    "address": [
+                      "172.19.0.1/30",
+                      "fdfe:dcba:9876::1/126"
+                    ],
+                    "auto_route": true,
+                    "auto_redirect": true,
+                    "strict_route": true,
+                    "stack": "system"
+                  },
                 ''}
                 {
                   "type": "mixed",
@@ -344,7 +355,61 @@ with lib;
                   "listen_port": 2080
                 }
               ],
-              "outbounds": ${config.sops.placeholder.sing-box-outbounds},
+              "outbounds": [
+                {
+                  "type": "direct",
+                  "tag": "direct",
+                  "udp_fragment": true
+                },
+                {
+                  "type": "block",
+                  "tag": "block"
+                },
+                {
+                  "type": "urltest",
+                  "tag": "cn",
+                  "outbounds": [
+                    "direct"
+                    ${lib.optionalString config.modules.proxy.singbox.outbounds '',"manual"''}
+                  ],
+                  "url": "http://connectivitycheck.platform.hicloud.com/generate_204"
+                },
+                {
+                  "type": "selector",
+                  "tag": "oversea",
+                  "outbounds": [
+                    "direct"
+                    ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
+                  ]
+                },
+                {
+                  "type": "selector",
+                  "tag": "ai-media-social",
+                  "outbounds": [
+                    "direct"
+                    ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","manual"''}
+                  ]
+                },
+                {
+                  "type": "selector",
+                  "tag": "webrtc-bt-proxy",
+                  "outbounds": [
+                    "direct"
+                    ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy"''}
+                  ]
+                },
+                {
+                  "type": "selector",
+                  "tag": "tailscale-out",
+                  "outbounds": [
+                    "direct"
+                    ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
+                  ]
+                }
+                ${
+                  if config.modules.proxy.singbox.outbounds then config.sops.placeholder.sing-box-outbounds else ""
+                }
+              ],
               "route": {
                 "rules": [
                   {
@@ -385,13 +450,15 @@ with lib;
                     "rule_set": "adblock-dns",
                     "action": "reject"
                   },
-                  {
-                    "ip_cidr": [
-                      "100.64.0.0/10",
-                      "fd7a:115c:a1e0::/48"
-                    ],
-                    "outbound": "tailscale-in"
-                  },
+                  ${lib.optionalString config.modules.proxy.singbox.outbounds ''
+                    {
+                      "ip_cidr": [
+                        "100.64.0.0/10",
+                        "fd7a:115c:a1e0::/48"
+                      ],
+                      "outbound": "tailscale-in"
+                    },
+                  ''}
                   {
                     "type": "logical",
                     "mode": "or",
@@ -747,7 +814,11 @@ with lib;
     ) [ "127.0.0.1" ];
 
     networking.firewall = lib.mkMerge [
-      { checkReversePath = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) (lib.mkDefault false); }
+      {
+        checkReversePath = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) (
+          lib.mkDefault false
+        );
+      }
       # AdGuardHome 的端口规则
       (mkIf config.modules.proxy.adguardhome.enable {
         allowedTCPPorts = [
@@ -798,29 +869,11 @@ with lib;
       };
     };
 
-    systemd.tmpfiles.rules = mkIf config.modules.proxy.dnscrypt-proxy.enable [
-      "d /var/lib/dnscrypt-proxy 0755 dnscrypt-proxy dnscrypt-proxy - -"
-    ];
-    systemd.services.update-dnscrypt-blocklist = mkIf config.modules.proxy.dnscrypt-proxy.enable {
-      description = "Update dnscrypt-proxy blocklist";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      script = ''
-        ${pkgs.curl}/bin/curl -L -o /var/lib/dnscrypt-proxy/blocklist.txt https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.txt
-        ${pkgs.systemd}/bin/systemctl kill -s HUP dnscrypt-proxy || true
-      '';
-      serviceConfig = {
-        Type = "oneshot";
-        User = "dnscrypt-proxy";
-      };
-    };
     services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
       enable = true;
       configFile = config.sops.templates."dnscrypt-proxy.toml".path;
     };
     systemd.services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
-      after = [ "update-dnscrypt-blocklist.service" ];
-      wants = [ "update-dnscrypt-blocklist.service" ];
       restartTriggers = [ config.sops.templates."dnscrypt-proxy.toml".path ];
     };
 

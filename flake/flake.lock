@@ -20,6 +20,18 @@
         "type": "github"
       }
     },
+    "dnscrypt-blocklist": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-oF0or7Bfa+VPsBAveQo15Mvt2UECjP6uxc8HTX4va6o=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -196,6 +208,7 @@
     "root": {
       "inputs": {
         "disko": "disko",
+        "dnscrypt-blocklist": "dnscrypt-blocklist",
         "geodb": "geodb",
         "nix-index-database": "nix-index-database",
         "nix-minecraft": "nix-minecraft",

@@ -63,6 +63,8 @@
       singbox.enable = true;
       singbox.dns = true;
       singbox.tun = true;
+      singbox.endpoints = true;
+      singbox.outbounds = true;
     };
     utils = {
       enable = true;

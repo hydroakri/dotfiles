@@ -17,6 +17,11 @@
       url = "github:Loyalsoldier/v2ray-rules-dat/release";
       flake = false;
     };
+    dnscrypt-blocklist = {
+      type = "file";
+      url = "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt";
+      flake = false;
+    };
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
   };
 
