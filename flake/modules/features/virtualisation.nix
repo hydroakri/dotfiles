@@ -1,11 +1,14 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
   };
-  # 启用 QEMU 模拟，让 x86 机器可以编译和运行 ARM 程序
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  # 仅在非 aarch64 系统上启用 aarch64 模拟
+  boot.binfmt.emulatedSystems = lib.subtractLists [ pkgs.stdenv.hostPlatform.system ] [
+  "aarch64-linux"
+  "x86_64-linux"
+  ];
   environment.systemPackages = [ pkgs.distrobox ];
 
 }

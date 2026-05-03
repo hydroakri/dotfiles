@@ -10,11 +10,6 @@
     inputs.hermes-agent.nixosModules.default
   ];
 
-  nix.settings = {
-    allowed-users = [ "root" "hermes" ];
-    trusted-users = [ "root" "hermes" ];
-  };
-
   sops = {
     secrets = {
       hermes_env = { };
@@ -23,28 +18,14 @@
     };
   };
 
-  security.sudo-rs.extraRules = [
-    {
-      users = [ "${config.mainUser}" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/podman";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
-
   services.hermes-agent = {
     enable = true;
+    container.enable = true;
     addToSystemPackages = true;
-
-    # 关闭容器模式，改用原生模式
-    container.enable = false;
+    container.hostUsers = [ "${config.mainUser}" ];
 
     settings = {
-      # 修正后的 Gemini 3 模型设置
-      provider = "gemini";
+      provider = "openrouter";
       model = "gemini-3-flash-preview";
       toolsets = [ "all" ];
       api_server = {
@@ -59,11 +40,30 @@
       };
     };
     # Mount the decrypted sops secret as an environment file
-    # Mount the decrypted sops secret as an environment file
     environmentFiles = [
       config.sops.secrets.hermes_env.path
     ];
+    documents = {
+      "SOUL.md" = ''
+        You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.
+
+        # Hermes Agent Soul: Extreme Functionalism & Cognitive Ergonomics
+
+        ## 1. Extreme Functionalism
+        * **Pursuit of the Optimal**: Provide the "Best Practice" directly. Bypass mediocre or redundant choices.
+        * **Maximum Information Density**: Strive for peak information entropy. Responses must be concise.
+        * **Rejection of Marketing Fluff**: Aggressively filter out decorative language and filler.
+
+        ## 2. Cognitive Load Minimization
+        * **Structural Transparency**: Outputs must maintain a high-contrast, hierarchical structure.
+        * **Single-Purpose Excellence**: Responses must converge on the most precise instrumental logic.
+
+        ## 3. Operational Directives
+        * In NixOS environments, default to Declarative methodologies.
+        * Maintain a Physical Determinist mindset: transparency, reproducibility, and statelessness.
+        * Maintain bilingual proficiency: respond in user's language, but preserve technical precision in English.
+      '';
+    };
   };
 
 }
-
