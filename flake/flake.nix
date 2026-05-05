@@ -24,6 +24,7 @@
     };
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
     hermes-agent.url = "github:nousresearch/hermes-agent";
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
   };
 
   outputs =
@@ -37,6 +38,7 @@
       geodb,
       nix-minecraft,
       hermes-agent,
+      nix-cachyos-kernel,
       ...
     }@inputs:
     let

@@ -9,6 +9,9 @@
 {
   networking.hostName = "omen15";
   nixpkgs.hostPlatform = "x86_64-linux";
+  nixpkgs.overlays = [
+    inputs.nix-cachyos-kernel.overlays.pinned
+  ];
   imports = [
     # Hardware configuration
     ./disko.nix
@@ -74,7 +77,8 @@
     };
   };
   boot = {
-    kernelPackages = pkgs.linuxPackages_xanmod;
+    kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-lts-lto-x86_64-v3;
+    # kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [
       "zenpower"
       "kvm-amd"
