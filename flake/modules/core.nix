@@ -166,46 +166,45 @@
       };
     };
   };
-  environment.systemPackages =
-    [
-      pkgs.wget
-      pkgs.curl
-      pkgs.unar
-      pkgs._7zz
-      pkgs.tmux
-      pkgs.python3Minimal
-      pkgs.neovim
-      # net utils
-      pkgs.lsof
-      pkgs.iputils
-      pkgs.dnsutils
-      pkgs.nettools
-      #hardware
-      pkgs.lshw
-      pkgs.file
-      pkgs.usbutils
-      # modern tools
-      pkgs.fzf
-      pkgs.bat
-      pkgs.gdu
-      pkgs.btop
-      pkgs.yazi
-      pkgs.atuin
-      pkgs.zoxide
-      pkgs.chezmoi
-      pkgs.lazygit
-      pkgs.ripgrep
-      pkgs.starship
-      pkgs.attic-client
-      # nix utils
-      pkgs.nix-tree
-      pkgs.nix-output-monitor
-    ]
-    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
-      # x86_64 specific tools
-      pkgs.sbctl
-      pkgs.efibootmgr
-      pkgs.mokutil
-      pkgs.pciutils
-    ];
+  environment.systemPackages = [
+    pkgs.wget
+    pkgs.curl
+    pkgs.unar
+    pkgs._7zz
+    pkgs.tmux
+    pkgs.python3Minimal
+    pkgs.neovim
+    # net utils
+    pkgs.lsof
+    pkgs.iputils
+    pkgs.dnsutils
+    pkgs.nettools
+    #hardware
+    pkgs.lshw
+    pkgs.file
+    pkgs.usbutils
+    # modern tools
+    pkgs.fzf
+    pkgs.bat
+    pkgs.gdu
+    pkgs.btop
+    pkgs.yazi
+    pkgs.atuin
+    pkgs.zoxide
+    pkgs.chezmoi
+    pkgs.lazygit
+    pkgs.ripgrep
+    pkgs.starship
+    pkgs.attic-client
+    # nix utils
+    pkgs.nix-tree
+    pkgs.nix-output-monitor
+  ]
+  ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
+    # x86_64 specific tools
+    pkgs.sbctl
+    pkgs.efibootmgr
+    pkgs.mokutil
+    pkgs.pciutils
+  ];
 }

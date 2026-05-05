@@ -646,6 +646,7 @@ require("lazy").setup({
 			-- COMMENT
 			{
 				"numToStr/Comment.nvim",
+				enabled = false, -- Neovim 0.10+ builtin comment function, dont need.
 				keys = {
 					{ "gcc", mode = "n", desc = "Comment toggle current line" },
 					{ "gc", mode = { "n", "o" }, desc = "Comment toggle linewise" },
