@@ -55,7 +55,7 @@
     "dnscrypt-blocklist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-KBXMOAB5PfNhwRo433h+VqbyU16paZtDISt+zAxEzIE=",
+        "narHash": "sha256-3BWQ0VwvZh+RYSDpTx1oTIKR3eirP2uq4szDbyR7GqE=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
       },
@@ -138,11 +138,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1778021471,
-        "narHash": "sha256-yG7f0usW9EQDvVTqPOWOK9MiPKO81miWsxOhHuR5swA=",
+        "lastModified": 1778107474,
+        "narHash": "sha256-TMgNf0MNJ0cjWkWqnYLEThUyb53jusCqtwdy5vbaeNA=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "a0b5f132bae49ca129e3fe9bd2aed30a38493910",
+        "rev": "f5d50e3a2f50301eafeba80303b7e188520f25f2",
         "type": "github"
       },
       "original": {
@@ -162,11 +162,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1778027352,
-        "narHash": "sha256-6My3oGVVvEklizFh63xI1UXCsiaTUtqEPgU67YqIfP0=",
+        "lastModified": 1778118030,
+        "narHash": "sha256-aYOqj6C8mCrCIDU4XBvtQh53L69Yc/A6M5tjhcTzNuA=",
         "owner": "nousresearch",
         "repo": "hermes-agent",
-        "rev": "39f451f5ada6546a12fefd97397faca189d0169c",
+        "rev": "49c3c2e0d37c96dc593a807a5e81fdf4f0aa3d85",
         "type": "github"
       },
       "original": {
@@ -184,11 +184,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1778007484,
-        "narHash": "sha256-Cja25jpugHHkNeilyzPaESAv7q+DjbyOPrN3o3a93z8=",
+        "lastModified": 1778094799,
+        "narHash": "sha256-Mt6U9R8FE4sHebccKpZLID+tl8gZD6ZvIXkFoene3xE=",
         "owner": "xddxdd",
         "repo": "nix-cachyos-kernel",
-        "rev": "108bde94436f76f0ef63ef03ce103281da35197a",
+        "rev": "603d22bf7d9a6551ac052c6059d71825b55acc1c",
         "type": "github"
       },
       "original": {
@@ -225,11 +225,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1777952170,
-        "narHash": "sha256-8dQ/DOUvQI8x5i6MZ309/xZLLVfV1CgWbD2+JiQ7Hd4=",
+        "lastModified": 1778039471,
+        "narHash": "sha256-Arjg44jFcpSqOKK05EIxbKIjhfjou/EGF12COFU+9QA=",
         "owner": "Infinidoge",
         "repo": "nix-minecraft",
-        "rev": "34a46e4de360c5004ee1866f5e3de78bf5e8b289",
+        "rev": "87611ef4788116de05f851920c5958f0c37d5b05",
         "type": "github"
       },
       "original": {
@@ -323,11 +323,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1777973815,
-        "narHash": "sha256-MrCLnhvI7jvZZGqZIX2WcehUQvF8BAVSEm++0BMYBrE=",
+        "lastModified": 1778060440,
+        "narHash": "sha256-5uwxUCXwDNzqIA5TWMIG9gSk1nZf+z//Wae4PLuwydw=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "fdea16057723a4957f29571da8a38cabd255c5fa",
+        "rev": "39d9e4fcf3976da8dd0d523723747ee11a3d6f7a",
         "type": "github"
       },
       "original": {
