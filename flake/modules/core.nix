@@ -110,16 +110,17 @@
   services.chrony = {
     enable = true;
     servers = [ ];
+    enableMemoryLocking = false;
     extraConfig = ''
-      driftfile /var/lib/chrony/chrony.drift
-
       server time.grapheneos.org iburst
       server time.cloudflare.com iburst nts
       server nts.netnod.se iburst nts
       server 129.6.15.27 iburst
 
+      noclientlog
       makestep 1.0 3
       ntsdumpdir /var/lib/chrony
+      driftfile /var/lib/chrony/chrony.drift
     '';
   };
   #SMART monitor
@@ -168,14 +169,22 @@
       };
     };
   };
+
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    withNodeJs = true;
+    withPython3 = true;
+  };
+
   environment.systemPackages = [
     pkgs.wget
     pkgs.curl
     pkgs.unar
     pkgs._7zz
     pkgs.tmux
-    pkgs.python3Minimal
-    pkgs.neovim
     # net utils
     pkgs.lsof
     pkgs.iputils
