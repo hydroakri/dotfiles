@@ -97,6 +97,8 @@
         interface vlan10
           ipv6rs
           ia_pd 1 enp1s0u1/0
+          rebind
+          noipv6ra_detach
       '';
     };
   };

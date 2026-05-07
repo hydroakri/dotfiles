@@ -189,6 +189,8 @@
     # xfce.xfce4-panel-profiles
     # rofi
 
+    pkgs.winboat
+
   ];
   # programs.niri.enable = true;
   programs.kdeconnect.enable = true;
