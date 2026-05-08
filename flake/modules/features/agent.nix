@@ -25,8 +25,9 @@
     container.hostUsers = [ "${config.mainUser}" ];
 
     settings = {
-      provider = "openrouter";
-      model = "gemini-3-flash-preview";
+      provider = "Deepseek";
+      model = "deepseek-v4-flash";
+      context_length = 65000;
       toolsets = [ "all" ];
       api_server = {
         enabled = true;
