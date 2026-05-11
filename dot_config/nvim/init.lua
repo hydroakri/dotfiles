@@ -1297,7 +1297,7 @@ require("lazy").setup({
 									"nil", -- nix LSP
 									"pyright", -- Python LSP
 									"typescript-language-server",
-									"gopls", -- Go LSP
+									-- "gopls", -- Go LSP
 									"clangd", -- C/C++ LSP
 									"rust-analyzer", -- Rust LSP
 									"marksman", -- Markdown LSP
@@ -1309,9 +1309,9 @@ require("lazy").setup({
 									"prettierd", -- JS/TS/HTML/CSS/JSON/YAML/MD (带守护进程，快)
 									"shfmt", -- Shell (比 beautysh 更标准)
 									"clang-format", -- C/C++/Java
-									"csharpier", -- C#
-									"gofumpt", -- Go (比 gofmt 更严格的格式化)
-									"goimports", -- Go (自动处理 import)
+									-- "csharpier", -- C#
+									-- "gofumpt", -- Go (比 gofmt 更严格的格式化)
+									-- "goimports", -- Go (自动处理 import)
 									"nixfmt", -- Nix
 									-- 'ast-grep',              -- (可选) 仅用于结构化重构
 
@@ -1471,11 +1471,49 @@ require("lazy").setup({
 
 		-- DEBUGGER
 		{
+			-- MASON-DAP (自动管理调试适配器，类似 VS Code)
+			{
+				"jay-babu/mason-nvim-dap.nvim",
+				dependencies = {
+					"mason-org/mason.nvim",
+					"mfussenegger/nvim-dap",
+				},
+				cmd = { "DapInstall", "DapUninstall" },
+				config = function()
+					require("mason-nvim-dap").setup({
+						ensure_installed = {
+							"debugpy",
+							"js",
+							"pwa-chrome",
+							"cppdbg",
+							"delve",
+							"codelldb",
+						},
+						automatic_setup = true,
+						handlers = {},
+					})
+				end,
+			},
 			-- DAPUI
 			{
 				"rcarriga/nvim-dap-ui",
+				dependencies = {
+					{ "mfussenegger/nvim-dap" },
+					{ "nvim-neotest/nvim-nio" },
+				},
 				config = function()
 					require("dapui").setup()
+					local dap = require("dap")
+					local dapui = require("dapui")
+					dap.listeners.after.event_initialized["dapui_config"] = function()
+						dapui.open()
+					end
+					dap.listeners.before.event_terminated["dapui_config"] = function()
+						dapui.close()
+					end
+					dap.listeners.before.event_exited["dapui_config"] = function()
+						dapui.close()
+					end
 				end,
 				keys = {
 					{
@@ -1486,23 +1524,22 @@ require("lazy").setup({
 						desc = "Toggle DapUI",
 					},
 				},
-				dependencies = {
-					{ "mfussenegger/nvim-dap" },
-					{ "nvim-neotest/nvim-nio" },
-					{
-						"folke/neodev.nvim",
-						config = function()
-							require("neodev").setup({
-								library = { plugins = { "nvim-dap-ui" }, types = true },
-							})
-						end,
-						dependencies = { "hrsh7th/nvim-cmp" },
-					},
-				},
+			},
+			-- DAP VIRTUAL TEXT (inline variable values like VSCode)
+			{
+				"theHamsta/nvim-dap-virtual-text",
+				dependencies = { "mfussenegger/nvim-dap" },
+				config = function()
+					require("nvim-dap-virtual-text").setup()
+				end,
 			},
 			-- DAP
 			{
 				"mfussenegger/nvim-dap",
+				dependencies = {
+					"rcarriga/nvim-dap-ui",
+					"nvim-neotest/nvim-nio",
+				},
 				keys = {
 					{
 						mode = "n",
@@ -1510,7 +1547,15 @@ require("lazy").setup({
 						function()
 							require("dap").continue()
 						end,
-						desc = "Debug continue",
+						desc = "Debug continue/pause",
+					},
+					{
+						mode = "n",
+						"<F9>",
+						function()
+							require("dap").toggle_breakpoint()
+						end,
+						desc = "Debug toggle breakpoint",
 					},
 					{
 						mode = "n",
@@ -1530,7 +1575,7 @@ require("lazy").setup({
 					},
 					{
 						mode = "n",
-						"<F12>",
+						"<S-F11>",
 						function()
 							require("dap").step_out()
 						end,
@@ -1554,7 +1599,15 @@ require("lazy").setup({
 					},
 					{
 						mode = "n",
-						"<Leader>lp",
+						"<Leader>dB",
+						function()
+							require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+						end,
+						desc = "Debug set conditional breakpoint",
+					},
+					{
+						mode = "n",
+						"<Leader>dL",
 						function()
 							require("dap").set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
 						end,
@@ -1577,7 +1630,7 @@ require("lazy").setup({
 						desc = "Debug run last",
 					},
 					{
-						mode = { "n", "v" },
+						mode = "n",
 						"<Leader>dh",
 						function()
 							require("dap.ui.widgets").hover()
@@ -1585,7 +1638,7 @@ require("lazy").setup({
 						desc = "Debug hover",
 					},
 					{
-						mode = { "n", "v" },
+						mode = "n",
 						"<Leader>dp",
 						function()
 							require("dap.ui.widgets").preview()
@@ -1596,8 +1649,7 @@ require("lazy").setup({
 						mode = "n",
 						"<Leader>df",
 						function()
-							local widgets = require("dap.ui.widgets")
-							widgets.centered_float(widgets.frames)
+							require("dap.ui.widgets").centered_float(require("dap.ui.widgets").frames)
 						end,
 						desc = "Debug frames",
 					},
@@ -1605,68 +1657,91 @@ require("lazy").setup({
 						mode = "n",
 						"<Leader>ds",
 						function()
-							local widgets = require("dap.ui.widgets")
-							widgets.centered_float(widgets.scopes)
+							require("dap.ui.widgets").centered_float(require("dap.ui.widgets").scopes)
 						end,
 						desc = "Debug scopes",
 					},
+					{
+						mode = "n",
+						"<Leader>dR",
+						function()
+							require("dap").restart()
+						end,
+						desc = "Debug restart",
+					},
+					{
+						mode = "n",
+						"<Leader>dc",
+						function()
+							require("dap").run_to_cursor()
+						end,
+						desc = "Debug run to cursor",
+					},
 				},
 				config = function()
-					require("dap").adapters.cppdbg = {
-						id = "cppdbg",
-						type = "executable",
-						command = "~/.local/share/nvim/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
-					}
-					require("dap").configurations.cpp = {
+					local dap = require("dap")
+
+					local python_path = vim.fn.exepath("python3") or vim.fn.exepath("python")
+					if python_path then
+						dap.adapters.python =
+							{ type = "executable", command = python_path, args = { "-m", "debugpy.adapter" } }
+						dap.adapters.debugpy = dap.adapters.python
+					end
+
+					dap.configurations.python = {
 						{
-							name = "Launch file",
+							type = "python",
+							request = "launch",
+							name = "Current File",
+							program = "${file}",
+							cwd = "${workspaceFolder}",
+						},
+						{
+							type = "python",
+							request = "launch",
+							name = "Module",
+							module = function()
+								return vim.fn.input("Module: ")
+							end,
+							cwd = "${workspaceFolder}",
+						},
+						{
+							type = "python",
+							request = "launch",
+							name = "Django",
+							module = "manage.py",
+							args = { "runserver" },
+							cwd = "${workspaceFolder}",
+						},
+						{
+							type = "python",
+							request = "launch",
+							name = "Flask",
+							module = "flask",
+							env = { FLASK_APP = "${file}" },
+							cwd = "${workspaceFolder}",
+						},
+						{
+							type = "python",
+							request = "attach",
+							name = "Remote",
+							connect = { host = "127.0.0.1", port = 5678 },
+						},
+					}
+
+					dap.configurations.cpp = dap.configurations.cpp or {}
+					vim.list_extend(dap.configurations.cpp, {
+						{
+							name = "Launch",
 							type = "cppdbg",
 							request = "launch",
 							program = function()
-								return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+								return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
 							end,
 							cwd = "${workspaceFolder}",
 							stopAtEntry = true,
 						},
-						{
-							name = "Attach to gdbserver :1234",
-							type = "cppdbg",
-							request = "launch",
-							MIMode = "gdb",
-							miDebuggerServerAddress = "localhost:1234",
-							miDebuggerPath = "/usr/bin/gdb",
-							cwd = "${workspaceFolder}",
-							program = function()
-								return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
-							end,
-						},
-					}
-					require("dap").adapters.bashdb = {
-						type = "executable",
-						command = data .. "/mason/packages/bash-debug-adapter/bash-debug-adapter",
-						name = "bashdb",
-					}
-					require("dap").configurations.sh = {
-						{
-							type = "bashdb",
-							request = "launch",
-							name = "Launch file",
-							showDebugOutput = true,
-							pathBashdb = data .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir/bashdb",
-							pathBashdbLib = data .. "/mason/packages/bash-debug-adapter/extension/bashdb_dir",
-							trace = true,
-							file = "${file}",
-							program = "${file}",
-							cwd = "${workspaceFolder}",
-							pathCat = "cat",
-							pathBash = "/bin/bash",
-							pathMkfifo = "mkfifo",
-							pathPkill = "pkill",
-							args = {},
-							env = {},
-							terminalKind = "integrated",
-						},
-					}
+					})
 				end,
 			},
 		},

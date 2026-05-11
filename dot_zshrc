@@ -70,6 +70,20 @@ source ~/.zsh/fzf-tab/fzf-tab.plugin.zsh
 
 ) > /dev/null 2>&1
 
+# nix develop template
+export NIX_TEMPLATE_SOURCE="github:the-nix-way/dev-templates"
+nxt-show() {
+    nix flake show "$NIX_TEMPLATE_SOURCE"
+}
+nxt-init() {
+    if [ -z "$1" ]; then
+        echo "用法: nxt-init <语言名>"
+        echo "例如: nxt-init python"
+        return 1
+    fi
+    nix flake init -t "${NIX_TEMPLATE_SOURCE}#$1"
+}
+
 # if [[ $(ps --no-header --pid=$PPID --format=cmd) != "fish" ]]
 # then
 #     exec fish
