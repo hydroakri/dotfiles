@@ -101,6 +101,10 @@
           min-size = 16384
           avg-size = 65536
           max-size = 262144
+
+          [garbage-collection]
+          interval = "12 hours"
+          default-retention-period = "21 days"
         '';
       };
 
