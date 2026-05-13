@@ -143,58 +143,52 @@
     allowedTCPPorts = [ 1080 ];
     allowedUDPPorts = [ 1080 ];
   };
-  environment.plasma6.excludePackages = (
-    [
-      pkgs.kdePackages.elisa
-      pkgs.kdePackages.gwenview
-      pkgs.kdePackages.kwrited
-      pkgs.kdePackages.khelpcenter
-      pkgs.kdePackages.konqueror
-      pkgs.kdePackages.oxygen
-      pkgs.kdePackages.krdc
-      pkgs.kdePackages.krfb
-      pkgs.kdePackages.dragon
-      pkgs.kdePackages.kcalc
-      pkgs.kdePackages.kfind
-      pkgs.kdePackages.kcharselect
-      pkgs.kdePackages.keditbookmarks
-      pkgs.kdePackages.drkonqi
-      pkgs.kdePackages.kdebugsettings
-      pkgs.kdePackages.kjournald
-      pkgs.kdePackages.ksystemlog
-      pkgs.kdePackages.kamera
-      pkgs.kdePackages.audiocd-kio
-      pkgs.kdePackages.ffmpegthumbs
-      pkgs.kdePackages.kwallet
-      pkgs.kdePackages.kwallet-pam
-    ]
-  );
-  environment.cosmic.excludePackages = (
-    [
-      pkgs.cosmic-player
-      pkgs.cosmic-term
-      pkgs.cosmic-edit
-    ]
-  );
-  environment.gnome.excludePackages = (
-    [
-      pkgs.atomix # puzzle game
-      pkgs.cheese # webcam tool
-      pkgs.epiphany # web browser
-      pkgs.evince # document viewer
-      pkgs.geary # email reader
-      pkgs.gedit # text editor
-      pkgs.gnome-characters
-      pkgs.gnome-music
-      pkgs.gnome-photos
-      pkgs.gnome-terminal
-      pkgs.gnome-tour
-      pkgs.hitori # sudoku game
-      pkgs.iagno # go game
-      pkgs.tali # poker game
-      pkgs.totem # video player
-    ]
-  );
+  environment.plasma6.excludePackages = ([
+    pkgs.kdePackages.elisa
+    pkgs.kdePackages.gwenview
+    pkgs.kdePackages.kwrited
+    pkgs.kdePackages.khelpcenter
+    pkgs.kdePackages.konqueror
+    pkgs.kdePackages.oxygen
+    pkgs.kdePackages.krdc
+    pkgs.kdePackages.krfb
+    pkgs.kdePackages.dragon
+    pkgs.kdePackages.kcalc
+    pkgs.kdePackages.kfind
+    pkgs.kdePackages.kcharselect
+    pkgs.kdePackages.keditbookmarks
+    pkgs.kdePackages.drkonqi
+    pkgs.kdePackages.kdebugsettings
+    pkgs.kdePackages.kjournald
+    pkgs.kdePackages.ksystemlog
+    pkgs.kdePackages.kamera
+    pkgs.kdePackages.audiocd-kio
+    pkgs.kdePackages.ffmpegthumbs
+    pkgs.kdePackages.kwallet
+    pkgs.kdePackages.kwallet-pam
+  ]);
+  environment.cosmic.excludePackages = ([
+    pkgs.cosmic-player
+    pkgs.cosmic-term
+    pkgs.cosmic-edit
+  ]);
+  environment.gnome.excludePackages = ([
+    pkgs.atomix # puzzle game
+    pkgs.cheese # webcam tool
+    pkgs.epiphany # web browser
+    pkgs.evince # document viewer
+    pkgs.geary # email reader
+    pkgs.gedit # text editor
+    pkgs.gnome-characters
+    pkgs.gnome-music
+    pkgs.gnome-photos
+    pkgs.gnome-terminal
+    pkgs.gnome-tour
+    pkgs.hitori # sudoku game
+    pkgs.iagno # go game
+    pkgs.tali # poker game
+    pkgs.totem # video player
+  ]);
   fonts = {
     packages = [
       pkgs.noto-fonts-cjk-sans
@@ -214,7 +208,6 @@
   };
   environment.systemPackages = [
     #theme
-    pkgs.darkly-qt5
     pkgs.darkly
     pkgs.darkman
   ];
