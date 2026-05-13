@@ -169,6 +169,11 @@ with lib;
                     "inet6_range": "fc00::/18"
                   },
                   {
+                    "tag": "dns-system",
+                    "type": "local",
+                    "detour": "direct"
+                  },
+                  {
                     "type": "h3",
                     "tag": "dns-local",
                     "detour": "direct",
@@ -211,6 +216,7 @@ with lib;
                       {
                         "domain_suffix": [
                           ".lan",
+                          ".wlan",
                           ".localdomain",
                           ".example",
                           ".invalid",
@@ -273,7 +279,7 @@ with lib;
                         ]
                       }
                     ],
-                    "server": "dns-local"
+                    "server": "dns-system"
                   },
                   {
                     "query_type": [

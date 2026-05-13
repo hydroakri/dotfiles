@@ -77,8 +77,8 @@
     };
   };
   boot = {
-    kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-lts-lto-x86_64-v3;
-    # kernelPackages = pkgs.linuxPackages_xanmod;
+    # kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-lts-lto-x86_64-v3;
+    kernelPackages = pkgs.linuxPackages_xanmod;
     kernelModules = [
       "zenpower"
       "kvm-amd"
