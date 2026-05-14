@@ -81,7 +81,6 @@ with lib;
     systemd.services.dae = mkIf config.modules.proxy.dae.enable {
       after = [
         "network-online.target"
-        "systemd-networkd-wait-online.service"
       ]
       ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
       ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")

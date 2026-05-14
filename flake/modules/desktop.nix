@@ -67,7 +67,10 @@
   services.smartd.notifications.systembus-notify.enable = true;
 
   # Printing
-  services.printing.enable = true;
+  services.printing.enable = false;
+  services.avahi.enable = false;
+  networking.modemmanager.enable = false;
+  services.geoclue2.enable = false;
 
   # Audio (PipeWire)
   security.rtkit.enable = true;
