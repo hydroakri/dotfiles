@@ -5,7 +5,26 @@
   ...
 }:
 {
-  boot.kernelParams = [ "preempt=full" ];
+  boot = {
+    kernel.sysctl = {
+      "kernel.printk" = "3 3 3 3";
+    };
+    consoleLogLevel = 3;
+    initrd.verbose = false;
+    plymouth.enable = true;
+    kernelParams = [
+      # boot screen
+      "quiet"
+      "splash"
+      "loglevel=3"
+      "rd.udev.log_level=3"
+      "vt.global_cursor_default=0"
+      "rd.systemd.show_status=auto"
+      # PREEMPT
+      "preempt=full"
+    ];
+  };
+
   boot.kernel.sysctl = {
     # Desktop-specific VM tuning
     "vm.swappiness" = 180;

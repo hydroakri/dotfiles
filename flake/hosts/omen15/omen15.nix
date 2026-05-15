@@ -42,7 +42,12 @@
     inputs.disko.nixosModules.disko
   ];
   modules = {
-    nvidia.enable = true;
+    nvidia = {
+      enable = true;
+      variant = "open";
+      amdgpuBusId = "PCI:7@0:0:0";
+      nvidiaBusId = "PCI:1@0:0:0";
+    };
     networking.sqm = {
       enable = true;
       wanInterface = "wlo1";
@@ -69,12 +74,22 @@
       singbox.endpoints = true;
       singbox.outbounds = true;
     };
+    powersave = {
+      enable = lib.mkDefault false;
+      wakeOnLan.interfaces = [
+        "wlo1"
+        "eno1"
+      ];
+    };
     utils = {
       enable = true;
       enableGraphicTools = true;
       enableGlance = true;
-      enableUptime = true;
+      enableUptime = false;
     };
+  };
+  specialisation.powersave.configuration = {
+    modules.powersave.enable = true;
   };
   boot = {
     # kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-lts-lto-x86_64-v3;
@@ -98,6 +113,7 @@
       options snd_hda_intel power_save=1
       options zenpower fast_ctemp=1
     '';
+    plymouth.enable = true;
     loader.efi = {
       canTouchEfiVariables = true;
       efiSysMountPoint = "/boot";
@@ -150,7 +166,6 @@
     plasma6.enable = true;
   };
   # Video drivers (hardware-specific)
-  # services.xserver.videoDrivers = [ "amdgpu" "nouveau" ];
   services.xserver.desktopManager.xfce = {
     enable = false;
     enableWaylandSession = true;
@@ -162,6 +177,15 @@
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };
+  systemd.services.nbfc_service = {
+    # nbfc-linux fancontrol
+    enable = true;
+    description = "NoteBook FanControl service";
+    serviceConfig.Type = "simple";
+    path = [ pkgs.kmod ];
+    script = "${pkgs.nbfc-linux}/bin/nbfc_service -c /etc/nixos/nbfc.json";
+    wantedBy = [ "multi-user.target" ];
+  };
   environment.systemPackages = [
     # file manager
     # xfce.thunar
@@ -171,11 +195,12 @@
     # file manager
     pkgs.kdePackages.partitionmanager
     pkgs.kdePackages.kpmcore
-    pkgs.opencode-desktop
+    pkgs.opencode
 
     # Wayland compositor
     # xwayland-satellite
     # networkmanagerapplet
+    pkgs.nbfc-linux
     pkgs.brightnessctl
     pkgs.pavucontrol
     pkgs.playerctl
@@ -200,7 +225,7 @@
   };
   # systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
   # systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
-  services.cloudflare-warp.enable = true;
+  # services.cloudflare-warp.enable = true;
   services.sunshine = {
     enable = true;
     autoStart = true;

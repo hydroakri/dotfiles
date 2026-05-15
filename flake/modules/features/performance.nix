@@ -4,6 +4,11 @@
   pkgs,
   ...
 }:
+let
+  zswapDisable = pkgs.writeShellScript "zswap-disable" ''
+    echo N > /sys/module/zswap/parameters/enabled
+  '';
+in
 {
   boot.kernelParams = (
     [
@@ -11,10 +16,11 @@
       "lru_gen_enabled=1"
       "zswap.enabled=0"
       "transparent_hugepage=madvise"
-      "nouveau.config=NvBoost=2"
-      "nouveau.modeset=1"
     ]
-    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [ "processor.ignore_ppc=1" ]
+    # 当 modules.powersave.enable 开启时，不设置 ignore_ppc (避免忽略固件功耗限制)
+    ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64 && !config.modules.powersave.enable) [
+      "processor.ignore_ppc=1"
+    ]
   );
   # CPU microcode (common)
   hardware.cpu.amd.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 true;
@@ -87,7 +93,7 @@
     ATTRS{id/bus}=="ata", RUN+="${pkgs.hdparm}/bin/hdparm -B 254 -S 0 /dev/%k"
 
     # When used with ZRAM, it is better to prefer page out only anonymous pages
-    ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${pkgs.bash}/bin/bash -c 'echo N > /sys/module/zswap/parameters/enabled'"
+    ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${zswapDisable}"
   '';
   boot.tmp.useTmpfs = true;
   services.zram-generator = {
