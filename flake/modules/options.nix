@@ -1,21 +1,9 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-
-with lib;
+{ lib, ... }:
 
 {
-
-  options = {
-    # 定义全局用户名选项
-    mainUser = mkOption {
-      type = types.str;
-      default = "hydroakri";
-      description = "The main system username";
-    };
+  options.mainUser = lib.mkOption {
+    type = lib.types.str;
+    default = "hydroakri";
+    description = "The main system username";
   };
-
 }

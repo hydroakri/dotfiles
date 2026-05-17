@@ -4,34 +4,33 @@
   pkgs,
   ...
 }:
-with lib;
 {
   options.modules.utils = {
-    enable = mkEnableOption "enable some useful tools";
+    enable = lib.mkEnableOption "enable some useful tools";
 
-    enableGraphicTools = mkOption {
-      type = types.bool;
+    enableGraphicTools = lib.mkOption {
+      type = lib.types.bool;
       default = false;
     };
-    enableGlance = mkOption {
-      type = types.bool;
+    enableGlance = lib.mkOption {
+      type = lib.types.bool;
       default = false;
     };
-    enableUptime = mkOption {
-      type = types.bool;
+    enableUptime = lib.mkOption {
+      type = lib.types.bool;
       default = false;
     };
-    enableGrafana = mkOption {
-      type = types.bool;
+    enableGrafana = lib.mkOption {
+      type = lib.types.bool;
       default = false;
     };
-    enablePrometheus = mkOption {
-      type = types.bool;
+    enablePrometheus = lib.mkOption {
+      type = lib.types.bool;
       default = false;
     };
   };
 
-  config = mkIf config.modules.utils.enable {
+  config = lib.mkIf config.modules.utils.enable {
     sops = {
       secrets = {
         lastfm_username = { };
@@ -48,28 +47,26 @@ with lib;
 
     networking.firewall = lib.mkMerge [
       # grafana 的端口规则
-      (mkIf config.modules.utils.enableGrafana { allowedTCPPorts = [ 9006 ]; })
+      (lib.mkIf config.modules.utils.enableGrafana { allowedTCPPorts = [ 9006 ]; })
     ];
 
-    environment.systemPackages = mkIf config.modules.utils.enableGraphicTools (
-      [
-        ## GPU / display tools
-        pkgs.nvtopPackages.full
-        pkgs.virtualglLib
-        pkgs.vulkan-tools
-        pkgs.libva-utils
-        pkgs.vdpauinfo
-        pkgs.read-edid
-        pkgs.clinfo
-      ]
-    );
+    environment.systemPackages = lib.mkIf config.modules.utils.enableGraphicTools ([
+      ## GPU / display tools
+      pkgs.nvtopPackages.full
+      pkgs.virtualglLib
+      pkgs.vulkan-tools
+      pkgs.libva-utils
+      pkgs.vdpauinfo
+      pkgs.read-edid
+      pkgs.clinfo
+    ]);
 
-    services.uptime-kuma = mkIf config.modules.utils.enableUptime {
+    services.uptime-kuma = lib.mkIf config.modules.utils.enableUptime {
       enable = true;
       # 默认监听 3001 端口
     };
 
-    services.prometheus = mkIf config.modules.utils.enablePrometheus {
+    services.prometheus = lib.mkIf config.modules.utils.enablePrometheus {
       enable = true;
       port = 9005;
       globalConfig.scrape_interval = "45s";
@@ -112,7 +109,7 @@ with lib;
       ];
     };
 
-    services.grafana = mkIf config.modules.utils.enableGrafana {
+    services.grafana = lib.mkIf config.modules.utils.enableGrafana {
       enable = true;
       settings = {
         security.secret_key = config.sops.placeholder.grafana_secret_key;
@@ -145,7 +142,7 @@ with lib;
     };
 
     # Glance Dashboard
-    services.glance = mkIf config.modules.utils.enableGlance {
+    services.glance = lib.mkIf config.modules.utils.enableGlance {
       enable = true;
       settings = {
         server.host = "0.0.0.0";
@@ -917,7 +914,7 @@ with lib;
     };
 
     # Configure systemd service to inject secrets into glance config
-    systemd.services.glance = mkIf config.modules.utils.enableGlance {
+    systemd.services.glance = lib.mkIf config.modules.utils.enableGlance {
       serviceConfig = {
         EnvironmentFile = lib.mkForce config.sops.templates."lastfm-env".path;
       };

@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   lib,
   ...
 }:
@@ -10,7 +9,7 @@
     # IPv6 privacy extensions for servers (stable/static preferred)
     "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 0;
     "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 0;
-    
+
     # optimize bufferbloat
     "net.core.netdev_max_backlog" = lib.mkDefault 2000;
     "net.core.rmem_max" = lib.mkDefault 4194304;

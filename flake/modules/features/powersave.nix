@@ -4,7 +4,6 @@
   pkgs,
   ...
 }:
-with lib;
 let
   cfg = config.modules.powersave;
 
@@ -48,10 +47,10 @@ let
 in
 {
   options.modules.powersave = {
-    enable = mkEnableOption "powersave mode: battery-optimized kernel parameters, aggressive PCIe ASPM, and reduced wakeup sources for max s2idle efficiency";
+    enable = lib.mkEnableOption "powersave mode: battery-optimized kernel parameters, aggressive PCIe ASPM, and reduced wakeup sources for max s2idle efficiency";
 
-    wakeOnLan.interfaces = mkOption {
-      type = types.listOf types.str;
+    wakeOnLan.interfaces = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [
         "wlo1"
@@ -61,7 +60,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     boot.kernelModules = [ "rtc_cmos" ];
     boot.extraModprobeConfig = ''
       # Enable U-APSD for iwlwifi (deeper WiFi sleep)
@@ -82,7 +81,7 @@ in
       # Timer Events Oriented governor: better idle prediction for modern CPUs
       "cpuidle.governor=teo"
     ]
-    ++ optionals pkgs.stdenv.hostPlatform.isx86_64 [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       "mem_sleep_default=s2idle"
       "rtc_cmos.use_acpi_alarm=1"
     ];
@@ -117,8 +116,8 @@ in
     '';
     # services.auto-cpufreq.enable = true;
     services.power-profiles-daemon.enable = true;
-    services.irqbalance.enable = mkDefault true;
-    networking.interfaces = genAttrs cfg.wakeOnLan.interfaces (name: {
+    services.irqbalance.enable = lib.mkDefault true;
+    networking.interfaces = lib.genAttrs cfg.wakeOnLan.interfaces (name: {
       wakeOnLan.enable = false;
     });
     networking.networkmanager.wifi.powersave = true;

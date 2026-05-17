@@ -4,13 +4,12 @@
   pkgs,
   ...
 }:
-with lib;
 {
   options.modules.nvidia = {
-    enable = mkEnableOption "NVIDIA GPU support";
+    enable = lib.mkEnableOption "NVIDIA GPU support";
 
-    variant = mkOption {
-      type = types.enum [
+    variant = lib.mkOption {
+      type = lib.types.enum [
         "nvidia"
         "open"
         "nouveau"
@@ -23,20 +22,20 @@ with lib;
       '';
     };
 
-    amdgpuBusId = mkOption {
-      type = types.str;
+    amdgpuBusId = lib.mkOption {
+      type = lib.types.str;
       default = "PCI:7@0:0:0";
       description = "Bus ID for the AMD iGPU (lspci | grep VGA, format PCI:bus:dev:func)";
     };
 
-    nvidiaBusId = mkOption {
-      type = types.str;
+    nvidiaBusId = lib.mkOption {
+      type = lib.types.str;
       default = "PCI:1@0:0:0";
       description = "Bus ID for the NVIDIA dGPU (lspci | grep NVIDIA)";
     };
   };
 
-  config = mkIf config.modules.nvidia.enable {
+  config = lib.mkIf config.modules.nvidia.enable {
     services.xserver.videoDrivers =
       if config.modules.nvidia.variant == "nouveau" then
         [
@@ -74,7 +73,7 @@ with lib;
       else
         [ "nouveau" ];
 
-    boot.extraModprobeConfig = mkIf (config.modules.nvidia.variant != "nouveau") ''
+    boot.extraModprobeConfig = lib.mkIf (config.modules.nvidia.variant != "nouveau") ''
       options nvidia-drm modeset=1
       options nvidia NVreg_EnableGpuFirmware=1
 
@@ -94,9 +93,11 @@ with lib;
       options nvidia NVreg_RegistryDwords=RmEnableAggressiveVblank=1
     '';
 
-    hardware.nvidia-container-toolkit.enable = mkIf (config.modules.nvidia.variant != "nouveau") true;
+    hardware.nvidia-container-toolkit.enable = lib.mkIf (
+      config.modules.nvidia.variant != "nouveau"
+    ) true;
 
-    hardware.nvidia = mkIf (config.modules.nvidia.variant != "nouveau") {
+    hardware.nvidia = lib.mkIf (config.modules.nvidia.variant != "nouveau") {
       open = config.modules.nvidia.variant == "open";
       modesetting.enable = true;
       nvidiaPersistenced = false;
@@ -119,7 +120,7 @@ with lib;
 
     environment.systemPackages =
       [ ]
-      ++ optionals (config.modules.nvidia.variant != "nouveau") [
+      ++ lib.optionals (config.modules.nvidia.variant != "nouveau") [
         pkgs.cudaPackages.cudatoolkit
         pkgs.nvidia-container-toolkit
       ];
@@ -127,10 +128,10 @@ with lib;
     hardware.graphics = {
       enable = true;
       enable32Bit = true;
-      extraPackages = optionals (
+      extraPackages = lib.optionals (
         config.modules.nvidia.variant != "nouveau" && !config.modules.powersave.enable
       ) [ pkgs.nvidia-vaapi-driver ];
-      extraPackages32 = optionals (
+      extraPackages32 = lib.optionals (
         config.modules.nvidia.variant != "nouveau" && !config.modules.powersave.enable
       ) [ pkgs.nvidia-vaapi-driver ];
     };
