@@ -248,7 +248,7 @@ in
   };
   # plug u2f device & use `pamu2fcfg -n`
   environment.etc."u2f_mappings".text = ''
-    ${config.mainUser}:8dACAhhnTEKOE88R+/IKyki9JEy+5rinQaCn/Mz/hJppc39O+8lE1X6hCPTQSYGxJqMsdd79r8VR3Sic7S/0goaTACdusvsFwFDenCVc7U6eoMiaSkDf7MoqJaoOh5L7n+I32NeiJnaAXm8Wp8COn8vQY0J6Y9iLUbzWtI9Ugst0bEDbSiOsHK/CWQfK9sf4Df4ONaGvcUFmhgKIyMmRO5aNMTOsqbiEKcRB+vl4kXp8KWzy,ebgHE/SJ/q1P3xk64KI8x560mq76bZJYQtc3YNJoio6zJUkMIXtNvXhcJt9MN2Fu6gB2MWgRsRXQKBZqWmutGg==,es256,+presence
+    ${config.mainUser}:8dACAuprRl62N+Nc/J6V8teNz5bkcxosNp5fkvaHse/d3Msfl2w21MOhBMfgcuFD7YnEbuGhJF9kFel58RQRM6xX3e/Okqaxe01DzCa1sBOAD4jUNQzATZfAaRMGtOxuY0Y06JlV/WJzVWrw7MdEd/NBP5RJtFAs8WAaXXdrvOgqzB1CHBGzXwq7ieuX5LzSCnux8ajJI1ksUcaj2viuWNIyTS7N3XjG,I7BP8E3Oc98DkQuND+9J3MPilurDUdwaYdX9nDMuwNZFQoA/DZ1edgl1X9MZOMJoSEfgFr23HaCKzHVy6ulVTg==,es256,+presence
   '';
 
   # ===========================================================================

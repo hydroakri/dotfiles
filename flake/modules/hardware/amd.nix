@@ -1,8 +1,18 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
+with lib;
 {
-  hardware.amdgpu.overdrive.enable = true;
-  hardware.graphics.extraPackages = [ pkgs.rocmPackages.clr.icd ];
-  hardware.graphics.extraPackages32 = [ pkgs.rocmPackages.clr.icd ];
-  # AMD GPU control (hardware-specific)
-  services.lact.enable = true;
+  options.modules.amd = {
+    rocm = mkEnableOption "ROCm OpenCL support for AMD GPUs (required for some video editing and ML workloads)";
+  };
+
+  config = mkMerge [
+    (mkIf config.modules.amd.rocm {
+      hardware.graphics.extraPackages = [ pkgs.rocmPackages.clr.icd ];
+      hardware.graphics.extraPackages32 = [ pkgs.rocmPackages.clr.icd ];
+    })
+    {
+      hardware.amdgpu.overdrive.enable = true;
+      services.lact.enable = true;
+    }
+  ];
 }

@@ -218,7 +218,6 @@
       pkgs.noto-fonts-cjk-sans
       pkgs.noto-fonts-cjk-serif
       pkgs.noto-fonts-color-emoji
-      pkgs.sarasa-gothic
       pkgs.nerd-fonts.symbols-only
       pkgs.cascadia-code # monospace
       pkgs.source-serif # serif

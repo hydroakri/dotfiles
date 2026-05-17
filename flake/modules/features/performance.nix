@@ -113,6 +113,12 @@ in
     enable = lib.mkDefault true;
     scheduler = lib.mkDefault "scx_rusty";
   };
+  # Process priority optimization (desktop only — cachyos rules target interactive workloads)
+  services.ananicy = lib.mkIf config.services.displayManager.enable {
+    enable = true;
+    package = pkgs.ananicy-cpp;
+    rulesProvider = pkgs.ananicy-rules-cachyos;
+  };
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=64M
   '';
