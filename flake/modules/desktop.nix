@@ -188,6 +188,8 @@
     pkgs.kdePackages.ffmpegthumbs
     pkgs.kdePackages.kwallet
     pkgs.kdePackages.kwallet-pam
+    pkgs.kdePackages.kwalletmanager
+    pkgs.kdePackages.qrca
   ]);
   environment.cosmic.excludePackages = ([
     pkgs.cosmic-player
@@ -258,16 +260,17 @@
       # themes/shell/plugin
       pkgs.bibata-cursors
       pkgs.papirus-icon-theme
-      pkgs.gnomeExtensions.appindicator
-      pkgs.gnomeExtensions.user-themes
-      pkgs.gnomeExtensions.kimpanel
-      pkgs.gnome-tweaks
 
       # GUI Applications
-      pkgs.venera
       pkgs.wezterm
       pkgs.kdePackages.kate
       # davinci-resolve-studio
+    ]
+    ++ lib.optionals config.services.desktopManager.gnome.enable [
+      pkgs.gnome-tweaks
+      pkgs.gnomeExtensions.appindicator
+      pkgs.gnomeExtensions.user-themes
+      pkgs.gnomeExtensions.kimpanel
     ];
   };
 }
