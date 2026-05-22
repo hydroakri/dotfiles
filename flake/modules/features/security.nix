@@ -192,12 +192,25 @@ in
     pkgs.libfido2
     pkgs.yubikey-manager
 
+    # sudo → doas compatibility shim
+    pkgs.doas-sudo-shim
+
   ];
   security = {
-    sudo-rs.enable = true;
+    sudo-rs.enable = false;
     sudo.enable = false;
+    doas = {
+      enable = true;
+      extraRules = [
+        {
+          groups = [ "wheel" ];
+          persist = true;
+          keepEnv = true;
+        }
+      ];
+    };
     apparmor = {
-      enable = false;
+      enable = true;
       killUnconfinedConfinables = true;
       packages = [ pkgs.apparmor-profiles ];
     };
@@ -236,8 +249,8 @@ in
       };
     };
     services = {
-      # XXX INSTALLATION: Disable sudo.u2fAuth, login.u2fAuth temporarily.
-      sudo.u2fAuth = true;
+      # XXX INSTALLATION: Disable doas.u2fAuth, login.u2fAuth temporarily.
+      doas.u2fAuth = true;
       login.u2fAuth = true;
 
       system-login.failDelay.enable = true;

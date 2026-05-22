@@ -66,6 +66,9 @@
     # === 图形工具 ===
     pkgs.librewolf
     pkgs.wezterm
+
+    # sudo → doas compatibility shim
+    pkgs.doas-sudo-shim
   ];
 
   # === 安全配置调整 ===
@@ -74,11 +77,20 @@
     PermitRootLogin = "yes";
   };
 
-  # 允许无密码sudo（安装时方便）
+  # 允许无密码doas（安装时方便）
   security = {
-    sudo-rs.enable = true;
-    sudo-rs.wheelNeedsPassword = false;
+    sudo-rs.enable = false;
     sudo.enable = false;
+    doas = {
+      enable = true;
+      extraRules = [
+        {
+          groups = [ "wheel" ];
+          noPass = true;
+          keepEnv = true;
+        }
+      ];
+    };
   };
 
   # 基础防火墙配置

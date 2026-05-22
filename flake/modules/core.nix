@@ -12,7 +12,7 @@
     ./features/networking/tuning.nix
     inputs.nix-index-database.nixosModules.default
   ];
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages;
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
   nix = {
