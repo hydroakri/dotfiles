@@ -45,6 +45,25 @@
     variant = "";
   };
 
+  i18n = {
+    inputMethod = {
+      type = "fcitx5";
+      enable = true;
+      fcitx5 = {
+        addons = [
+          pkgs.fcitx5-lua
+          pkgs.fcitx5-gtk
+          pkgs.fcitx5-rime
+          pkgs.rime-wanxiang
+          pkgs.libsForQt5.fcitx5-qt
+          pkgs.qt6Packages.fcitx5-configtool
+          pkgs.qt6Packages.fcitx5-chinese-addons
+        ];
+        waylandFrontend = true;
+      };
+    };
+  };
+
   # Desktop portal
   xdg.portal = {
     enable = true;

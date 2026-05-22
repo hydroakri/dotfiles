@@ -1,9 +1,3 @@
-[".local/share/fcitx5/rime"]
-    type = "git-repo"
-    url = "https://github.com/iDvel/rime-ice.git"
-    refreshPeriod = "168h"
-    clone.args = ["--depth", "1"]
-
 [".tmux/plugins/tpm"]
     type = "git-repo"
     url = "https://github.com/tmux-plugins/tpm.git"

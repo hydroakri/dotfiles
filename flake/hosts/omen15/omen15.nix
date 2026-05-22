@@ -134,23 +134,6 @@
       '';
     };
   };
-  i18n = {
-    inputMethod = {
-      type = "fcitx5";
-      enable = true;
-      fcitx5 = {
-        addons = [
-          pkgs.fcitx5-rime
-          pkgs.libsForQt5.fcitx5-qt
-          pkgs.fcitx5-gtk
-          pkgs.qt6Packages.fcitx5-configtool
-          pkgs.qt6Packages.fcitx5-chinese-addons
-          pkgs.fcitx5-lua
-        ];
-        waylandFrontend = true;
-      };
-    };
-  };
   services.displayManager = {
     plasma-login-manager.enable = true;
 
