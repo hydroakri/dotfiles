@@ -198,6 +198,7 @@
     pkgs.fzf
     pkgs.bat
     pkgs.gdu
+    pkgs.nawk
     pkgs.btop
     pkgs.yazi
     pkgs.atuin
@@ -210,6 +211,7 @@
     # nix utils
     pkgs.nix-tree
     pkgs.nix-output-monitor
+    (lib.hiPrio pkgs.uutils-coreutils-noprefix)
   ]
   ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
     # x86_64 specific tools
@@ -218,4 +220,7 @@
     pkgs.mokutil
     pkgs.pciutils
   ];
+  environment.shellAliases = {
+    awk = "${pkgs.nawk}/bin/nawk";
+  };
 }
