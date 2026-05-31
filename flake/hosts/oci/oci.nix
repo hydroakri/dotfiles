@@ -30,7 +30,16 @@
   ];
 
   config = {
-    nixpkgs.overlays = [ inputs.nix-minecraft.overlay ];
+    nixpkgs.overlays = [
+      inputs.nix-minecraft.overlay
+      (final: prev: {
+        # musl + libressl + clang: all three apply here — already off binary cache, so clang costs nothing extra
+        nginx = prev.pkgsMusl.nginx.override {
+          openssl = prev.pkgsMusl.libressl;
+          stdenv = prev.pkgsMusl.clangStdenv;
+        };
+      })
+    ];
     sops = {
       secrets = {
         vault_token = { };

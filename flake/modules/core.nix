@@ -15,6 +15,13 @@
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.overlays = [
+    (final: prev: {
+      openssh = prev.openssh.override { openssl = prev.libressl; };
+      wget = prev.wget.override { openssl = prev.libressl; };
+      chrony = prev.pkgsMusl.chrony;
+    })
+  ];
   nix = {
     package = pkgs.lix;
     settings = {

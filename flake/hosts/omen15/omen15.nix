@@ -92,8 +92,8 @@
     modules.powersave.enable = true;
   };
   boot = {
-    # kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-lts-lto-x86_64-v3;
-    kernelPackages = pkgs.linuxPackages_xanmod_stable;
+    kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;
+    # kernelPackages = pkgs.linuxPackages_xanmod_stable;
     kernelModules = [
       "zenpower"
       "kvm-amd"
@@ -178,6 +178,7 @@
     # file manager
     pkgs.kdePackages.partitionmanager
     pkgs.kdePackages.kpmcore
+    pkgs.kdePackages.krohnkite
     pkgs.opencode
 
     # Wayland compositor
@@ -196,6 +197,7 @@
     # xfce.xfce4-panel
     # xfce.xfce4-panel-profiles
     # rofi
+    pkgs.claude-code
   ];
   # programs.niri.enable = true;
   programs.kdeconnect.enable = true;
