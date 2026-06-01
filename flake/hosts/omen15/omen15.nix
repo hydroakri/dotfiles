@@ -75,7 +75,7 @@
       singbox.outbounds = true;
     };
     powersave = {
-      enable = lib.mkDefault false;
+      enable = true;
       wakeOnLan.interfaces = [
         "wlo1"
         "eno1"
@@ -87,9 +87,6 @@
       enableGlance = true;
       enableUptime = false;
     };
-  };
-  specialisation.powersave.configuration = {
-    modules.powersave.enable = true;
   };
   boot = {
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;
@@ -171,10 +168,6 @@
     enable = false;
     enableWaylandSession = true;
   };
-  users.users.${config.mainUser}.extraGroups = [
-    "video"
-    "i2c"
-  ];
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };

@@ -30,7 +30,7 @@ in
     "net.core.default_qdisc" = "cake";
     "net.ipv4.tcp_congestion_control" = "bbr";
     "net.ipv4.tcp_low_latency" = 1;
-    "net.ipv4.tcp_timestamps" = 0;
+    "net.ipv4.tcp_timestamps" = 1;
     "net.ipv4.tcp_fastopen" = 3;
     "net.core.somaxconn" = 4096;
     "net.core.netdev_max_backlog" = 2048;
@@ -59,11 +59,9 @@ in
     "net.ipv6.conf.default.accept_ra" = 2;
 
     # VM (common)
-    "vm.swappiness" = lib.mkDefault 100;
-    "vm.dirty_ratio" = lib.mkDefault 40;
-    "vm.dirty_bytes" = lib.mkDefault 268435456;
-    "vm.dirty_background_ratio" = lib.mkDefault 10;
-    "vm.dirty_background_bytes" = lib.mkDefault 67108864;
+    "vm.swappiness" = lib.mkDefault 180;
+    "vm.dirty_ratio" = lib.mkDefault 20;
+    "vm.dirty_background_ratio" = lib.mkDefault 5;
     "vm.dirty_writeback_centisecs" = lib.mkDefault 1500;
     "vm.dirty_expire_centisecs" = lib.mkDefault 1500;
     "vm.watermark_boost_factor" = lib.mkDefault 0;
