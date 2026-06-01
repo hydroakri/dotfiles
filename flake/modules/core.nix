@@ -15,13 +15,6 @@
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
   hardware.enableRedistributableFirmware = true;
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.overlays = [
-    (final: prev: {
-      openssh = prev.openssh.override { openssl = prev.libressl; };
-      wget = prev.wget.override { openssl = prev.libressl; };
-      chrony = prev.pkgsMusl.chrony;
-    })
-  ];
   nix = {
     package = pkgs.lix;
     settings = {
@@ -34,14 +27,14 @@
         "https://cache.hydroakri.cc/cachix"
         # "https://mirrors.ustc.edu.cn/nix-channels/store"
         "https://cache.nixos.org/"
-        "https://ros.cachix.org"
-        # "https://attic.xuyh0120.win/lantian"
+        # "https://ros.cachix.org"
+        "https://attic.xuyh0120.win/lantian"
       ];
       trusted-public-keys = [
         "cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo="
-        # "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+        # "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo="
+        "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
       ];
       max-jobs = "auto";
       cores = 0;
@@ -115,6 +108,7 @@
     "149.112.112.11"
   ];
   services.chrony = {
+    package = pkgs.pkgsMusl.chrony;
     enable = true;
     servers = [ ];
     enableMemoryLocking = false;
@@ -154,6 +148,7 @@
   };
   programs.nix-index-database.comma.enable = true;
   programs.ssh = {
+    package = pkgs.openssh.override { openssl = pkgs.libressl; };
     startAgent = true;
     extraConfig = ''
       Host github.com

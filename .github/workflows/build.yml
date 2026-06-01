@@ -50,8 +50,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
         with:
           extra-conf: |
-            substituters = https://cache.nixos.org https://cache.hydroakri.cc/cachix
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4=
+            substituters = https://cache.nixos.org https://cache.hydroakri.cc/cachix https://attic.xuyh0120.win/lantian
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4= lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=
             max-jobs = auto
             cores = 0
 

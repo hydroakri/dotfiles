@@ -108,7 +108,25 @@
       "sd_mod"
     ];
     blacklistedKernelModules = [ "k10temp" ];
-    extraModulePackages = [ config.boot.kernelPackages.zenpower ];
+    extraModulePackages =
+      let
+        kernel = config.boot.kernelPackages.kernel;
+        isClang = kernel.stdenv.cc.isClang or false;
+      in
+      [
+        (
+          if isClang then
+            config.boot.kernelPackages.zenpower.overrideAttrs (old: {
+              makeFlags = (old.makeFlags or [ ]) ++ [
+                "CC=${kernel.stdenv.cc.cc}/bin/clang"
+                "LLVM=1"
+                "LLVM_IAS=1"
+              ];
+            })
+          else
+            config.boot.kernelPackages.zenpower
+        )
+      ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
       options zenpower fast_ctemp=1
