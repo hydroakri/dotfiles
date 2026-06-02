@@ -224,14 +224,9 @@
                             ".test",
                             ".local",
                             ".home.arpa",
-                            ".msftconnecttest.com",
-                            ".msftncsi.com",
-                            ".music.163.com",
                             ".126.net",
                             ".kuwo.cn",
-                            ".y.qq.com",
                             ".xiami.com",
-                            ".music.migu.cn",
                             ".srv.nintendo.net",
                             ".stun.playstation.net",
                             ".xboxlive.com",
@@ -264,7 +259,6 @@
                         {
                           "domain_keyword": [
                             "ntp",
-                            "time",
                             "stun"
                           ]
                         },
@@ -358,7 +352,7 @@
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": 2080
+                    "listen_port": 1080
                   }
                 ],
                 "outbounds": [
@@ -469,11 +463,11 @@
                       "type": "logical",
                       "mode": "or",
                       "rules": [
-                        { "domain": ["${config.sops.placeholder.oracle_domain}", "geosite-tailscale"] },
-                        { "ip_cidr": ["${config.sops.placeholder.oracle_ip}/32"] },
-                        { "protocol": "stun" }
+                        { "domain": ["${config.sops.placeholder.oracle_domain}"] },
+                        { "rule_set": ["geosite-tailscale"] },
+                        { "ip_cidr": ["${config.sops.placeholder.oracle_ip}/32"] }
                       ],
-                      "outbound": "tailscale-out" 
+                      "outbound": "tailscale-out"
                     },
                     {
                       "type": "logical",
@@ -961,12 +955,11 @@
             }
             routing {
               request {
-                qname(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> alih3
+                qname(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> alih3
                 fallback: localdns
               }
               response {
                 !qname(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) && qtype(aaaa) -> reject
-                ip(geoip:private) && !qname(geosite:cn) -> flymc
                 fallback: accept
               }
             }
@@ -987,13 +980,14 @@
             # force abroad ipv6 proxy
             ipversion(6) -> proxy
 
-            # bypass BT
+            # bypass BT / PT (route through sing-box webrtc-bt-proxy selector)
             dscp(0x4) -> direct
-            domain(keyword: tracker, announce, torrent) -> direct
+            domain(keyword: tracker, announce, torrent) -> proxy
+            domain(geosite:category-pt, geosite:category-public-tracker) -> proxy
 
             # set specific situation
             domain(geosite:google-cn, geosite:google, tradingview.com) -> proxy
-            domain(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-pt, geosite:category-public-tracker, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn) -> direct
+            domain(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:category-cryptocurrency) -> direct
 
             # set general abroad situation
             domain(geosite:gfw, geosite:geolocation-!cn) -> proxy
