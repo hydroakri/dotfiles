@@ -179,6 +179,31 @@
   # Flatpak
   services.flatpak.enable = true;
 
+  # Daily flatpak cleanup: remove unused runtimes and repair
+  # Runs as main user; catches up on missed runs after boot (Persistent=true)
+  systemd.timers.flatpak-cleanup = lib.mkIf config.services.flatpak.enable {
+    description = "Daily Flatpak cleanup timer";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "1h";
+    };
+  };
+
+  systemd.services.flatpak-cleanup = lib.mkIf config.services.flatpak.enable {
+    description = "Flatpak cleanup service";
+    path = [ pkgs.flatpak ];
+    script = ''
+      flatpak uninstall --unused --noninteractive
+      flatpak repair --noninteractive
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      User = config.mainUser;
+    };
+  };
+
   # Desktop firewall (general application ports)
   networking.firewall = {
     allowedTCPPorts = [ 1080 ];
