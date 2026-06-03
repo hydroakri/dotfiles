@@ -48,8 +48,8 @@
     optimise.automatic = true;
     gc = {
       automatic = true;
-      dates = "daily";
-      options = "--delete-older-than 5d";
+      dates = "weekly";
+      options = "--delete-older-than 14d";
     };
   };
   boot.kernel.sysctl = {

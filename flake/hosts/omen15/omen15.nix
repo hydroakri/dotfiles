@@ -137,6 +137,7 @@
       enable = true;
       biosDevice = "nodev";
       efiSupport = true;
+      maxGenerations = 5;
       secureBoot.enable = true;
       secureBoot.sbctl = pkgs.sbctl;
       extraConfig = ''
