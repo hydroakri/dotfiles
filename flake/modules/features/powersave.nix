@@ -77,7 +77,8 @@ in
       "pcie_aspm=force" # close when there is issue with idle
       "pcie_port_pm=force" # close when there is issue with idle
       "nvme_core.default_ps_max_latency_us=25000"
-      "amdgpu.dcfeaturemask=0x8"
+      # PSR (Panel Self Refresh) disabled: amdgpu DMCUB firmware crashes on Cezanne with PSR enabled, causing display freeze
+      # "amdgpu.dcfeaturemask=0x8"
       # Timer Events Oriented governor: better idle prediction for modern CPUs
       "cpuidle.governor=teo"
     ]
