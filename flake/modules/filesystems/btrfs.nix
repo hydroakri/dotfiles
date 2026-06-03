@@ -3,11 +3,11 @@ let
   leanSnapperPolicy = {
     TIMELINE_CREATE = true;
     TIMELINE_CLEANUP = true;
-    TIMELINE_LIMIT_HOURLY = "3";
-    TIMELINE_LIMIT_DAILY = "3";
-    TIMELINE_LIMIT_WEEKLY = "1";
-    TIMELINE_LIMIT_MONTHLY = "0";
-    TIMELINE_LIMIT_YEARLY = "1";
+    TIMELINE_LIMIT_HOURLY = "8";
+    TIMELINE_LIMIT_DAILY = "4";
+    TIMELINE_LIMIT_WEEKLY = "2";
+    TIMELINE_LIMIT_MONTHLY = "1";
+    TIMELINE_LIMIT_YEARLY = "0";
     ALLOW_USERS = [ config.mainUser ];
     # 关键：禁用配额计算，防止卡顿
     BACKGROUND_COMPARISON = "no";

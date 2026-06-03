@@ -90,7 +90,6 @@ in
       "kernel.nmi_watchdog" = 0;
       "vm.laptop_mode" = 5;
     };
-    powerManagement.cpuFreqGovernor = "powersave"; # active 模式下 powersave 实际上是将控制权交给固件
     services.udev.extraRules = ''
       SUBSYSTEM=="pci", ATTR{power/control}="auto"
 

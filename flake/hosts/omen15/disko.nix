@@ -18,11 +18,9 @@
                     mountpoint = "/";
                     mountOptions = [
                       "rw"
-                      "relatime"
                       "ssd"
                       "space_cache=v2"
                       "noatime"
-                      "nodiratime"
                       "commit=60"
                       "compress=zstd:3"
                       "discard=async"
@@ -32,26 +30,21 @@
                     mountpoint = "/nix";
                     mountOptions = [
                       "rw"
-                      "relatime"
                       "ssd"
                       "space_cache=v2"
                       "noatime"
-                      "nodiratime"
                       "commit=60"
                       "compress=zstd:3"
                       "discard=async"
-                      "autodefrag"
                     ];
                   };
                   "@home" = {
                     mountpoint = "/home";
                     mountOptions = [
                       "rw"
-                      "relatime"
                       "ssd"
                       "space_cache=v2"
                       "noatime"
-                      "nodiratime"
                       "commit=60"
                       "compress=zstd:3"
                       "discard=async"
@@ -61,13 +54,11 @@
                     mountpoint = "/var/log";
                     mountOptions = [
                       "rw"
-                      "relatime"
                       "ssd"
                       "space_cache=v2"
                       "noatime"
-                      "nodiratime"
                       "commit=60"
-                      "compress=zstd:3"
+                      "nodatacow"
                       "discard=async"
                     ];
                   };
@@ -128,15 +119,12 @@
                 mountpoint = "/steam-linux";
                 mountOptions = [
                   "rw"
-                  "relatime"
                   "ssd"
                   "space_cache=v2"
                   "noatime"
-                  "nodiratime"
                   "commit=60"
                   "compress=zstd:3"
                   "discard=async"
-                  "autodefrag"
                 ];
               };
             };
