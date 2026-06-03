@@ -66,6 +66,8 @@ in
     "vm.dirty_expire_centisecs" = lib.mkDefault 1500;
     "vm.watermark_boost_factor" = lib.mkDefault 0;
     "vm.watermark_scale_factor" = lib.mkDefault 125;
+    "vm.compaction_proactiveness" = lib.mkDefault 0;
+    "kernel.split_lock_mitigate" = lib.mkDefault 0;
     "vm.page-cluster" = lib.mkDefault 0;
     "vm.nr_hugepages" = lib.mkDefault 0;
     "vm.vfs_cache_pressure" = lib.mkDefault 50;

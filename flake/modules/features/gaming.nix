@@ -28,6 +28,7 @@
   };
 
   programs.gamemode.enable = true;
+  environment.sessionVariables.WINEFSYNC = "1";
   users.groups.gamemode = { };
 
   services.scx = {
