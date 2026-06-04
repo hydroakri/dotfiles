@@ -213,7 +213,8 @@
     # nix utils
     pkgs.nix-tree
     pkgs.nix-output-monitor
-    (lib.hiPrio pkgs.uutils-coreutils-noprefix)
+    (lib.hiPrio (pkgs.pkgsMusl.toybox.override { stdenv = pkgs.pkgsMusl.clangStdenv; }))
+    (lib.setPrio (-5) pkgs.uutils-coreutils-noprefix)
   ]
   ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
     # x86_64 specific tools

@@ -164,7 +164,7 @@
     };
 
     environment.systemPackages = [
-      pkgs.rclone
+      pkgs.pkgsMusl.rclone
       pkgs.apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
 
@@ -340,7 +340,7 @@
         Restart = "always";
       };
       script = ''
-        ${pkgs.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME/webdav \
+        ${pkgs.pkgsMusl.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME/webdav \
           --addr 127.0.0.1:8083 \
           --vfs-cache-mode full \
           --cache-dir /var/cache/rclone-webdav \

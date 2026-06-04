@@ -871,6 +871,7 @@
 
       services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
         enable = true;
+        package = pkgs.pkgsMusl.dnscrypt-proxy;
         configFile = config.sops.templates."dnscrypt-proxy.toml".path;
       };
       systemd.services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
