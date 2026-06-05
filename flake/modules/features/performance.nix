@@ -60,8 +60,8 @@ in
 
     # VM (common)
     "vm.swappiness" = lib.mkDefault 180;
-    "vm.dirty_ratio" = lib.mkDefault 20;
-    "vm.dirty_background_ratio" = lib.mkDefault 5;
+    "vm.dirty_bytes" = lib.mkDefault 268435456; # 256MB (≈RAM/64, for ~16GB)
+    "vm.dirty_background_bytes" = lib.mkDefault 134217728; # 128MB (≈RAM/128)
     "vm.dirty_writeback_centisecs" = lib.mkDefault 1500;
     "vm.dirty_expire_centisecs" = lib.mkDefault 1500;
     "vm.watermark_boost_factor" = lib.mkDefault 0;
@@ -76,8 +76,8 @@ in
     "fs.inotify.max_user_instances" = lib.mkOverride 900 1024;
   };
   services.udev.extraRules = ''
-    # NVMe SSD: 设置为 none
-    ACTION=="add|change", KERNEL=="nvme[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="none"
+    # NVMe SSD: kyber 提供延迟隔离
+    ACTION=="add|change", KERNEL=="nvme[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="kyber"
 
     # SATA SSD / eMMC: 设置为 mq-deadline
     ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
@@ -105,6 +105,7 @@ in
       };
     };
   };
+  hardware.ksm.enable = true;
   services.fwupd.enable = true;
   services.fstrim.enable = true;
   services.earlyoom.enable = true;
