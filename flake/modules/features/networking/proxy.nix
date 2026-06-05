@@ -157,7 +157,7 @@
             content = ''
               {
                 "log": {
-                  "level": "error",
+                  "level": "warn",
                   "timestamp": true
                 },
                 "dns": {
@@ -165,7 +165,7 @@
                     {
                       "type": "fakeip",
                       "tag": "fakeip",
-                      "inet4_range": "198.18.0.0/16",
+                      "inet4_range": "198.18.0.0/15",
                       "inet6_range": "fc00::/18"
                     },
                     {
@@ -276,13 +276,6 @@
                       "server": "dns-system"
                     },
                     {
-                      "query_type": [
-                        "A",
-                        "AAAA"
-                      ],
-                      "server": "fakeip"
-                    },
-                    {
                       "rule_set": [
                         "geosite-apple@cn",
                         "geosite-category-games-cn",
@@ -297,6 +290,13 @@
                         "geosite-cn"
                       ],
                       "server": "dns-local"
+                    },
+                    {
+                      "query_type": [
+                        "A",
+                        "AAAA"
+                      ],
+                      "server": "fakeip"
                     },
                     {
                       "type": "logical",
@@ -319,7 +319,10 @@
                   ],
                   "final": "dns-local",
                   "strategy": "prefer_ipv4",
-                  "independent_cache": true
+                  "cache_capacity": 4096,
+                  "optimistic": true,
+                  "reverse_mapping": true,
+                  "timeout": "5s"
                 },
                 "endpoints": ${
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
@@ -330,7 +333,8 @@
                       "type": "direct",
                       "tag": "dns-in",
                       "listen": "127.0.0.1",
-                      "listen_port": 53
+                      "listen_port": 53,
+                      "tcp_fast_open": true
                     },
                   ''}
                   ${lib.optionalString config.modules.proxy.singbox.tun ''
@@ -345,14 +349,16 @@
                       "auto_route": true,
                       "auto_redirect": true,
                       "strict_route": true,
-                      "stack": "system"
+                      "exclude_mptcp": true,
+                      "stack": "mixed"
                     },
                   ''}
                   {
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": 1080
+                    "listen_port": 1080,
+                    "tcp_fast_open": true
                   }
                 ],
                 "outbounds": [
@@ -362,17 +368,15 @@
                     "udp_fragment": true
                   },
                   {
-                    "type": "block",
-                    "tag": "block"
-                  },
-                  {
                     "type": "urltest",
                     "tag": "cn",
                     "outbounds": [
                       "direct"
                       ${lib.optionalString config.modules.proxy.singbox.outbounds '',"manual"''}
                     ],
-                    "url": "http://connectivitycheck.platform.hicloud.com/generate_204"
+                    "url": "http://connectivitycheck.platform.hicloud.com/generate_204",
+                    "interval": "1m",
+                    "tolerance": 50
                   },
                   {
                     "type": "selector",
@@ -426,7 +430,7 @@
                         "mixed-in"
                       ],
                       "action": "sniff",
-                      "timeout": "1s"
+                      "timeout": "300ms"
                     },
                     {
                       "type": "logical",
@@ -448,7 +452,8 @@
                     },
                     {
                       "rule_set": "adblock-dns",
-                      "action": "reject"
+                      "action": "reject",
+                      "method": "drop"
                     },
                     ${lib.optionalString config.modules.proxy.singbox.outbounds ''
                       {
@@ -794,10 +799,10 @@
                     "enabled": true,
                     "path": "cache.db",
                     "store_fakeip": true,
-                    "store_rdrc": true
+                    "store_dns": true
                   },
                   "clash_api": {
-                    "external_controller": "0.0.0.0:9090",
+                    "external_controller": "127.0.0.1:9090",
                     "external_ui": "ui",
                     "secret": ""
                   }
