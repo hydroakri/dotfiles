@@ -320,9 +320,7 @@
                   "final": "dns-local",
                   "strategy": "prefer_ipv4",
                   "cache_capacity": 4096,
-                  "optimistic": true,
-                  "reverse_mapping": true,
-                  "timeout": "5s"
+                  "reverse_mapping": true
                 },
                 "endpoints": ${
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
@@ -368,15 +366,12 @@
                     "udp_fragment": true
                   },
                   {
-                    "type": "urltest",
+                    "type": "selector",
                     "tag": "cn",
                     "outbounds": [
                       "direct"
-                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"manual"''}
-                    ],
-                    "url": "http://connectivitycheck.platform.hicloud.com/generate_204",
-                    "interval": "1m",
-                    "tolerance": 50
+                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
+                    ]
                   },
                   {
                     "type": "selector",
@@ -399,7 +394,7 @@
                     "tag": "webrtc-bt-proxy",
                     "outbounds": [
                       "direct"
-                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy"''}
+                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
                     ]
                   },
                   {
@@ -799,7 +794,7 @@
                     "enabled": true,
                     "path": "cache.db",
                     "store_fakeip": true,
-                    "store_dns": true
+                    "store_rdrc": true
                   },
                   "clash_api": {
                     "external_controller": "127.0.0.1:9090",
