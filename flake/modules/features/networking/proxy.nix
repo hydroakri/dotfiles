@@ -157,7 +157,7 @@
             content = ''
               {
                 "log": {
-                  "level": "error",
+                  "level": "warn",
                   "timestamp": true
                 },
                 "dns": {
@@ -165,34 +165,49 @@
                     {
                       "type": "fakeip",
                       "tag": "fakeip",
-                      "inet4_range": "198.18.0.0/16",
+                      "inet4_range": "198.18.0.0/15",
                       "inet6_range": "fc00::/18"
                     },
+                    // dns-mdns requires sing-box >= 1.14.0
+                    // {"type": "mdns", "tag": "dns-mdns"},
                     {
-                      "tag": "dns-system",
-                      "type": "local",
-                      "detour": "direct"
+                      "type": "dhcp",
+                      "tag": "dns-dhcp"
                     },
                     {
+                      "type": "local",
+                      "tag": "dns-system"
+                    },
+                    ${lib.optionalString config.modules.proxy.singbox.endpoints ''
+                      {
+                        "type": "tailscale",
+                        "tag": "dns-tailscale",
+                        "endpoint": "tailscale-in",
+                        "accept_default_resolvers": false
+                      },
+                    ''}
+                    {
                       "type": "h3",
-                      "tag": "dns-local",
-                      "detour": "direct",
+                      "tag": "dns-cn",
+                      "detour": "direct", // [cn]->warp loops within Cloudflare's network; detour should be [direct] if [cn]->warp 
                       "server": "172.64.36.2",
                       "tls": {
                         "enabled": true,
                         "record_fragment": true,
-                        "server_name": "${config.sops.placeholder.zerotrust}"
+                        "server_name": "${config.sops.placeholder.zerotrust}",
+                        "curve_preferences": ["X25519MLKEM768", "X25519"]
                       }
                     },
                     {
                       "type": "h3",
-                      "tag": "dns-remote",
+                      "tag": "dns-oversea",
                       "detour": "oversea",
                       "server": "149.112.112.11",
                       "tls": {
                         "enabled": true,
                         "record_fragment": true,
-                        "server_name": "dns11.quad9.net"
+                        "server_name": "dns11.quad9.net",
+                        "curve_preferences": ["X25519MLKEM768", "X25519"]
                       }
                     }
                   ],
@@ -201,6 +216,8 @@
                       "rule_set": "adblock-dns",
                       "action": "reject"
                     },
+                    // dns-mdns requires sing-box >= 1.14.0
+                    // {"domain_suffix": [".local"], "server": "dns-mdns"},
                     {
                       "type": "logical",
                       "mode": "or",
@@ -209,12 +226,13 @@
                           "domain": [
                             "localhost.ptlogin2.qq.com",
                             "localhost.sec.qq.com",
-                            "proxy.golang.org",
-                            "lens.l.google.com"
+                            "msftconnecttest.com",
+                            "msftncsi.com"
                           ]
                         },
                         {
                           "domain_suffix": [
+                            ".local",
                             ".lan",
                             ".wlan",
                             ".localdomain",
@@ -222,49 +240,10 @@
                             ".invalid",
                             ".localhost",
                             ".test",
-                            ".local",
                             ".home.arpa",
-                            ".126.net",
-                            ".kuwo.cn",
-                            ".xiami.com",
-                            ".srv.nintendo.net",
-                            ".stun.playstation.net",
-                            ".xboxlive.com",
-                            ".battlenet.com.cn",
-                            ".wotgame.cn",
-                            ".wggames.cn",
-                            ".wowsgame.cn",
-                            ".wargaming.net",
                             ".linksys.com",
                             ".linksyssmartwifi.com",
-                            ".router.asus.com",
-                            ".nflxvideo.net",
-                            ".square-enix.com",
-                            ".finalfantasyxiv.com",
-                            ".ffxiv.com",
-                            ".mcdn.bilivideo.cn",
-                            "music.163.com",
-                            "music.taihe.com",
-                            "musicapi.taihe.com",
-                            "songsearch.kugou.com",
-                            "trackercdn.kugou.com",
-                            "api.joox.com",
-                            "joox.com",
-                            "y.qq.com",
-                            "music.migu.cn",
-                            "msftconnecttest.com",
-                            "msftncsi.com"
-                          ]
-                        },
-                        {
-                          "domain_keyword": [
-                            "ntp",
-                            "stun"
-                          ]
-                        },
-                        {
-                          "domain_regex": [
-                            "^xbox\\..*\\.microsoft\\.com$"
+                            ".router.asus.com"
                           ]
                         },
                         {
@@ -273,15 +252,14 @@
                           ]
                         }
                       ],
-                      "server": "dns-system"
+                      "server": "dns-dhcp" // switch to dns-system on platforms without DHCP support
                     },
-                    {
-                      "query_type": [
-                        "A",
-                        "AAAA"
-                      ],
-                      "server": "fakeip"
-                    },
+                    ${lib.optionalString config.modules.proxy.singbox.endpoints ''
+                      {
+                        "rule_set": "geosite-tailscale",
+                        "server": "dns-tailscale"
+                      },
+                    ''}
                     {
                       "rule_set": [
                         "geosite-apple@cn",
@@ -296,7 +274,14 @@
                         "geosite-geolocation-cn",
                         "geosite-cn"
                       ],
-                      "server": "dns-local"
+                      "server": "dns-cn"
+                    },
+                    {
+                      "query_type": [
+                        "A",
+                        "AAAA"
+                      ],
+                      "server": "fakeip"
                     },
                     {
                       "type": "logical",
@@ -314,12 +299,15 @@
                           "invert": true
                         }
                       ],
-                      "server": "dns-remote"
+                      "server": "dns-oversea"
                     }
                   ],
-                  "final": "dns-local",
+                  "final": "dns-dhcp", // switch to dns-system on platforms without DHCP support
                   "strategy": "prefer_ipv4",
-                  "independent_cache": true
+                  "cache_capacity": 4096,
+                  "reverse_mapping": false,
+                  // "optimistic": true,  // sing-box >= 1.14.0: serve stale cache while refreshing in background
+                  // "timeout": "10s"     // sing-box >= 1.14.0: default per-query timeout
                 },
                 "endpoints": ${
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
@@ -338,6 +326,7 @@
                       "type": "tun",
                       "tag": "tun-in",
                       "interface_name": "tun0",
+                      "mtu": 1280,
                       "address": [
                         "172.19.0.1/30",
                         "fdfe:dcba:9876::1/126"
@@ -345,34 +334,32 @@
                       "auto_route": true,
                       "auto_redirect": true,
                       "strict_route": true,
-                      "stack": "system"
+                      "exclude_mptcp": true,
+                      "stack": "mixed"
                     },
                   ''}
                   {
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": 1080
+                    "listen_port": 1080,
+                    "tcp_fast_open": true
                   }
                 ],
                 "outbounds": [
                   {
                     "type": "direct",
                     "tag": "direct",
-                    "udp_fragment": true
+                    "udp_fragment": true,
+                    "tcp_multi_path": true
                   },
                   {
-                    "type": "block",
-                    "tag": "block"
-                  },
-                  {
-                    "type": "urltest",
+                    "type": "selector",
                     "tag": "cn",
                     "outbounds": [
                       "direct"
-                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"manual"''}
-                    ],
-                    "url": "http://connectivitycheck.platform.hicloud.com/generate_204"
+                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
+                    ]
                   },
                   {
                     "type": "selector",
@@ -395,7 +382,7 @@
                     "tag": "webrtc-bt-proxy",
                     "outbounds": [
                       "direct"
-                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy"''}
+                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
                     ]
                   },
                   {
@@ -426,7 +413,7 @@
                         "mixed-in"
                       ],
                       "action": "sniff",
-                      "timeout": "1s"
+                      "timeout": "300ms"
                     },
                     {
                       "type": "logical",
@@ -448,7 +435,8 @@
                     },
                     {
                       "rule_set": "adblock-dns",
-                      "action": "reject"
+                      "action": "reject",
+                      "method": "drop"
                     },
                     ${lib.optionalString config.modules.proxy.singbox.outbounds ''
                       {
@@ -491,7 +479,8 @@
                           ]
                         }
                       ],
-                      "outbound": "direct"
+                      "action": "bypass" // Linux only option
+                      // "outbound": "direct" // For general
                     },
                     {
                       "type": "logical",
@@ -501,13 +490,6 @@
                           "protocol": [
                             "bittorrent",
                             "stun"
-                          ]
-                        },
-                        {
-                          "domain_keyword": [
-                            "tracker",
-                            "announce",
-                            "torrent"
                           ]
                         },
                         {
@@ -570,6 +552,10 @@
                       "outbound": "oversea"
                     },
                     {
+                      "rule_set": ["geoip-cn"],
+                      "outbound": "cn"
+                    },
+                    {
                       "type": "logical",
                       "mode": "and",
                       "rules": [
@@ -591,8 +577,7 @@
                       "rule_set": [
                         "geosite-tld-cn",
                         "geosite-geolocation-cn",
-                        "geosite-cn",
-                        "geoip-cn"
+                        "geosite-cn"
                       ],
                       "outbound": "cn"
                     }
@@ -787,17 +772,18 @@
                   ],
                   "final": "oversea",
                   "auto_detect_interface": true,
-                  "default_domain_resolver": "dns-local"
+                  "default_domain_resolver": "dns-dhcp" // switch to dns-system on platforms without DHCP support
                 },
                 "experimental": {
                   "cache_file": {
                     "enabled": true,
                     "path": "cache.db",
                     "store_fakeip": true,
-                    "store_rdrc": true
+                    "store_rdrc": true,  // deprecated in sing-box 1.14.0
+                    // "store_dns": true  // sing-box >= 1.14.0: persist DNS cache across restarts
                   },
                   "clash_api": {
-                    "external_controller": "0.0.0.0:9090",
+                    "external_controller": "127.0.0.1:9090",
                     "external_ui": "ui",
                     "secret": ""
                   }
@@ -880,7 +866,7 @@
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = true;
-        package = pkgs.sing-box;
+        package = pkgs.pkgsMusl.sing-box;
       };
       systemd.services.sing-box = mkIf config.modules.proxy.singbox.enable {
         after = [
@@ -900,7 +886,7 @@
         serviceConfig.ExecStart = (
           lib.mkForce [
             ""
-            "${pkgs.sing-box}/bin/sing-box run -c ${config.sops.templates."config.json".path}"
+            "${pkgs.pkgsMusl.sing-box}/bin/sing-box run -c ${config.sops.templates."config.json".path}"
           ]
         );
       };
