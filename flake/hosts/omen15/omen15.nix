@@ -210,6 +210,7 @@
     # xfce.xfce4-panel-profiles
     # rofi
     pkgs.claude-code
+    pkgs.dwarf-fortress-packages.dwarf-fortress-full
   ];
   # programs.niri.enable = true;
   programs.kdeconnect.enable = true;

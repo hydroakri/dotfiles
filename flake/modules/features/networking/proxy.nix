@@ -187,7 +187,7 @@
                     {
                       "type": "h3",
                       "tag": "dns-remote",
-                      "detour": "oversea",
+                      "detour": "direct",
                       "server": "149.112.112.11",
                       "tls": {
                         "enabled": true,
@@ -570,6 +570,10 @@
                       "outbound": "oversea"
                     },
                     {
+                      "rule_set": ["geoip-cn"],
+                      "outbound": "cn"
+                    },
+                    {
                       "type": "logical",
                       "mode": "and",
                       "rules": [
@@ -591,8 +595,7 @@
                       "rule_set": [
                         "geosite-tld-cn",
                         "geosite-geolocation-cn",
-                        "geosite-cn",
-                        "geoip-cn"
+                        "geosite-cn"
                       ],
                       "outbound": "cn"
                     }
