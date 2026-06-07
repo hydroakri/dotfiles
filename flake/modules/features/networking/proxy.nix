@@ -188,8 +188,29 @@
                     ''}
                     {
                       "type": "h3",
-                      "tag": "dns-cn",
-                      "detour": "direct", // [cn]->warp loops within Cloudflare's network; detour should be [direct] if [cn]->warp 
+                      "tag": "dns-alidns",
+                      "server": "223.6.6.6",
+                      "tls": {
+                        "enabled": true,
+                        "record_fragment": true,
+                        "server_name": "dns.alidns.com",
+                        "curve_preferences": ["X25519MLKEM768", "X25519"]
+                      }
+                    },
+                    {
+                      "type": "h3",
+                      "tag": "dns-flymc",
+                      "server": "43.154.154.162",
+                      "tls": {
+                        "enabled": true,
+                        "record_fragment": true,
+                        "server_name": "dns.flymc.cc",
+                        "curve_preferences": ["X25519MLKEM768", "X25519"]
+                      }
+                    },
+                    {
+                      "type": "h3",
+                      "tag": "dns-cloudflare",
                       "server": "172.64.36.2",
                       "tls": {
                         "enabled": true,
@@ -200,8 +221,7 @@
                     },
                     {
                       "type": "h3",
-                      "tag": "dns-oversea",
-                      "detour": "oversea",
+                      "tag": "dns-quad9",
                       "server": "149.112.112.11",
                       "tls": {
                         "enabled": true,
@@ -252,7 +272,7 @@
                           ]
                         }
                       ],
-                      "server": "dns-dhcp" // switch to dns-system on platforms without DHCP support
+                      "server": "dns-system" // switch to dns-system on platforms without DHCP support
                     },
                     ${lib.optionalString config.modules.proxy.singbox.endpoints ''
                       {
@@ -261,53 +281,19 @@
                       },
                     ''}
                     {
-                      "rule_set": [
-                        "geosite-apple@cn",
-                        "geosite-category-games-cn",
-                        "geosite-category-game-accelerator-cn",
-                        "geosite-category-game-platforms-download",
-                        "geosite-category-bank-cn",
-                        "geosite-category-finance",
-                        "geosite-category-securities-cn",
-                        "geosite-category-cryptocurrency",
-                        "geosite-tld-cn",
-                        "geosite-geolocation-cn",
-                        "geosite-cn"
-                      ],
-                      "server": "dns-cn"
-                    },
-                    {
                       "query_type": [
                         "A",
                         "AAAA"
                       ],
                       "server": "fakeip"
-                    },
-                    {
-                      "type": "logical",
-                      "mode": "and",
-                      "rules": [
-                        {
-                          "domain_regex": ".*"
-                        },
-                        {
-                          "rule_set": [
-                            "geosite-tld-cn",
-                            "geosite-geolocation-cn",
-                            "geosite-cn"
-                          ],
-                          "invert": true
-                        }
-                      ],
-                      "server": "dns-oversea"
                     }
                   ],
-                  "final": "dns-dhcp", // switch to dns-system on platforms without DHCP support
+                  "final": "dns-quad9", // switch to dns-system on platforms without DHCP support
                   "strategy": "prefer_ipv4",
                   "cache_capacity": 4096,
-                  "reverse_mapping": false,
                   // "optimistic": true,  // sing-box >= 1.14.0: serve stale cache while refreshing in background
-                  // "timeout": "10s"     // sing-box >= 1.14.0: default per-query timeout
+                  // "timeout": "10s",    // sing-box >= 1.14.0: default per-query timeout
+                  "reverse_mapping": false
                 },
                 "endpoints": ${
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
@@ -342,8 +328,7 @@
                     "type": "mixed",
                     "tag": "mixed-in",
                     "listen": "127.0.0.1",
-                    "listen_port": 1080,
-                    "tcp_fast_open": true
+                    "listen_port": 1080
                   }
                 ],
                 "outbounds": [
@@ -351,7 +336,11 @@
                     "type": "direct",
                     "tag": "direct",
                     "udp_fragment": true,
-                    "tcp_multi_path": true
+                    "tcp_multi_path": true,
+                    "domain_resolver": {
+                      "server": "dns-cloudflare",
+                      "strategy": "prefer_ipv4"
+                    }
                   },
                   {
                     "type": "selector",
@@ -385,14 +374,16 @@
                       ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
                     ]
                   },
-                  {
-                    "type": "selector",
-                    "tag": "tailscale-out",
-                    "outbounds": [
-                      "direct"
-                      ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
-                    ]
-                  }
+                  ${lib.optionalString config.modules.proxy.singbox.endpoints ''
+                    {
+                      "type": "selector",
+                      "tag": "tailscale-out",
+                      "outbounds": [
+                        "direct"
+                        ${lib.optionalString config.modules.proxy.singbox.outbounds '',"isp","proxy","manual"''}
+                      ]
+                    }
+                  ''}
                   ${
                     if config.modules.proxy.singbox.outbounds then config.sops.placeholder.sing-box-outbounds else ""
                   }
@@ -438,7 +429,7 @@
                       "action": "reject",
                       "method": "drop"
                     },
-                    ${lib.optionalString config.modules.proxy.singbox.outbounds ''
+                    ${lib.optionalString config.modules.proxy.singbox.endpoints ''
                       {
                         "ip_cidr": [
                           "100.64.0.0/10",
@@ -446,17 +437,17 @@
                         ],
                         "outbound": "tailscale-in"
                       },
+                      {
+                        "type": "logical",
+                        "mode": "or",
+                        "rules": [
+                          { "domain": ["${config.sops.placeholder.oracle_domain}"] },
+                          { "rule_set": ["geosite-tailscale"] },
+                          { "ip_cidr": ["${config.sops.placeholder.oracle_ip}/32"] }
+                        ],
+                        "outbound": "tailscale-out"
+                      },
                     ''}
-                    {
-                      "type": "logical",
-                      "mode": "or",
-                      "rules": [
-                        { "domain": ["${config.sops.placeholder.oracle_domain}"] },
-                        { "rule_set": ["geosite-tailscale"] },
-                        { "ip_cidr": ["${config.sops.placeholder.oracle_ip}/32"] }
-                      ],
-                      "outbound": "tailscale-out"
-                    },
                     {
                       "type": "logical",
                       "mode": "or",
@@ -772,7 +763,10 @@
                   ],
                   "final": "oversea",
                   "auto_detect_interface": true,
-                  "default_domain_resolver": "dns-dhcp" // switch to dns-system on platforms without DHCP support
+                  "default_domain_resolver": {
+                    "server": "dns-quad9",    // resolves proxy server hostnames (e.g. my-proxy.example.com)
+                    "strategy": "prefer_ipv4"
+                  }
                 },
                 "experimental": {
                   "cache_file": {
