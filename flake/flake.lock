@@ -55,7 +55,7 @@
     "dnscrypt-blocklist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-DhWQNSpk7tn4EddtR6jXHjKUhZEgVVE5gY9cxC+J54M=",
+        "narHash": "sha256-+VvAcu6i2RtK7gL4gH4XKkFiDEBYRRcIryaekQybeBo=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
       },
@@ -138,11 +138,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1780786683,
-        "narHash": "sha256-On/oSqpdKngnI7mvs+QOw6X6EQfy0XuRQEiL4WrSplY=",
+        "lastModified": 1780873188,
+        "narHash": "sha256-hdGN9WYqgo1FkbBH+qn2ltbUUdmfUT4iEkyMBOEnANg=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "85b00a1756c1462c12a3358fc6e6e873b8b765d1",
+        "rev": "096f7685c48ecab3c2fdca74f349352f8226419c",
         "type": "github"
       },
       "original": {
@@ -164,11 +164,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1780799556,
-        "narHash": "sha256-esFuJAGOOOzUTs1eYOPQ/ycgcpoynOKCLYSYiCnSOhU=",
+        "lastModified": 1780886889,
+        "narHash": "sha256-n/ZFqKIK2oWfPmJyQCp78Ykr4BX11i7K2XAZKPTKtBs=",
         "owner": "nousresearch",
         "repo": "hermes-agent",
-        "rev": "40cea4d58d67a6106254c48b3ea053b8a2ec9336",
+        "rev": "86e5efb0ae3acc1ae574e745a509803a53aba443",
         "type": "github"
       },
       "original": {
@@ -209,11 +209,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780210899,
-        "narHash": "sha256-4axz3OBPTKa6LIkXV8n0lc63MQU+et2CB5DGobEAi6k=",
+        "lastModified": 1780816331,
+        "narHash": "sha256-0BYqs8yKWkOz2Q7+SP18N5E5gmDKSo6LSxIVIa0wWes=",
         "owner": "nix-community",
         "repo": "nix-index-database",
-        "rev": "97df9dc0b7c924344b793a15c1e8e4522ebb854e",
+        "rev": "1a2ea89c917781e88508d9fd2b507f2d2a0e173c",
         "type": "github"
       },
       "original": {
@@ -303,11 +303,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1780243769,
-        "narHash": "sha256-x5UQuRsH3MqI0U9afaXSNqzTPSeZlRLvFAav2Ux1pNw=",
+        "lastModified": 1780749050,
+        "narHash": "sha256-3av0pIjlOWQ6rDbNOmpUSvbNnJkGORQKKjb4LtCZsIY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "331800de5053fcebacf6813adb5db9c9dca22a0c",
+        "rev": "a799d3e3886da994fa307f817a6bc705ae538eeb",
         "type": "github"
       },
       "original": {
