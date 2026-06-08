@@ -131,8 +131,8 @@ vim.keymap.set("v", "y", '"+y')
 -- package manager
 vim.keymap.set("n", "<leader>pL", ":Lazy<CR>")
 vim.keymap.set("n", "<leader>pm", ":Mason<CR>")
-vim.keymap.set("n", "<leader>pl", ":LspInfo<CR>")
-vim.keymap.set("n", "<leader>pc", ":CmpStatus<CR>")
+vim.keymap.set("n", "<leader>pl", ":checkhealth vim.lsp<CR>")
+vim.keymap.set("n", "<leader>pc", ":checkhealth blink.cmp<CR>")
 vim.keymap.set("n", "<leader>pf", ":ConformInfo<CR>")
 -- buffer
 vim.keymap.set("n", "[b", ":bprevious<CR>")
@@ -679,7 +679,20 @@ require("lazy").setup({
 				event = "VeryLazy",
 				dependencies = {
 					"MunifTanjim/nui.nvim",
-					"rcarriga/nvim-notify",
+					{
+						"rcarriga/nvim-notify",
+						opts = {
+							timeout = 1500,
+							max_height = function()
+								return math.floor(vim.o.lines * 0.4)
+							end,
+							max_width = function()
+								return math.floor(vim.o.columns * 0.4)
+							end,
+							render = "compact",
+							top_down = false,
+						},
+					},
 				},
 				config = function()
 					require("noice").setup({
@@ -687,7 +700,7 @@ require("lazy").setup({
 							override = {
 								["vim.lsp.util.convert_input_to_markdown_lines"] = true,
 								["vim.lsp.util.stylize_markdown"] = true,
-								["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+								["cmp.entry.get_documentation"] = true,
 							},
 							hover = {
 								enabled = true,
@@ -710,6 +723,23 @@ require("lazy").setup({
 								enabled = true,
 								view = "notify",
 								opts = {},
+							},
+						},
+						routes = {
+							-- LSP 进度消息静默
+							{
+								filter = { event = "lsp", kind = "progress" },
+								opts = { skip = true },
+							},
+							-- 文件保存提示静默
+							{
+								filter = { event = "msg_show", kind = "", find = "written" },
+								opts = { skip = true },
+							},
+							-- mason-tool-installer 安装/检查通知用 mini 视图
+							{
+								filter = { event = "notify", find = "mason" },
+								opts = { skip = true },
 							},
 						},
 						presets = {
@@ -1272,9 +1302,9 @@ require("lazy").setup({
 				{
 					"mason-org/mason-lspconfig.nvim",
 					dependencies = { "mason-org/mason.nvim" },
-					config = function()
-						require("mason-lspconfig").setup({})
-					end,
+					opts = {
+						automatic_enable = true,
+					},
 				},
 
 				-- LSP-Enhancement
@@ -1341,7 +1371,8 @@ require("lazy").setup({
 					lineFoldingOnly = true,
 				}
 				local capabilities = require("blink.cmp").get_lsp_capabilities()
-				local lspconfig = require("lspconfig")
+				capabilities.textDocument.foldingRange = ufo_capabilities.textDocument.foldingRange
+				vim.lsp.config("*", { capabilities = capabilities })
 			end,
 		},
 

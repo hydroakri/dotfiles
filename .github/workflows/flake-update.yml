@@ -35,7 +35,7 @@ jobs:
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: Check if Kernel (Xanmod) needs update and NixOS Status
+      - name: Check if Kernel (linuxPackages_latest) needs update and NixOS Status
         id: check_kernel
         run: |
           # Check NixOS Status for nixpkgs-unstable
@@ -49,8 +49,9 @@ jobs:
           fi
 
           cd flake
-          CURRENT_HASH=$(nix eval .#nixosConfigurations.omen15.config.boot.kernelPackages.kernel.outPath --raw)
-          REMOTE_HASH=$(nix eval github:NixOS/nixpkgs/nixos-unstable#linuxPackages_xanmod_stable.kernel.outPath --raw)
+          NIXPKGS_REV=$(nix flake metadata . --json | jq -r '.locks.nodes.nixpkgs.locked.rev')
+          CURRENT_HASH=$(nix eval "github:NixOS/nixpkgs/${NIXPKGS_REV}#linuxPackages_latest.kernel.outPath" --raw)
+          REMOTE_HASH=$(nix eval github:NixOS/nixpkgs/nixos-unstable#linuxPackages_latest.kernel.outPath --raw)
           echo "当前系统锁定的内核版本哈希: $CURRENT_HASH"
           echo "上游云端最新的内核版本哈希: $REMOTE_HASH"
 
