@@ -104,9 +104,63 @@
     dns = "default";
   };
   networking.nameservers = [
+    "127.0.0.1"
     "172.64.36.2"
     "149.112.112.11"
   ];
+
+  services.unbound = {
+    enable = lib.mkDefault true;
+    package = pkgs.unbound.override {
+      openssl = pkgs.libressl;
+      stdenv = pkgs.clangStdenv;
+    };
+    settings = {
+      server = {
+        interface = lib.mkDefault [
+          "127.0.0.1"
+          "::1"
+        ];
+        access-control = lib.mkDefault [
+          "0.0.0.0/0 refuse"
+          "127.0.0.0/8 allow"
+          "::0/0 refuse"
+          "::1 allow"
+        ];
+
+        do-ip4 = lib.mkDefault true;
+        do-ip6 = lib.mkDefault false;
+        do-udp = lib.mkDefault true;
+        do-tcp = lib.mkDefault true;
+
+        hide-identity = lib.mkDefault true;
+        hide-version = lib.mkDefault true;
+        hide-trustanchor = lib.mkDefault true;
+        val-clean-additional = lib.mkDefault true;
+
+        auto-trust-anchor-file = lib.mkDefault "/var/lib/unbound/root.key";
+        val-log-level = lib.mkDefault 2;
+        aggressive-nsec = lib.mkDefault true;
+
+        edns-buffer-size = lib.mkDefault 1232;
+        cache-min-ttl = lib.mkDefault 300;
+        cache-max-ttl = lib.mkDefault 86400;
+        prefetch = lib.mkDefault true;
+        prefetch-key = lib.mkDefault true;
+        serve-expired = lib.mkDefault true;
+        serve-expired-ttl = lib.mkDefault 3600;
+
+        so-reuseport = lib.mkDefault true;
+        so-rcvbuf = lib.mkDefault "4m";
+        so-sndbuf = lib.mkDefault "4m";
+        outgoing-range = lib.mkDefault 8192;
+        num-queries-per-thread = lib.mkDefault 4096;
+
+        msg-cache-size = lib.mkDefault "50m";
+        rrset-cache-size = lib.mkDefault "100m";
+      };
+    };
+  };
   services.chrony = {
     package = pkgs.pkgsMusl.chrony;
     enable = true;

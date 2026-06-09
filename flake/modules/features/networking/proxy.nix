@@ -27,11 +27,6 @@
       default = false;
       description = "Enable sing-box as the proxy backend.";
     };
-    singbox.dns = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Enable sing-box dns-in inbound (127.0.0.1:53).";
-    };
     singbox.tun = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -176,16 +171,14 @@
                     },
                     {
                       "type": "local",
-                      "tag": "dns-system"
+                      "tag": "dns-system",
                     },
-                    ${lib.optionalString config.modules.proxy.singbox.endpoints ''
-                      {
-                        "type": "tailscale",
-                        "tag": "dns-tailscale",
-                        "endpoint": "tailscale-in",
-                        "accept_default_resolvers": false
-                      },
-                    ''}
+                    {
+                      "type": "udp",
+                      "tag": "dns-unbound",
+                      "server": "127.0.0.1",
+                      "port": 53
+                    },
                     {
                       "type": "h3",
                       "tag": "dns-alidns",
@@ -272,14 +265,16 @@
                           ]
                         }
                       ],
-                      "server": "dns-system" // switch to dns-system on platforms without DHCP support
+                      "server": "dns-unbound"
                     },
-                    ${lib.optionalString config.modules.proxy.singbox.endpoints ''
-                      {
-                        "rule_set": "geosite-tailscale",
-                        "server": "dns-tailscale"
-                      },
-                    ''}
+                    {
+                      "rule_set": [
+                        "geosite-tld-cn",
+                        "geosite-geolocation-cn",
+                        "geosite-cn"
+                      ],
+                      "server": "dns-unbound"
+                    }
                     {
                       "query_type": [
                         "A",
@@ -288,7 +283,7 @@
                       "server": "fakeip"
                     }
                   ],
-                  "final": "dns-quad9", // switch to dns-system on platforms without DHCP support
+                  "final": "dns-quad9",
                   "strategy": "prefer_ipv4",
                   "cache_capacity": 4096,
                   // "optimistic": true,  // sing-box >= 1.14.0: serve stale cache while refreshing in background
@@ -299,14 +294,6 @@
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
                 },
                 "inbounds": [
-                  ${lib.optionalString config.modules.proxy.singbox.dns ''
-                    {
-                      "type": "direct",
-                      "tag": "dns-in",
-                      "listen": "127.0.0.1",
-                      "listen_port": 53
-                    },
-                  ''}
                   ${lib.optionalString config.modules.proxy.singbox.tun ''
                     {
                       "type": "tun",
@@ -410,11 +397,6 @@
                       "type": "logical",
                       "mode": "or",
                       "rules": [
-                        ${lib.optionalString config.modules.proxy.singbox.dns ''
-                          {
-                            "inbound": "dns-in"
-                          },
-                        ''}
                         {
                           "port": 53
                         },
@@ -764,7 +746,7 @@
                   "final": "oversea",
                   "auto_detect_interface": true,
                   "default_domain_resolver": {
-                    "server": "dns-quad9",    // resolves proxy server hostnames (e.g. my-proxy.example.com)
+                    "server": "dns-unbound",
                     "strategy": "prefer_ipv4"
                   }
                 },
@@ -788,9 +770,7 @@
         };
       };
       networking.networkmanager.insertNameservers = mkIf (
-        config.modules.proxy.adguardhome.enable
-        || config.modules.proxy.dnscrypt-proxy.enable
-        || config.modules.proxy.singbox.dns
+        config.modules.proxy.adguardhome.enable || config.modules.proxy.dnscrypt-proxy.enable
       ) [ "127.0.0.1" ];
 
       networking.firewall = lib.mkMerge [
