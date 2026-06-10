@@ -394,6 +394,10 @@
                       "timeout": "300ms"
                     },
                     {
+                      "process_name": ["unbound"],
+                      "action": "bypass"
+                    },
+                    {
                       "type": "logical",
                       "mode": "or",
                       "rules": [
