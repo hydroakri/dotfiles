@@ -109,6 +109,8 @@
     "149.112.112.11"
   ];
 
+  users.users.unbound.uid = lib.mkDefault 977;
+
   services.unbound = {
     enable = lib.mkDefault true;
     package = pkgs.unbound.override {

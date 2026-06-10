@@ -165,19 +165,17 @@
                     },
                     // dns-mdns requires sing-box >= 1.14.0
                     // {"type": "mdns", "tag": "dns-mdns"},
-                    {
-                      "type": "dhcp",
-                      "tag": "dns-dhcp"
-                    },
+                    // dns-dhcp removed: never referenced in DNS rules, causes startup
+                    // "fetch DNS servers: context deadline exceeded" before NM is ready
                     {
                       "type": "local",
-                      "tag": "dns-system",
+                      "tag": "dns-system"
                     },
                     {
                       "type": "udp",
                       "tag": "dns-unbound",
                       "server": "127.0.0.1",
-                      "port": 53
+                      "server_port": 53
                     },
                     {
                       "type": "h3",
@@ -273,8 +271,8 @@
                         "geosite-geolocation-cn",
                         "geosite-cn"
                       ],
-                      "server": "dns-unbound"
-                    }
+                      "server": "dns-flymc"
+                    },
                     {
                       "query_type": [
                         "A",
@@ -308,7 +306,8 @@
                       "auto_redirect": true,
                       "strict_route": true,
                       "exclude_mptcp": true,
-                      "stack": "mixed"
+                      "stack": "mixed",
+                      "exclude_uid_range": ["${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"]
                     },
                   ''}
                   {
@@ -382,20 +381,8 @@
                         ${lib.optionalString config.modules.proxy.singbox.tun ''"tun-in",''}
                         "mixed-in"
                       ],
-                      "action": "resolve",
-                      "strategy": "prefer_ipv4"
-                    },
-                    {
-                      "inbound": [
-                        ${lib.optionalString config.modules.proxy.singbox.tun ''"tun-in",''}
-                        "mixed-in"
-                      ],
                       "action": "sniff",
                       "timeout": "300ms"
-                    },
-                    {
-                      "process_name": ["unbound"],
-                      "action": "bypass"
                     },
                     {
                       "type": "logical",
@@ -438,6 +425,9 @@
                       "type": "logical",
                       "mode": "or",
                       "rules": [
+                        {
+                          "ip_is_private": true
+                        },
                         {
                           "ip_cidr": [
                             "224.0.0.0/3",
@@ -750,7 +740,7 @@
                   "final": "oversea",
                   "auto_detect_interface": true,
                   "default_domain_resolver": {
-                    "server": "dns-unbound",
+                    "server": "dns-quad9",
                     "strategy": "prefer_ipv4"
                   }
                 },
@@ -850,12 +840,14 @@
         after = [
           "network-online.target"
         ]
+        ++ (lib.optional config.services.unbound.enable "unbound.service")
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
         ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
 
         wants = [
           "network-online.target"
         ]
+        ++ (lib.optional config.services.unbound.enable "unbound.service")
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
         ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
 
