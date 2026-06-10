@@ -238,7 +238,7 @@
   };
 
   environment.systemPackages = [
-    pkgs.wget
+    pkgs.pkgsMusl.wget
     pkgs.curl
     pkgs.unar
     pkgs._7zz

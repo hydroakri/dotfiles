@@ -382,6 +382,7 @@
     };
     services.postgresql = {
       enable = true;
+      package = pkgs.pkgsMusl.postgresql;
       ensureDatabases = [ "atticd" ];
       ensureUsers = [
         {
