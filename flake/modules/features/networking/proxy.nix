@@ -27,6 +27,11 @@
       default = false;
       description = "Enable sing-box as the proxy backend.";
     };
+    singbox.dns = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable sing-box dns-in inbound (127.0.0.1:53).";
+    };
     singbox.tun = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -68,6 +73,9 @@
         "net.ipv4.conf.all.rp_filter" = 2;
         "net.ipv4.conf.default.rp_filter" = 2;
       };
+
+      # dns-in 启用时：unbound 让出 53，sing-box dns-in 接管系统 DNS 入口
+      services.unbound.settings.server.port = mkIf config.modules.proxy.singbox.dns 5353;
 
       # ----------------------------------------------------------------------------
       # start order
@@ -175,7 +183,7 @@
                       "type": "udp",
                       "tag": "dns-unbound",
                       "server": "127.0.0.1",
-                      "server_port": 53
+                      "server_port": ${if config.modules.proxy.singbox.dns then "5353" else "53"}
                     },
                     {
                       "type": "h3",
@@ -271,7 +279,7 @@
                         "geosite-geolocation-cn",
                         "geosite-cn"
                       ],
-                      "server": "dns-flymc"
+                      "server": "dns-unbound"
                     },
                     {
                       "query_type": [
@@ -292,6 +300,14 @@
                   if config.modules.proxy.singbox.endpoints then config.sops.placeholder.sing-box-endpoints else "[]"
                 },
                 "inbounds": [
+                  ${lib.optionalString config.modules.proxy.singbox.dns ''
+                    {
+                      "type": "direct",
+                      "tag": "dns-in",
+                      "listen": "127.0.0.1",
+                      "listen_port": 53
+                    },
+                  ''}
                   ${lib.optionalString config.modules.proxy.singbox.tun ''
                     {
                       "type": "tun",
@@ -388,6 +404,11 @@
                       "type": "logical",
                       "mode": "or",
                       "rules": [
+                        ${lib.optionalString config.modules.proxy.singbox.dns ''
+                          {
+                            "inbound": "dns-in"
+                          },
+                        ''}
                         {
                           "port": 53
                         },
@@ -764,7 +785,9 @@
         };
       };
       networking.networkmanager.insertNameservers = mkIf (
-        config.modules.proxy.adguardhome.enable || config.modules.proxy.dnscrypt-proxy.enable
+        config.modules.proxy.adguardhome.enable
+        || config.modules.proxy.dnscrypt-proxy.enable
+        || config.modules.proxy.singbox.dns
       ) [ "127.0.0.1" ];
 
       networking.firewall = lib.mkMerge [

@@ -103,8 +103,7 @@
     enable = true;
     dns = "default";
   };
-  networking.nameservers = [
-    "127.0.0.1"
+  networking.nameservers = lib.mkDefault [
     "172.64.36.2"
     "149.112.112.11"
   ];

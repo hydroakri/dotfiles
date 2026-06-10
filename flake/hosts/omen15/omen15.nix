@@ -70,6 +70,7 @@
       enable = true;
       singbox.enable = true;
       singbox.tun = true;
+      singbox.dns = true;
       singbox.endpoints = true;
       singbox.outbounds = true;
     };
