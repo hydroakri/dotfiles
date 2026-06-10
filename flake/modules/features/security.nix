@@ -77,6 +77,8 @@ in
     "random.trust_bootloader=0"
     "oops=panic"
     "kfence.sample_interval=100"
+    # 提高 HWRNG 对内核熵池的贡献质量（ANSSI R8）
+    "rng_core.default_quality=500"
   ]
   ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
     "vsyscall=none"
@@ -121,6 +123,12 @@ in
     "net.ipv4.conf.default.secure_redirects" = 1;
     "net.ipv4.tcp_dsack" = 0;
     "net.ipv4.tcp_fack" = 0;
+    # 防止 loopback 地址通过非 loopback 接口路由（ANSSI R12）
+    "net.ipv4.conf.all.route_localnet" = 0;
+    # 拒绝源地址属于本机接口的入站包，防止反射攻击（ANSSI R12）
+    "net.ipv4.conf.all.accept_local" = 0;
+    # 临时端口范围收窄，减少端口猜测攻击面（ANSSI R12）
+    "net.ipv4.ip_local_port_range" = "32768 65535";
     # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪;
     "net.ipv6.conf.all.use_tempaddr" = lib.mkDefault 2;
     "net.ipv6.conf.default.use_tempaddr" = lib.mkDefault 2;
@@ -151,6 +159,8 @@ in
     # 设置为 3 禁止普通用户使用 perf，这是防止提权的有效手段;
     # 开发者如果需要分析性能，请改为 1 或 2;
     "kernel.perf_event_paranoid" = 1;
+    # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
+    "kernel.perf_cpu_time_max_percent" = 1;
     # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击);
     "kernel.core_uses_pid" = 1;
     # Core dump 文件名带 PID，防止竞态覆盖攻击
@@ -174,6 +184,28 @@ in
     "vm.mmap_rnd_bits" = 24;
   };
   systemd.coredump.enable = false;
+  # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
+  security.auditd.enable = true;
+  security.audit = {
+    enable = true;
+    rules = [
+      # 特权提升：setuid/setgid 调用
+      "-a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -k privilege_escalation"
+      # 身份切换：su/doas/sudo 等入口
+      "-a always,exit -F arch=b64 -S execve -F path=/run/wrappers/bin/doas -k privilege_escalation"
+      # SUID/SGID 文件执行
+      "-a always,exit -F arch=b64 -S execve -F perm=sx -k setuid_exec"
+      # 登录与会话
+      "-w /var/log/lastlog -p wa -k logins"
+      "-w /var/run/faillock -p wa -k logins"
+      # 用户/组数据库写入
+      "-w /etc/passwd -p wa -k identity"
+      "-w /etc/shadow -p wa -k identity"
+      "-w /etc/group -p wa -k identity"
+      # sudoers/doas 配置变更
+      "-w /etc/doas.conf -p wa -k privilege_config"
+    ];
+  };
   security.unprivilegedUsernsClone = false;
   environment.memoryAllocator.provider = "mimalloc"; # balance:scudo performance:mimalloc security:graphene-hardened-light
   environment.variables.SCUDO_OPTIONS = lib.mkDefault "delete_size_mismatch=0";

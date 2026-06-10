@@ -48,6 +48,8 @@
                       "commit=60"
                       "compress=zstd:3"
                       "discard=async"
+                      "nosuid"
+                      "nodev"
                     ];
                   };
                   "@log" = {
