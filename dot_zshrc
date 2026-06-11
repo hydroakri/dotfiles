@@ -41,34 +41,10 @@ eval "$(starship init zsh)"
 eval "$(atuin init zsh)" # an awesome history/implement plugin !
 eval "$(zoxide init zsh)"
 
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source ~/.zsh/fzf-tab/fzf-tab.plugin.zsh
-
-# detect zsh plugin update async
-(
-    update_repo() {
-        local repo_dir="$1"
-        local repo_url="$2"
-
-        if [ ! -d "$repo_dir" ]; then
-            mkdir -p ~/.zsh
-            git clone --depth=1 "$repo_url" "$repo_dir" > /dev/null 2>&1
-        else
-            git -C "$repo_dir" fetch --all --depth=1 > /dev/null 2>&1
-            if git -C "$repo_dir" status | grep -q "Your branch is up to date with"; then
-                echo "$(basename "$repo_dir") is ALREADY UP TO DATE" > /dev/null 2>&1
-            else
-                git -C "$repo_dir" reset --hard origin/master > /dev/null 2>&1
-                git -C "$repo_dir" pull > /dev/null 2>&1
-            fi
-        fi
-    }
-    update_repo ~/.zsh/zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions &
-    update_repo ~/.zsh/zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting &
-    update_repo ~/.zsh/fzf-tab https://github.com/Aloxaf/fzf-tab &
-
-) > /dev/null 2>&1
+# antidote plugin manager
+[[ -d ~/.antidote ]] || git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
+source ~/.antidote/antidote.zsh
+antidote load
 
 # nix develop template
 export NIX_TEMPLATE_SOURCE="github:the-nix-way/dev-templates"
@@ -84,7 +60,26 @@ nxt-init() {
     nix flake init -t "${NIX_TEMPLATE_SOURCE}#$1"
 }
 
-# if [[ $(ps --no-header --pid=$PPID --format=cmd) != "fish" ]]
-# then
-#     exec fish
-# fi
+# zsh-patina syntax highlighting (must be last)
+() {
+  local dir="${ZSH_PATINA_DIR:-$HOME/.zsh/zsh-patina}"
+  local bin="$dir/zsh-patina"
+  if [[ -x "$bin" ]]; then
+    eval "$("$bin" activate)"
+    return
+  fi
+  local arch="$(uname -m)"
+  local libc="gnu"
+  ldd --version 2>&1 | grep -qi musl && libc="musl"
+  case "$arch" in
+    x86_64|amd64) local target="x86_64-unknown-linux-${libc}" ;;
+    aarch64|arm64) local target="aarch64-unknown-linux-${libc}" ;;
+  esac
+  [[ -z "$target" ]] && echo "zsh-patina: unsupported arch $arch" >&2 && return
+  local info="$(curl -sLf "https://api.github.com/repos/michel-kraemer/zsh-patina/releases/latest")" || return
+  local ver="$(echo "$info" | grep '"tag_name":' | head -1 | sed 's/.*: "\(.*\)",/\1/')"
+  local url="$(echo "$info" | grep -oP "https://[^\"]*${ver}[^\"]*${target}[^\"]*\.tar\.gz" | head -1)"
+  [[ -z "$url" ]] && echo "zsh-patina: binary not found for $target" >&2 && return
+  mkdir -p "$dir" && curl -sL "$url" | tar xzf - -C "$dir" --strip-components 1
+  [[ -x "$bin" ]] && eval "$("$bin" activate)"
+}

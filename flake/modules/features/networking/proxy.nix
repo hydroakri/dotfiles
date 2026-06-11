@@ -276,13 +276,19 @@
                       ],
                       "server": "dns-unbound"
                     },
+                    // CN 域名解析器选择：
+                    // - 桌面 (unbound 可用)：改为 dns-unbound。纯递归，从真实 IP 查 CN 权威 DNS
+                    //   → GeoDNS 精准返回最近 CDN 节点，DNSSEC 验证，无商业日志。CN 域名本身
+                    //   无隐私顾虑（访问服务本身已暴露 IP），权威 DNS 不受 GFW 污染。
+                    // - 手机 (unbound 不可用)：保持 dns-alidns。H3 加密，detour:cn 直连阿里
+                    //   DNS PoP，GeoDNS 覆盖好；ISP DNS 在 TUN 模式下行为不可预测，可能环路。
                     {
                       "rule_set": [
                         "geosite-tld-cn",
                         "geosite-geolocation-cn",
                         "geosite-cn"
                       ],
-                      "server": "dns-alidns"
+                      "server": "dns-unbound"
                     },
                     {
                       "query_type": [
@@ -292,6 +298,9 @@
                       "server": "fakeip"
                     }
                   ],
+                  // final：处理未被任何规则匹配的查询（实际上只剩非 A/AAAA 记录，如 MX/TXT/HTTPS，
+                  // 因为 A/AAAA 已被 fakeip 规则全部捕获）。用 dns-quad9 (detour:oversea)，
+                  // 加密防污染，通过隧道发出，GFW 无法干扰。
                   "final": "dns-quad9",
                   "strategy": "prefer_ipv4",
                   "cache_capacity": 4096,
@@ -342,6 +351,11 @@
                     "tag": "direct",
                     "udp_fragment": true,
                     "tcp_multi_path": true,
+                    // direct.domain_resolver：仅在 SOCKS/HTTP 代理模式下 direct outbound 收到
+                    // 域名目标时触发（TUN 模式下 CN 域名已由 dns.rules 解析为真实 IP，经
+                    // geoip-cn 匹配后以 IP 直连，不触发此字段）。用 dns-cloudflare (https,无
+                    // detour)：CloudFlare DoH over TCP，在国内直连可用，防 GFW 污染，比 unbound
+                    // 更安全（unbound 在此场景有递归泄露风险）。
                     "domain_resolver": {
                       "server": "dns-cloudflare",
                       "strategy": "prefer_ipv4"
@@ -763,6 +777,9 @@
                   ],
                   "final": "oversea",
                   "auto_detect_interface": true,
+                  // default_domain_resolver：代理 outbound 解析服务器域名时的默认 resolver
+                  // （代理节点若用 IP 则不触发）。用 dns-quad9 (detour:oversea)：查询走隧道，
+                  // GFW 无法污染代理服务器的域名解析。无循环风险（代理节点均为 IPv4 直连）。
                   "default_domain_resolver": {
                     "server": "dns-quad9",
                     "strategy": "prefer_ipv4"
