@@ -234,6 +234,7 @@
     pkgs.kdePackages.kwallet-pam
     pkgs.kdePackages.kwalletmanager
     pkgs.kdePackages.qrca
+    pkgs.kdePackages.discover
   ]);
   environment.cosmic.excludePackages = ([
     pkgs.cosmic-player
