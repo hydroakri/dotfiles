@@ -189,6 +189,7 @@
                       "type": "h3",
                       "tag": "dns-alidns",
                       "server": "223.6.6.6",
+                      "detour": "cn",
                       "tls": {
                         "enabled": true,
                         "record_fragment": true,
@@ -200,6 +201,7 @@
                       "type": "h3",
                       "tag": "dns-flymc",
                       "server": "43.154.154.162",
+                      "detour": "cn",
                       "tls": {
                         "enabled": true,
                         "record_fragment": true,
@@ -222,6 +224,7 @@
                       "type": "h3",
                       "tag": "dns-quad9",
                       "server": "149.112.112.11",
+                      "detour": "oversea",
                       "tls": {
                         "enabled": true,
                         "record_fragment": true,
@@ -279,7 +282,7 @@
                         "geosite-geolocation-cn",
                         "geosite-cn"
                       ],
-                      "server": "dns-unbound"
+                      "server": "dns-alidns"
                     },
                     {
                       "query_type": [
