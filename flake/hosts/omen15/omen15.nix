@@ -126,9 +126,7 @@
       ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
-      options zenpower fast_ctemp=1
     '';
-    plymouth.enable = true;
     loader.efi = {
       canTouchEfiVariables = true;
       efiSysMountPoint = "/boot";
@@ -150,25 +148,6 @@
       '';
     };
   };
-  services.displayManager = {
-    plasma-login-manager.enable = true;
-
-    # gdm.enable = true;
-    # cosmic-greeter.enable = true;
-  };
-  services.desktopManager = {
-    cosmic = {
-      enable = false;
-      xwayland.enable = true;
-    };
-    # gnome.enable = true;
-    plasma6.enable = true;
-  };
-  # Video drivers (hardware-specific)
-  services.xserver.desktopManager.xfce = {
-    enable = false;
-    enableWaylandSession = true;
-  };
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };
@@ -182,44 +161,9 @@
     wantedBy = [ "multi-user.target" ];
   };
   environment.systemPackages = [
-    # file manager
-    # xfce.thunar
-    # xfce.thunar-archive-plugin
-    # xarchiver
-    # file-roller
-    # file manager
-    pkgs.kdePackages.partitionmanager
-    pkgs.kdePackages.kpmcore
-    pkgs.kdePackages.krohnkite
-    pkgs.opencode
-
-    # Wayland compositor
-    # xwayland-satellite
-    # networkmanagerapplet
     pkgs.nbfc-linux
-    pkgs.brightnessctl
-    pkgs.pavucontrol
-    pkgs.playerctl
-    # blueman
-    # qt6ct
-    # mako
-    # snixembed
-    # waybar
-    # xfce.xfconf
-    # xfce.xfce4-panel
-    # xfce.xfce4-panel-profiles
-    # rofi
-    pkgs.claude-code
   ];
-  # programs.niri.enable = true;
-  programs.kdeconnect.enable = true;
   # Application-specific programs (host-specific)
-  programs.throne.enable = false;
-  programs.clash-verge = {
-    enable = false;
-    serviceMode = true;
-    package = pkgs.clash-verge-rev;
-  };
   # systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
   # systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
   # services.cloudflare-warp.enable = true;

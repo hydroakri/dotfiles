@@ -13,7 +13,7 @@ setopt HIST_FIND_NO_DUPS
 setopt HIST_IGNORE_ALL_DUPS
 
 # some personal variables
-export PATH="$PATH:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
+export PATH="$PATH:$HOME/.local/bin:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
 export XDG_DATA_DIRS="$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:/home/$USER/.local/share/flatpak/exports/share"
 export SSH_AUTH_SOCK="/home/$USER/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
 export EDITOR=nvim

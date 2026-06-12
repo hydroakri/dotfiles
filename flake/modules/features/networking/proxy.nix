@@ -87,6 +87,7 @@
           "network-online.target"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
+        ++ (lib.optional config.services.unbound.enable "unbound.service")
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
         ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
 
@@ -94,6 +95,7 @@
           "network-online.target"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
+        ++ (lib.optional config.services.unbound.enable "unbound.service")
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
         ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
       };

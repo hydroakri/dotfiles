@@ -114,6 +114,7 @@
     package = pkgs.unbound.override {
       openssl = pkgs.libressl;
       stdenv = pkgs.clangStdenv;
+      withSystemd = true;
     };
     settings = {
       server = {

@@ -25,6 +25,18 @@
     ];
   };
 
+  services.displayManager = lib.mkDefault {
+    ly.enable = true;
+  };
+  services.desktopManager = lib.mkDefault {
+    cosmic = {
+      enable = false;
+      xwayland.enable = true;
+    };
+    # gnome.enable = true;
+    # plasma6.enable = true;
+  };
+
   boot.kernel.sysctl = {
     # Desktop-specific VM tuning
     "vm.swappiness" = 180;
@@ -51,13 +63,11 @@
       enable = true;
       fcitx5 = {
         addons = [
-          pkgs.fcitx5-lua
           pkgs.fcitx5-gtk
           pkgs.fcitx5-rime
           pkgs.rime-wanxiang
           pkgs.libsForQt5.fcitx5-qt
-          pkgs.qt6Packages.fcitx5-configtool
-          pkgs.qt6Packages.fcitx5-chinese-addons
+          pkgs.qt6Packages.fcitx5-qt
         ];
         waylandFrontend = true;
       };
@@ -70,8 +80,8 @@
     xdgOpenUsePortal = true;
     extraPortals = [
       # pkgs.xdg-desktop-portal-cosmic
-      # pkgs.xdg-desktop-portal-gtk # niri
-      # pkgs.xdg-desktop-portal-gnome # niri
+      pkgs.xdg-desktop-portal-gtk # niri
+      pkgs.xdg-desktop-portal-gnome # niri
     ];
   };
 
@@ -108,7 +118,7 @@
   services.printing.enable = false;
   services.avahi.enable = false;
   networking.modemmanager.enable = false;
-  services.geoclue2.enable = false;
+  services.geoclue2.enable = lib.mkDefault false;
 
   # Audio (PipeWire)
   security.rtkit.enable = true;
@@ -135,11 +145,17 @@
     };
   };
 
+  # Battery
+  services.upower.enable = true;
+
   # Appimage
   programs.appimage = {
     enable = true;
     binfmt = true;
   };
+
+  programs.niri.enable = true;
+  programs.kdeconnect.enable = true;
 
   # Graphics support (base configuration)
   hardware.graphics = {
@@ -277,22 +293,37 @@
   environment.systemPackages = [
     #theme
     pkgs.darkly
-    pkgs.darkman
-  ];
 
-  # Darkman for automatic theme switching
-  systemd.user.services.darkman = {
-    description = "Darkman daemon";
-    wantedBy = [ "graphical-session.target" ];
-    partOf = [ "graphical-session.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.darkman}/bin/darkman run";
-      Restart = "always";
-    };
-    environment = {
-      XDG_CONFIG_HOME = "%h/.config";
-    };
-  };
+    # file manager
+    pkgs.thunar
+    pkgs.thunar-archive-plugin
+    pkgs.xarchiver
+    pkgs.file-roller
+
+    pkgs.kdePackages.partitionmanager
+    pkgs.kdePackages.kpmcore
+    pkgs.kdePackages.krohnkite
+    pkgs.opencode
+
+    # Wayland compositor
+    pkgs.xwayland-satellite # niri
+    pkgs.noctalia-shell
+    pkgs.noctalia-qs
+    # networkmanagerapplet
+    pkgs.brightnessctl
+    pkgs.pavucontrol
+    pkgs.playerctl
+    pkgs.qt6Packages.qt6ct
+    # blueman
+    # mako
+    # snixembed
+    # waybar
+    # xfce.xfconf
+    # xfce.xfce4-panel
+    # xfce.xfce4-panel-profiles
+    # rofi
+    pkgs.claude-code
+  ];
 
   # GUI User profile
   users.users.${config.mainUser} = {

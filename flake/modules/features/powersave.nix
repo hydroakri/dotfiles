@@ -88,7 +88,6 @@ in
     ];
     boot.kernel.sysctl = {
       "kernel.nmi_watchdog" = 0;
-      "vm.laptop_mode" = 5;
     };
     services.udev.extraRules = ''
       SUBSYSTEM=="pci", ATTR{power/control}="auto"

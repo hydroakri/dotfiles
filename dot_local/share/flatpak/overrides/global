@@ -1,3 +1,6 @@
+[Context]
+filesystems=xdg-config/gtk-4.0:ro;xdg-config/gtk-3.0:ro
+
 [Environment]
 XMODIFIERS=@im=fcitx
 QT_IM_MODULE=fcitx

@@ -36,8 +36,7 @@ layout {
         proportion 0.618
         proportion 1.0
     }
-    // default-column-width { proportion 0.618; }
-    default-column-width {}
+    default-column-width { proportion 0.94; }
 
     focus-ring {
         width 4
@@ -70,36 +69,12 @@ layout {
 }
 
 environment {
-    GBM_BACKEND "nvidia-drm"
-    __GLX_VENDOR_LIBRARY_NAME "nvidia"
-    WLR_NO_HARDWARE_CURSORS "1"
-    __GL_SYNC_TO_VBLANK "1"
-
-    // XDG_SESSION_TYPE "wayland"
-    // QT_QPA_PLATFORM "wayland"
-    // GDK_BACKEND "wayland"
-    // SDL_VIDEODRIVER "wayland"
-    // CLUTTER_BACKEND "wayland"
-    // XDG_SESSION_TYPE "wayland"
-    // XDG_CURRENT_DESKTOP "niri"
-    // XDG_SESSION_DESKTOP "niri"
-
-    GTK_IM_MODULE "wayland"
     QT_IM_MODULE "fcitx"
+    QT_IM_MODULES "wayland;fcitx"
     XMODIFIERS "@im=fcitx"
-    SDL_IM_MODULE "fcitx"
-    GLFW_IM_MODULE "ibus"
 
     QT_QPA_PLATFORMTHEME "qt6ct"
-    // XDG_MENU_PREFIX "plasma-"
-    EDITOR "nvim"
-    VISUAL "nvim"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
-
-    // QT_AUTO_SCREEN_SCALE_FACTOR "1.5"
-    // GDK_SCALE "1.5"
-    // STEAM_FORCE_DESKTOPUI_SCALING "1.5"
-    // DISPLAY ":3"
 }
 
 cursor {
@@ -108,18 +83,14 @@ cursor {
 }
 
 
-spawn-at-startup "xfce4-panel"
-spawn-at-startup "mako"
 // spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
-spawn-at-startup "nm-applet" "--indicator"
-spawn-at-startup "blueman-applet"
 spawn-at-startup "fcitx5"
 spawn-at-startup "playerctld"
 spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
-spawn-at-startup "~/utils/screen-locker.sh"
 spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
+spawn-at-startup "noctalia-shell"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
@@ -128,6 +99,7 @@ animations {
 
 window-rule {
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
+    match app-id=r#"^wezterm$"#
     default-column-width {}
 }
 
@@ -154,11 +126,9 @@ layer-rule {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
-    // Mod+Return { spawn "flatpak" "run" "org.wezfurlong.wezterm"; }
-    Mod+Return { spawn "ghostty"; }
-    Mod+E { spawn "dolphin"; }
-    Alt+Space { spawn "env" "DISPLAY=:3" "rofi" "-modi" "combi" "-show" "combi" "-icon-theme" "Papirus" "-show-icons"; }
-    Super+Alt+L { spawn "swaylock"; }
+    Mod+Return { spawn "wezterm"; }
+    Mod+E { spawn "thunar"; }
+    Alt+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
 
     // You can also use a shell:
     // Mod+T { spawn "bash" "-c" "notify-send hello && exec alacritty"; }

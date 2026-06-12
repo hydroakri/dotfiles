@@ -6,6 +6,7 @@
 }:
 let
   mainUser = config.mainUser;
+  auditSupported = config.boot.kernelPackages.kernel.pname == "linux";
   skKey = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= ${mainUser}";
   bakKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE";
   bravePolicy = pkgs.writeText "castration.json" (
@@ -185,14 +186,14 @@ in
   };
   systemd.coredump.enable = false;
   # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
-  security.auditd.enable = true;
+  security.auditd.enable = auditSupported;
   security.audit = {
-    enable = true;
+    enable = auditSupported;
     rules = [
       # 特权提升：setuid/setgid 调用
       "-a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -k privilege_escalation"
-      # 身份切换：su/doas/sudo 等入口
-      "-a always,exit -F arch=b64 -S execve -F path=/run/wrappers/bin/doas -k privilege_escalation"
+      # 身份切换：捕获提权到 euid=0 的 execve（不依赖文件路径在 boot 时存在）
+      "-a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=-1 -k privilege_escalation"
       # SUID/SGID 文件执行
       "-a always,exit -F arch=b64 -S execve -F perm=sx -k setuid_exec"
       # 登录与会话
