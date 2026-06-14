@@ -114,8 +114,10 @@ in
     "net.ipv4.conf.*.accept_source_route" = 0;
     "net.ipv6.conf.*.accept_source_route" = 0;
     # ARP 硬化：防止 ARP 缓存中毒和跨接口响应;
-    "net.ipv4.conf.*.arp_filter" = 1;
-    "net.ipv4.conf.*.arp_ignore" = 2;
+    # mkDefault 以便路由角色（router.nix）在多 LAN/网桥/keepalived/proxy-ARP 拓扑下覆盖放松;
+    # 端点主机仍取此严格基线，渲染值不变（1/2）。
+    "net.ipv4.conf.*.arp_filter" = lib.mkDefault 1;
+    "net.ipv4.conf.*.arp_ignore" = lib.mkDefault 2;
     "net.ipv4.conf.*.arp_announce" = 2;
     "net.ipv4.conf.all.drop_gratuitous_arp" = 1;
     # 忽略违规的 ICMP 错误消息;
@@ -266,7 +268,7 @@ in
       ];
     };
   };
-  systemd.tmpfiles.rules = [
+  systemd.tmpfiles.rules = lib.mkIf config.services.flatpak.enable [
     "d /etc/brave/policies/managed 0755 root root"
     "C /etc/brave/policies/managed/castration.json 0644 root root - ${bravePolicy}"
   ];
