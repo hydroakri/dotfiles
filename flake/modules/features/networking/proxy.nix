@@ -171,7 +171,7 @@
                       "type": "fakeip",
                       "tag": "fakeip",
                       "inet4_range": "198.18.0.0/15",
-                      "inet6_range": "fc00::/18"
+                      "inet6_range": "64:ff9b:1::/48"
                     },
                     // dns-mdns requires sing-box >= 1.14.0
                     // {"type": "mdns", "tag": "dns-mdns"},
@@ -247,27 +247,12 @@
                       "mode": "or",
                       "rules": [
                         {
-                          "domain": [
-                            "localhost.ptlogin2.qq.com",
-                            "localhost.sec.qq.com",
+                          "domain_keyword": [
                             "msftconnecttest.com",
-                            "msftncsi.com"
-                          ]
-                        },
-                        {
-                          "domain_suffix": [
-                            ".local",
-                            ".lan",
-                            ".wlan",
-                            ".localdomain",
-                            ".example",
-                            ".invalid",
-                            ".localhost",
-                            ".test",
-                            ".home.arpa",
-                            ".linksys.com",
-                            ".linksyssmartwifi.com",
-                            ".router.asus.com"
+                            "msftncsi.com",
+                            "linksys.com",
+                            "linksyssmartwifi.com",
+                            "hydroakri.cc"
                           ]
                         },
                         {
@@ -462,29 +447,9 @@
                       },
                     ''}
                     {
-                      "type": "logical",
-                      "mode": "or",
-                      "rules": [
-                        {
-                          "ip_is_private": true
-                        },
-                        {
-                          "ip_cidr": [
-                            "224.0.0.0/3",
-                            "10.0.0.0/8",
-                            "172.16.0.0/12",
-                            "192.168.0.0/16",
-                            "fc00::/7",
-                            "ff00::/8",
-                            "fe80::/10"
-                          ]
-                        },
-                        {
-                          "rule_set": [
-                            "geoip-private",
-                            "geosite-private"
-                          ]
-                        }
+                      "rule_set": [
+                        "geoip-private",
+                        "geosite-private"
                       ],
                       "action": "bypass" // Linux only option
                       // "outbound": "direct" // For general
