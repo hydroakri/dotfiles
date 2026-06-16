@@ -391,6 +391,21 @@
       ];
     };
 
+    services.ntfy-sh = {
+      enable = true;
+      settings = {
+        listen-http = "127.0.0.1:8084";
+        base-url = "https://ntfy.hydroakri.cc";
+        auth-file = "/var/lib/ntfy-sh/user.db";
+        auth-default-access = "deny-all";
+        cache-file = "/var/lib/ntfy-sh/cache.db";
+        cache-duration = "12h";
+        attachment-cache-dir = "/var/lib/ntfy-sh/attachments";
+        attachment-total-size-limit = "100M";
+        attachment-file-size-limit = "10M";
+      };
+    };
+
     services.minecraft-servers = {
       enable = true;
       eula = true;
@@ -614,6 +629,22 @@
             proxy_buffers 4 256k;
             proxy_busy_buffers_size 256k;
             proxy_request_buffering off;
+          '';
+        };
+      };
+
+      virtualHosts."ntfy.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8084";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_buffering off;
+            proxy_request_buffering off;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
           '';
         };
       };
