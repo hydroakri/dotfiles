@@ -55,9 +55,15 @@ let
   );
 in
 {
+  # TODO: 以下两个模块上游尚未支持 linux 7.x，待修复后启用
+  # boot.extraModulePackages = [ config.boot.kernelPackages.lkrg ];  # LKRG: lkrg-1.0.0 不兼容 kernel 7.x (sockaddr_unsized API 变更)
+  # "p_lkrg"  # tirdad: 需要 CONFIG_LIVEPATCH=y，且依赖上游修复
+  boot.kernelModules = [
+    "uinput" # virtual input device, required by kloak
+  ];
+
   boot.kernelParams = [
     "mitigations=auto"
-    "module.sig_enforce=1"
     "slab_nomerge"
     "page_alloc.shuffle=1"
     "randomize_kstack_offset=on"
@@ -210,8 +216,7 @@ in
     ];
   };
   security.unprivilegedUsernsClone = false;
-  environment.memoryAllocator.provider = "mimalloc"; # balance:scudo performance:mimalloc security:graphene-hardened-light
-  environment.variables.SCUDO_OPTIONS = lib.mkDefault "delete_size_mismatch=0";
+  environment.memoryAllocator.provider = "graphene-hardened"; # balance:scudo performance:mimalloc security:graphene-hardened-light
   environment.systemPackages = [
     pkgs.ssh-copy-id
     # keepassxc # installed in flatpak
@@ -250,9 +255,27 @@ in
       packages = [ pkgs.apparmor-profiles ];
     };
   };
-  networking.firewall = {
-    enable = true;
-    allowedTCPPorts = [ 22 ];
+  networking = {
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 22 ];
+    };
+    networkmanager = {
+      wifi.macAddress = lib.mkDefault "random";
+      ethernet.macAddress = lib.mkDefault "random";
+      wifi.scanRandMacAddress = lib.mkDefault true;
+    };
+  };
+  systemd.services.kloak = lib.mkIf config.i18n.inputMethod.enable {
+    description = "Keystroke and mouse timing anonymization";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.kloak}/bin/kloak";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
   };
   fileSystems = lib.mkIf config.services.flatpak.enable {
     "/home/${config.mainUser}/.var/app/net.mullvad.MullvadBrowser" = {
