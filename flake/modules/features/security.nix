@@ -71,13 +71,13 @@ in
     "erst_disable"
     "extra_latent_entropy"
     "hash_pointers=always"
-    "iommu=pt"
+    "iommu=strict"
     "proc_mem.force_override=ptrace"
-    "lockdown=integrity"
+    "lockdown=confidentiality"
+    # "lockdown=integrity"
     # slightly performance loss
     "cfi=kcfi"
     "init_on_alloc=1"
-    "amd_iommu=on"
     "vdso32=0"
     "debugfs=off"
     "random.trust_cpu=0"
@@ -86,6 +86,7 @@ in
     "kfence.sample_interval=100"
     # 提高 HWRNG 对内核熵池的贡献质量（ANSSI R8）
     "rng_core.default_quality=500"
+    # "slub_debug=FZP" 内存分配调试（完整性检查+红区+填毒），开发排查用；生产/游戏负载有 10-20% 开销，暂不启用
   ]
   ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
     "vsyscall=none"
@@ -97,7 +98,7 @@ in
     "kernel.printk_devkmsg" = "off";
     # when '3' can cause steam games stop working
     "kernel.yama.ptrace_scope" = 1;
-    "kernel.io_uring_disabled" = 2;
+    "kernel.io_uring_disabled" = 1;
     "dev.tty.legacy_tiocsti" = 0;
     # 开启 SYN Cookies，防御 SYN Flood 洪水攻击
     "net.ipv4.tcp_syncookies" = 1;
@@ -165,11 +166,13 @@ in
     # 强制开启地址空间布局随机化;
     "kernel.randomize_va_space" = 2;
     # 限制性能分析工具 (Perf) 的使用权限;
-    # 设置为 3 禁止普通用户使用 perf，这是防止提权的有效手段;
-    # 开发者如果需要分析性能，请改为 1 或 2;
-    "kernel.perf_event_paranoid" = 1;
+    # kernel.perf_event_paranoid=2 仅 root 可用 perf；开发者需要剖析时可临时 doas 运行（securix R9）;
+    "kernel.perf_event_paranoid" = 2;
     # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
     "kernel.perf_cpu_time_max_percent" = 1;
+    # 限制非特权用户采样速率，进一步阻断计时侧信道（securix R9）
+    "kernel.perf_event_max_sample_rate" = 1;
+    # kernel.sysrq 已在 core.nix 设为 246（仅启用安全子集，非全量），不再重复定义
     # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击);
     "kernel.core_uses_pid" = 1;
     # Core dump 文件名带 PID，防止竞态覆盖攻击
@@ -193,6 +196,8 @@ in
     "vm.mmap_rnd_bits" = 24;
   };
   systemd.coredump.enable = false;
+  # 每次启动清理 /tmp 和 /var/tmp，防止上次会话残留的敏感数据（srvos）
+  boot.tmp.cleanOnBoot = true;
   # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
   security.auditd.enable = auditSupported;
   security.audit = {
@@ -213,10 +218,12 @@ in
       "-w /etc/group -p wa -k identity"
       # sudoers/doas 配置变更
       "-w /etc/doas.conf -p wa -k privilege_config"
+      # 内核模块加载/卸载（securix 审计）
+      "-a always,exit -F arch=b64 -S init_module -S finit_module -S delete_module -k kernel_modules"
     ];
   };
   security.unprivilegedUsernsClone = false;
-  environment.memoryAllocator.provider = "graphene-hardened"; # balance:scudo performance:mimalloc security:graphene-hardened-light
+  environment.memoryAllocator.provider = "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
   environment.systemPackages = [
     pkgs.ssh-copy-id
     # keepassxc # installed in flatpak
@@ -336,6 +343,9 @@ in
       PasswordAuthentication = false; # XXX INSTALLATION: set true temporarily
       KbdInteractiveAuthentication = false;
       PermitRootLogin = "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
+      X11Forwarding = false;
+      AllowTcpForwarding = lib.mkDefault "no";
+      AllowStreamLocalForwarding = lib.mkDefault false;
     };
   };
   users.users.root.openssh.authorizedKeys.keys = [
@@ -372,7 +382,7 @@ in
         # ForwardAgent yes # open only in trusted machine
         AddKeysToAgent yes
         ControlMaster auto
-        ControlPath /tmp/ssh_mux_%u_%C
+        ControlPath /run/user/%i/ssh-mux-%C
         ControlPersist 10m
 
         IdentitiesOnly no # let ssh-agent auto find keys

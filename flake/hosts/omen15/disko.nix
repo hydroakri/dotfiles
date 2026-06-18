@@ -36,6 +36,8 @@
                       "commit=60"
                       "compress=zstd:3"
                       "discard=async"
+                      "nosuid"
+                      "nodev"
                     ];
                   };
                   "@home" = {
@@ -62,6 +64,9 @@
                       "commit=60"
                       "nodatacow"
                       "discard=async"
+                      "nosuid"
+                      "nodev"
+                      "noexec"
                     ];
                   };
                 };
