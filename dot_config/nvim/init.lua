@@ -771,6 +771,28 @@ require("lazy").setup({
 					},
 					cmd = "DiffviewOpen",
 				},
+
+				{
+					"NeogitOrg/neogit",
+					keys = {
+						{ mode = "n", "<leader>gg", ":Neogit<CR>", desc = "Neogit" },
+						{ mode = "n", "<leader>gc", ":Neogit commit<CR>", desc = "Neogit commit" },
+					},
+					cmd = "Neogit",
+					dependencies = {
+						"nvim-lua/plenary.nvim",
+						"sindrets/diffview.nvim",
+						"nvim-telescope/telescope.nvim",
+					},
+					config = function()
+						require("neogit").setup({
+							integrations = {
+								diffview = true,
+								telescope = true,
+							},
+						})
+					end,
+				},
 				{
 					"lewis6991/gitsigns.nvim",
 					event = "BufReadPre",
