@@ -40,8 +40,6 @@
   boot.kernel.sysctl = {
     # Desktop-specific VM tuning
     "vm.swappiness" = 180;
-    "vm.dirty_ratio" = 10;
-    "vm.dirty_background_ratio" = 5;
   };
   networking.networkmanager.settings = {
     "connection" = {

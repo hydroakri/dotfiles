@@ -306,7 +306,7 @@ in
   #PAM
   security.pam = {
     u2f = {
-      enable = true; # XXX INSTALLATION: Disable u2f.enable temporarily.
+      enable = lib.mkDefault true;
       settings = {
         cue = true;
         authfile = "/etc/u2f_mappings";
@@ -314,9 +314,8 @@ in
       };
     };
     services = {
-      # XXX INSTALLATION: Disable doas.u2fAuth, login.u2fAuth temporarily.
-      doas.u2fAuth = true;
-      login.u2fAuth = true;
+      doas.u2fAuth = lib.mkDefault true;
+      login.u2fAuth = lib.mkDefault true;
 
       system-login.failDelay.enable = true;
       system-login.failDelay.delay = 4000000;
@@ -340,9 +339,9 @@ in
   services.openssh = {
     enable = true;
     settings = {
-      PasswordAuthentication = false; # XXX INSTALLATION: set true temporarily
+      PasswordAuthentication = lib.mkDefault false;
       KbdInteractiveAuthentication = false;
-      PermitRootLogin = "prohibit-password"; # XXX INSTALLATION: set "yes" temporarily
+      PermitRootLogin = lib.mkDefault "prohibit-password";
       X11Forwarding = false;
       AllowTcpForwarding = lib.mkDefault "no";
       AllowStreamLocalForwarding = lib.mkDefault false;

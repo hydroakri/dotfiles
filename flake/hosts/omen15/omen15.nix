@@ -42,6 +42,7 @@
     inputs.disko.nixosModules.disko
   ];
   modules = {
+    performance.vendor = "amd";
     nvidia = {
       enable = true;
       variant = "open";

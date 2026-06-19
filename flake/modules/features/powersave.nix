@@ -66,13 +66,10 @@ in
       # Enable U-APSD for iwlwifi (deeper WiFi sleep)
       options iwlwifi uapsd_disable=0
     '';
-    boot.consoleLogLevel = 3;
-    boot.initrd.verbose = false;
     boot.kernelParams = [
       "nowatchdog"
       "nmi_watchdog=0"
       "amd_pstate=active"
-      "intel_pstate=active"
       "iwlwifi.power_save=1"
       "pcie_aspm=force" # close when there is issue with idle
       "pcie_port_pm=force" # close when there is issue with idle
