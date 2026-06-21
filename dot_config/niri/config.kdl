@@ -91,6 +91,8 @@ spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
 spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
 spawn-at-startup "noctalia-shell"
+spawn-at-startup "wl-clip-persist" "--clipboard" "both"
+spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 

@@ -288,26 +288,35 @@
       decompressFonts = true;
     };
   };
+
+  programs.thunar = {
+    enable = true;
+    plugins = [
+      pkgs.thunar-archive-plugin
+      pkgs.thunar-volman
+      # file manager
+      pkgs.xarchiver
+      pkgs.file-roller
+    ];
+  };
+  services.gvfs.enable = true;
+  services.tumbler.enable = true;
+
   environment.systemPackages = [
     #theme
     pkgs.darkly
 
-    # file manager
-    pkgs.thunar
-    pkgs.thunar-archive-plugin
-    pkgs.xarchiver
-    pkgs.file-roller
-
-    pkgs.kdePackages.partitionmanager
-    pkgs.kdePackages.kpmcore
-    pkgs.kdePackages.krohnkite
-    pkgs.opencode
+    # clipboard
+    pkgs.wl-clipboard
+    pkgs.wl-clip-persist
+    pkgs.wl-clipboard-x11
+    pkgs.cliphist
 
     # Wayland compositor
     pkgs.xwayland-satellite # niri
     pkgs.noctalia-shell
     pkgs.noctalia-qs
-    # networkmanagerapplet
+    # pkgs.networkmanagerapplet
     pkgs.brightnessctl
     pkgs.pavucontrol
     pkgs.playerctl
@@ -321,6 +330,7 @@
     # xfce.xfce4-panel-profiles
     # rofi
     pkgs.claude-code
+    pkgs.opencode
   ];
 
   # GUI User profile
@@ -336,8 +346,13 @@
 
       # GUI Applications
       pkgs.wezterm
-      pkgs.kdePackages.kate
       # davinci-resolve-studio
+    ]
+    ++ lib.optionals config.services.desktopManager.plasma6.enable [
+      pkgs.kdePackages.partitionmanager
+      pkgs.kdePackages.kpmcore
+      pkgs.kdePackages.krohnkite
+      pkgs.kdePackages.kate
     ]
     ++ lib.optionals config.services.desktopManager.gnome.enable [
       pkgs.gnome-tweaks
