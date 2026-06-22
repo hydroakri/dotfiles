@@ -64,6 +64,12 @@ nxt-init() {
 () {
   local dir="${ZSH_PATINA_DIR:-$HOME/.zsh/zsh-patina}"
   local bin="$dir/zsh-patina"
+
+  if [[ ! -w "${XDG_RUNTIME_DIR:-}" ]]; then
+    export XDG_RUNTIME_DIR="/tmp/run-${UID}"
+    mkdir -p "$XDG_RUNTIME_DIR"
+  fi
+
   if [[ -x "$bin" ]]; then
     eval "$("$bin" activate)"
     return
