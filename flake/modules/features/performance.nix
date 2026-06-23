@@ -27,15 +27,26 @@ in
         "lru_gen_enabled=1"
         "zswap.enabled=0"
         "transparent_hugepage=madvise"
+        "rcupdate.rcu_normal_after_boot=1"
+      ]
+      ++ lib.optionals (!((config.modules.powersave or { }).enable or false)) [
+        "skew_tick=1"
       ]
       # 当 modules.powersave.enable 开启时，不设置 ignore_ppc (避免忽略固件功耗限制)
-      ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64 && !config.modules.powersave.enable) [
-        "processor.ignore_ppc=1"
-      ]
+      ++
+        lib.optionals
+          (pkgs.stdenv.hostPlatform.isx86_64 && !((config.modules.powersave or { }).enable or false))
+          [
+            "processor.ignore_ppc=1"
+          ]
     );
     # CPU microcode (vendor-specific via modules.performance.vendor)
-    hardware.cpu.amd.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 (config.modules.performance.vendor == "amd");
-    hardware.cpu.intel.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 (config.modules.performance.vendor == "intel");
+    hardware.cpu.amd.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 (
+      config.modules.performance.vendor == "amd"
+    );
+    hardware.cpu.intel.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 (
+      config.modules.performance.vendor == "intel"
+    );
     boot.kernel.sysctl = {
       # Network (common)
       "net.core.default_qdisc" = "cake";
@@ -62,6 +73,8 @@ in
       "net.ipv4.tcp_keepalive_probes" = 6;
       "net.ipv4.tcp_mtu_probing" = 1;
       "net.ipv4.tcp_sack" = 1;
+      "net.ipv4.tcp_adv_win_scale" = lib.mkDefault (-2);
+      "net.ipv4.tcp_notsent_lowat" = lib.mkDefault 16384;
       "net.netfilter.nf_conntrack_max" = 1048576;
       "net.netfilter.nf_conntrack_tcp_timeout_established" = 120;
 
@@ -83,6 +96,8 @@ in
       "vm.nr_hugepages" = lib.mkDefault 0;
       "vm.vfs_cache_pressure" = lib.mkDefault 50;
       "vm.min_free_kbytes" = lib.mkDefault 65536;
+      "vm.stat_interval" = lib.mkDefault 10;
+      "kernel.hung_task_timeout_secs" = lib.mkDefault 600;
       "vm.max_map_count" = lib.mkOverride 900 1048576;
       "fs.inotify.max_user_instances" = lib.mkOverride 900 1024;
     };

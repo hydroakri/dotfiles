@@ -131,6 +131,7 @@
     };
 
     networking.hostName = "oci";
+    environment.etc."tuned/active_profile".text = lib.mkForce "virtual-guest";
     nixpkgs.hostPlatform = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {

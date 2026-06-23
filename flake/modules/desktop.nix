@@ -41,10 +41,9 @@
     # Desktop-specific VM tuning
     "vm.swappiness" = 180;
   };
-  networking.networkmanager.settings = {
-    "connection" = {
-      "ipv6.ip6-privacy" = 2;
-    };
+  networking.networkmanager = {
+    wifi.backend = "iwd";
+    settings."connection"."ipv6.ip6-privacy" = 2;
   };
 
   # X Server and input

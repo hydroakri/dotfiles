@@ -78,6 +78,7 @@
     };
 
     networking.hostName = "rpi4-switch";
+    environment.etc."tuned/active_profile".text = lib.mkForce "network-throughput";
     networking.networkmanager.unmanaged = [
       "end0"
       "vlan10"

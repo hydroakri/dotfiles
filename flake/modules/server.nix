@@ -17,14 +17,12 @@
     "net.ipv4.tcp_rmem" = lib.mkDefault "4096 87380 4194304";
     "net.ipv4.tcp_wmem" = lib.mkDefault "4096 87380 4194304";
     "net.ipv4.tcp_mem" = lib.mkDefault "4194304 4194304 4194304";
+    "net.core.netdev_budget" = lib.mkDefault 600;
+    "net.core.netdev_budget_usecs" = lib.mkDefault 8000;
   };
   services.irqbalance.enable = lib.mkDefault true;
   services.fail2ban.enable = true;
   services.tuned.enable = true;
-  environment.etc."tuned/active_profile".text = lib.mkDefault ''
-    throughput-performance
-  '';
-  environment.etc."tuned/profile_mode".text = ''
-    manual
-  '';
+  environment.etc."tuned/active_profile".text = lib.mkDefault "throughput-performance";
+  environment.etc."tuned/profile_mode".text = "manual";
 }
