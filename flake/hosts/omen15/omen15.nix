@@ -152,6 +152,9 @@
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };
+  networking.networkmanager = {
+    wifi.backend = "wpa_supplicant";
+  };
   systemd.services.nbfc_service = {
     # nbfc-linux fancontrol
     enable = true;

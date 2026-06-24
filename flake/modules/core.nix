@@ -13,7 +13,7 @@
     inputs.nix-index-database.nixosModules.default
   ];
   boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
-  hardware.enableRedistributableFirmware = true;
+  hardware.enableAllFirmware = true;
   nixpkgs.config.allowUnfree = true;
   nix = {
     package = pkgs.lix;

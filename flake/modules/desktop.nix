@@ -42,7 +42,7 @@
     "vm.swappiness" = 180;
   };
   networking.networkmanager = {
-    wifi.backend = "iwd";
+    wifi.backend = lib.mkDefault "iwd";
     settings."connection"."ipv6.ip6-privacy" = 2;
   };
 

@@ -272,7 +272,7 @@
                           ]
                         }
                       ],
-                      "server": "dns-system"
+                      "server": "dns-unbound"
                     },
                     // CN 域名解析器选择：
                     // - 桌面 (unbound 可用)：改为 dns-unbound。纯递归，从真实 IP 查 CN 权威 DNS
