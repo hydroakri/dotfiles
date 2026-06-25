@@ -41,7 +41,26 @@
     inputs.sops-nix.nixosModules.sops
     inputs.disko.nixosModules.disko
   ];
+  mainUser = "hydroakri";
+
   modules = {
+    core = {
+      extraSubstituters = [
+        "https://cache.hydroakri.cc/cachix"
+        "https://attic.xuyh0120.win/lantian"
+      ];
+      extraTrustedPublicKeys = [
+        "cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4="
+        "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+      ];
+    };
+    security = {
+      authorizedKeys = [
+        "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= hydroakri"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE"
+      ];
+      u2fMappings = "hydroakri:8dACAuprRl62N+Nc/J6V8teNz5bkcxosNp5fkvaHse/d3Msfl2w21MOhBMfgcuFD7YnEbuGhJF9kFel58RQRM6xX3e/Okqaxe01DzCa1sBOAD4jUNQzATZfAaRMGtOxuY0Y06JlV/WJzVWrw7MdEd/NBP5RJtFAs8WAaXXdrvOgqzB1CHBGzXwq7ieuX5LzSCnux8ajJI1ksUcaj2viuWNIyTS7N3XjG,I7BP8E3Oc98DkQuND+9J3MPilurDUdwaYdX9nDMuwNZFQoA/DZ1edgl1X9MZOMJoSEfgFr23HaCKzHVy6ulVTg==,es256,+presence\n";
+    };
     performance.vendor = "amd";
     nvidia = {
       enable = true;
@@ -89,6 +108,18 @@
       enableUptime = false;
     };
   };
+  # SSH signing key for git commit verification
+  sops.templates."ssh/allowed_signers" = {
+    content = ''
+      # 格式: <email> <public_key>
+      24475059+hydroakri@users.noreply.github.com sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= hydroakri
+      24475059+hydroakri@users.noreply.github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE ${config.sops.placeholder.email}
+    '';
+    mode = "0444";
+  };
+  programs.git.config."gpg \"ssh\"".allowedSignersFile =
+    config.sops.templates."ssh/allowed_signers".path;
+
   boot = {
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;
     # kernelPackages = pkgs.linuxPackages_xanmod_stable;

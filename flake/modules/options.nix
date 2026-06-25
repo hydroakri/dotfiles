@@ -3,7 +3,7 @@
 {
   options.mainUser = lib.mkOption {
     type = lib.types.str;
-    default = "hydroakri";
+    default = "user";
     description = "The main system username";
   };
 }

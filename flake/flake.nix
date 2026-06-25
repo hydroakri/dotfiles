@@ -106,6 +106,28 @@
         };
       };
 
+      nixosModules = {
+        # Base profiles (pick one per host)
+        core = ./modules/core.nix;
+        desktop = ./modules/desktop.nix;
+        server = ./modules/server.nix;
+        # Feature modules (opt-in)
+        performance = ./modules/features/performance.nix;
+        security = ./modules/features/security.nix;
+        powersave = ./modules/features/powersave.nix;
+        gaming = ./modules/features/gaming.nix;
+        utils = ./modules/features/utils.nix;
+        virtualisation = ./modules/features/virtualisation.nix;
+        networking-proxy = ./modules/features/networking/proxy.nix;
+        networking-router = ./modules/features/networking/router.nix;
+        networking-sqm = ./modules/features/networking/sqm.nix;
+        networking-tuning = ./modules/features/networking/tuning.nix;
+        # Hardware / filesystem helpers
+        hardware-amd = ./modules/hardware/amd.nix;
+        hardware-nvidia = ./modules/hardware/nvidia.nix;
+        filesystem-btrfs = ./modules/filesystems/btrfs.nix;
+      };
+
       templates = {
         ros2 = {
           path = ./templates/ros2;

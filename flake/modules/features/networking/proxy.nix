@@ -252,7 +252,9 @@
                             "msftncsi.com",
                             "linksys.com",
                             "linksyssmartwifi.com",
-                            "hydroakri.cc"
+                            "file.hydroakri.cc",
+                            "glance.hydroakri.cc",
+                            "pdf.hydroakri.cc"
                           ]
                         },
                         {

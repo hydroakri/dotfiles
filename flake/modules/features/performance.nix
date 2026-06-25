@@ -134,7 +134,15 @@ in
     hardware.ksm.enable = true;
     services.fwupd.enable = true;
     services.fstrim.enable = true;
-    services.earlyoom.enable = true;
+    services.earlyoom = {
+      enable = true;
+      freeMemThreshold = 5;
+      freeSwapThreshold = 5;
+      extraArgs = [
+        # 保护游戏/Wine/Proton 进程不被 earlyoom 误杀
+        "--avoid" "(^|/)(steam|wine|gamescope|mangohud)"
+      ];
+    };
     systemd.oomd.enable = false;
     services.scx = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
       enable = lib.mkDefault true;

@@ -31,6 +31,21 @@
   ];
 
   config = {
+    mainUser = "hydroakri";
+    modules.core = {
+      extraSubstituters = [
+        "https://cache.hydroakri.cc/cachix"
+        "https://attic.xuyh0120.win/lantian"
+      ];
+      extraTrustedPublicKeys = [
+        "cachix:eBckug6/bGXXnIC+i6fms40KxCbstV+wJYV4JMwAvZ4="
+        "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+      ];
+    };
+    modules.security.authorizedKeys = [
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= hydroakri"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE"
+    ];
     modules = {
       utils = {
         enable = false;
