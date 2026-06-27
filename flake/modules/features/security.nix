@@ -34,11 +34,14 @@
           "BraveGlobalPrivacyControlEnabled" = true; # 开启 GPC (Global Privacy Control)
 
           # ======= 2. 隐私与安全 (对应 PG 清单第二部分) =======
-          "DefaultJavaScriptOptimizerSetting" = 2; # Don’t allow JS optimization (防JIT)
+          "DefaultJavaScriptOptimizersSetting" = 2; # Don’t allow JS optimizer compilers
           "WebRtcIPHandling" = "disable_non_proxied_udp"; # WebRTC IP Policy: Disable non-proxied UDP
           "BraveDeAmpEnabled" = true; # Auto-redirect AMP pages
           "BraveTrackingQueryParametersFilteringEnabled" = true; # Auto-redirect tracking URLs
           "BraveReduceLanguageEnabled" = true; # Language preferences fingerprinting protection
+          "HttpsOnlyMode" = "force_enabled"; # 硬性拒绝 HTTP（vs. DefaultBraveHttpsUpgradeSetting 仅尝试升级）
+          "OriginKeyedProcessesEnabled" = true; # 每 origin 独立进程（比 SitePerProcess 按 eTLD+1 更细粒度）
+          "NetworkServiceSandboxEnabled" = true; # 启用网络服务沙箱
 
           # ======= 3. Web3、Tor 与商业组件 (对应 PG 清单 Web3/Tor 部分) =======
           "BraveWalletDisabled" = true; # 禁用所有 Web3 (Extensions no fallback)
@@ -50,12 +53,16 @@
           "BraveRewardsDisabled" = true;
           "BraveVPNDisabled" = true;
           "PromotionsEnabled" = false; # 禁用 Promotions
+          "BraveSpeedreaderEnabled" = false; # Speedreader 会向 Brave 服务器发网络请求
+          "BraveWaybackMachineEnabled" = false; # 集成 IA 会把当前 URL 发送到外部
+          # IPFSEnabled 已在 brave-core policy_definitions 中标记 deprecated: true，不添加
 
           # ======= 4. 数据收集 (对应 PG 清单数据收集部分) =======
           "BraveP3AEnabled" = false; # Uncheck P3A
           "BraveStatsPingEnabled" = false; # Uncheck daily usage ping
           "MetricsReportingEnabled" = false; # Uncheck diagnostic reports
           "BraveWebDiscoveryEnabled" = false; # 彻底禁掉 WDP 采集
+          "UrlKeyedAnonymizedDataCollectionEnabled" = false; # 禁止 URL 键值匿名数据上报
 
           # ======= 5. 系统与搜索 (对应 PG 清单最后部分) =======
           "SearchSuggestEnabled" = false; # Uncheck search suggestions
@@ -63,7 +70,12 @@
           "SafeBrowsingExtendedReportingEnabled" = false;
           "SpellCheckServiceEnabled" = false;
           "EnableMediaRouter" = false; # 彻底禁用 Chromecast 相关的 Media Router
-          "PasswordManagerEnabled" = true;
+          "PasswordManagerEnabled" = false; # 完全禁用密码管理器（含保存提示）
+          "AutofillAddressEnabled" = false; # 禁用地址自动填充（减少本地数据留存）
+          "AutofillCreditCardEnabled" = false; # 禁用信用卡自动填充
+          "TranslateEnabled" = false; # 翻译功能将页面内容发送至第三方服务器
+          "DefaultBrowserSettingEnabled" = false; # 禁止默认浏览器提示弹窗
+          "BlockExternalExtensions" = true; # 阻止安装来自 Web Store 之外的外部扩展
         }
       );
     in
@@ -303,24 +315,12 @@
           RestartSec = 3;
         };
       };
-      fileSystems = lib.mkIf config.services.flatpak.enable {
-        "/home/${config.mainUser}/.var/app/net.mullvad.MullvadBrowser" = {
-          device = "tmpfs";
-          fsType = "tmpfs";
-          options = [
-            "size=1G"
-            "mode=0755"
-            "uid=${config.mainUser}"
-            "gid=users"
-            "nofail"
-            "x-systemd.automount"
-          ];
-        };
+      # 用 environment.etc 而非 systemd.tmpfiles C（C 只在文件不存在时复制一次，
+      # 导致策略更新后不会自动同步；environment.etc 每次 rebuild 都更新符号链接）
+      environment.etc."brave/policies/managed/castration.json" = {
+        source = bravePolicy;
+        mode = "0644";
       };
-      systemd.tmpfiles.rules = lib.mkIf config.services.flatpak.enable [
-        "d /etc/brave/policies/managed 0755 root root"
-        "C /etc/brave/policies/managed/castration.json 0644 root root - ${bravePolicy}"
-      ];
       # ===========================================================================
       #PAM
       security.pam = {
