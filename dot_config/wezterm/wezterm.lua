@@ -20,6 +20,24 @@ end
 local config = {
 	font = wezterm.font_with_fallback({
 		{
+			family = "Iosevka Extended",
+			harfbuzz_features = { "calt=1", "liga=1", "ss06=1" },
+		},
+		{
+			family = "CommitMono",
+			harfbuzz_features = {
+				"ss03=1",
+				"ss04=1",
+				"ss05=1",
+				"cv02=1",
+				"cv05=1",
+				"cv06=1",
+				"cv07=1",
+				"cv08=1",
+				"cv11=1",
+			},
+		},
+		{
 			family = "Cascadia Code",
 			harfbuzz_features = { "calt=1", "clig=1", "liga=1", "ss01=1" },
 		},
@@ -40,7 +58,7 @@ local config = {
 			italic = true,
 			font = wezterm.font_with_fallback({
 				{
-					family = "Operator Mono",
+					family = "Operator Mono Light",
 					style = "Italic",
 					harfbuzz_features = { "calt=1", "clig=1", "liga=1", "ss01=1" },
 				},

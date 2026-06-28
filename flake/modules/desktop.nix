@@ -376,7 +376,8 @@
           pkgs.noto-fonts-cjk-serif
           pkgs.noto-fonts-color-emoji
           pkgs.nerd-fonts.symbols-only
-          pkgs.cascadia-code # monospace
+          pkgs.iosevka # monospace
+          pkgs.commit-mono # monospace
           pkgs.source-serif # serif
           pkgs.libertinus # math/latex
           pkgs.inter # sans

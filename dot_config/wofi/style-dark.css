@@ -6,8 +6,9 @@
 @define-color purple rgb(155, 89, 208);
 @define-color black rgb(45, 45, 45);
 * {
-  font-family: "Inter Display", "Caskaydiacove nerd font", "Noto Sans CJK SC",
-    "HarmonyOS Sans SC", "sarasa ui sc";
+  font-family:
+    "Inter", "Caskaydiacove nerd font", "Noto Sans CJK SC", "HarmonyOS Sans SC",
+    "sarasa ui sc";
   border: none;
   border-radius: 9px;
 }
