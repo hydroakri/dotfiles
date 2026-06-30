@@ -116,10 +116,10 @@
           endpoint = "${config.sops.placeholder.r2_endpoint}"
 
           [chunking]
-          nar-size-threshold = 65536
-          min-size = 16384
-          avg-size = 65536
-          max-size = 262144
+          nar-size-threshold = 262144
+          min-size = 262144
+          avg-size = 2097152
+          max-size = 4194304
 
           [garbage-collection]
           interval = "12 hours"
@@ -494,6 +494,13 @@
             ~^https://(.*)$ http://$1;
             default $http_destination;
         }
+
+        proxy_cache_path /var/cache/nginx/attic
+          levels=1:2
+          keys_zone=attic_cache:500m
+          max_size=15g
+          inactive=30d
+          use_temp_path=off;
       '';
 
       virtualHosts."headscale.hydroakri.cc" = {
@@ -640,6 +647,15 @@
             proxy_buffers 4 256k;
             proxy_busy_buffers_size 256k;
             proxy_request_buffering off;
+
+            proxy_cache attic_cache;
+            proxy_cache_key $scheme$proxy_host$uri$is_args$args;
+            proxy_cache_valid 200 30d;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+            proxy_cache_lock on;
+            proxy_cache_background_update on;
+            proxy_no_cache $http_x_attic_no_cache;
+            proxy_cache_bypass $http_x_attic_no_cache;
           '';
         };
       };
@@ -661,6 +677,10 @@
       };
 
     };
+
+    systemd.tmpfiles.rules = [
+      "d /var/cache/nginx/attic 0750 nginx nginx -"
+    ];
 
     system.stateVersion = "25.11";
 
