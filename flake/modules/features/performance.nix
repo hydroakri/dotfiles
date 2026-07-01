@@ -140,7 +140,8 @@ in
       freeSwapThreshold = 5;
       extraArgs = [
         # 保护游戏/Wine/Proton 进程不被 earlyoom 误杀
-        "--avoid" "(^|/)(steam|wine|gamescope|mangohud)"
+        "--avoid"
+        "(^|/)(exe|steam|wine|gamescope|mangohud|proton)"
       ];
     };
     systemd.oomd.enable = false;
