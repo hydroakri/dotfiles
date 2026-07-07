@@ -162,7 +162,26 @@
 
           msg-cache-size = lib.mkDefault "50m";
           rrset-cache-size = lib.mkDefault "100m";
+
+          # respip 是 RPZ 生效的前提，必须排在 validator/iterator 之前
+          module-config = lib.mkDefault ''"respip validator iterator"'';
         };
+        rpz = lib.mkDefault [
+          {
+            name = "hagezi-pro";
+            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.txt";
+            zonefile = "/var/lib/unbound/hagezi-pro.rpz";
+            rpz-log = true;
+            for-downstream = false;
+          }
+          {
+            name = "hagezi-tif-mini";
+            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/tif.mini.txt";
+            zonefile = "/var/lib/unbound/hagezi-tif-mini.rpz";
+            rpz-log = true;
+            for-downstream = false;
+          }
+        ];
       };
     };
     services.chrony = {
