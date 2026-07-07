@@ -87,8 +87,8 @@
       };
     };
     proxy = {
-      enable = true;
-      singbox.enable = true;
+      enable = false;
+      singbox.enable = false;
       singbox.tun = true;
       singbox.dns = true;
       singbox.endpoints = true;

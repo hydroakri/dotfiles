@@ -428,12 +428,10 @@
         # xfce.xfce4-panel
         # xfce.xfce4-panel-profiles
         # rofi
-        pkgs.claude-code
-        pkgs.opencode
-        pkgs.junction
       ];
 
       # GUI User profile
+      services.cloudflare-warp.enable = true;
       users.users.${config.mainUser} = {
         extraGroups = [
           "video"
@@ -447,6 +445,9 @@
           # GUI Applications
           pkgs.wezterm
           # davinci-resolve-studio
+          pkgs.claude-code
+          pkgs.opencode
+          pkgs.junction
 
           # Brave：pkgs.brave 提供 .desktop 文件和图标；
           # brave-sandboxed 以 lib.hiPrio 覆盖 brave 二进制，指向 bubblewrap 包装器。
