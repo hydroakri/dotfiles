@@ -7,9 +7,11 @@
 
 {
   boot.kernelModules = [ "ntsync" ];
+  hardware.steam-hardware.enable = true;
+  hardware.uinput.enable = true;
+  users.users.${config.mainUser}.extraGroups = [ "uinput" ];
   environment.systemPackages = [
     pkgs.yad # steamtinkerlaunch dependency
-    pkgs.steam-devices-udev-rules
     pkgs.ethtool
   ];
 
