@@ -24,6 +24,7 @@
     ../../modules/features/performance.nix
     ../../modules/features/powersave.nix
     ../../modules/features/networking/proxy.nix
+    ../../modules/features/preservation.nix
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/utils.nix
@@ -42,6 +43,7 @@
     inputs.disko.nixosModules.disko
   ];
   mainUser = "hydroakri";
+  users.users.${config.mainUser}.hashedPasswordFile = config.sops.secrets.password.path;
 
   modules = {
     core = {
@@ -107,6 +109,7 @@
       enableGlance = true;
       enableUptime = false;
     };
+    preservation.enable = true;
   };
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {

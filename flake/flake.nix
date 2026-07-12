@@ -23,6 +23,7 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    preservation.url = "github:nix-community/preservation";
     geodb = {
       url = "github:Loyalsoldier/v2ray-rules-dat/release";
       flake = false;
@@ -116,6 +117,7 @@
         security = ./modules/features/security.nix;
         powersave = ./modules/features/powersave.nix;
         gaming = ./modules/features/gaming.nix;
+        preservation = ./modules/features/preservation.nix;
         utils = ./modules/features/utils.nix;
         virtualisation = ./modules/features/virtualisation.nix;
         networking-proxy = ./modules/features/networking/proxy.nix;

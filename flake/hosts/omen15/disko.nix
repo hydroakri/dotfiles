@@ -28,7 +28,6 @@
               content = {
                 type = "btrfs";
                 device = "/dev/disk/by-uuid/4c72b10f-9921-4cf1-9038-2ca203dcee31";
-                mountpoint = "/";
                 mountOptions = [
                   "rw"
                   "ssd"
@@ -67,12 +66,33 @@
                       "nodev"
                     ];
                   };
+                  "persistent" = {
+                    mountpoint = "/persistent";
+                    mountOptions = [
+                      "rw"
+                      "ssd"
+                      "space_cache=v2"
+                      "noatime"
+                      "commit=60"
+                      "compress=zstd:3"
+                      "discard=async"
+                      "nosuid"
+                      "nodev"
+                    ];
+                  };
                 };
               };
             };
           };
         };
       };
+    };
+    nodev."/" = {
+      fsType = "tmpfs";
+      mountOptions = [
+        "size=4G"
+        "mode=755"
+      ];
     };
   };
 }
