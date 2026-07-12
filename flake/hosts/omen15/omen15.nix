@@ -80,11 +80,9 @@
       interfaces = {
         eno1 = {
           rps_cpus = "fe";
-          xps_cpus = "fe";
         };
         wlo1 = {
           rps_cpus = "fe";
-          xps_cpus = "fe";
         };
       };
     };

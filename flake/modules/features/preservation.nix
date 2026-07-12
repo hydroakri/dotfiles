@@ -73,13 +73,13 @@
           file = "/etc/machine-id";
           inInitrd = true;
         }
-        {
-          # users.mutableUsers 默认 true，密码只靠 passwd 设置，没有声明式来源，
-          # 唯一的密码哈希就在这——不保留的话每次开机密码直接消失
-          file = "/etc/shadow";
-          group = "shadow";
-          mode = "0640";
-        }
+        # {
+        #   # users.mutableUsers 默认 true，密码只靠 passwd 设置，没有声明式来源，
+        #   # 唯一的密码哈希就在这——不保留的话每次开机密码直接消失
+        #   file = "/etc/shadow";
+        #   group = "shadow";
+        #   mode = "0640";
+        # }
         {
           file = "/etc/ssh/ssh_host_ed25519_key";
           how = "bindmount";
