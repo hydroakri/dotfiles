@@ -17,5 +17,5 @@ utils/**
 .chezmoiignore
 .chezmoiexternal.toml
 .chezmoiscripts/**
-README.md
+**.md
 LICENSE
