@@ -108,7 +108,7 @@
         kernel.sysctl = {
           "kernel.printk" = "3 3 3 3";
         };
-        consoleLogLevel = 3;
+        consoleLogLevel = lib.mkDefault 3;
         initrd.verbose = false;
         plymouth.enable = true;
         kernelParams = [
@@ -214,7 +214,8 @@
       services.printing.enable = false;
       services.avahi.enable = false;
       networking.modemmanager.enable = false;
-      services.geoclue2.enable = lib.mkDefault false;
+      # Lower than mkDefault (1000) so plasma6's own mkDefault true wins when it's enabled.
+      services.geoclue2.enable = lib.mkOverride 1500 false;
 
       # Audio (PipeWire)
       security.rtkit.enable = true;
@@ -316,11 +317,6 @@
         };
       };
 
-      # Desktop firewall (general application ports)
-      networking.firewall = {
-        allowedTCPPorts = [ 1080 ];
-        allowedUDPPorts = [ 1080 ];
-      };
       environment.plasma6.excludePackages = ([
         pkgs.kdePackages.elisa
         pkgs.kdePackages.gwenview
