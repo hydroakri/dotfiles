@@ -66,10 +66,10 @@
         interfaces = {
           end0 = {
             rps_cpus = "f";
+            xps_cpus = "f"; # 板载千兆口，bcmgenet 驱动有5条tx队列，多队列设备
           };
           enp1s0u1 = {
             rps_cpus = "f";
-            xps_cpus = "f";
           };
         };
       };

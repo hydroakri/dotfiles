@@ -79,10 +79,10 @@
       enable = true;
       interfaces = {
         eno1 = {
-          rps_cpus = "fe";
+          rps_cpus = "fffe";
         };
         wlo1 = {
-          rps_cpus = "fe";
+          rps_cpus = "fffe";
         };
       };
     };
