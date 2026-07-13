@@ -170,16 +170,9 @@
         };
         rpz = lib.mkDefault [
           {
-            name = "hagezi-pro";
-            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.txt";
-            zonefile = "/var/lib/unbound/hagezi-pro.rpz";
-            rpz-log = true;
-            for-downstream = false;
-          }
-          {
-            name = "hagezi-tif-mini";
-            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/tif.mini.txt";
-            zonefile = "/var/lib/unbound/hagezi-tif-mini.rpz";
+            name = "hagezi-pro-mini";
+            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.mini.txt";
+            zonefile = "/var/lib/unbound/hagezi-pro-mini.rpz";
             rpz-log = true;
             for-downstream = false;
           }

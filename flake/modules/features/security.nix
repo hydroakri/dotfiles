@@ -298,6 +298,7 @@
           allowedTCPPorts = [ 22 ];
         };
         networkmanager = {
+          settings.connection."dhcp-send-hostname" = false;
           wifi.macAddress = lib.mkDefault "random";
           wifi.scanRandMacAddress = lib.mkDefault true;
           # 以太网 MAC 随机化仅对桌面机有意义；服务器固定 MAC 以避免 DHCP 绑定失败
