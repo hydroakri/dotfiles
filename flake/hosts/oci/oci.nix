@@ -141,6 +141,8 @@
     };
 
     networking.hostName = "oci";
+    # OCI 虚拟盘(virtio-blk)不支持 SMART，smartd 会一直探测失败
+    services.smartd.enable = false;
     environment.etc."tuned/active_profile".text = lib.mkForce "virtual-guest";
     nixpkgs.hostPlatform = "aarch64-linux";
     # Boot loader configuration for RPi4
@@ -202,10 +204,17 @@
     };
 
     services.cloudflare-warp.enable = true;
+    sops.secrets."warp_mdm" = {
+      path = "/var/lib/cloudflare-warp/mdm.xml";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "cloudflare-warp.service" ];
+    };
     services.searx = {
       enable = true;
       package = pkgs.searxng;
-      redisCreateLocally = true;
+      redisCreateLocally = false;
       settings = {
         outgoing = {
           proxies = {
