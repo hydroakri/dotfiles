@@ -20,6 +20,7 @@
     ../../modules/features/performance.nix
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
+    ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
     ../../modules/features/agent.nix
 

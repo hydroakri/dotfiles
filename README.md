@@ -88,7 +88,8 @@ inputs.hydroakri-nixos.url = "github:hydroakri/dotfiles?dir=flake";
 | [`desktop`](flake/modules/desktop.nix) | Desktop profile: `preempt=full`, PipeWire, XDG portals, Vulkan/OpenGL. **Mutually exclusive with `server`** |
 | [`server`](flake/modules/server.nix) | Server profile: `preempt=voluntary`, tuned, fail2ban, irqbalance. **Mutually exclusive with `desktop`** |
 | [`performance`](flake/modules/features/performance.nix) | BBR+CAKE networking, MGLRU, zram, scx scheduler, I/O scheduler udev rules |
-| [`security`](flake/modules/features/security.nix) | Kernel hardening, AppArmor, doas, u2f PAM, FIDO2 SSH, sysctl baseline |
+| [`security`](flake/modules/features/security.nix) | Kernel hardening, AppArmor, doas, u2f PAM, FIDO2 SSH, USBGuard, sysctl baseline |
+| [`privacy`](flake/modules/features/privacy.nix) | Anti-tracking/anti-fingerprinting: Brave hardening policy, kloak keystroke/mouse timing anonymization, MAC address randomization, IPv6 privacy addresses |
 | [`powersave`](flake/modules/features/powersave.nix) | TLP/power-profiles-daemon, s2idle, dynamic audio power-save udev rules |
 | [`gaming`](flake/modules/features/gaming.nix) | scx_lavd scheduler, Gamescope, GameMode, Steam firewall ports |
 | [`utils`](flake/modules/features/utils.nix) | Glance dashboard, Prometheus+Grafana stack, Uptime Kuma |
@@ -103,7 +104,7 @@ inputs.hydroakri-nixos.url = "github:hydroakri/dotfiles?dir=flake";
 
 **Module activation:**
 
-- **Always-on when imported** (no `enable` flag): `core`, `desktop`, `server`, `performance`, `security`, `gaming`, `virtualisation`, `filesystem-btrfs`, `hardware-amd`
+- **Always-on when imported** (no `enable` flag): `core`, `desktop`, `server`, `performance`, `security`, `privacy`, `gaming`, `virtualisation`, `filesystem-btrfs`, `hardware-amd`
 - **Gated by `modules.<name>.enable = true`**: `powersave`, `utils`, `hardware-nvidia`, `networking-proxy`, `networking-sqm`, `networking-tuning`
 
 ### Key Options

@@ -20,381 +20,310 @@
     };
   };
 
-  config =
-    let
-      bravePolicy = pkgs.writeText "castration.json" (
-        builtins.toJSON {
-          # ======= 1. Shields (护盾 - 对应 PG 清单第一部分) =======
-          "DefaultBraveAdblockSetting" = 2; # Trackers & ads: Aggressive
-          "DefaultBraveHttpsUpgradeSetting" = 2; # Upgrade connections: Strict
-          "DefaultBraveFingerprintingV2Setting" = 2; # Block fingerprinting: Strict
-          "BlockThirdPartyCookies" = true; # Block third-party cookies
-          "DefaultBraveReferrersSetting" = 2; # 引荐来源保护
-          "BraveDebouncingEnabled" = true; # 自动跳过中间追踪链接
-          "BraveGlobalPrivacyControlEnabled" = true; # 开启 GPC (Global Privacy Control)
-
-          # ======= 2. 隐私与安全 (对应 PG 清单第二部分) =======
-          "DefaultJavaScriptOptimizersSetting" = 2; # Don’t allow JS optimizer compilers
-          "WebRtcIPHandling" = "disable_non_proxied_udp"; # WebRTC IP Policy: Disable non-proxied UDP
-          "BraveDeAmpEnabled" = true; # Auto-redirect AMP pages
-          "BraveTrackingQueryParametersFilteringEnabled" = true; # Auto-redirect tracking URLs
-          "BraveReduceLanguageEnabled" = true; # Language preferences fingerprinting protection
-          "HttpsOnlyMode" = "force_enabled"; # 硬性拒绝 HTTP（vs. DefaultBraveHttpsUpgradeSetting 仅尝试升级）
-          "OriginKeyedProcessesEnabled" = true; # 每 origin 独立进程（比 SitePerProcess 按 eTLD+1 更细粒度）
-          "NetworkServiceSandboxEnabled" = true; # 启用网络服务沙箱
-
-          # ======= 3. Web3、Tor 与商业组件 (对应 PG 清单 Web3/Tor 部分) =======
-          "BraveWalletDisabled" = true; # 禁用所有 Web3 (Extensions no fallback)
-          "TorDisabled" = true; # 禁用内置 Tor
-          "BraveAIChatEnabled" = false; # 禁用 Leo AI
-          "BraveTalkDisabled" = true; # 禁用视频会议
-          "BraveNewsDisabled" = true; # 禁用新闻流
-          "BravePlaylistEnabled" = false; # 禁用播放列表
-          "BraveRewardsDisabled" = true;
-          "BraveVPNDisabled" = true;
-          "PromotionsEnabled" = false; # 禁用 Promotions
-          "BraveSpeedreaderEnabled" = false; # Speedreader 会向 Brave 服务器发网络请求
-          "BraveWaybackMachineEnabled" = false; # 集成 IA 会把当前 URL 发送到外部
-          # IPFSEnabled 已在 brave-core policy_definitions 中标记 deprecated: true，不添加
-
-          # ======= 4. 数据收集 (对应 PG 清单数据收集部分) =======
-          "BraveP3AEnabled" = false; # Uncheck P3A
-          "BraveStatsPingEnabled" = false; # Uncheck daily usage ping
-          "MetricsReportingEnabled" = false; # Uncheck diagnostic reports
-          "BraveWebDiscoveryEnabled" = false; # 彻底禁掉 WDP 采集
-          "UrlKeyedAnonymizedDataCollectionEnabled" = false; # 禁止 URL 键值匿名数据上报
-
-          # ======= 5. 系统与搜索 (对应 PG 清单最后部分) =======
-          "SearchSuggestEnabled" = false; # Uncheck search suggestions
-          "BackgroundModeEnabled" = false; # Uncheck background apps
-          "SafeBrowsingExtendedReportingEnabled" = false;
-          "SpellCheckServiceEnabled" = false;
-          "EnableMediaRouter" = false; # 彻底禁用 Chromecast 相关的 Media Router
-          "PasswordManagerEnabled" = false; # 完全禁用密码管理器（含保存提示）
-          "AutofillAddressEnabled" = false; # 禁用地址自动填充（减少本地数据留存）
-          "AutofillCreditCardEnabled" = false; # 禁用信用卡自动填充
-          "TranslateEnabled" = false; # 翻译功能将页面内容发送至第三方服务器
-          "DefaultBrowserSettingEnabled" = false; # 禁止默认浏览器提示弹窗
-          "BlockExternalExtensions" = true; # 阻止安装来自 Web Store 之外的外部扩展
+  config = {
+    # TODO: 以下两个模块上游尚未支持 linux 7.x，待修复后启用
+    # boot.extraModulePackages = [ config.boot.kernelPackages.lkrg ];  # LKRG: lkrg-1.0.0 不兼容 kernel 7.x (sockaddr_unsized API 变更)
+    # "p_lkrg"  # tirdad: 需要 CONFIG_LIVEPATCH=y，且依赖上游修复
+    boot.kernelParams = [
+      "mitigations=auto"
+      "slab_nomerge"
+      "page_alloc.shuffle=1"
+      "randomize_kstack_offset=on"
+      "bdev_allow_write_mounted=0"
+      "erst_disable"
+      "extra_latent_entropy"
+      "hash_pointers=always"
+      "iommu=strict"
+      "proc_mem.force_override=ptrace"
+      "lockdown=confidentiality"
+      # "lockdown=integrity"
+      # slightly performance loss
+      "cfi=kcfi"
+      "init_on_alloc=1"
+      "vdso32=0"
+      "debugfs=off"
+      "random.trust_cpu=0"
+      "random.trust_bootloader=0"
+      "oops=panic"
+      "kfence.sample_interval=100"
+      # 提高 HWRNG 对内核熵池的贡献质量（ANSSI R8）
+      "rng_core.default_quality=500"
+      # "slub_debug=FZP" 内存分配调试（完整性检查+红区+填毒），开发排查用；生产/游戏负载有 10-20% 开销，暂不启用
+    ]
+    ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
+      "vsyscall=none"
+      "efi=disable_early_pci_dma"
+      "efi_pstore.pstore_disable=1"
+    ];
+    boot.kernel.sysctl = lib.mkMerge [
+      # ── 基础安全基线（所有主机）────────────────────────────────────────
+      # 对需要在服务器上收严的值标 mkDefault（优先级 50），
+      # 服务器块用 plain（100）无冲突覆盖；其他模块如需强制覆盖用 mkForce（1000）。
+      (
+        {
+          # Security (common)
+          "kernel.printk_devkmsg" = "off";
+          # when '3' can cause steam games stop working
+          "kernel.yama.ptrace_scope" = 1;
+          # 1 = 仅禁非特权用户；服务器块覆盖为 2（完全禁止）
+          "kernel.io_uring_disabled" = lib.mkDefault 1;
+          "dev.tty.legacy_tiocsti" = 0;
+          # 开启 SYN Cookies，防御 SYN Flood 洪水攻击
+          "net.ipv4.tcp_syncookies" = 1;
+          # 开启 RFC1337，防御 TIME-WAIT Assassination 攻击
+          "net.ipv4.tcp_rfc1337" = 1;
+          # 禁止 TCP 时间戳，防止远端推算系统运行时间（侧信道）
+          # mkDefault：performance.nix 在启用时会覆盖为 1（TCP timestamps 对性能有益）
+          "net.ipv4.tcp_timestamps" = lib.mkDefault 0;
+          # 记录火星包是安全的，它不丢包，只记日志
+          "net.ipv4.conf.all.log_martians" = 1;
+          "net.ipv4.conf.default.log_martians" = 1;
+          # 严格模式 (1)，这是安全的默认基线
+          # (如果开启了透明代理，proxy.nix 会自动将其覆盖为松散模式 2)
+          "net.ipv4.conf.all.rp_filter" = lib.mkDefault 1;
+          "net.ipv4.conf.default.rp_filter" = lib.mkDefault 1;
+          # 禁止接受 ICMP 重定向 (防止中间人攻击篡改路由表)
+          # 普通主机不需要接受重定向，除非充当路由器
+          "net.ipv4.conf.*.accept_redirects" = 0;
+          "net.ipv4.conf.*.send_redirects" = 0;
+          "net.ipv6.conf.*.accept_redirects" = 0;
+          "net.ipv4.conf.*.shared_media" = 0;
+          # 禁止源路由 (Source Routing)
+          "net.ipv4.conf.*.accept_source_route" = 0;
+          "net.ipv6.conf.*.accept_source_route" = 0;
+          # ARP 硬化：防止 ARP 缓存中毒和跨接口响应
+          # mkDefault 以便路由角色（router.nix）在多 LAN/网桥/keepalived/proxy-ARP 拓扑下覆盖放松
+          # 端点主机仍取此严格基线，渲染值不变（1/2）
+          "net.ipv4.conf.*.arp_filter" = lib.mkDefault 1;
+          "net.ipv4.conf.*.arp_ignore" = lib.mkDefault 2;
+          "net.ipv4.conf.*.arp_announce" = 2;
+          "net.ipv4.conf.all.drop_gratuitous_arp" = 1;
+          # 忽略违规的 ICMP 错误消息
+          "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
+          # 忽略广播 ICMP echo，防御 Smurf 放大攻击
+          "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+          # Disable ICMP echo（ping）, use TCP ping instead
+          "net.ipv4.icmp_echo_ignore_all" = 1;
+          "net.ipv6.icmp.echo_ignore_all" = 1;
+          "net.ipv4.conf.all.secure_redirects" = 1;
+          "net.ipv4.conf.default.secure_redirects" = 1;
+          "net.ipv4.tcp_dsack" = 0;
+          "net.ipv4.tcp_fack" = 0;
+          # 防止 loopback 地址通过非 loopback 接口路由（ANSSI R12）
+          "net.ipv4.conf.all.route_localnet" = 0;
+          # 拒绝源地址属于本机接口的入站包，防止反射攻击（ANSSI R12）
+          "net.ipv4.conf.all.accept_local" = 0;
+          # 临时端口范围收窄，减少端口猜测攻击面（ANSSI R12）
+          "net.ipv4.ip_local_port_range" = "32768 65535";
+          # 增加 BPF JIT 编译器的安全性，消除某些侧信道攻击
+          "net.core.bpf_jit_harden" = 2;
+          # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启)
+          "kernel.unprivileged_bpf_disabled" = 1;
+          # 限制内核指针地址泄露 (防止攻击者探测内核内存布局)
+          "kernel.kptr_restrict" = 2;
+          # 限制 dmesg 日志访问权限 (防止普通用户查看启动日志中的敏感信息)
+          "kernel.dmesg_restrict" = 1;
+          # 增加内核崩溃和警告的阈值限制，防止日志泛滥
+          "kernel.oops_limit" = 100;
+          "kernel.warn_limit" = 100;
+          "kernel.panic" = -1;
+          # 核心转储文件处理 (这里设为 piping 给 /bin/false，即直接丢弃)
+          "kernel.core_pattern" = "|/bin/false";
+          # 禁止加载新的 TTY 线路规程 (减少内核攻击面)
+          "dev.tty.ldisc_autoload" = 0;
+          # 禁止 kexec (防止在不经过 BIOS 自检的情况下热加载新内核)
+          # 注意：这会禁用 kdump 和 systemctl kexec 快速重启功能
+          "kernel.kexec_load_disabled" = 1;
+          # 增加 mmap 内存分配的随机性 (ASLR)，增加缓冲区溢出攻击的难度
+          "vm.mmap_rnd_compat_bits" = 16;
+          # 强制开启地址空间布局随机化
+          "kernel.randomize_va_space" = 2;
+          # 限制性能分析工具 (Perf) 的使用权限
+          # 2 = 仅 root 可用 perf（开发者临时 doas 即可）；服务器块覆盖为 3（完全禁止）
+          "kernel.perf_event_paranoid" = lib.mkDefault 2;
+          # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
+          "kernel.perf_cpu_time_max_percent" = 1;
+          # 限制非特权用户采样速率，进一步阻断计时侧信道（securix R9）
+          "kernel.perf_event_max_sample_rate" = 1;
+          # kernel.sysrq 已在 core.nix 设为 246（仅启用安全子集，非全量），不再重复定义
+          # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击)
+          "kernel.core_uses_pid" = 1;
+          # Core dump 文件名带 PID，防止竞态覆盖攻击
+          "vm.mmap_min_addr" = 65536;
+          # 限制非特权用户使用 userfaultfd
+          # 注意：极少数高性能虚拟机特性可能依赖此项，一般桌面使用无影响
+          "vm.unprivileged_userfaultfd" = 0;
+          # 禁止 SUID 程序在崩溃时产生 Core Dump
+          # 防止特权程序的内存数据（可能含密码）泄露到磁盘
+          "fs.suid_dumpable" = 0;
+          # 文件系统链接保护 (防止 /tmp 目录下的竞争条件攻击)
+          "fs.protected_regular" = 2;
+          "fs.protected_fifos" = 2;
+          "fs.protected_hardlinks" = 1;
+          "fs.protected_symlinks" = 1;
         }
-      );
-    in
-    {
-      # TODO: 以下两个模块上游尚未支持 linux 7.x，待修复后启用
-      # boot.extraModulePackages = [ config.boot.kernelPackages.lkrg ];  # LKRG: lkrg-1.0.0 不兼容 kernel 7.x (sockaddr_unsized API 变更)
-      # "p_lkrg"  # tirdad: 需要 CONFIG_LIVEPATCH=y，且依赖上游修复
-      boot.kernelModules = [
-        "uinput" # virtual input device, required by kloak
-      ];
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isx86_64 {
+          "vm.mmap_rnd_bits" = 32;
+        }
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isAarch64 {
+          "vm.mmap_rnd_bits" = 24;
+        }
+      )
 
-      boot.kernelParams = [
-        "mitigations=auto"
-        "slab_nomerge"
-        "page_alloc.shuffle=1"
-        "randomize_kstack_offset=on"
-        "bdev_allow_write_mounted=0"
-        "erst_disable"
-        "extra_latent_entropy"
-        "hash_pointers=always"
-        "iommu=strict"
-        "proc_mem.force_override=ptrace"
-        "lockdown=confidentiality"
-        # "lockdown=integrity"
-        # slightly performance loss
-        "cfi=kcfi"
-        "init_on_alloc=1"
-        "vdso32=0"
-        "debugfs=off"
-        "random.trust_cpu=0"
-        "random.trust_bootloader=0"
-        "oops=panic"
-        "kfence.sample_interval=100"
-        # 提高 HWRNG 对内核熵池的贡献质量（ANSSI R8）
-        "rng_core.default_quality=500"
-        # "slub_debug=FZP" 内存分配调试（完整性检查+红区+填毒），开发排查用；生产/游戏负载有 10-20% 开销，暂不启用
-      ]
-      ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
-        "vsyscall=none"
-        "efi=disable_early_pci_dma"
-        "efi_pstore.pstore_disable=1"
-      ];
-      boot.kernel.sysctl = lib.mkMerge [
-        # ── 基础安全基线（所有主机）────────────────────────────────────────
-        # 对需要在服务器上收严的值标 mkDefault（优先级 50），
-        # 服务器块用 plain（100）无冲突覆盖；其他模块如需强制覆盖用 mkForce（1000）。
-        (
-          {
-            # Security (common)
-            "kernel.printk_devkmsg" = "off";
-            # when '3' can cause steam games stop working
-            "kernel.yama.ptrace_scope" = 1;
-            # 1 = 仅禁非特权用户；服务器块覆盖为 2（完全禁止）
-            "kernel.io_uring_disabled" = lib.mkDefault 1;
-            "dev.tty.legacy_tiocsti" = 0;
-            # 开启 SYN Cookies，防御 SYN Flood 洪水攻击
-            "net.ipv4.tcp_syncookies" = 1;
-            # 开启 RFC1337，防御 TIME-WAIT Assassination 攻击
-            "net.ipv4.tcp_rfc1337" = 1;
-            # 禁止 TCP 时间戳，防止远端推算系统运行时间（侧信道）
-            # mkDefault：performance.nix 在启用时会覆盖为 1（TCP timestamps 对性能有益）
-            "net.ipv4.tcp_timestamps" = lib.mkDefault 0;
-            # 记录火星包是安全的，它不丢包，只记日志
-            "net.ipv4.conf.all.log_martians" = 1;
-            "net.ipv4.conf.default.log_martians" = 1;
-            # 严格模式 (1)，这是安全的默认基线
-            # (如果开启了透明代理，proxy.nix 会自动将其覆盖为松散模式 2)
-            "net.ipv4.conf.all.rp_filter" = lib.mkDefault 1;
-            "net.ipv4.conf.default.rp_filter" = lib.mkDefault 1;
-            # 禁止接受 ICMP 重定向 (防止中间人攻击篡改路由表)
-            # 普通主机不需要接受重定向，除非充当路由器
-            "net.ipv4.conf.*.accept_redirects" = 0;
-            "net.ipv4.conf.*.send_redirects" = 0;
-            "net.ipv6.conf.*.accept_redirects" = 0;
-            "net.ipv4.conf.*.shared_media" = 0;
-            # 禁止源路由 (Source Routing)
-            "net.ipv4.conf.*.accept_source_route" = 0;
-            "net.ipv6.conf.*.accept_source_route" = 0;
-            # ARP 硬化：防止 ARP 缓存中毒和跨接口响应
-            # mkDefault 以便路由角色（router.nix）在多 LAN/网桥/keepalived/proxy-ARP 拓扑下覆盖放松
-            # 端点主机仍取此严格基线，渲染值不变（1/2）
-            "net.ipv4.conf.*.arp_filter" = lib.mkDefault 1;
-            "net.ipv4.conf.*.arp_ignore" = lib.mkDefault 2;
-            "net.ipv4.conf.*.arp_announce" = 2;
-            "net.ipv4.conf.all.drop_gratuitous_arp" = 1;
-            # 忽略违规的 ICMP 错误消息
-            "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
-            # 忽略广播 ICMP echo，防御 Smurf 放大攻击
-            "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
-            # Disable ICMP echo（ping）, use TCP ping instead
-            "net.ipv4.icmp_echo_ignore_all" = 1;
-            "net.ipv6.icmp.echo_ignore_all" = 1;
-            "net.ipv4.conf.all.secure_redirects" = 1;
-            "net.ipv4.conf.default.secure_redirects" = 1;
-            "net.ipv4.tcp_dsack" = 0;
-            "net.ipv4.tcp_fack" = 0;
-            # 防止 loopback 地址通过非 loopback 接口路由（ANSSI R12）
-            "net.ipv4.conf.all.route_localnet" = 0;
-            # 拒绝源地址属于本机接口的入站包，防止反射攻击（ANSSI R12）
-            "net.ipv4.conf.all.accept_local" = 0;
-            # 临时端口范围收窄，减少端口猜测攻击面（ANSSI R12）
-            "net.ipv4.ip_local_port_range" = "32768 65535";
-            # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪
-            "net.ipv6.conf.all.use_tempaddr" = lib.mkDefault 2;
-            "net.ipv6.conf.default.use_tempaddr" = lib.mkDefault 2;
-            # 增加 BPF JIT 编译器的安全性，消除某些侧信道攻击
-            "net.core.bpf_jit_harden" = 2;
-            # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启)
-            "kernel.unprivileged_bpf_disabled" = 1;
-            # 限制内核指针地址泄露 (防止攻击者探测内核内存布局)
-            "kernel.kptr_restrict" = 2;
-            # 限制 dmesg 日志访问权限 (防止普通用户查看启动日志中的敏感信息)
-            "kernel.dmesg_restrict" = 1;
-            # 增加内核崩溃和警告的阈值限制，防止日志泛滥
-            "kernel.oops_limit" = 100;
-            "kernel.warn_limit" = 100;
-            "kernel.panic" = -1;
-            # 核心转储文件处理 (这里设为 piping 给 /bin/false，即直接丢弃)
-            "kernel.core_pattern" = "|/bin/false";
-            # 禁止加载新的 TTY 线路规程 (减少内核攻击面)
-            "dev.tty.ldisc_autoload" = 0;
-            # 禁止 kexec (防止在不经过 BIOS 自检的情况下热加载新内核)
-            # 注意：这会禁用 kdump 和 systemctl kexec 快速重启功能
-            "kernel.kexec_load_disabled" = 1;
-            # 增加 mmap 内存分配的随机性 (ASLR)，增加缓冲区溢出攻击的难度
-            "vm.mmap_rnd_compat_bits" = 16;
-            # 强制开启地址空间布局随机化
-            "kernel.randomize_va_space" = 2;
-            # 限制性能分析工具 (Perf) 的使用权限
-            # 2 = 仅 root 可用 perf（开发者临时 doas 即可）；服务器块覆盖为 3（完全禁止）
-            "kernel.perf_event_paranoid" = lib.mkDefault 2;
-            # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
-            "kernel.perf_cpu_time_max_percent" = 1;
-            # 限制非特权用户采样速率，进一步阻断计时侧信道（securix R9）
-            "kernel.perf_event_max_sample_rate" = 1;
-            # kernel.sysrq 已在 core.nix 设为 246（仅启用安全子集，非全量），不再重复定义
-            # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击)
-            "kernel.core_uses_pid" = 1;
-            # Core dump 文件名带 PID，防止竞态覆盖攻击
-            "vm.mmap_min_addr" = 65536;
-            # 限制非特权用户使用 userfaultfd
-            # 注意：极少数高性能虚拟机特性可能依赖此项，一般桌面使用无影响
-            "vm.unprivileged_userfaultfd" = 0;
-            # 禁止 SUID 程序在崩溃时产生 Core Dump
-            # 防止特权程序的内存数据（可能含密码）泄露到磁盘
-            "fs.suid_dumpable" = 0;
-            # 文件系统链接保护 (防止 /tmp 目录下的竞争条件攻击)
-            "fs.protected_regular" = 2;
-            "fs.protected_fifos" = 2;
-            "fs.protected_hardlinks" = 1;
-            "fs.protected_symlinks" = 1;
-          }
-          // lib.optionalAttrs pkgs.stdenv.hostPlatform.isx86_64 {
-            "vm.mmap_rnd_bits" = 32;
-          }
-          // lib.optionalAttrs pkgs.stdenv.hostPlatform.isAarch64 {
-            "vm.mmap_rnd_bits" = 24;
-          }
-        )
+      # ── 服务器严格模式（无桌面/游戏场景）────────────────────────────────
+      # plain（优先级 100）覆盖上方 mkDefault（50），无冲突
+      (lib.mkIf (!config.services.displayManager.enable) {
+        # 完全禁止 io_uring（桌面 mkDefault 1 兼容部分程序）
+        "kernel.io_uring_disabled" = 2;
+        # 完全禁止 perf（桌面 mkDefault 2 保留 root 权限使用）
+        "kernel.perf_event_paranoid" = 3;
+        # 禁用 binfmt_misc（桌面保留以支持 Wine/binfmt-runner）
+        "fs.binfmt_misc.status" = 0;
+      })
+    ];
+    systemd.coredump.enable = false;
+    # 每次启动清理 /tmp 和 /var/tmp，防止上次会话残留的敏感数据（srvos）
+    boot.tmp.cleanOnBoot = true;
+    # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
+    # security.auditd.enable = true;
+    security.unprivilegedUsernsClone = false;
+    environment.memoryAllocator.provider = "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
+    environment.systemPackages = [
+      pkgs.ssh-copy-id
+      # keepassxc # installed in flatpak
 
-        # ── 服务器严格模式（无桌面/游戏场景）────────────────────────────────
-        # plain（优先级 100）覆盖上方 mkDefault（50），无冲突
-        (lib.mkIf (!config.services.displayManager.enable) {
-          # 完全禁止 io_uring（桌面 mkDefault 1 兼容部分程序）
-          "kernel.io_uring_disabled" = 2;
-          # 完全禁止 perf（桌面 mkDefault 2 保留 root 权限使用）
-          "kernel.perf_event_paranoid" = 3;
-          # 禁用 binfmt_misc（桌面保留以支持 Wine/binfmt-runner）
-          "fs.binfmt_misc.status" = 0;
-        })
-      ];
-      systemd.coredump.enable = false;
-      # 每次启动清理 /tmp 和 /var/tmp，防止上次会话残留的敏感数据（srvos）
-      boot.tmp.cleanOnBoot = true;
-      # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
-      # security.auditd.enable = true;
-      security.unprivilegedUsernsClone = false;
-      environment.memoryAllocator.provider = "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
-      environment.systemPackages = [
-        pkgs.ssh-copy-id
-        # keepassxc # installed in flatpak
+      # For sops-nix
+      pkgs.age
+      pkgs.sops
+      pkgs.ssh-to-age
+      pkgs.age-plugin-fido2-hmac
 
-        # For sops-nix
-        pkgs.age
-        pkgs.sops
-        pkgs.ssh-to-age
-        pkgs.age-plugin-fido2-hmac
+      # For fido2 security keys
+      pkgs.pam_u2f
+      pkgs.libfido2
+      pkgs.yubikey-manager
 
-        # For fido2 security keys
-        pkgs.pam_u2f
-        pkgs.libfido2
-        pkgs.yubikey-manager
+      # sudo → doas compatibility shim
+      pkgs.doas-sudo-shim
 
-        # sudo → doas compatibility shim
-        pkgs.doas-sudo-shim
-
-      ];
-      security = {
-        sudo-rs.enable = false;
-        sudo.enable = false;
-        doas = {
-          enable = true;
-          extraRules = [
-            {
-              groups = [ "wheel" ];
-              persist = true;
-              keepEnv = true;
-            }
-          ];
-        };
-        apparmor = {
-          enable = true;
-          killUnconfinedConfinables = true;
-          packages = [ pkgs.apparmor-profiles ];
-        };
-      };
-      networking = {
-        firewall = {
-          enable = true;
-          allowedTCPPorts = [ 22 ];
-        };
-        networkmanager = {
-          settings.connection."dhcp-send-hostname" = false;
-          wifi.macAddress = lib.mkDefault "random";
-          wifi.scanRandMacAddress = lib.mkDefault true;
-          # 以太网 MAC 随机化仅对桌面机有意义；服务器固定 MAC 以避免 DHCP 绑定失败
-          ethernet.macAddress = lib.mkIf config.services.displayManager.enable (lib.mkDefault "random");
-        };
-      };
-      systemd.services.kloak = lib.mkIf config.i18n.inputMethod.enable {
-        description = "Keystroke and mouse timing anonymization";
-        wantedBy = [ "multi-user.target" ];
-        after = [ "multi-user.target" ];
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.kloak}/bin/kloak";
-          Restart = "on-failure";
-          RestartSec = 3;
-        };
-      };
-      # 用 environment.etc 而非 systemd.tmpfiles C（C 只在文件不存在时复制一次，
-      # 导致策略更新后不会自动同步；environment.etc 每次 rebuild 都更新符号链接）
-      environment.etc."brave/policies/managed/castration.json" = {
-        source = bravePolicy;
-        mode = "0644";
-      };
-      # ===========================================================================
-      #PAM
-      security.pam = {
-        u2f = {
-          enable = lib.mkDefault (config.modules.security.u2fMappings != "");
-          settings = {
-            cue = true;
-            authfile = "/etc/u2f_mappings";
-            interactive = true;
-          };
-        };
-        services = {
-          doas.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
-          login.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
-
-          system-login.failDelay.enable = true;
-          system-login.failDelay.delay = 4000000;
-          passwd.rules.password.unix.settings.rounds = 65536;
-          su.requireWheel = true;
-        };
-      };
-      # plug u2f device & use `pamu2fcfg -n`, then set modules.security.u2fMappings in your host config
-      environment.etc."u2f_mappings" = lib.mkIf (config.modules.security.u2fMappings != "") {
-        text = config.modules.security.u2fMappings;
-      };
-
-      # ===========================================================================
-      # who can login in THIS machine
-      # initialze security key: `ssh-keygen -t ed25519-sk -O resident -O verify-required`
-      # add sk: `ssh-add -K`
-      # get public key from sk: `ssh-keygen -K`
-      # set password: `ssh-keygen -p -f <file name>`
-      services.pcscd.enable = true;
-
-      services.openssh = {
+    ];
+    security = {
+      sudo-rs.enable = false;
+      sudo.enable = false;
+      doas = {
         enable = true;
+        extraRules = [
+          {
+            groups = [ "wheel" ];
+            persist = true;
+            keepEnv = true;
+          }
+        ];
+      };
+      apparmor = {
+        enable = true;
+        killUnconfinedConfinables = true;
+        packages = [ pkgs.apparmor-profiles ];
+      };
+    };
+    networking.firewall = {
+      enable = true;
+      allowedTCPPorts = [ 22 ];
+    };
+
+    services.usbguard = {
+      enable = true;
+      presentDevicePolicy = "keep";
+      IPCAllowedUsers = [
+        "root"
+        config.mainUser
+      ];
+    };
+
+    systemd.user.services.usbguard-notifier = {
+      description = "USBGuard device notifier";
+      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.usbguard-notifier}/bin/usbguard-notifier";
+        Restart = "on-failure";
+        RestartSec = 3;
+      };
+    };
+    # ===========================================================================
+    #PAM
+    security.pam = {
+      u2f = {
+        enable = lib.mkDefault (config.modules.security.u2fMappings != "");
         settings = {
-          PasswordAuthentication = lib.mkDefault false;
-          KbdInteractiveAuthentication = false;
-          PermitRootLogin = lib.mkDefault "prohibit-password";
-          X11Forwarding = false;
-          AllowTcpForwarding = lib.mkDefault "no";
-          AllowStreamLocalForwarding = lib.mkDefault false;
+          cue = true;
+          authfile = "/etc/u2f_mappings";
+          interactive = true;
         };
       };
-      users.users.root.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
-      # =============================================================================
-      # This machine can signing/control key from WHERE?
-      programs.git.config = {
+      services = {
+        doas.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
+        login.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
 
-        # GIT Signing
-        # DISABLE Verified Signing by default
-        # non-root User should use `git config --global commit.gpgsign true`
-        # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
-        # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
-        commit.gpgsign = false;
-        gpg.format = "ssh";
-
-        # GIT VERIFING — set allowedSignersFile per-host via sops (see omen15.nix)
+        system-login.failDelay.enable = true;
+        system-login.failDelay.delay = 4000000;
+        passwd.rules.password.unix.settings.rounds = 65536;
+        su.requireWheel = true;
       };
-      programs.ssh = {
-        extraConfig = ''
-          Host *
-            # ForwardAgent yes # open only in trusted machine
-            AddKeysToAgent yes
-            ControlMaster auto
-            ControlPath /run/user/%i/ssh-mux-%C
-            ControlPersist 10m
-
-            IdentitiesOnly no # let ssh-agent auto find keys
-            # To use specific keys, try `ssh -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 user@host`
-        '';
-      };
-
     };
+    # plug u2f device & use `pamu2fcfg -n`, then set modules.security.u2fMappings in your host config
+    environment.etc."u2f_mappings" = lib.mkIf (config.modules.security.u2fMappings != "") {
+      text = config.modules.security.u2fMappings;
+    };
+
+    # ===========================================================================
+    # who can login in THIS machine
+    # initialze security key: `ssh-keygen -t ed25519-sk -O resident -O verify-required`
+    # add sk: `ssh-add -K`
+    # get public key from sk: `ssh-keygen -K`
+    # set password: `ssh-keygen -p -f <file name>`
+    services.pcscd.enable = true;
+
+    services.openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = lib.mkDefault false;
+        KbdInteractiveAuthentication = false;
+        PermitRootLogin = lib.mkDefault "prohibit-password";
+        X11Forwarding = false;
+        AllowTcpForwarding = lib.mkDefault "no";
+        AllowStreamLocalForwarding = lib.mkDefault false;
+      };
+    };
+    users.users.root.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
+    # =============================================================================
+    # This machine can signing/control key from WHERE?
+    programs.git.config = {
+
+      # GIT Signing
+      # DISABLE Verified Signing by default
+      # non-root User should use `git config --global commit.gpgsign true`
+      # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
+      # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
+      commit.gpgsign = false;
+      gpg.format = "ssh";
+
+      # GIT VERIFING — set allowedSignersFile per-host via sops (see omen15.nix)
+    };
+    programs.ssh = {
+      extraConfig = ''
+        Host *
+          # ForwardAgent yes # open only in trusted machine
+          AddKeysToAgent yes
+          ControlMaster auto
+          ControlPath /run/user/%i/ssh-mux-%C
+          ControlPersist 10m
+
+          IdentitiesOnly no # let ssh-agent auto find keys
+          # To use specific keys, try `ssh -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 user@host`
+      '';
+    };
+
+  };
 }

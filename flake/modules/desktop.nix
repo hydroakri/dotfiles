@@ -36,7 +36,16 @@
           --ro-bind /sys/dev/char /sys/dev/char \
           --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
           --tmpfs /tmp --tmpfs /dev/shm \
-          --ro-bind /etc /etc \
+          --ro-bind-try /etc/resolv.conf /etc/resolv.conf \
+          --ro-bind-try /etc/hosts /etc/hosts \
+          --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf \
+          --ro-bind-try /etc/passwd /etc/passwd \
+          --ro-bind-try /etc/group /etc/group \
+          --ro-bind-try /etc/ssl /etc/ssl \
+          --ro-bind-try /etc/localtime /etc/localtime \
+          --ro-bind-try /etc/locale.conf /etc/locale.conf \
+          --ro-bind-try /etc/fonts /etc/fonts \
+          --ro-bind-try /etc/brave /etc/brave \
           --ro-bind /run /run \
           --tmpfs "$XDG_RUNTIME_DIR" \
           --bind "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" \
@@ -48,7 +57,7 @@
           --ro-bind-try "$HOME/.local/share/fonts" "$HOME/.local/share/fonts" \
           --ro-bind-try "$HOME/.local/share/mime" "$HOME/.local/share/mime" \
           "''${BWRAP_EXTRA[@]}" \
-          --unshare-uts --unshare-ipc --die-with-parent \
+          --unshare-uts --unshare-ipc --unshare-pid --die-with-parent \
           -- ${pkgs.brave}/bin/brave \
           --ozone-platform=wayland \
           --enable-features=WaylandWindowDecorations,WebRTCPipeWireCapturer,AudioServiceSandbox \
@@ -99,7 +108,7 @@
           --ro-bind-try "$HOME/.local/share/fonts" "$HOME/.local/share/fonts" \
           --ro-bind-try "$HOME/.local/share/mime" "$HOME/.local/share/mime" \
           "''${BWRAP_EXTRA[@]}" \
-          --unshare-uts --unshare-ipc --die-with-parent \
+          --unshare-uts --unshare-ipc --unshare-pid --die-with-parent \
           -- ${pkgs.mullvad-browser}/bin/mullvad-browser "$@"
       '';
     in

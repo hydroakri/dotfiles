@@ -1,2 +1,5 @@
 [Context]
-filesystems=/steam-win;xdg-config/MangoHud:ro;/steam-linux
+filesystems=/steam-linux;/steam-win
+
+[Environment]
+WINEFSYNC=1

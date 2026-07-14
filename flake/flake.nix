@@ -115,6 +115,7 @@
         # Feature modules (opt-in)
         performance = ./modules/features/performance.nix;
         security = ./modules/features/security.nix;
+        privacy = ./modules/features/privacy.nix;
         powersave = ./modules/features/powersave.nix;
         gaming = ./modules/features/gaming.nix;
         preservation = ./modules/features/preservation.nix;

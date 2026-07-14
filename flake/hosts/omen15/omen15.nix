@@ -27,6 +27,7 @@
     ../../modules/features/preservation.nix
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
+    ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
     ../../modules/features/virtualisation.nix
     ../../modules/features/gaming.nix
@@ -191,10 +192,21 @@
     # nbfc-linux fancontrol
     enable = true;
     description = "NoteBook FanControl service";
-    serviceConfig.Type = "simple";
     path = [ pkgs.kmod ];
     script = "${pkgs.nbfc-linux}/bin/nbfc_service -c /etc/nixos/nbfc.json";
     wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      NoNewPrivileges = true;
+      ProtectHome = true;
+      ProtectClock = true;
+      ProtectHostname = true;
+      ProtectControlGroups = true;
+      LockPersonality = true;
+      RestrictSUIDSGID = true;
+      RestrictAddressFamilies = [ "AF_UNIX" ];
+      SystemCallArchitectures = "native";
+    };
   };
   environment.systemPackages = [
     pkgs.nbfc-linux

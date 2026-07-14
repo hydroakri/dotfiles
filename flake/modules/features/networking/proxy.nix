@@ -776,6 +776,8 @@
                   "clash_api": {
                     "external_controller": "127.0.0.1:9090",
                     "external_ui": "ui",
+                    "external_ui_download_url": "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip",
+                    "external_ui_download_detour": "direct",
                     "secret": ""
                   }
                 }
@@ -876,12 +878,44 @@
 
         restartTriggers = [ config.sops.templates."config.json".path ];
 
-        serviceConfig.ExecStart = (
-          lib.mkForce [
+        serviceConfig = {
+          ExecStart = lib.mkForce [
             ""
             "${pkgs.pkgsMusl.sing-box}/bin/sing-box run -c ${config.sops.templates."config.json".path}"
+          ];
+          # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
+          # TUN 模式需要建立/配置虚拟网卡，因此需要 CAP_NET_ADMIN 和 netlink，且不能 PrivateDevices。
+          AmbientCapabilities = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
+          CapabilityBoundingSet = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
+          DeviceAllow = lib.optionals config.modules.proxy.singbox.tun [ "/dev/net/tun rw" ];
+          PrivateDevices = !config.modules.proxy.singbox.tun;
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_UNIX"
           ]
-        );
+          ++ lib.optionals config.modules.proxy.singbox.tun [ "AF_NETLINK" ];
+          NoNewPrivileges = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          ProtectClock = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectControlGroups = true;
+          # external_ui_download_url 会把面板 zip 先落到 /tmp 再解压；ProtectSystem=strict
+          # 下 /tmp 默认只读，得靠 PrivateTmp 给它一个私有可写的 /tmp。
+          PrivateTmp = true;
+          LockPersonality = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          MemoryDenyWriteExecute = true;
+          SystemCallArchitectures = "native";
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged"
+          ];
+        };
       };
 
       services.dae = mkIf config.modules.proxy.dae.enable {
