@@ -84,12 +84,12 @@ inputs.hydroakri-nixos.url = "github:hydroakri/dotfiles?dir=flake";
 
 | Name | Description |
 |------|-------------|
-| [`core`](flake/modules/core.nix) | Base layer: Nix settings, caches, Unbound DNS, Chrony NTS, terminal tooling, SMART. Also declares `networking-sqm` and `networking-tuning` options. **Side effects:** sets `time.timeZone = "UTC"` and opens UDP 7400–7500 inbound (ROS2/DDS multicast hardcoded) |
+| [`core`](flake/modules/core.nix) | Base layer: Nix settings, caches, Unbound DNS, Chrony NTS, terminal tooling, SMART. Also declares `networking-sqm` and `networking-tuning` options. **Side effe[...]
 | [`desktop`](flake/modules/desktop.nix) | Desktop profile: `preempt=full`, PipeWire, XDG portals, Vulkan/OpenGL. **Mutually exclusive with `server`** |
 | [`server`](flake/modules/server.nix) | Server profile: `preempt=voluntary`, tuned, fail2ban, irqbalance. **Mutually exclusive with `desktop`** |
 | [`performance`](flake/modules/features/performance.nix) | BBR+CAKE networking, MGLRU, zram, scx scheduler, I/O scheduler udev rules |
 | [`security`](flake/modules/features/security.nix) | Kernel hardening, AppArmor, doas, u2f PAM, FIDO2 SSH, USBGuard, sysctl baseline |
-| [`privacy`](flake/modules/features/privacy.nix) | Anti-tracking/anti-fingerprinting: Brave hardening policy, kloak keystroke/mouse timing anonymization, MAC address randomization, IPv6 privacy addresses |
+| [`privacy`](flake/modules/features/privacy.nix) | Anti-tracking/anti-fingerprinting: Brave hardening policy, kloak keystroke/mouse timing anonymization, MAC address randomization, IPv6 privacy a[...]
 | [`powersave`](flake/modules/features/powersave.nix) | TLP/power-profiles-daemon, s2idle, dynamic audio power-save udev rules |
 | [`gaming`](flake/modules/features/gaming.nix) | scx_lavd scheduler, Gamescope, GameMode, Steam firewall ports |
 | [`utils`](flake/modules/features/utils.nix) | Glance dashboard, Prometheus+Grafana stack, Uptime Kuma |
@@ -119,7 +119,7 @@ inputs.hydroakri-nixos.url = "github:hydroakri/dotfiles?dir=flake";
 
 **`modules.security.u2fMappings`** *(multiline string)* — contents of `/etc/u2f_mappings` from `pamu2fcfg -n`; empty string disables u2f PAM entirely.
 
-**`modules.performance.vendor`** *(enum: `amd` | `intel` | `other`, default: `"other"`)* — selects microcode update package. Default `"other"` skips microcode entirely; always set this explicitly.
+**`modules.performance.vendor`** *(enum: `amd` | `intel` | `other`, default: `"other"`)* — selects microcode update package. Default `"other"` skips microcode entirely; always set this explicit[...]
 
 ### Common Commands
 
@@ -191,4 +191,4 @@ chezmoi update        # pull + apply
 
 ## License
 
-[CC0](https://creativecommons.org/publicdomain/zero/1.0/) — fork freely.
+[MIT](LICENSE) — feel free to fork and adapt.
