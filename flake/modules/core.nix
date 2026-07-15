@@ -33,8 +33,8 @@
   config = {
 
     boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
-    hardware.enableAllFirmware = true;
-    nixpkgs.config.allowUnfree = true;
+    hardware.enableAllFirmware = lib.mkDefault true;
+    nixpkgs.config.allowUnfree = lib.mkDefault true;
     nix = {
       package = pkgs.lix;
       settings = {
@@ -69,18 +69,18 @@
       };
     };
     boot.kernel.sysctl = {
-      "kernel.sysrq" = 246;
+      "kernel.sysrq" = lib.mkOverride 950 246;
     };
     console = {
-      enable = true;
-      earlySetup = true;
+      enable = lib.mkDefault true;
+      earlySetup = lib.mkDefault true;
       packages = [ pkgs.terminus_font ];
       # ter-v16n for 1080p below
       # ter-v24n for 1080p
       # ter-v32n for 2K/4K
       font = lib.mkDefault "ter-v32n";
     };
-    time.timeZone = "UTC";
+    time.timeZone = lib.mkDefault "UTC";
     i18n = {
       defaultLocale = "en_US.UTF-8";
       supportedLocales = [ "en_US.UTF-8/UTF-8" ];
@@ -105,8 +105,8 @@
       # checkReversePath = false;
     };
     networking.networkmanager = {
-      enable = true;
-      dns = "default";
+      enable = lib.mkDefault true;
+      dns = lib.mkDefault "default";
     };
     networking.nameservers = lib.mkDefault [
       "172.64.36.2"
@@ -165,25 +165,15 @@
           msg-cache-size = lib.mkDefault "50m";
           rrset-cache-size = lib.mkDefault "100m";
 
-          # respip 是 RPZ 生效的前提，必须排在 validator/iterator 之前
           module-config = lib.mkDefault ''"respip validator iterator"'';
         };
-        rpz = lib.mkDefault [
-          {
-            name = "hagezi-pro-mini";
-            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.mini.txt";
-            zonefile = "/var/lib/unbound/hagezi-pro-mini.rpz";
-            rpz-log = true;
-            for-downstream = false;
-          }
-        ];
       };
     };
     services.chrony = {
       package = pkgs.pkgsMusl.chrony;
-      enable = true;
+      enable = lib.mkDefault true;
       servers = [ ];
-      enableMemoryLocking = false;
+      enableMemoryLocking = lib.mkDefault false;
       extraConfig = ''
         server time.grapheneos.org iburst
         server time.cloudflare.com iburst nts
@@ -211,17 +201,17 @@
         "wheel"
       ];
     };
-    programs.zsh.enable = true;
-    programs.nh.enable = true;
-    programs.nix-ld.enable = true;
+    programs.zsh.enable = lib.mkDefault true;
+    programs.nh.enable = lib.mkDefault true;
+    programs.nix-ld.enable = lib.mkDefault true;
     programs.direnv = {
-      enable = true;
-      nix-direnv.enable = true;
+      enable = lib.mkDefault true;
+      nix-direnv.enable = lib.mkDefault true;
     };
-    programs.nix-index-database.comma.enable = true;
+    programs.nix-index-database.comma.enable = lib.mkDefault true;
     programs.ssh = {
       package = pkgs.openssh.override { openssl = pkgs.libressl; };
-      startAgent = true;
+      startAgent = lib.mkDefault true;
       extraConfig = ''
         Host github.com
           # ProxyCommand nc -X connect -x 127.0.0.1:1080 %h %p
@@ -231,7 +221,7 @@
       '';
     };
     programs.git = {
-      enable = true;
+      enable = lib.mkDefault true;
       config = {
         init = {
           defaultBranch = "main";
@@ -245,12 +235,12 @@
     };
 
     programs.neovim = {
-      enable = true;
-      defaultEditor = true;
-      viAlias = true;
-      vimAlias = true;
-      withNodeJs = true;
-      withPython3 = true;
+      enable = lib.mkDefault true;
+      defaultEditor = lib.mkDefault true;
+      viAlias = lib.mkDefault true;
+      vimAlias = lib.mkDefault true;
+      withNodeJs = lib.mkDefault true;
+      withPython3 = lib.mkDefault true;
     };
 
     environment.systemPackages = [

@@ -133,7 +133,6 @@
     modules = {
       utils = {
         enable = true;
-        enableGlance = true;
         enableUptime = true;
         enableGrafana = false;
         enablePrometheus = false;

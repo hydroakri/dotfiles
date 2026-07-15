@@ -93,26 +93,28 @@
       options nvidia NVreg_RegistryDwords=RmEnableAggressiveVblank=1
     '';
 
-    hardware.nvidia-container-toolkit.enable = lib.mkIf (
-      config.modules.nvidia.variant != "nouveau"
-    ) true;
+    hardware.nvidia-container-toolkit.enable = lib.mkIf (config.modules.nvidia.variant != "nouveau") (
+      lib.mkDefault true
+    );
 
     hardware.nvidia = lib.mkIf (config.modules.nvidia.variant != "nouveau") {
       open = config.modules.nvidia.variant == "open";
-      modesetting.enable = true;
-      nvidiaPersistenced = false;
-      videoAcceleration = true;
-      dynamicBoost.enable = true;
+      modesetting.enable = lib.mkDefault true;
+      nvidiaPersistenced = lib.mkDefault false;
+      videoAcceleration = lib.mkDefault true;
+      dynamicBoost.enable = lib.mkDefault true;
       powerManagement = {
-        enable = true;
-        finegrained = true; # conflict with sync
+        enable = lib.mkDefault true;
+        finegrained = lib.mkDefault true; # conflict with sync
       };
       prime = {
         offload = {
-          enable = true; # conflict with sync
-          enableOffloadCmd = true;
+          # mkOverride 900, not mkDefault: nixpkgs' own nvidia.nix sets this via
+          # mkDefault false; same-priority mkDefault here would tie with it.
+          enable = lib.mkOverride 900 true; # conflict with sync
+          enableOffloadCmd = lib.mkOverride 900 true;
         };
-        sync.enable = false;
+        sync.enable = lib.mkDefault false;
         amdgpuBusId = config.modules.nvidia.amdgpuBusId;
         nvidiaBusId = config.modules.nvidia.nvidiaBusId;
       };
@@ -126,8 +128,8 @@
       ];
 
     hardware.graphics = {
-      enable = true;
-      enable32Bit = true;
+      enable = lib.mkDefault true;
+      enable32Bit = lib.mkDefault true;
       extraPackages = lib.optionals (
         config.modules.nvidia.variant != "nouveau" && !config.modules.powersave.enable
       ) [ pkgs.nvidia-vaapi-driver ];

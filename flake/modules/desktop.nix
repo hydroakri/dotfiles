@@ -145,18 +145,17 @@
         # plasma6.enable = true;
       };
 
-      boot.kernel.sysctl = {
-        # Desktop-specific VM tuning
-        "vm.swappiness" = 180;
-      };
+      # vm.swappiness default lives in performance.nix (mkDefault 180) — not
+      # redefined here to avoid a duplicate bare-literal definition of the
+      # same sysctl key across two modules.
       networking.networkmanager = {
-        wifi.backend = lib.mkDefault "iwd";
-        settings."connection"."ipv6.ip6-privacy" = 2;
+        wifi.backend = lib.mkOverride 900 "iwd";
+        settings."connection"."ipv6.ip6-privacy" = lib.mkOverride 900 2;
       };
 
       # X Server and input
-      services.xserver.enable = true;
-      services.libinput.enable = true;
+      services.xserver.enable = lib.mkOverride 900 true;
+      services.libinput.enable = lib.mkOverride 900 true;
       services.xserver.xkb = {
         layout = "us";
         variant = "";
@@ -165,7 +164,7 @@
       i18n = {
         inputMethod = {
           type = "fcitx5";
-          enable = true;
+          enable = lib.mkOverride 900 true;
           fcitx5 = {
             addons = [
               pkgs.fcitx5-gtk
@@ -181,8 +180,8 @@
 
       # Desktop portal
       xdg.portal = {
-        enable = true;
-        xdgOpenUsePortal = true;
+        enable = lib.mkOverride 900 true;
+        xdgOpenUsePortal = lib.mkOverride 900 true;
         extraPortals = [
           # pkgs.xdg-desktop-portal-cosmic
           pkgs.xdg-desktop-portal-gtk # niri
@@ -191,8 +190,8 @@
       };
 
       # Polkit (privilege elevation)
-      security.polkit.enable = true;
-      security.pam.services.polkit.enable = true;
+      security.polkit.enable = lib.mkOverride 900 true;
+      security.pam.services.polkit.enable = lib.mkOverride 900 true;
       systemd.user.services.polkit-agent = lib.mkIf (!config.services.desktopManager.plasma6.enable) {
         description = "polkit-agent";
         wantedBy = [ "graphical-session.target" ];
@@ -209,37 +208,36 @@
       };
 
       # Secret service (keyring) use keepassxc
-      services.gnome.gnome-keyring.enable = true;
-      security.pam.services.login.enableGnomeKeyring = true;
-      services.passSecretService.enable = true;
-      services.gnome.gcr-ssh-agent.enable = false; # disable ssh function managed by gnome-keyring
+      services.gnome.gnome-keyring.enable = lib.mkOverride 900 true;
+      security.pam.services.login.enableGnomeKeyring = lib.mkOverride 900 true;
+      services.passSecretService.enable = lib.mkOverride 900 true;
+      services.gnome.gcr-ssh-agent.enable = lib.mkOverride 900 false; # disable ssh function managed by gnome-keyring
       services.dbus.packages = [ pkgs.gcr ];
 
       # For earlyoom and smartd notices
-      services.systembus-notify.enable = true;
-      services.smartd.notifications.systembus-notify.enable = true;
+      services.systembus-notify.enable = lib.mkOverride 900 true;
+      services.smartd.notifications.systembus-notify.enable = lib.mkOverride 900 true;
 
       # Printing
-      services.printing.enable = false;
-      services.avahi.enable = false;
-      networking.modemmanager.enable = false;
-      # Lower than mkDefault (1000) so plasma6's own mkDefault true wins when it's enabled.
+      services.printing.enable = lib.mkOverride 900 false;
+      services.avahi.enable = lib.mkOverride 900 false;
+      networking.modemmanager.enable = lib.mkOverride 900 false;
       services.geoclue2.enable = lib.mkOverride 1500 false;
 
       # Audio (PipeWire)
-      security.rtkit.enable = true;
+      security.rtkit.enable = lib.mkOverride 900 true;
       services.pipewire = {
-        enable = true;
-        alsa.enable = true;
-        alsa.support32Bit = true;
-        pulse.enable = true;
+        enable = lib.mkOverride 900 true;
+        alsa.enable = lib.mkOverride 900 true;
+        alsa.support32Bit = lib.mkOverride 900 true;
+        pulse.enable = lib.mkOverride 900 true;
       };
       #I2C
-      hardware.i2c.enable = true;
+      hardware.i2c.enable = lib.mkOverride 900 true;
       # Bluetooth
       hardware.bluetooth = {
-        enable = true;
-        powerOnBoot = true;
+        enable = lib.mkOverride 900 true;
+        powerOnBoot = lib.mkOverride 900 true;
         settings = {
           General = {
             Experimental = true;
@@ -252,21 +250,21 @@
       };
 
       # Battery
-      services.upower.enable = true;
+      services.upower.enable = lib.mkOverride 900 true;
 
       # Appimage
       programs.appimage = {
-        enable = true;
-        binfmt = true;
+        enable = lib.mkOverride 900 true;
+        binfmt = lib.mkOverride 900 true;
       };
 
-      programs.niri.enable = true;
-      programs.kdeconnect.enable = true;
+      programs.niri.enable = lib.mkOverride 900 true;
+      programs.kdeconnect.enable = lib.mkOverride 900 true;
 
       # Graphics support (base configuration)
       hardware.graphics = {
-        enable = true;
-        enable32Bit = true;
+        enable = lib.mkOverride 900 true;
+        enable32Bit = lib.mkOverride 900 true;
         extraPackages = [
           ## Scheduling layer
           pkgs.vulkan-loader # Vulkan
@@ -299,7 +297,7 @@
         ];
       };
       # Flatpak
-      services.flatpak.enable = true;
+      services.flatpak.enable = lib.mkOverride 900 true;
 
       # Daily flatpak cleanup: remove unused runtimes and repair
       # Runs as main user; catches up on missed runs after boot (Persistent=true)
@@ -394,7 +392,7 @@
       };
 
       programs.thunar = {
-        enable = true;
+        enable = lib.mkOverride 900 true;
         plugins = [
           pkgs.thunar-archive-plugin
           pkgs.thunar-volman
@@ -403,8 +401,8 @@
           pkgs.file-roller
         ];
       };
-      services.gvfs.enable = true;
-      services.tumbler.enable = true;
+      services.gvfs.enable = lib.mkOverride 900 true;
+      services.tumbler.enable = lib.mkOverride 900 true;
 
       environment.systemPackages = [
         #theme
@@ -436,7 +434,7 @@
       ];
 
       # GUI User profile
-      services.cloudflare-warp.enable = true;
+      services.cloudflare-warp.enable = lib.mkOverride 900 true;
       users.users.${config.mainUser} = {
         extraGroups = [
           "video"

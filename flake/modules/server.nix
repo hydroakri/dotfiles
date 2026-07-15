@@ -5,10 +5,11 @@
 }:
 {
   boot.kernelParams = [ "preempt=voluntary" ];
+  networking.tempAddresses = lib.mkOverride 900 "disabled";
   boot.kernel.sysctl = {
-    # IPv6 privacy extensions for servers (stable/static preferred)
-    "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 0;
-    "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 0;
+    # networking.tempAddresses only drives *.default.use_tempaddr; .all isn't
+    # covered by that option, so it still needs a direct assignment here.
+    "net.ipv6.conf.all.use_tempaddr" = lib.mkOverride 900 0;
 
     # optimize bufferbloat
     "net.core.netdev_max_backlog" = lib.mkDefault 2000;
@@ -21,8 +22,8 @@
     "net.core.netdev_budget_usecs" = lib.mkDefault 8000;
   };
   services.irqbalance.enable = lib.mkDefault true;
-  services.fail2ban.enable = true;
-  services.tuned.enable = true;
+  services.fail2ban.enable = lib.mkDefault true;
+  services.tuned.enable = lib.mkDefault true;
   environment.etc."tuned/active_profile".text = lib.mkDefault "throughput-performance";
-  environment.etc."tuned/profile_mode".text = "manual";
+  environment.etc."tuned/profile_mode".text = lib.mkDefault "manual";
 }

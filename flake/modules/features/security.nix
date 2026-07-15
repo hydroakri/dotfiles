@@ -57,137 +57,147 @@
     ];
     boot.kernel.sysctl = lib.mkMerge [
       # ── 基础安全基线（所有主机）────────────────────────────────────────
-      # 对需要在服务器上收严的值标 mkDefault（优先级 50），
-      # 服务器块用 plain（100）无冲突覆盖；其他模块如需强制覆盖用 mkForce（1000）。
+      # 优先级速查（数字越小越强）：mkForce/mkOverride 50 > plain 100 >
+      # mkOverride 900（本文件"服务器严格模式"块 + performance/proxy/router 等
+      # axis 模块的有意覆盖）> mkOverride 950（本基线块）> mkDefault/其他模块
+      # 内部默认值 1000。基线用 950 而非 mkDefault：boot.kernel.sysctl.* 是
+      # nixpkgs 自身多个模块（如 systemd/coredump.nix、networkmanager.nix 的
+      # avahi 联动）也会用 mkDefault 写的高冲突命名空间，若基线也用
+      # mkDefault(1000) 会与它们同优先级打平产生 "conflicting definitions"；
+      # 950 单侧让开这个 tie，同时仍弱于 plain 用户赋值（100），用户覆盖无需
+      # 额外学 mkForce。
       (
         {
           # Security (common)
-          "kernel.printk_devkmsg" = "off";
+          "kernel.printk_devkmsg" = lib.mkOverride 950 "off";
           # when '3' can cause steam games stop working
-          "kernel.yama.ptrace_scope" = 1;
+          "kernel.yama.ptrace_scope" = lib.mkOverride 950 1;
           # 1 = 仅禁非特权用户；服务器块覆盖为 2（完全禁止）
-          "kernel.io_uring_disabled" = lib.mkDefault 1;
-          "dev.tty.legacy_tiocsti" = 0;
+          "kernel.io_uring_disabled" = lib.mkOverride 950 1;
+          "dev.tty.legacy_tiocsti" = lib.mkOverride 950 0;
           # 开启 SYN Cookies，防御 SYN Flood 洪水攻击
-          "net.ipv4.tcp_syncookies" = 1;
+          "net.ipv4.tcp_syncookies" = lib.mkOverride 950 1;
           # 开启 RFC1337，防御 TIME-WAIT Assassination 攻击
-          "net.ipv4.tcp_rfc1337" = 1;
+          "net.ipv4.tcp_rfc1337" = lib.mkOverride 950 1;
           # 禁止 TCP 时间戳，防止远端推算系统运行时间（侧信道）
           # mkDefault：performance.nix 在启用时会覆盖为 1（TCP timestamps 对性能有益）
-          "net.ipv4.tcp_timestamps" = lib.mkDefault 0;
+          "net.ipv4.tcp_timestamps" = lib.mkOverride 950 0;
           # 记录火星包是安全的，它不丢包，只记日志
-          "net.ipv4.conf.all.log_martians" = 1;
-          "net.ipv4.conf.default.log_martians" = 1;
+          "net.ipv4.conf.all.log_martians" = lib.mkOverride 950 1;
+          "net.ipv4.conf.default.log_martians" = lib.mkOverride 950 1;
           # 严格模式 (1)，这是安全的默认基线
           # (如果开启了透明代理，proxy.nix 会自动将其覆盖为松散模式 2)
-          "net.ipv4.conf.all.rp_filter" = lib.mkDefault 1;
-          "net.ipv4.conf.default.rp_filter" = lib.mkDefault 1;
+          "net.ipv4.conf.all.rp_filter" = lib.mkOverride 950 1;
+          "net.ipv4.conf.default.rp_filter" = lib.mkOverride 950 1;
           # 禁止接受 ICMP 重定向 (防止中间人攻击篡改路由表)
           # 普通主机不需要接受重定向，除非充当路由器
-          "net.ipv4.conf.*.accept_redirects" = 0;
-          "net.ipv4.conf.*.send_redirects" = 0;
-          "net.ipv6.conf.*.accept_redirects" = 0;
-          "net.ipv4.conf.*.shared_media" = 0;
+          "net.ipv4.conf.*.accept_redirects" = lib.mkOverride 950 0;
+          "net.ipv4.conf.*.send_redirects" = lib.mkOverride 950 0;
+          "net.ipv6.conf.*.accept_redirects" = lib.mkOverride 950 0;
+          "net.ipv4.conf.*.shared_media" = lib.mkOverride 950 0;
           # 禁止源路由 (Source Routing)
-          "net.ipv4.conf.*.accept_source_route" = 0;
-          "net.ipv6.conf.*.accept_source_route" = 0;
+          "net.ipv4.conf.*.accept_source_route" = lib.mkOverride 950 0;
+          "net.ipv6.conf.*.accept_source_route" = lib.mkOverride 950 0;
           # ARP 硬化：防止 ARP 缓存中毒和跨接口响应
           # mkDefault 以便路由角色（router.nix）在多 LAN/网桥/keepalived/proxy-ARP 拓扑下覆盖放松
           # 端点主机仍取此严格基线，渲染值不变（1/2）
-          "net.ipv4.conf.*.arp_filter" = lib.mkDefault 1;
-          "net.ipv4.conf.*.arp_ignore" = lib.mkDefault 2;
-          "net.ipv4.conf.*.arp_announce" = 2;
-          "net.ipv4.conf.all.drop_gratuitous_arp" = 1;
+          "net.ipv4.conf.*.arp_filter" = lib.mkOverride 950 1;
+          "net.ipv4.conf.*.arp_ignore" = lib.mkOverride 950 2;
+          "net.ipv4.conf.*.arp_announce" = lib.mkOverride 950 2;
+          "net.ipv4.conf.all.drop_gratuitous_arp" = lib.mkOverride 950 1;
           # 忽略违规的 ICMP 错误消息
-          "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
+          "net.ipv4.icmp_ignore_bogus_error_responses" = lib.mkOverride 950 1;
           # 忽略广播 ICMP echo，防御 Smurf 放大攻击
-          "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+          "net.ipv4.icmp_echo_ignore_broadcasts" = lib.mkOverride 950 1;
           # Disable ICMP echo（ping）, use TCP ping instead
-          "net.ipv4.icmp_echo_ignore_all" = 1;
-          "net.ipv6.icmp.echo_ignore_all" = 1;
-          "net.ipv4.conf.all.secure_redirects" = 1;
-          "net.ipv4.conf.default.secure_redirects" = 1;
-          "net.ipv4.tcp_dsack" = 0;
-          "net.ipv4.tcp_fack" = 0;
+          "net.ipv4.icmp_echo_ignore_all" = lib.mkOverride 950 1;
+          "net.ipv6.icmp.echo_ignore_all" = lib.mkOverride 950 1;
+          "net.ipv4.conf.all.secure_redirects" = lib.mkOverride 950 1;
+          "net.ipv4.conf.default.secure_redirects" = lib.mkOverride 950 1;
+          "net.ipv4.tcp_dsack" = lib.mkOverride 950 0;
+          "net.ipv4.tcp_fack" = lib.mkOverride 950 0;
           # 防止 loopback 地址通过非 loopback 接口路由（ANSSI R12）
-          "net.ipv4.conf.all.route_localnet" = 0;
+          "net.ipv4.conf.all.route_localnet" = lib.mkOverride 950 0;
           # 拒绝源地址属于本机接口的入站包，防止反射攻击（ANSSI R12）
-          "net.ipv4.conf.all.accept_local" = 0;
+          "net.ipv4.conf.all.accept_local" = lib.mkOverride 950 0;
           # 临时端口范围收窄，减少端口猜测攻击面（ANSSI R12）
-          "net.ipv4.ip_local_port_range" = "32768 65535";
+          "net.ipv4.ip_local_port_range" = lib.mkOverride 950 "32768 65535";
           # 增加 BPF JIT 编译器的安全性，消除某些侧信道攻击
-          "net.core.bpf_jit_harden" = 2;
+          "net.core.bpf_jit_harden" = lib.mkOverride 950 2;
           # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启)
-          "kernel.unprivileged_bpf_disabled" = 1;
+          "kernel.unprivileged_bpf_disabled" = lib.mkOverride 950 1;
           # 限制内核指针地址泄露 (防止攻击者探测内核内存布局)
-          "kernel.kptr_restrict" = 2;
+          "kernel.kptr_restrict" = lib.mkOverride 950 2;
           # 限制 dmesg 日志访问权限 (防止普通用户查看启动日志中的敏感信息)
-          "kernel.dmesg_restrict" = 1;
+          "kernel.dmesg_restrict" = lib.mkOverride 950 1;
           # 增加内核崩溃和警告的阈值限制，防止日志泛滥
-          "kernel.oops_limit" = 100;
-          "kernel.warn_limit" = 100;
-          "kernel.panic" = -1;
+          "kernel.oops_limit" = lib.mkOverride 950 100;
+          "kernel.warn_limit" = lib.mkOverride 950 100;
+          "kernel.panic" = lib.mkOverride 950 (-1);
           # 核心转储文件处理 (这里设为 piping 给 /bin/false，即直接丢弃)
-          "kernel.core_pattern" = "|/bin/false";
+          # systemd/coredump.nix 自己用 mkDefault "core" 设置同一个 key，
+          # 这也是为什么本块整体用 950 而非 mkDefault(1000)（见上方总注释）。
+          "kernel.core_pattern" = lib.mkOverride 950 "|/bin/false";
           # 禁止加载新的 TTY 线路规程 (减少内核攻击面)
-          "dev.tty.ldisc_autoload" = 0;
+          "dev.tty.ldisc_autoload" = lib.mkOverride 950 0;
           # 禁止 kexec (防止在不经过 BIOS 自检的情况下热加载新内核)
           # 注意：这会禁用 kdump 和 systemctl kexec 快速重启功能
-          "kernel.kexec_load_disabled" = 1;
+          "kernel.kexec_load_disabled" = lib.mkOverride 950 1;
           # 增加 mmap 内存分配的随机性 (ASLR)，增加缓冲区溢出攻击的难度
-          "vm.mmap_rnd_compat_bits" = 16;
+          "vm.mmap_rnd_compat_bits" = lib.mkOverride 950 16;
           # 强制开启地址空间布局随机化
-          "kernel.randomize_va_space" = 2;
+          "kernel.randomize_va_space" = lib.mkOverride 950 2;
           # 限制性能分析工具 (Perf) 的使用权限
           # 2 = 仅 root 可用 perf（开发者临时 doas 即可）；服务器块覆盖为 3（完全禁止）
-          "kernel.perf_event_paranoid" = lib.mkDefault 2;
+          "kernel.perf_event_paranoid" = lib.mkOverride 950 2;
           # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
-          "kernel.perf_cpu_time_max_percent" = 1;
+          "kernel.perf_cpu_time_max_percent" = lib.mkOverride 950 1;
           # 限制非特权用户采样速率，进一步阻断计时侧信道（securix R9）
-          "kernel.perf_event_max_sample_rate" = 1;
+          "kernel.perf_event_max_sample_rate" = lib.mkOverride 950 1;
           # kernel.sysrq 已在 core.nix 设为 246（仅启用安全子集，非全量），不再重复定义
           # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击)
-          "kernel.core_uses_pid" = 1;
+          "kernel.core_uses_pid" = lib.mkOverride 950 1;
           # Core dump 文件名带 PID，防止竞态覆盖攻击
-          "vm.mmap_min_addr" = 65536;
+          "vm.mmap_min_addr" = lib.mkOverride 950 65536;
           # 限制非特权用户使用 userfaultfd
           # 注意：极少数高性能虚拟机特性可能依赖此项，一般桌面使用无影响
-          "vm.unprivileged_userfaultfd" = 0;
+          "vm.unprivileged_userfaultfd" = lib.mkOverride 950 0;
           # 禁止 SUID 程序在崩溃时产生 Core Dump
           # 防止特权程序的内存数据（可能含密码）泄露到磁盘
-          "fs.suid_dumpable" = 0;
+          "fs.suid_dumpable" = lib.mkOverride 950 0;
           # 文件系统链接保护 (防止 /tmp 目录下的竞争条件攻击)
-          "fs.protected_regular" = 2;
-          "fs.protected_fifos" = 2;
-          "fs.protected_hardlinks" = 1;
-          "fs.protected_symlinks" = 1;
+          "fs.protected_regular" = lib.mkOverride 950 2;
+          "fs.protected_fifos" = lib.mkOverride 950 2;
+          "fs.protected_hardlinks" = lib.mkOverride 950 1;
+          "fs.protected_symlinks" = lib.mkOverride 950 1;
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isx86_64 {
-          "vm.mmap_rnd_bits" = 32;
+          "vm.mmap_rnd_bits" = lib.mkOverride 950 32;
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isAarch64 {
-          "vm.mmap_rnd_bits" = 24;
+          "vm.mmap_rnd_bits" = lib.mkOverride 950 24;
         }
       )
 
       # ── 服务器严格模式（无桌面/游戏场景）────────────────────────────────
-      # plain（优先级 100）覆盖上方 mkDefault（50），无冲突
+      # mkOverride 900：比上方基线 mkOverride（950）强，收严非桌面主机；
+      # 仍弱于 plain 用户赋值，用户覆盖无需额外学 mkForce。
       (lib.mkIf (!config.services.displayManager.enable) {
         # 完全禁止 io_uring（桌面 mkDefault 1 兼容部分程序）
-        "kernel.io_uring_disabled" = 2;
+        "kernel.io_uring_disabled" = lib.mkOverride 900 2;
         # 完全禁止 perf（桌面 mkDefault 2 保留 root 权限使用）
-        "kernel.perf_event_paranoid" = 3;
+        "kernel.perf_event_paranoid" = lib.mkOverride 900 3;
         # 禁用 binfmt_misc（桌面保留以支持 Wine/binfmt-runner）
-        "fs.binfmt_misc.status" = 0;
+        "fs.binfmt_misc.status" = lib.mkOverride 900 0;
       })
     ];
-    systemd.coredump.enable = false;
+    systemd.coredump.enable = lib.mkDefault false;
     # 每次启动清理 /tmp 和 /var/tmp，防止上次会话残留的敏感数据（srvos）
-    boot.tmp.cleanOnBoot = true;
+    boot.tmp.cleanOnBoot = lib.mkDefault true;
     # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
     # security.auditd.enable = true;
-    security.unprivilegedUsernsClone = false;
-    environment.memoryAllocator.provider = "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
+    security.unprivilegedUsernsClone = lib.mkDefault false;
+    environment.memoryAllocator.provider = lib.mkDefault "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
     environment.systemPackages = [
       pkgs.ssh-copy-id
       # keepassxc # installed in flatpak
@@ -208,10 +218,10 @@
 
     ];
     security = {
-      sudo-rs.enable = false;
-      sudo.enable = false;
+      sudo-rs.enable = lib.mkDefault false;
+      sudo.enable = lib.mkDefault false;
       doas = {
-        enable = true;
+        enable = lib.mkDefault true;
         extraRules = [
           {
             groups = [ "wheel" ];
@@ -221,19 +231,19 @@
         ];
       };
       apparmor = {
-        enable = true;
-        killUnconfinedConfinables = true;
+        enable = lib.mkDefault true;
+        killUnconfinedConfinables = lib.mkDefault true;
         packages = [ pkgs.apparmor-profiles ];
       };
     };
     networking.firewall = {
-      enable = true;
+      enable = lib.mkDefault true;
       allowedTCPPorts = [ 22 ];
     };
 
     services.usbguard = {
-      enable = true;
-      presentDevicePolicy = "keep";
+      enable = lib.mkDefault true;
+      presentDevicePolicy = lib.mkDefault "keep";
       IPCAllowedUsers = [
         "root"
         config.mainUser
@@ -266,10 +276,10 @@
         doas.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
         login.u2fAuth = lib.mkDefault (config.modules.security.u2fMappings != "");
 
-        system-login.failDelay.enable = true;
-        system-login.failDelay.delay = 4000000;
-        passwd.rules.password.unix.settings.rounds = 65536;
-        su.requireWheel = true;
+        system-login.failDelay.enable = lib.mkDefault true;
+        system-login.failDelay.delay = lib.mkDefault 4000000;
+        passwd.rules.password.unix.settings.rounds = lib.mkDefault 65536;
+        su.requireWheel = lib.mkDefault true;
       };
     };
     # plug u2f device & use `pamu2fcfg -n`, then set modules.security.u2fMappings in your host config
@@ -283,15 +293,15 @@
     # add sk: `ssh-add -K`
     # get public key from sk: `ssh-keygen -K`
     # set password: `ssh-keygen -p -f <file name>`
-    services.pcscd.enable = true;
+    services.pcscd.enable = lib.mkDefault true;
 
     services.openssh = {
-      enable = true;
+      enable = lib.mkDefault true;
       settings = {
         PasswordAuthentication = lib.mkDefault false;
-        KbdInteractiveAuthentication = false;
+        KbdInteractiveAuthentication = lib.mkDefault false;
         PermitRootLogin = lib.mkDefault "prohibit-password";
-        X11Forwarding = false;
+        X11Forwarding = lib.mkDefault false;
         AllowTcpForwarding = lib.mkDefault "no";
         AllowStreamLocalForwarding = lib.mkDefault false;
       };
@@ -306,8 +316,8 @@
       # non-root User should use `git config --global commit.gpgsign true`
       # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
       # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
-      commit.gpgsign = false;
-      gpg.format = "ssh";
+      commit.gpgsign = lib.mkDefault false;
+      gpg.format = lib.mkDefault "ssh";
 
       # GIT VERIFING — set allowedSignersFile per-host via sops (see omen15.nix)
     };

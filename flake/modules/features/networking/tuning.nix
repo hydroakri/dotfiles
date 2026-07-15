@@ -5,9 +5,6 @@
   ...
 }:
 
-let
-  cfg = config.modules.networking.sysfsTuning;
-in
 {
   options.modules.networking.sysfsTuning = {
     enable = lib.mkEnableOption "sysfs network tuning (RPS/XPS)";
@@ -31,7 +28,7 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.modules.networking.sysfsTuning.enable {
     boot.kernel.sysfs =
       let
         tuneIface =
@@ -50,6 +47,8 @@ in
           in
           lib.recursiveUpdate rx tx;
       in
-      lib.foldr lib.recursiveUpdate { } (lib.mapAttrsToList tuneIface cfg.interfaces);
+      lib.foldr lib.recursiveUpdate { } (
+        lib.mapAttrsToList tuneIface config.modules.networking.sysfsTuning.interfaces
+      );
   };
 }

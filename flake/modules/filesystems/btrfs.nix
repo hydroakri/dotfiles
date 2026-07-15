@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   leanSnapperPolicy = {
     TIMELINE_CREATE = true;
@@ -16,8 +21,8 @@ in
 {
   environment.systemPackages = [ pkgs.btrfs-assistant ];
   services.btrfs.autoScrub = {
-    enable = true;
-    interval = "monthly";
+    enable = lib.mkDefault true;
+    interval = lib.mkDefault "monthly";
     # preservation 开启时（tmpfs-on-root）"/" 不再是 btrfs，改用 /nix 触发
     # 同一个 btrfs 文件系统的 scrub（任意子卷挂载点都可以）
     fileSystems = [ (if config.modules.preservation.enable or false then "/nix" else "/") ];
@@ -35,9 +40,15 @@ in
         ExecStart = pkgs.writeShellScript "smart-balance" ''
           set -e
           echo "Starting smart Btrfs balance..."
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=0 -musage=0 ${if config.modules.preservation.enable or false then "/nix" else "/"} || true
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -musage=30 ${if config.modules.preservation.enable or false then "/nix" else "/"} || true
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=10 ${if config.modules.preservation.enable or false then "/nix" else "/"} || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=0 -musage=0 ${
+            if config.modules.preservation.enable or false then "/nix" else "/"
+          } || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -musage=30 ${
+            if config.modules.preservation.enable or false then "/nix" else "/"
+          } || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=10 ${
+            if config.modules.preservation.enable or false then "/nix" else "/"
+          } || true
           echo "Balance complete. SSD remains happy."
         '';
       };
@@ -53,8 +64,8 @@ in
     };
   };
   services.snapper = {
-    snapshotInterval = "hourly";
-    cleanupInterval = "8h";
+    snapshotInterval = lib.mkDefault "hourly";
+    cleanupInterval = lib.mkDefault "8h";
     configs = {
       home = leanSnapperPolicy // {
         SUBVOLUME = "/home";

@@ -7,8 +7,8 @@
 
 {
   boot.kernelModules = [ "ntsync" ];
-  hardware.steam-hardware.enable = true;
-  hardware.uinput.enable = true;
+  hardware.steam-hardware.enable = lib.mkDefault true;
+  hardware.uinput.enable = lib.mkDefault true;
   users.users.${config.mainUser}.extraGroups = [ "uinput" ];
   environment.systemPackages = [
     pkgs.yad # steamtinkerlaunch dependency
@@ -16,26 +16,26 @@
   ];
 
   programs.gamescope = {
-    enable = true;
-    capSysNice = true;
+    enable = lib.mkDefault true;
+    capSysNice = lib.mkDefault true;
   };
 
   programs.steam = {
-    enable = false;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-    localNetworkGameTransfers.openFirewall = true;
-    gamescopeSession.enable = true;
+    enable = lib.mkDefault false;
+    remotePlay.openFirewall = lib.mkDefault true;
+    dedicatedServer.openFirewall = lib.mkDefault true;
+    localNetworkGameTransfers.openFirewall = lib.mkDefault true;
+    gamescopeSession.enable = lib.mkDefault true;
     extraCompatPackages = [ pkgs.steamtinkerlaunch ];
   };
 
-  programs.gamemode.enable = true;
-  environment.sessionVariables.WINEFSYNC = "1";
+  programs.gamemode.enable = lib.mkDefault true;
+  environment.sessionVariables.WINEFSYNC = lib.mkDefault "1";
   users.groups.gamemode = { };
 
   services.scx = {
-    enable = true;
-    scheduler = "scx_lavd";
+    enable = lib.mkOverride 900 true;
+    scheduler = lib.mkOverride 900 "scx_lavd";
     extraArgs = [ "--autopower" ];
   };
 

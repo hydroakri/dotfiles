@@ -49,38 +49,41 @@ in
     );
     boot.kernel.sysctl = {
       # Network (common)
-      "net.core.default_qdisc" = "cake";
-      "net.ipv4.tcp_congestion_control" = "bbr";
-      "net.ipv4.tcp_low_latency" = 1;
-      "net.ipv4.tcp_timestamps" = 1;
-      "net.ipv4.tcp_fastopen" = 3;
-      "net.core.somaxconn" = 4096;
-      "net.core.netdev_max_backlog" = 2048;
-      "net.core.rmem_max" = 16777216;
-      "net.core.wmem_max" = 16777216;
-      "net.core.optmem_max" = 65536;
-      "net.ipv4.tcp_rmem" = "4096 87380 16777216";
-      "net.ipv4.tcp_wmem" = "4096 65536 16777216";
-      "net.ipv4.udp_rmem_min" = 8192;
-      "net.ipv4.udp_wmem_min" = 8192;
-      "net.ipv4.tcp_max_syn_backlog" = 8192;
-      "net.ipv4.tcp_max_tw_buckets" = 2000000;
-      "net.ipv4.tcp_tw_reuse" = 1;
-      "net.ipv4.tcp_fin_timeout" = 20;
-      "net.ipv4.tcp_slow_start_after_idle" = 0;
-      "net.ipv4.tcp_keepalive_time" = 60;
-      "net.ipv4.tcp_keepalive_intvl" = 10;
-      "net.ipv4.tcp_keepalive_probes" = 6;
-      "net.ipv4.tcp_mtu_probing" = 1;
-      "net.ipv4.tcp_sack" = 1;
+      "net.core.default_qdisc" = lib.mkOverride 950 "cake";
+      "net.ipv4.tcp_congestion_control" = lib.mkOverride 950 "bbr";
+      "net.ipv4.tcp_low_latency" = lib.mkOverride 950 1;
+      # mkOverride 900: intentionally overrides security.nix's mkDefault 0
+      # (TCP timestamps traded for performance here); still yields to a plain
+      # user assignment, unlike a bare literal which would hard-conflict.
+      "net.ipv4.tcp_timestamps" = lib.mkOverride 900 1;
+      "net.ipv4.tcp_fastopen" = lib.mkOverride 950 3;
+      "net.core.somaxconn" = lib.mkOverride 950 4096;
+      "net.core.netdev_max_backlog" = lib.mkOverride 950 2048;
+      "net.core.rmem_max" = lib.mkOverride 950 16777216;
+      "net.core.wmem_max" = lib.mkOverride 950 16777216;
+      "net.core.optmem_max" = lib.mkOverride 950 65536;
+      "net.ipv4.tcp_rmem" = lib.mkOverride 950 "4096 87380 16777216";
+      "net.ipv4.tcp_wmem" = lib.mkOverride 950 "4096 65536 16777216";
+      "net.ipv4.udp_rmem_min" = lib.mkOverride 950 8192;
+      "net.ipv4.udp_wmem_min" = lib.mkOverride 950 8192;
+      "net.ipv4.tcp_max_syn_backlog" = lib.mkOverride 950 8192;
+      "net.ipv4.tcp_max_tw_buckets" = lib.mkOverride 950 2000000;
+      "net.ipv4.tcp_tw_reuse" = lib.mkOverride 950 1;
+      "net.ipv4.tcp_fin_timeout" = lib.mkOverride 950 20;
+      "net.ipv4.tcp_slow_start_after_idle" = lib.mkOverride 950 0;
+      "net.ipv4.tcp_keepalive_time" = lib.mkOverride 950 60;
+      "net.ipv4.tcp_keepalive_intvl" = lib.mkOverride 950 10;
+      "net.ipv4.tcp_keepalive_probes" = lib.mkOverride 950 6;
+      "net.ipv4.tcp_mtu_probing" = lib.mkOverride 950 1;
+      "net.ipv4.tcp_sack" = lib.mkOverride 950 1;
       "net.ipv4.tcp_adv_win_scale" = lib.mkDefault (-2);
       "net.ipv4.tcp_notsent_lowat" = lib.mkDefault 16384;
-      "net.netfilter.nf_conntrack_max" = 1048576;
-      "net.netfilter.nf_conntrack_tcp_timeout_established" = 120;
+      "net.netfilter.nf_conntrack_max" = lib.mkOverride 950 1048576;
+      "net.netfilter.nf_conntrack_tcp_timeout_established" = lib.mkOverride 950 120;
 
       # optimize ipv6
-      "net.ipv6.conf.all.accept_ra" = 2;
-      "net.ipv6.conf.default.accept_ra" = 2;
+      "net.ipv6.conf.all.accept_ra" = lib.mkOverride 950 2;
+      "net.ipv6.conf.default.accept_ra" = lib.mkOverride 950 2;
 
       # VM (common)
       "vm.swappiness" = lib.mkDefault 180;
@@ -121,9 +124,9 @@ in
       # When used with ZRAM, it is better to prefer page out only anonymous pages
       ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${zswapDisable}"
     '';
-    boot.tmp.useTmpfs = true;
+    boot.tmp.useTmpfs = lib.mkDefault true;
     services.zram-generator = {
-      enable = true;
+      enable = lib.mkDefault true;
       settings = {
         "zram0" = {
           "zram-size" = "ram/2";
@@ -131,27 +134,27 @@ in
         };
       };
     };
-    hardware.ksm.enable = true;
-    services.fwupd.enable = true;
-    services.fstrim.enable = true;
+    hardware.ksm.enable = lib.mkDefault true;
+    services.fwupd.enable = lib.mkDefault true;
+    services.fstrim.enable = lib.mkDefault true;
     services.earlyoom = {
-      enable = true;
-      freeMemThreshold = 5;
-      freeSwapThreshold = 5;
+      enable = lib.mkDefault true;
+      freeMemThreshold = lib.mkDefault 5;
+      freeSwapThreshold = lib.mkDefault 5;
       extraArgs = [
         # 保护游戏/Wine/Proton 进程不被 earlyoom 误杀
         "--avoid"
         "(^|/)(exe|steam|wine|gamescope|mangohud|proton)"
       ];
     };
-    systemd.oomd.enable = false;
+    systemd.oomd.enable = lib.mkDefault false;
     services.scx = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
       enable = lib.mkDefault true;
       scheduler = lib.mkDefault "scx_rusty";
     };
     # Process priority optimization (desktop only — cachyos rules target interactive workloads)
     services.ananicy = lib.mkIf config.services.displayManager.enable {
-      enable = true;
+      enable = lib.mkDefault true;
       package = pkgs.ananicy-cpp;
       rulesProvider = pkgs.ananicy-rules-cachyos;
     };

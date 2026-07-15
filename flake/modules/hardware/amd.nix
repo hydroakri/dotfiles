@@ -13,8 +13,8 @@
       hardware.graphics.extraPackages32 = [ pkgs.rocmPackages.clr.icd ];
     })
     {
-      hardware.amdgpu.overdrive.enable = true;
-      services.lact.enable = true;
+      hardware.amdgpu.overdrive.enable = lib.mkDefault true;
+      services.lact.enable = lib.mkDefault true;
     }
   ];
 }

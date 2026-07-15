@@ -8,6 +8,7 @@
 {
   imports = [
     inputs.hermes-agent.nixosModules.default
+    inputs.sops-nix.nixosModules.sops
   ];
 
   sops = {

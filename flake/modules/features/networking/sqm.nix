@@ -5,9 +5,6 @@
   ...
 }:
 
-let
-  cfg = config.modules.networking.sqm;
-in
 {
   options.modules.networking.sqm = {
     enable = lib.mkEnableOption "SQM (Smart Queue Management) for gaming/networking";
@@ -40,7 +37,7 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.modules.networking.sqm.enable {
     environment.systemPackages = [
       pkgs.ethtool
       pkgs.iproute2
@@ -65,9 +62,9 @@ in
 
           # 构建参数字符串
           OVERHEAD_ARG=""
-          [ ${toString cfg.overhead} -gt 0 ] && OVERHEAD_ARG="overhead ${toString cfg.overhead}"
+          [ ${toString config.modules.networking.sqm.overhead} -gt 0 ] && OVERHEAD_ARG="overhead ${toString config.modules.networking.sqm.overhead}"
 
-          if [ "$IFACE" = "${cfg.wanInterface}" ]; then
+          if [ "$IFACE" = "${config.modules.networking.sqm.wanInterface}" ]; then
               # 上传优化 (流向外网)
               if [[ "$IFACE" == wl* ]]; then
                   # Wi-Fi 特定优化
@@ -79,13 +76,13 @@ in
               $TC qdisc del dev "$IFACE" root 2>/dev/null || true
               CAKE_ARGS="diffserv4 triple-isolate wash ack-filter $OVERHEAD_ARG nat"
               ${lib.optionalString (
-                cfg.uploadBandwidth != null
-              ) "CAKE_ARGS=\"bandwidth ${cfg.uploadBandwidth} $CAKE_ARGS\""}
+                config.modules.networking.sqm.uploadBandwidth != null
+              ) "CAKE_ARGS=\"bandwidth ${config.modules.networking.sqm.uploadBandwidth} $CAKE_ARGS\""}
               $TC qdisc add dev "$IFACE" root cake $CAKE_ARGS
               $LOGGER -t gaming-sqm "Applied UPLOAD CAKE policy to $IFACE (via WAN)"
           fi
 
-          if [ "$IFACE" = "${cfg.lanInterface}" ] && [ "${cfg.lanInterface}" != "${cfg.wanInterface}" ]; then
+          if [ "$IFACE" = "${config.modules.networking.sqm.lanInterface}" ] && [ "${config.modules.networking.sqm.lanInterface}" != "${config.modules.networking.sqm.wanInterface}" ]; then
               # 下载优化 (流向内网)
               if [[ "$IFACE" == wl* ]]; then
                   # Wi-Fi 特定优化
@@ -97,8 +94,8 @@ in
               $TC qdisc del dev "$IFACE" root 2>/dev/null || true
               CAKE_ARGS="besteffort triple-isolate wash $OVERHEAD_ARG nat"
               ${lib.optionalString (
-                cfg.downloadBandwidth != null
-              ) "CAKE_ARGS=\"bandwidth ${cfg.downloadBandwidth} $CAKE_ARGS\""}
+                config.modules.networking.sqm.downloadBandwidth != null
+              ) "CAKE_ARGS=\"bandwidth ${config.modules.networking.sqm.downloadBandwidth} $CAKE_ARGS\""}
               $TC qdisc add dev "$IFACE" root cake $CAKE_ARGS
               $LOGGER -t gaming-sqm "Applied DOWNLOAD CAKE policy to $IFACE (via LAN)"
           fi

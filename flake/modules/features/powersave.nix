@@ -5,8 +5,6 @@
   ...
 }:
 let
-  cfg = config.modules.powersave;
-
   sndHdaBattery = pkgs.writeShellScript "snd-hda-battery" ''
     echo 1 > /sys/module/snd_hda_intel/parameters/power_save
   '';
@@ -60,7 +58,7 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf config.modules.powersave.enable {
     boot.kernelModules = [ "rtc_cmos" ];
     boot.extraModprobeConfig = ''
       # Enable U-APSD for iwlwifi (deeper WiFi sleep)
@@ -84,7 +82,7 @@ in
       "rtc_cmos.use_acpi_alarm=1"
     ];
     boot.kernel.sysctl = {
-      "kernel.nmi_watchdog" = 0;
+      "kernel.nmi_watchdog" = lib.mkOverride 950 0;
     };
     services.udev.extraRules = ''
       SUBSYSTEM=="pci", ATTR{power/control}="auto"
@@ -111,11 +109,11 @@ in
           RUN+="${amdgpuAc}"
     '';
     # services.auto-cpufreq.enable = true;
-    services.power-profiles-daemon.enable = true;
+    services.power-profiles-daemon.enable = lib.mkDefault true;
     services.irqbalance.enable = lib.mkDefault true;
-    networking.interfaces = lib.genAttrs cfg.wakeOnLan.interfaces (name: {
-      wakeOnLan.enable = false;
+    networking.interfaces = lib.genAttrs config.modules.powersave.wakeOnLan.interfaces (name: {
+      wakeOnLan.enable = lib.mkDefault false;
     });
-    networking.networkmanager.wifi.powersave = true;
+    networking.networkmanager.wifi.powersave = lib.mkDefault true;
   };
 }

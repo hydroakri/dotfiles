@@ -24,7 +24,7 @@
   };
 
   config = lib.mkIf config.modules.preservation.enable {
-    boot.initrd.systemd.enable = true;
+    boot.initrd.systemd.enable = lib.mkDefault true;
 
     # persistentPath 必须在 initrd 阶段就真实挂载好，否则 inInitrd 的 bind mount/symlink
     # 挂到的只是 tmpfiles 顺手建出的空占位文件（挂载本身不报错，只有内容是空的）
@@ -33,7 +33,7 @@
     # bind-mounted machine-id 直接挂载写回持久化存储；ConditionFirstBoot 语义在这不适用
     systemd.suppressedSystemUnits = [ "systemd-machine-id-commit.service" ];
 
-    preservation.enable = true;
+    preservation.enable = lib.mkDefault true;
 
     # 通用路径：不管哪台主机，只要用这个模块、跑了对应服务就该持久化的东西。
     # 主机专属的（跟具体硬件型号绑定的）留在各主机自己的配置里，会跟这里自动合并。

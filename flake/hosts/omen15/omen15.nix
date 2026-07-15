@@ -16,6 +16,9 @@
     # Hardware configuration
     ./disko.nix
 
+    # Personal config shared across hosts
+    ../personal-proxy-profile.nix
+
     # Core system modules
     ../../modules/core.nix
     ../../modules/desktop.nix
@@ -89,11 +92,11 @@
     };
     proxy = {
       enable = false;
-      singbox.enable = false;
-      singbox.tun = true;
-      singbox.dns = true;
-      singbox.endpoints = true;
-      singbox.outbounds = true;
+      singbox = {
+        enable = true;
+        tun = true;
+        dns = true;
+      };
     };
     powersave = {
       enable = true;
@@ -105,7 +108,6 @@
     utils = {
       enable = true;
       enableGraphicTools = true;
-      enableGlance = true;
       enableUptime = false;
     };
     preservation.enable = true;

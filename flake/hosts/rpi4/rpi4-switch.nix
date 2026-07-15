@@ -50,7 +50,6 @@
     modules = {
       utils = {
         enable = false;
-        enableGlance = false;
         enableGrafana = false;
         enablePrometheus = false;
         enableGraphicTools = false;

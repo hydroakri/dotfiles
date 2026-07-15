@@ -5,9 +5,6 @@
   ...
 }:
 
-let
-  cfg = config.modules.router;
-in
 {
   options.modules.router = {
     enable = lib.mkEnableOption "router functionality";
@@ -59,7 +56,7 @@ in
         type = lib.types.str;
         default =
           let
-            parts = lib.splitString "." cfg.lan.ipv4Address;
+            parts = lib.splitString "." config.modules.router.lan.ipv4Address;
             prefix = lib.concatStringsSep "." (lib.take 3 parts);
           in
           "${prefix}.10,${prefix}.100,24h";
@@ -80,53 +77,63 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable (
+  config = lib.mkIf config.modules.router.enable (
     let
       # Use a helper to determine the actual WAN interface (VLAN or raw)
       extInterface =
-        if (cfg.wan.vlanId != null) then "vlan${toString cfg.wan.vlanId}" else cfg.wan.interface;
+        if (config.modules.router.wan.vlanId != null) then
+          "vlan${toString config.modules.router.wan.vlanId}"
+        else
+          config.modules.router.wan.interface;
       # Primary LAN interface for DNS/DHCP binding
       lanPrimaryInterface =
-        if (cfg.lan.interfaces != [ ]) then builtins.head cfg.lan.interfaces else null;
+        if (config.modules.router.lan.interfaces != [ ]) then
+          builtins.head config.modules.router.lan.interfaces
+        else
+          null;
     in
     {
       assertions = [
         {
-          assertion = cfg.dhcp.enable -> lanPrimaryInterface != null;
+          assertion = config.modules.router.dhcp.enable -> lanPrimaryInterface != null;
           message = "modules.router.lan.interfaces must not be empty when DHCP is enabled.";
         }
         {
-          assertion = cfg.nat.enable -> lanPrimaryInterface != null;
+          assertion = config.modules.router.nat.enable -> lanPrimaryInterface != null;
           message = "modules.router.lan.interfaces must not be empty when NAT is enabled.";
         }
       ];
 
-      environment.etc."tuned/active_profile".text = "network-latency";
+      # mkOverride 900: wins over server.nix's mkDefault "throughput-performance" by
+      # default when both are imported, but still yields to a plain user assignment.
+      environment.etc."tuned/active_profile".text = lib.mkOverride 900 "network-latency";
       boot.kernel.sysctl = {
-        "net.ipv4.ip_forward" = 1;
-        "net.ipv6.conf.all.forwarding" = 1;
-        "net.ipv6.conf.default.forwarding" = 1;
+        "net.ipv4.ip_forward" = lib.mkOverride 950 1;
+        "net.ipv6.conf.all.forwarding" = lib.mkOverride 950 1;
+        "net.ipv6.conf.default.forwarding" = lib.mkOverride 950 1;
       };
 
-      networking.vlans = lib.mkIf (cfg.wan.vlanId != null) {
+      networking.vlans = lib.mkIf (config.modules.router.wan.vlanId != null) {
         ${extInterface} = {
-          id = cfg.wan.vlanId;
-          interface = cfg.wan.interface;
+          id = config.modules.router.wan.vlanId;
+          interface = config.modules.router.wan.interface;
         };
       };
 
       networking.interfaces = {
         # Configure WAN physical interface
-        ${cfg.wan.interface} = lib.mkMerge [
-          (lib.mkIf (cfg.wan.vlanId != null) { useDHCP = false; })
-          (lib.mkIf (cfg.wan.vlanId == null) { useDHCP = cfg.wan.useDHCP; })
-          (lib.mkIf (cfg.wan.mtu != null) { mtu = cfg.wan.mtu; })
+        ${config.modules.router.wan.interface} = lib.mkMerge [
+          (lib.mkIf (config.modules.router.wan.vlanId != null) { useDHCP = false; })
+          (lib.mkIf (config.modules.router.wan.vlanId == null) {
+            useDHCP = config.modules.router.wan.useDHCP;
+          })
+          (lib.mkIf (config.modules.router.wan.mtu != null) { mtu = config.modules.router.wan.mtu; })
         ];
       }
-      // lib.optionalAttrs (cfg.wan.vlanId != null) {
+      // lib.optionalAttrs (config.modules.router.wan.vlanId != null) {
         # Configure WAN VLAN interface
         ${extInterface} = {
-          useDHCP = cfg.wan.useDHCP;
+          useDHCP = config.modules.router.wan.useDHCP;
         };
       }
       // (lib.listToAttrs (
@@ -134,36 +141,36 @@ in
           i: iface:
           lib.nameValuePair iface {
             useDHCP = false;
-            ipv4.addresses = lib.mkIf (cfg.lan.ipv4Address != null && i == 0) (
+            ipv4.addresses = lib.mkIf (config.modules.router.lan.ipv4Address != null && i == 0) (
               lib.mkDefault [
                 {
-                  address = cfg.lan.ipv4Address;
-                  prefixLength = cfg.lan.ipv4PrefixLength;
+                  address = config.modules.router.lan.ipv4Address;
+                  prefixLength = config.modules.router.lan.ipv4PrefixLength;
                 }
               ]
             );
           }
-        ) cfg.lan.interfaces
+        ) config.modules.router.lan.interfaces
       ));
 
-      services.resolved.enable = lib.mkIf cfg.dhcp.enable (lib.mkForce false);
-      services.dnsmasq = lib.mkIf cfg.dhcp.enable {
-        enable = true;
-        resolveLocalQueries = false;
+      services.resolved.enable = lib.mkIf config.modules.router.dhcp.enable (lib.mkDefault false);
+      services.dnsmasq = lib.mkIf config.modules.router.dhcp.enable {
+        enable = lib.mkDefault true;
+        resolveLocalQueries = lib.mkDefault false;
         settings = {
           interface = lanPrimaryInterface;
-          bind-dynamic = true;
-          dhcp-authoritative = true;
-          enable-ra = true;
+          bind-dynamic = lib.mkDefault true;
+          dhcp-authoritative = lib.mkDefault true;
+          enable-ra = lib.mkDefault true;
           dhcp-range = [
-            cfg.dhcp.range
+            config.modules.router.dhcp.range
             "::,constructor:${lanPrimaryInterface},ra-stateless"
           ];
-          port = 0;
+          port = lib.mkDefault 0;
         };
       };
 
-      systemd.services.dnsmasq = lib.mkIf cfg.dhcp.enable {
+      systemd.services.dnsmasq = lib.mkIf config.modules.router.dhcp.enable {
         unitConfig.StartLimitIntervalSec = 0;
         serviceConfig = {
           Restart = "on-failure";
@@ -173,18 +180,18 @@ in
       };
 
       networking.firewall = {
-        trustedInterfaces = cfg.lan.interfaces;
-        checkReversePath = false;
-        extraCommands = lib.mkIf cfg.mssClamping.enable (
+        trustedInterfaces = config.modules.router.lan.interfaces;
+        checkReversePath = lib.mkDefault false;
+        extraCommands = lib.mkIf config.modules.router.mssClamping.enable (
           let
             mssCmd =
-              if (cfg.mssClamping.mss != null) then
-                "-j TCPMSS --set-mss ${toString cfg.mssClamping.mss}"
+              if (config.modules.router.mssClamping.mss != null) then
+                "-j TCPMSS --set-mss ${toString config.modules.router.mssClamping.mss}"
               else
                 "-j TCPMSS --clamp-mss-to-pmtu";
           in
           ''
-            ${lib.optionalString (cfg.mssClamping.mss != null)
+            ${lib.optionalString (config.modules.router.mssClamping.mss != null)
               "iptables -t mangle -D POSTROUTING -o ${extInterface} -p tcp --tcp-flags SYN,RST SYN ${mssCmd} 2>/dev/null || true"
             }
             iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -o ${extInterface} ${mssCmd}
@@ -192,10 +199,10 @@ in
         );
       };
 
-      networking.nat = lib.mkIf cfg.nat.enable {
-        enable = true;
+      networking.nat = lib.mkIf config.modules.router.nat.enable {
+        enable = lib.mkDefault true;
         externalInterface = extInterface;
-        internalInterfaces = cfg.lan.interfaces;
+        internalInterfaces = config.modules.router.lan.interfaces;
       };
     }
   );

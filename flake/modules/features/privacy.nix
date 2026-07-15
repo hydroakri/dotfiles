@@ -101,13 +101,30 @@
       ];
 
       # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪
+      # networking.tempAddresses（非直接写 sysctl）："default" 对应
+      # nixos/modules/tasks/network-interfaces.nix 内部算出
+      # net.ipv6.conf.default.use_tempaddr 的 sysctl 值本身就是这个选项的
+      # nixpkgs 自带默认值——显式写出防止 nixpkgs 未来改默认值，或宿主关闭
+      # IPv6 时 nixpkgs 自己把 tempAddresses 隐式改成 "disabled"。
+      networking.tempAddresses = lib.mkDefault "default";
       boot.kernel.sysctl = {
+        # networking.tempAddresses 只驱动 *.default.use_tempaddr；.all 不受
+        # 该选项覆盖，仍需在这里直接赋值。
         "net.ipv6.conf.all.use_tempaddr" = lib.mkDefault 2;
-        "net.ipv6.conf.default.use_tempaddr" = lib.mkDefault 2;
       };
 
+      services.unbound.settings.rpz = lib.mkDefault [
+        {
+          name = "hagezi-pro-mini";
+          url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.mini.txt";
+          zonefile = "/var/lib/unbound/hagezi-pro-mini.rpz";
+          rpz-log = true;
+          for-downstream = false;
+        }
+      ];
+
       networking.networkmanager = {
-        settings.connection."dhcp-send-hostname" = false;
+        settings.connection."dhcp-send-hostname" = lib.mkDefault false;
         wifi.macAddress = lib.mkDefault "random";
         wifi.scanRandMacAddress = lib.mkDefault true;
         # 以太网 MAC 随机化仅对桌面机有意义；服务器固定 MAC 以避免 DHCP 绑定失败
