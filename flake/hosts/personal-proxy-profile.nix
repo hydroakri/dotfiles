@@ -5,13 +5,16 @@
 { config, ... }:
 {
   config = {
+    # sopsFile: these live in their own file (recipients: hydroakri + omen15 +
+    # rpi4 only, no oci) so a host that never imports this profile can't also
+    # decrypt secrets it doesn't use — see .sops.yaml's proxy-secrets.yaml$ rule.
     sops.secrets = {
-      zerotrust = { };
-      doh_stamp = { };
-      sing-box-endpoints = { };
-      sing-box-outbounds = { };
-      oracle_domain = { };
-      oracle_ip = { };
+      zerotrust.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
+      doh_stamp.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
+      sing-box-endpoints.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
+      sing-box-outbounds.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
+      oracle_domain.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
+      oracle_ip.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
     };
     modules.proxy = {
       dnscrypt-proxy.extraStaticStamps = {
