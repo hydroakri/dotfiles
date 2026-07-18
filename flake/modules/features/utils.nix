@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 {
@@ -39,7 +38,7 @@
       (lib.mkIf config.modules.utils.enableGrafana { allowedTCPPorts = [ 9006 ]; })
     ];
 
-    environment.systemPackages = lib.mkIf config.modules.utils.enableGraphicTools ([
+    environment.systemPackages = lib.mkIf config.modules.utils.enableGraphicTools [
       ## GPU / display tools
       pkgs.nvtopPackages.full
       pkgs.virtualglLib
@@ -48,7 +47,7 @@
       pkgs.vdpauinfo
       pkgs.read-edid
       pkgs.clinfo
-    ]);
+    ];
 
     services.uptime-kuma = lib.mkIf config.modules.utils.enableUptime {
       enable = lib.mkDefault true;

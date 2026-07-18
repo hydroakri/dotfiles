@@ -276,7 +276,7 @@
       pkgs.nix-tree
       pkgs.nix-output-monitor
       (lib.hiPrio pkgs.uutils-coreutils-noprefix)
-      (lib.mkIf config.programs.zsh.enable (pkgs.sqlite))
+      (lib.mkIf config.programs.zsh.enable pkgs.sqlite)
     ]
     ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools

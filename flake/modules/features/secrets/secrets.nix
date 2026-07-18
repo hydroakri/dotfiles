@@ -1,10 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-{
+_: {
 
   config.sops = {
     defaultSopsFile = ./secrets.yaml;

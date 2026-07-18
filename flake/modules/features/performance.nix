@@ -21,25 +21,23 @@ in
   };
 
   config = {
-    boot.kernelParams = (
-      [
-        # performance
-        "lru_gen_enabled=1"
-        "zswap.enabled=0"
-        "transparent_hugepage=madvise"
-        "rcupdate.rcu_normal_after_boot=1"
-      ]
-      ++ lib.optionals (!((config.modules.powersave or { }).enable or false)) [
-        "skew_tick=1"
-      ]
-      # 当 modules.powersave.enable 开启时，不设置 ignore_ppc (避免忽略固件功耗限制)
-      ++
-        lib.optionals
-          (pkgs.stdenv.hostPlatform.isx86_64 && !((config.modules.powersave or { }).enable or false))
-          [
-            "processor.ignore_ppc=1"
-          ]
-    );
+    boot.kernelParams = [
+      # performance
+      "lru_gen_enabled=1"
+      "zswap.enabled=0"
+      "transparent_hugepage=madvise"
+      "rcupdate.rcu_normal_after_boot=1"
+    ]
+    ++ lib.optionals (!((config.modules.powersave or { }).enable or false)) [
+      "skew_tick=1"
+    ]
+    # 当 modules.powersave.enable 开启时，不设置 ignore_ppc (避免忽略固件功耗限制)
+    ++
+      lib.optionals
+        (pkgs.stdenv.hostPlatform.isx86_64 && !((config.modules.powersave or { }).enable or false))
+        [
+          "processor.ignore_ppc=1"
+        ];
     # CPU microcode (vendor-specific via modules.performance.vendor)
     hardware.cpu.amd.updateMicrocode = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 (
       config.modules.performance.vendor == "amd"

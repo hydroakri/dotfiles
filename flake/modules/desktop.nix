@@ -324,7 +324,7 @@
         };
       };
 
-      environment.plasma6.excludePackages = ([
+      environment.plasma6.excludePackages = [
         pkgs.kdePackages.elisa
         pkgs.kdePackages.gwenview
         pkgs.kdePackages.kwrited
@@ -350,13 +350,13 @@
         pkgs.kdePackages.kwalletmanager
         pkgs.kdePackages.qrca
         pkgs.kdePackages.discover
-      ]);
-      environment.cosmic.excludePackages = ([
+      ];
+      environment.cosmic.excludePackages = [
         pkgs.cosmic-player
         pkgs.cosmic-term
         pkgs.cosmic-edit
-      ]);
-      environment.gnome.excludePackages = ([
+      ];
+      environment.gnome.excludePackages = [
         pkgs.atomix # puzzle game
         pkgs.cheese # webcam tool
         pkgs.epiphany # web browser
@@ -372,7 +372,7 @@
         pkgs.iagno # go game
         pkgs.tali # poker game
         pkgs.totem # video player
-      ]);
+      ];
       fonts = {
         packages = [
           pkgs.noto-fonts-cjk-sans

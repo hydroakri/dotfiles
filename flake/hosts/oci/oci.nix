@@ -42,7 +42,7 @@
 
     nixpkgs.overlays = [
       inputs.nix-minecraft.overlay
-      (final: prev: {
+      (_final: prev: {
         # musl + libressl + clang: all three apply here — already off binary cache, so clang costs nothing extra
         nginx = prev.pkgsMusl.nginx.override {
           openssl = prev.pkgsMusl.libressl;

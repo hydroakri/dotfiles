@@ -1,9 +1,7 @@
 # nix build '.#packages.aarch64-linux.rpi-image'
 {
-  config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 {

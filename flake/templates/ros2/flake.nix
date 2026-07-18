@@ -6,7 +6,6 @@
 
   outputs =
     {
-      self,
       nix-ros-overlay,
       nixpkgs,
     }:

@@ -120,12 +120,10 @@
       };
     };
 
-    environment.systemPackages =
-      [ ]
-      ++ lib.optionals (config.modules.nvidia.variant != "nouveau") [
-        pkgs.cudaPackages.cudatoolkit
-        pkgs.nvidia-container-toolkit
-      ];
+    environment.systemPackages = lib.optionals (config.modules.nvidia.variant != "nouveau") [
+      pkgs.cudaPackages.cudatoolkit
+      pkgs.nvidia-container-toolkit
+    ];
 
     hardware.graphics = {
       enable = lib.mkDefault true;

@@ -1,7 +1,5 @@
 # nix build '.#packages.x86_64-linux.iso-installer'
 {
-  config,
-  lib,
   pkgs,
   modulesPath,
   ...

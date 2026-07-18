@@ -50,7 +50,7 @@
       "rng_core.default_quality=500"
       # "slub_debug=FZP" 内存分配调试（完整性检查+红区+填毒），开发排查用；生产/游戏负载有 10-20% 开销，暂不启用
     ]
-    ++ lib.optionals (pkgs.stdenv.hostPlatform.isx86_64) [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       "vsyscall=none"
       "efi=disable_early_pci_dma"
       "efi_pstore.pstore_disable=1"

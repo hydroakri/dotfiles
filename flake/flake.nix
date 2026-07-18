@@ -49,25 +49,23 @@
       url = "github:nix-community/nix-github-actions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      sops-nix,
-      nixos-hardware,
-      nix-index-database,
       nixos-generators,
-      geodb,
-      nix-minecraft,
-      hermes-agent,
-      nix-cachyos-kernel,
       nix-github-actions,
+      treefmt-nix,
       ...
     }@inputs:
     let
-      lib = nixpkgs.lib;
+      inherit (nixpkgs) lib;
 
       # Make inputs available to all modules
       specialArgsForAll = { inherit inputs; };
@@ -75,11 +73,26 @@
       # Each host's system closure, keyed by system then hostname —
       # the shape nix-github-actions needs to derive a build matrix.
       hostToplevels = lib.foldl' lib.recursiveUpdate { } (
-        lib.mapAttrsToList (
-          hostname: cfg: {
-            ${cfg.config.nixpkgs.hostPlatform.system}.${hostname} = cfg.config.system.build.toplevel;
-          }
-        ) self.nixosConfigurations
+        lib.mapAttrsToList (hostname: cfg: {
+          ${cfg.config.nixpkgs.hostPlatform.system}.${hostname} = cfg.config.system.build.toplevel;
+        }) self.nixosConfigurations
+      );
+
+      # Systems covered by `nix fmt` / `nix flake check`'s formatting check.
+      forAllSystems = lib.genAttrs [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+      treefmtEval = forAllSystems (
+        system:
+        treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} {
+          projectRootFile = "flake.nix";
+          programs = {
+            nixfmt.enable = true;
+            statix.enable = true;
+            deadnix.enable = true;
+          };
+        }
       );
     in
     {
@@ -157,5 +170,13 @@
       githubActions = nix-github-actions.lib.mkGithubMatrix {
         checks = hostToplevels;
       };
+
+      # `nix fmt` — nixfmt + statix + deadnix, config in ./treefmt.nix
+      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
+
+      # Picked up by `nix flake check` automatically
+      checks = forAllSystems (system: {
+        formatting = treefmtEval.${system}.config.build.check self;
+      });
     };
 }

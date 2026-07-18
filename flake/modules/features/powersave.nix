@@ -111,7 +111,7 @@ in
     # services.auto-cpufreq.enable = true;
     services.power-profiles-daemon.enable = lib.mkDefault true;
     services.irqbalance.enable = lib.mkDefault true;
-    networking.interfaces = lib.genAttrs config.modules.powersave.wakeOnLan.interfaces (name: {
+    networking.interfaces = lib.genAttrs config.modules.powersave.wakeOnLan.interfaces (_name: {
       wakeOnLan.enable = lib.mkDefault false;
     });
     networking.networkmanager.wifi.powersave = lib.mkDefault true;
