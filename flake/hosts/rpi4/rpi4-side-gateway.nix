@@ -54,7 +54,11 @@
       proxy = {
         enable = true;
         dnscrypt-proxy.enable = true;
-        singbox.enable = true;
+        singbox = {
+          enable = true;
+          tun = true;
+          dns = true;
+        };
         dae = {
           enable = true;
           interfaces = {

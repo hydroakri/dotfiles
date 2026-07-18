@@ -22,7 +22,6 @@
     ../../modules/features/security.nix
     ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
-    ../../modules/features/agent.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
@@ -313,16 +312,16 @@
       };
     };
 
-    services.filebrowser = {
-      enable = true;
-      settings = {
-        port = 8082;
-        address = "127.0.0.1";
-        database = "/var/lib/filebrowser/filebrowser.db";
-        root = "/var/lib/filebrowser/my-files";
-        noauth = false;
-      };
-    };
+    # services.filebrowser = {
+    #   enable = true;
+    #   settings = {
+    #     port = 8082;
+    #     address = "127.0.0.1";
+    #     database = "/var/lib/filebrowser/filebrowser.db";
+    #     root = "/var/lib/filebrowser/my-files";
+    #     noauth = false;
+    #   };
+    # };
 
     services.vaultwarden = {
       enable = true;
@@ -538,18 +537,18 @@
         };
       };
 
-      virtualHosts."file.hydroakri.cc" = {
-        useACMEHost = "hydroakri.cc";
-        forceSSL = true;
-        extraConfig = ''
-          allow 100.64.0.0/10;
-          allow fd7a:115c:a1e0::/48;
-          deny all;
-        '';
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8082";
-        };
-      };
+      # virtualHosts."file.hydroakri.cc" = {
+      #   useACMEHost = "hydroakri.cc";
+      #   forceSSL = true;
+      #   extraConfig = ''
+      #     allow 100.64.0.0/10;
+      #     allow fd7a:115c:a1e0::/48;
+      #     deny all;
+      #   '';
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:8082";
+      #   };
+      # };
 
       virtualHosts."vault.hydroakri.cc" = {
         # enableACME = true;

@@ -5,39 +5,85 @@ env:
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "flake/**"
+      - ".github/workflows/build.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "flake/**"
+      - ".github/workflows/build.yml"
+  schedule:
+    # Catches breakage from upstream nixpkgs drift even without a push here.
+    - cron: "37 4 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: aarch64-linux
-            runner: ubuntu-24.04-arm
-            target: .#nixosConfigurations.oci.config.system.build.toplevel
-
-          - arch: aarch64-linux
-            runner: ubuntu-24.04-arm
-            target: .#nixosConfigurations.rpi4-side-gateway.config.system.build.toplevel
-          
-          - arch: aarch64-linux
-            runner: ubuntu-24.04-arm
-            target: .#nixosConfigurations.rpi4-switch.config.system.build.toplevel
-
-          - arch: x86_64-linux
-            runner: ubuntu-latest
-            target: .#nixosConfigurations.omen15.config.system.build.toplevel
-
-    runs-on: ${{ matrix.runner }}
+  check:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        with:
+          extra-conf: |
+            max-jobs = auto
+            cores = 0
+
+      - name: Flake Check
+        working-directory: ./flake
+        run: nix flake check --accept-flake-config
+
+  nix-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        with:
+          extra-conf: |
+            max-jobs = auto
+            cores = 0
+
+      - name: Generate Matrix from Flake
+        id: set-matrix
+        working-directory: ./flake
+        run: |
+          matrix="$(nix eval --json --accept-flake-config '.#githubActions.matrix')"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [check, nix-matrix]
+    name: ${{ matrix.name }} (${{ matrix.system }})
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.nix-matrix.outputs.matrix) }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Free Disk Space (x86_64 only)
-        if: runner.arch == 'X64'
+        if: matrix.system == 'x86_64-linux'
         run: |
           # 手动清理 GitHub Runner 预装的大型软件，腾出约 20-30GB 空间
           sudo rm -rf /usr/share/dotnet
@@ -47,19 +93,14 @@ jobs:
           sudo docker image prune --all --force
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
         with:
           extra-conf: |
             max-jobs = auto
             cores = 0
 
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          use-flakehub: false
-
       - name: Setup Attic Cache
-        uses: ryanccn/attic-action@v0
+        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
         with:
           endpoint: https://cache.hydroakri.cc
           cache: cachix
@@ -69,11 +110,11 @@ jobs:
         run: |
           printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
 
-      - name: Build System (${{ matrix.arch }})
+      - name: Build System (${{ matrix.name }})
         working-directory: ./flake
         run: |
           nix config show | grep -E "substituters|trusted-public-keys"
-          nix build ${{ matrix.target }} \
+          nix build '.#${{ matrix.attr }}' \
             --accept-flake-config \
             --print-build-logs \
             --fallback

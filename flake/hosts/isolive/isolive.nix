@@ -19,6 +19,11 @@
   # === 基础系统配置 ===
   networking.hostName = "nixos-installer";
 
+  # 图形安装器默认开启 ZFS 支持 (nixpkgs profiles/base.nix)，但 zfs-kernel
+  # 模块经常跟不上最新内核，跟当前锁定的内核版本不兼容时会被标记为 meta.broken，
+  # 导致 `nix flake check`/构建直接报错。装机 ISO 用不到 ZFS，直接关掉。
+  boot.supportedFilesystems.zfs = false;
+
   # 禁用一些服务以简化ISO
   services.smartd.enable = false;
 

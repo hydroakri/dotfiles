@@ -45,6 +45,10 @@
       url = "github:xddxdd/nix-cachyos-kernel/release";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-github-actions = {
+      url = "github:nix-community/nix-github-actions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -59,6 +63,7 @@
       nix-minecraft,
       hermes-agent,
       nix-cachyos-kernel,
+      nix-github-actions,
       ...
     }@inputs:
     let
@@ -67,6 +72,15 @@
       # Make inputs available to all modules
       specialArgsForAll = { inherit inputs; };
 
+      # Each host's system closure, keyed by system then hostname —
+      # the shape nix-github-actions needs to derive a build matrix.
+      hostToplevels = lib.foldl' lib.recursiveUpdate { } (
+        lib.mapAttrsToList (
+          hostname: cfg: {
+            ${cfg.config.nixpkgs.hostPlatform.system}.${hostname} = cfg.config.system.build.toplevel;
+          }
+        ) self.nixosConfigurations
+      );
     in
     {
       nixosConfigurations = {
@@ -137,6 +151,11 @@
           description = # use `nix flake init -t ~/dotfiles#ros2` OR `nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2' --refresh` to init a ros project
             "Robust ROS 2 Humble development environment with GUI and FHS support";
         };
+      };
+
+      # Drives the CI matrix: `nix eval --json .#githubActions.matrix`
+      githubActions = nix-github-actions.lib.mkGithubMatrix {
+        checks = hostToplevels;
       };
     };
 }

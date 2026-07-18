@@ -4,26 +4,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
-  pull_request:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
 
 jobs:
-  flake-check:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Determinate Nix
-        uses: DeterminateSystems/determinate-nix-action@v3
-      - name: Flake sanity check
-        run: |
-          nix flake show ./flake >/dev/null
-
   update-flake-lock:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
