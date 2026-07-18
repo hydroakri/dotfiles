@@ -1,4 +1,4 @@
-name: Build and Push to Attic Cache
+name: CI
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -8,12 +8,12 @@ on:
     branches: [main]
     paths:
       - "flake/**"
-      - ".github/workflows/build.yml"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "flake/**"
-      - ".github/workflows/build.yml"
+      - ".github/workflows/ci.yml"
   schedule:
     # Catches breakage from upstream nixpkgs drift even without a push here.
     - cron: "37 4 * * *"

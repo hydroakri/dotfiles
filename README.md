@@ -1,5 +1,8 @@
 # hydroakri's NixOS & Dotfiles
 
+[![CI](https://github.com/hydroakri/dotfiles/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hydroakri/dotfiles/actions/workflows/ci.yml)
+[![Update Flake Lock](https://github.com/hydroakri/dotfiles/actions/workflows/update-flake-lock.yml/badge.svg?branch=main)](https://github.com/hydroakri/dotfiles/actions/workflows/update-flake-lock.yml)
+
 > Multi-host NixOS flake + Chezmoi dotfiles for Wayland desktops and ARM servers.
 
 This repo bundles two independent, loosely-coupled things: a multi-host NixOS
@@ -170,17 +173,21 @@ nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2'
 
 Two GitHub Actions workflows build and maintain this flake:
 
-- **`build.yml`** ("Build and Push to Attic Cache") — on push to `main` or
-  manual dispatch, matrix-builds all four
-  `nixosConfigurations.*.config.system.build.toplevel` (`omen15` on
-  x86_64-linux/ubuntu-latest; `oci`, `rpi4-side-gateway`, `rpi4-switch` on
-  aarch64-linux/ubuntu-24.04-arm) and pushes to the self-hosted Attic cache at
-  `cache.hydroakri.cc`, plus a secondary "LanTian" substituter. The x86_64 job
-  runs a disk-cleanup step first.
-- **`flake-update.yml`** — on PRs, sanity-checks `nix flake show ./flake`. On
-  a daily cron (and manual dispatch), checks NixOS Hydra channel health and
-  kernel hash drift, opening an auto-merged PR that bumps `flake.lock` via
-  `DeterminateSystems/update-flake-lock` when warranted.
+- **`ci.yml`** ("CI") — on push/PR to `main` (path-filtered to `flake/**`), a
+  nightly schedule, or manual dispatch: runs `nix flake check` (module
+  assertions plus a nixfmt/statix/deadnix formatting check), then
+  matrix-builds all four `nixosConfigurations.*.config.system.build.toplevel`
+  (`omen15` on x86_64-linux/ubuntu-24.04; `oci`, `rpi4-side-gateway`,
+  `rpi4-switch` on aarch64-linux/ubuntu-24.04-arm) and pushes to the
+  self-hosted Attic cache at `cache.hydroakri.cc`, plus a secondary "LanTian"
+  substituter. The matrix isn't hand-written — it's generated at CI time from
+  `nix eval .#githubActions.matrix` via the `nix-github-actions` input. The
+  x86_64 job runs a disk-cleanup step first.
+- **`update-flake-lock.yml`** — on a daily cron (and manual dispatch), checks
+  NixOS Hydra channel health and kernel hash drift, opening an auto-merged PR
+  that bumps `flake.lock` via `DeterminateSystems/update-flake-lock` when
+  warranted. That PR touches `flake/flake.lock`, which triggers `ci.yml` on
+  it as the actual pre-merge gate.
 
 > Add `cache.hydroakri.cc` to `modules.core.extraSubstituters` if you're
 > consuming this flake as an input — CI keeps it populated with prebuilt hosts.
