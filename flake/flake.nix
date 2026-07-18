@@ -15,10 +15,6 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -59,7 +55,6 @@
     {
       self,
       nixpkgs,
-      nixos-generators,
       nix-github-actions,
       treefmt-nix,
       ...
@@ -117,20 +112,24 @@
 
       packages = {
         x86_64-linux = {
-          iso-installer = nixos-generators.nixosGenerate {
-            system = "x86_64-linux";
-            specialArgs = specialArgsForAll;
-            modules = [ ./hosts/isolive/isolive.nix ];
-            format = "install-iso";
-          };
+          # isolive.nix imports the graphical calamares ISO module directly,
+          # so `config.system.build.isoImage` is already available natively.
+          iso-installer =
+            (lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = specialArgsForAll;
+              modules = [ ./hosts/isolive/isolive.nix ];
+            }).config.system.build.isoImage;
         };
         aarch64-linux = {
-          rpi-image = nixos-generators.nixosGenerate {
-            system = "aarch64-linux";
-            specialArgs = specialArgsForAll;
-            modules = [ ./hosts/rpi-image/rpi-image.nix ];
-            format = "sd-aarch64";
-          };
+          # rpi-image.nix imports the sd-image-aarch64 module directly,
+          # so `config.system.build.sdImage` is already available natively.
+          rpi-image =
+            (lib.nixosSystem {
+              system = "aarch64-linux";
+              specialArgs = specialArgsForAll;
+              modules = [ ./hosts/rpi-image/rpi-image.nix ];
+            }).config.system.build.sdImage;
         };
       };
 

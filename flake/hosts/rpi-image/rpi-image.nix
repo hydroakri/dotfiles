@@ -2,9 +2,15 @@
 {
   lib,
   pkgs,
+  modulesPath,
   ...
 }:
 {
+  imports = [
+    # 官方 aarch64 SD 卡镜像基础模块 (提供 config.system.build.sdImage)
+    "${modulesPath}/installer/sd-card/sd-image-aarch64.nix"
+  ];
+
   # Boot configuration
   boot.loader = {
     generic-extlinux-compatible.enable = true;
