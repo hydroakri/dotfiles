@@ -32,7 +32,7 @@
       filter = "*-rpi-4-*.dtb";
     };
   };
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_rpi4;
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
   boot.initrd.availableKernelModules = lib.mkForce [
     "usbhid"
     "usb_storage"

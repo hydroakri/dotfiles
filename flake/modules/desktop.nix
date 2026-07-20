@@ -7,62 +7,132 @@
 {
   config =
     let
-      brave-sandboxed = pkgs.writeShellScriptBin "brave" ''
-        set -euo pipefail
-        XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-        WAYLAND_DISPLAY="''${WAYLAND_DISPLAY:-wayland-0}"
-        DOWNLOAD_DIR="''${XDG_DOWNLOAD_DIR:-$HOME/Downloads}"
-        mkdir -p "$HOME/.config/BraveSoftware" "$HOME/.local/share/BraveSoftware" \
-                 "$HOME/.cache/BraveSoftware" "$DOWNLOAD_DIR"
+      brave-sandboxed =
+        let
+          wrapper = pkgs.writeShellScriptBin "brave" ''
+            set -euo pipefail
+            XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+            WAYLAND_DISPLAY="''${WAYLAND_DISPLAY:-wayland-0}"
+            DOWNLOAD_DIR="''${XDG_DOWNLOAD_DIR:-$HOME/Downloads}"
+            mkdir -p "$HOME/.config/BraveSoftware" "$HOME/.local/share/BraveSoftware" \
+                     "$HOME/.cache/BraveSoftware" "$DOWNLOAD_DIR"
 
-        BWRAP_EXTRA=()
-        [ -S "$XDG_RUNTIME_DIR/pipewire-0" ] \
-          && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/pipewire-0" "$XDG_RUNTIME_DIR/pipewire-0")
-        [ -S "$XDG_RUNTIME_DIR/pulse/native" ] \
-          && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/pulse" "$XDG_RUNTIME_DIR/pulse")
-        # ponytail: D-Bus 直接绑定；严格隔离需 xdg-dbus-proxy，加入当 D-Bus 成为实际攻击路径时
-        _DBUS="''${DBUS_SESSION_BUS_ADDRESS#unix:path=}"
-        [ -n "$_DBUS" ] && [ -S "$_DBUS" ] && BWRAP_EXTRA+=(--bind "$_DBUS" "$_DBUS")
-        [ -e "$XDG_RUNTIME_DIR/fcitx5" ] \
-          && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/fcitx5" "$XDG_RUNTIME_DIR/fcitx5")
-        [ -d "$XDG_RUNTIME_DIR/fcitx" ] \
-          && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/fcitx" "$XDG_RUNTIME_DIR/fcitx")
-        [ -d "$XDG_RUNTIME_DIR/doc" ] \
-          && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/doc" "$XDG_RUNTIME_DIR/doc")
+            BWRAP_EXTRA=()
+            [ -S "$XDG_RUNTIME_DIR/pipewire-0" ] \
+              && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/pipewire-0" "$XDG_RUNTIME_DIR/pipewire-0")
+            [ -S "$XDG_RUNTIME_DIR/pulse/native" ] \
+              && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/pulse" "$XDG_RUNTIME_DIR/pulse")
+            # ponytail: D-Bus 直接绑定；严格隔离需 xdg-dbus-proxy，加入当 D-Bus 成为实际攻击路径时
+            _DBUS="''${DBUS_SESSION_BUS_ADDRESS#unix:path=}"
+            [ -n "$_DBUS" ] && [ -S "$_DBUS" ] && BWRAP_EXTRA+=(--bind "$_DBUS" "$_DBUS")
+            [ -e "$XDG_RUNTIME_DIR/fcitx5" ] \
+              && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/fcitx5" "$XDG_RUNTIME_DIR/fcitx5")
+            [ -d "$XDG_RUNTIME_DIR/fcitx" ] \
+              && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/fcitx" "$XDG_RUNTIME_DIR/fcitx")
+            [ -d "$XDG_RUNTIME_DIR/doc" ] \
+              && BWRAP_EXTRA+=(--bind "$XDG_RUNTIME_DIR/doc" "$XDG_RUNTIME_DIR/doc")
 
-        exec ${pkgs.bubblewrap}/bin/bwrap \
-          --ro-bind /nix /nix \
-          --proc /proc --dev /dev --dev-bind /dev/dri /dev/dri \
-          --ro-bind /sys/dev/char /sys/dev/char \
-          --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
-          --tmpfs /tmp --tmpfs /dev/shm \
-          --ro-bind-try /etc/resolv.conf /etc/resolv.conf \
-          --ro-bind-try /etc/hosts /etc/hosts \
-          --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf \
-          --ro-bind-try /etc/passwd /etc/passwd \
-          --ro-bind-try /etc/group /etc/group \
-          --ro-bind-try /etc/ssl /etc/ssl \
-          --ro-bind-try /etc/localtime /etc/localtime \
-          --ro-bind-try /etc/locale.conf /etc/locale.conf \
-          --ro-bind-try /etc/fonts /etc/fonts \
-          --ro-bind-try /etc/brave /etc/brave \
-          --ro-bind /run /run \
-          --tmpfs "$XDG_RUNTIME_DIR" \
-          --bind "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" \
-          --bind "$HOME/.config/BraveSoftware" "$HOME/.config/BraveSoftware" \
-          --bind "$HOME/.local/share/BraveSoftware" "$HOME/.local/share/BraveSoftware" \
-          --bind "$HOME/.cache/BraveSoftware" "$HOME/.cache/BraveSoftware" \
-          --bind "$DOWNLOAD_DIR" "$DOWNLOAD_DIR" \
-          --ro-bind-try "$HOME/.config/user-dirs.dirs" "$HOME/.config/user-dirs.dirs" \
-          --ro-bind-try "$HOME/.local/share/fonts" "$HOME/.local/share/fonts" \
-          --ro-bind-try "$HOME/.local/share/mime" "$HOME/.local/share/mime" \
-          "''${BWRAP_EXTRA[@]}" \
-          --unshare-uts --unshare-ipc --unshare-pid --die-with-parent \
-          -- ${pkgs.brave}/bin/brave \
-          --ozone-platform=wayland \
-          --enable-features=WaylandWindowDecorations,WebRTCPipeWireCapturer,AudioServiceSandbox \
-          "$@"
-      '';
+            exec ${pkgs.bubblewrap}/bin/bwrap \
+              --ro-bind /nix /nix \
+              --proc /proc --dev /dev --dev-bind /dev/dri /dev/dri \
+              --ro-bind /sys/dev/char /sys/dev/char \
+              --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
+              --tmpfs /tmp --tmpfs /dev/shm \
+              --ro-bind-try /etc/resolv.conf /etc/resolv.conf \
+              --ro-bind-try /etc/hosts /etc/hosts \
+              --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf \
+              --ro-bind-try /etc/passwd /etc/passwd \
+              --ro-bind-try /etc/group /etc/group \
+              --ro-bind-try /etc/ssl /etc/ssl \
+              --ro-bind-try /etc/localtime /etc/localtime \
+              --ro-bind-try /etc/locale.conf /etc/locale.conf \
+              --ro-bind-try /etc/fonts /etc/fonts \
+              --ro-bind-try /etc/brave /etc/brave \
+              --ro-bind-try /etc/dconf /etc/dconf \
+              --ro-bind-try "$HOME/.config/fontconfig" "$HOME/.config/fontconfig" \
+              --ro-bind-try "$HOME/.config/dconf" "$HOME/.config/dconf" \
+              --ro-bind-try "$HOME/.config/gtk-3.0" "$HOME/.config/gtk-3.0" \
+              --ro-bind-try "$HOME/.config/gtk-4.0" "$HOME/.config/gtk-4.0" \
+              --ro-bind /run /run \
+              --tmpfs "$XDG_RUNTIME_DIR" \
+              --bind "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" \
+              --bind "$HOME/.config/BraveSoftware" "$HOME/.config/BraveSoftware" \
+              --bind "$HOME/.local/share/BraveSoftware" "$HOME/.local/share/BraveSoftware" \
+              --bind "$HOME/.cache/BraveSoftware" "$HOME/.cache/BraveSoftware" \
+              --bind "$DOWNLOAD_DIR" "$DOWNLOAD_DIR" \
+              --ro-bind-try "$HOME/.config/user-dirs.dirs" "$HOME/.config/user-dirs.dirs" \
+              --ro-bind-try "$HOME/.local/share/fonts" "$HOME/.local/share/fonts" \
+              --ro-bind-try "$HOME/.local/share/mime" "$HOME/.local/share/mime" \
+              "''${BWRAP_EXTRA[@]}" \
+              --unshare-uts --unshare-ipc --unshare-pid --die-with-parent \
+              -- ${pkgs.brave}/bin/brave \
+              --ozone-platform=wayland \
+              --enable-features=WaylandWindowDecorations,WebRTCPipeWireCapturer,AudioServiceSandbox \
+              "$@"
+          '';
+          desktopEntry =
+            {
+              name,
+              desktopName,
+              noDisplay ? false,
+            }:
+            pkgs.makeDesktopItem {
+              inherit name desktopName;
+              noDisplay = if noDisplay then true else null;
+              genericName = "Web Browser";
+              comment = "Access the Internet";
+              icon = "brave-browser";
+              exec = "${wrapper}/bin/brave %U";
+              terminal = false;
+              startupNotify = true;
+              categories = [
+                "Network"
+                "WebBrowser"
+              ];
+              mimeTypes = [
+                "application/pdf"
+                "application/rdf+xml"
+                "application/rss+xml"
+                "application/xhtml+xml"
+                "application/xhtml_xml"
+                "application/xml"
+                "image/gif"
+                "image/jpeg"
+                "image/png"
+                "image/webp"
+                "text/html"
+                "text/xml"
+                "x-scheme-handler/http"
+                "x-scheme-handler/https"
+                "x-scheme-handler/chromium"
+              ];
+              actions = {
+                new-window = {
+                  name = "New Window";
+                  exec = "${wrapper}/bin/brave";
+                };
+                new-private-window = {
+                  name = "New Incognito Window";
+                  exec = "${wrapper}/bin/brave --incognito";
+                };
+              };
+            };
+        in
+        pkgs.symlinkJoin {
+          name = "brave";
+          paths = [
+            wrapper
+            (desktopEntry {
+              name = "brave-browser";
+              desktopName = "Brave Web Browser";
+            })
+            (desktopEntry {
+              name = "com.brave.Browser";
+              desktopName = "Brave Web Browser";
+              noDisplay = true;
+            })
+          ];
+        };
       mullvad-sandboxed = pkgs.writeShellScriptBin "mullvad-browser" ''
         set -euo pipefail
         XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -389,6 +459,12 @@
           enable = true;
           decompressFonts = true;
         };
+        fontconfig.defaultFonts = {
+          sansSerif = [ ];
+          serif = [ ];
+          monospace = [ ];
+          emoji = [ "Noto Color Emoji" ];
+        };
       };
 
       programs.thunar = {
@@ -452,9 +528,6 @@
           pkgs.opencode
           pkgs.junction
 
-          # Brave：pkgs.brave 提供 .desktop 文件和图标；
-          # brave-sandboxed 以 lib.hiPrio 覆盖 brave 二进制，指向 bubblewrap 包装器。
-          # 从应用菜单点击 Brave 图标时，.desktop 的 Exec=brave 会调用包装器。
           pkgs.brave
           (lib.hiPrio brave-sandboxed)
           pkgs.mullvad-browser

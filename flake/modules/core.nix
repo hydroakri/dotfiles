@@ -275,6 +275,7 @@
       # nix utils
       pkgs.nix-tree
       pkgs.nix-output-monitor
+      inputs.nix-alien.packages.${pkgs.system}.default
       (lib.hiPrio pkgs.uutils-coreutils-noprefix)
       (lib.mkIf config.programs.zsh.enable pkgs.sqlite)
     ]
