@@ -788,6 +788,7 @@
                   "geosite-category-finance"
                   "geosite-category-securities-cn"
                   "geosite-category-cryptocurrency"
+                  "geosite-category-ecommerce"
                 ];
                 outbound = "direct";
               }
@@ -866,6 +867,7 @@
                   "geosite-category-bank-cn"
                   "geosite-category-finance"
                   "geosite-category-securities-cn"
+                  "geosite-category-ecommerce"
                   "geosite-gfw"
                   "geosite-geolocation-!cn"
                   "geosite-tld-cn"
