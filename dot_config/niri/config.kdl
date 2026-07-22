@@ -119,6 +119,12 @@ window-rule {
     open-floating true
 }
 
+window-rule {
+    match app-id="re.sonny.Junction"
+
+    open-floating true
+}
+
 layer-rule {
     match namespace="^notifications$"
 

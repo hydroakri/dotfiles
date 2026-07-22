@@ -5,6 +5,8 @@
 
 > Multi-host NixOS flake + Chezmoi dotfiles for Wayland desktops and ARM servers.
 
+*[中文](README_ZH.md)*
+
 This repo bundles two independent, loosely-coupled things: a multi-host NixOS
 flake (`flake/` — declarative machine provisioning) and a set of chezmoi-managed
 dotfiles (everything else — Wayland desktop session config). They share a
