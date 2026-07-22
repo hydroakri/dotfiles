@@ -33,7 +33,7 @@
   config = {
 
     boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
-    hardware.enableAllFirmware = lib.mkDefault true;
+    hardware.enableRedistributableFirmware = lib.mkDefault true;
     nixpkgs.config.allowUnfree = lib.mkDefault true;
     nix = {
       package = pkgs.lix;
