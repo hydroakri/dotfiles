@@ -23,9 +23,11 @@ output "eDP-1" {
     background-color "#FFFCF0"
 }
 
+workspace "scratch"
+
 layout {
     gaps 8
-    center-focused-column "always"
+    center-focused-column "never"
     preset-column-widths {
         proportion 0.47
         proportion 0.618
@@ -125,6 +127,11 @@ window-rule {
     open-floating true
 }
 
+window-rule {
+    match app-id="Mullvad Browser"
+    open-floating true
+}
+
 layer-rule {
     match namespace="^notifications$"
 
@@ -218,6 +225,13 @@ binds {
     // Alternatively, there are commands to move just a single window:
     // Mod+Ctrl+Page_Down { move-window-to-workspace-down; }
     // ...
+
+    Mod+S       { move-window-to-workspace "scratch"; }
+    Mod+Shift+S { focus-workspace "scratch"; }
+
+    // Move the focused window between the floating and the tiling layout.
+    Mod+V       { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
 
     Mod+Shift+Page_Down { move-workspace-down; }
     Mod+Shift+Page_Up   { move-workspace-up; }
