@@ -107,7 +107,7 @@
           allowed-hosts =["cache.hydroakri.cc"]
 
           [database]
-          url = "postgresql:///atticd?host=/run/postgresql"
+          url = "postgresql:///atticd?host=/run/postgresql&user=atticd"
 
           [storage]
           type = "s3"
