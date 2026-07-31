@@ -1,6 +1,6 @@
 ca.desrt.dconf-editor
-com.bitwarden.desktop
-com.brave.Browser
+chat.simplex.simplex
+com.artemchep.keyguard
 com.discordapp.Discord
 com.github.flxzt.rnote
 com.github.marhkb.Pods
@@ -28,15 +28,15 @@ io.bassi.Amberol
 io.github.electronstudio.WeylusCommunityEdition
 io.github.flattool.Warehouse
 io.github.forkgram.tdesktop
+io.github.ungoogled_software.ungoogled_chromium
 io.github.xiaoyifang.goldendict_ng
 io.mpv.Mpv
 it.mijorus.gearlever
 net.agalwood.Motrix
-net.mullvad.MullvadBrowser
-org.chromium.Chromium
 org.darktable.Darktable
 org.kde.kdenlive
 org.kde.krita
+org.kde.okular
 org.keepassxc.KeePassXC
 org.localsend.localsend_app
 org.mozilla.thunderbird_esr
@@ -48,5 +48,4 @@ org.prismlauncher.PrismLauncher
 org.signal.Signal
 org.virt_manager.virt-manager
 org.zotero.Zotero
-re.sonny.Junction
 us.zoom.Zoom
