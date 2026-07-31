@@ -105,11 +105,6 @@
         "eno1"
       ];
     };
-    utils = {
-      enable = true;
-      enableGraphicTools = true;
-      enableUptime = false;
-    };
     preservation.enable = true;
   };
   # SSH signing key for git commit verification

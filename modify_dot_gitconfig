@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Ensures the chezmoi-owned git config block is present in ~/.gitconfig
+# without clobbering anything else the user has added there manually.
+# chezmoi feeds the current file content to this script's stdin and writes
+# stdout back.
+#
+# Signing key must also be present in the target user's GitHub account
+# and in each host's sops-rendered allowed_signers file
+# (see flake/hosts/omen15/omen15.nix in the flake source).
+set -euo pipefail
+
+BEGIN="# BEGIN chezmoi-managed git config (see dot_config/git in dotfiles repo)"
+END="# END chezmoi-managed git config"
+
+block="$(cat <<EOF
+$BEGIN
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+[user]
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+$END
+EOF
+)"
+
+current="$(cat)"
+
+if grep -qF "$BEGIN" <<<"$current"; then
+  awk -v b="$BEGIN" -v e="$END" -v block="$block" '
+    $0==b {print block; skip=1; next}
+    $0==e {skip=0; next}
+    skip {next}
+    {print}
+  ' <<<"$current"
+else
+  printf '%s\n\n%s\n' "$current" "$block"
+fi

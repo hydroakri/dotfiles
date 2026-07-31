@@ -15,7 +15,8 @@ setopt HIST_IGNORE_ALL_DUPS
 # some personal variables
 export PATH="$PATH:$HOME/.local/bin:/var/lib/flatpak/exports/bin:~/.local/share/flatpak/exports/bin:/home/linuxbrew/.linuxbrew/bin"
 export XDG_DATA_DIRS="$XDG_DATA_DIRS:/var/lib/flatpak/exports/share:/home/$USER/.local/share/flatpak/exports/share"
-export SSH_AUTH_SOCK="/home/$USER/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+# export SSH_AUTH_SOCK="/home/$USER/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/app/com.artemchep.keyguard/ssh-agent.sock"
 export EDITOR=nvim
 export NH_OS_FLAKE="/home/hydroakri/.local/share/chezmoi/flake"
 export NH_HOME_FLAKE="/home/hydroakri/.local/share/chezmoi/flake/home"
