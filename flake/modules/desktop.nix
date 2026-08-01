@@ -397,7 +397,7 @@
           };
           pasta = {
             enable = true;
-            mode = "isolate";
+            mode = "transparent";
           };
           fonts.enable = true;
           timeZone = {
@@ -441,7 +441,7 @@
           };
           pasta = {
             enable = true;
-            mode = "isolate";
+            mode = "transparent";
           };
           bubblewrap.env = {
             LANG = "en_US.UTF-8";

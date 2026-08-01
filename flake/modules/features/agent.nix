@@ -1,8 +1,18 @@
 {
   config,
   inputs,
+  lib,
+  pkgs,
   ...
 }:
+
+let
+  localModelGguf = pkgs.fetchurl {
+    url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/main/Qwen3.5-9B-Q4_K_M.gguf";
+    # Placeholder — `nh os build` will fail on the real hash; paste it in here.
+    hash = "sha256-A7dHJ6hgpWM44ELEQguz8Esv7Fc0F19MufqFPa9St+g=";
+  };
+in
 
 {
   imports = [
@@ -10,61 +20,92 @@
     inputs.sops-nix.nixosModules.sops
   ];
 
-  sops = {
-    secrets = {
-      hermes_env = { };
-      searx_secret_key = { };
-      telegram_bot_token = { };
-    };
+  options.modules.agent = {
+    hermes.enable = lib.mkEnableOption "Hermes Agent gateway service";
+
+    "llama-cpp".enable =
+      lib.mkEnableOption "local llama.cpp server serving Qwen3.5-9B, standalone (not wired into Hermes Agent)";
   };
 
-  services.hermes-agent = {
-    enable = true;
-    container.enable = true;
-    addToSystemPackages = true;
-    container.hostUsers = [ "${config.mainUser}" ];
-
-    settings = {
-      provider = "Deepseek";
-      model = "deepseek-v4-flash";
-      context_length = 65000;
-      toolsets = [ "all" ];
-      api_server = {
-        enabled = true;
-        port = 8642;
-      };
-
-      platforms.telegram = {
-        enabled = true;
-        token_file = config.sops.secrets.telegram_bot_token.path;
-        allowed_users = [ 340947530 ];
+  config = {
+    sops = {
+      secrets = {
+        hermes_env = { };
+        searx_secret_key = { };
+        telegram_bot_token = { };
       };
     };
-    # Mount the decrypted sops secret as an environment file
-    environmentFiles = [
-      config.sops.secrets.hermes_env.path
-    ];
-    documents = {
-      "SOUL.md" = ''
-        You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.
 
-        # Hermes Agent Soul: Extreme Functionalism & Cognitive Ergonomics
+    services.llama-cpp = lib.mkIf config.modules.agent."llama-cpp".enable {
+      enable = true;
+      package = pkgs.llama-cpp.override { vulkanSupport = true; };
+      settings = {
+        host = "127.0.0.1";
+        port = 8081;
+        model = localModelGguf;
+        "n-gpu-layers" = 999;
+        "ctx-size" = 32768;
+        "flash-attn" = "on";
+        "cache-type-k" = "q8_0";
+        "cache-type-v" = "q8_0";
+        "parallel" = 1;
+        "cache-reuse" = 256;
+      };
+    };
 
-        ## 1. Extreme Functionalism
-        * **Pursuit of the Optimal**: Provide the "Best Practice" directly. Bypass mediocre or redundant choices.
-        * **Maximum Information Density**: Strive for peak information entropy. Responses must be concise.
-        * **Rejection of Marketing Fluff**: Aggressively filter out decorative language and filler.
+    # $HOME is unset under DynamicUser, so Vulkan's shader cache tries to
+    # write to literal "//.cache", fails (read-only under ProtectSystem),
+    systemd.services.llama-cpp.environment = lib.mkIf config.modules.agent."llama-cpp".enable {
+      HOME = "/tmp";
+    };
 
-        ## 2. Cognitive Load Minimization
-        * **Structural Transparency**: Outputs must maintain a high-contrast, hierarchical structure.
-        * **Single-Purpose Excellence**: Responses must converge on the most precise instrumental logic.
+    services.hermes-agent = {
+      enable = config.modules.agent.hermes.enable;
+      container.enable = true;
+      addToSystemPackages = true;
+      container.hostUsers = [ "${config.mainUser}" ];
 
-        ## 3. Operational Directives
-        * In NixOS environments, default to Declarative methodologies.
-        * Maintain a Physical Determinist mindset: transparency, reproducibility, and statelessness.
-        * Maintain bilingual proficiency: respond in user's language, but preserve technical precision in English.
-      '';
+      settings = {
+        provider = "Deepseek";
+        model = "deepseek-v4-flash";
+        context_length = 65000;
+        toolsets = [ "all" ];
+        api_server = {
+          enabled = true;
+          port = 8642;
+        };
+
+        platforms.telegram = {
+          enabled = true;
+          token_file = config.sops.secrets.telegram_bot_token.path;
+          allowed_users = [ 340947530 ];
+        };
+      };
+      # Mount the decrypted sops secret as an environment file
+      environmentFiles = [
+        config.sops.secrets.hermes_env.path
+      ];
+      documents = {
+        "SOUL.md" = ''
+          You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.
+
+          # Hermes Agent Soul: Extreme Functionalism & Cognitive Ergonomics
+
+          ## 1. Extreme Functionalism
+          * **Pursuit of the Optimal**: Provide the "Best Practice" directly. Bypass mediocre or redundant choices.
+          * **Maximum Information Density**: Strive for peak information entropy. Responses must be concise.
+          * **Rejection of Marketing Fluff**: Aggressively filter out decorative language and filler.
+
+          ## 2. Cognitive Load Minimization
+          * **Structural Transparency**: Outputs must maintain a high-contrast, hierarchical structure.
+          * **Single-Purpose Excellence**: Responses must converge on the most precise instrumental logic.
+
+          ## 3. Operational Directives
+          * In NixOS environments, default to Declarative methodologies.
+          * Maintain a Physical Determinist mindset: transparency, reproducibility, and statelessness.
+          * Maintain bilingual proficiency: respond in user's language, but preserve technical precision in English.
+        '';
+      };
     };
   };
-
 }

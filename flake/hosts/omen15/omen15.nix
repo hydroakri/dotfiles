@@ -34,6 +34,7 @@
     ../../modules/features/utils.nix
     ../../modules/features/virtualisation.nix
     ../../modules/features/gaming.nix
+    ../../modules/features/agent.nix
 
     # Filesystem modules
     ../../modules/filesystems/btrfs.nix
@@ -106,6 +107,7 @@
       ];
     };
     preservation.enable = true;
+    agent."llama-cpp".enable = true;
   };
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {
