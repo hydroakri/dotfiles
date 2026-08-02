@@ -1,0 +1,46 @@
+name: Update Home Manager Lock
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 2h after "Update Flake Lock" (00:00 UTC) — gives its nixpkgs bump time
+    # to auto-merge to main before we re-lock nixos-flake here, since our
+    # nixpkgs comes from nixos-flake/nixpkgs (dot_config/home-manager/flake.nix)
+    # rather than its own pin.
+    - cron: "0 2 * * *"
+
+jobs:
+  update-home-manager-lock:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Determinate Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Update flake.lock
+        id: update_step
+        uses: DeterminateSystems/update-flake-lock@main
+        with:
+          path-to-flake-dir: dot_config/home-manager
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          pr-title: "home-manager: nix flake update"
+          commit-msg: "home-manager: nix flake update"
+          pr-labels: |
+            automated
+            dependencies
+
+      - name: Approve and Enable Auto-merge
+        if: steps.update_step.outputs.pull-request-number != ''
+        run: |
+          PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
+          gh pr merge "$PR_NUM" --auto --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}

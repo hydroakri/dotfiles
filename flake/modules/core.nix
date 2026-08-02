@@ -248,7 +248,6 @@
       pkgs.curl
       pkgs.unar
       pkgs._7zz
-      pkgs.tmux
       # net utils
       pkgs.lsof
       pkgs.iputils
@@ -258,26 +257,13 @@
       pkgs.lshw
       pkgs.file
       pkgs.usbutils
-      # modern tools
-      pkgs.fzf
-      pkgs.bat
-      pkgs.gdu
-      pkgs.nawk
-      pkgs.btop
-      pkgs.yazi
-      pkgs.atuin
-      pkgs.zoxide
       pkgs.chezmoi
-      pkgs.lazygit
-      pkgs.ripgrep
-      pkgs.starship
-      pkgs.attic-client
       # nix utils
+      pkgs.attic-client
       pkgs.nix-tree
-      pkgs.nix-output-monitor
       inputs.nix-alien.packages.${pkgs.stdenv.hostPlatform.system}.default
+      # system-wide
       (lib.hiPrio pkgs.uutils-coreutils-noprefix)
-      (lib.mkIf config.programs.zsh.enable pkgs.sqlite)
     ]
     ++ lib.optionals pkgs.stdenv.hostPlatform.isx86_64 [
       # x86_64 specific tools

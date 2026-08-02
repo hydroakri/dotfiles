@@ -8,11 +8,13 @@ on:
     branches: [main]
     paths:
       - "flake/**"
+      - "dot_config/home-manager/**"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "flake/**"
+      - "dot_config/home-manager/**"
       - ".github/workflows/ci.yml"
   schedule:
     # Catches breakage from upstream nixpkgs drift even without a push here.
@@ -118,3 +120,41 @@ jobs:
             --accept-flake-config \
             --print-build-logs \
             --fallback
+
+  home-manager-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+        with:
+          extra-conf: |
+            max-jobs = auto
+            cores = 0
+
+      - name: Setup Attic Cache
+        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
+        with:
+          endpoint: https://cache.hydroakri.cc
+          cache: cachix
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      - name: Setup LanTian Cache
+        run: |
+          printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
+
+      - name: Build Home Manager activation package
+        working-directory: ./dot_config/home-manager
+        # --impure: home.username/homeDirectory read $USER/$HOME (see home.nix)
+        # so the config works for whoever runs it, not just one hardcoded user.
+        run: |
+          nix build ".#homeConfigurations.${USER}.activationPackage" \
+            --accept-flake-config \
+            --print-build-logs \
+            --fallback \
+            --impure
+        env:
+          USER: runner

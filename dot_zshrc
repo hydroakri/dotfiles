@@ -19,7 +19,7 @@ export SSH_AUTH_SOCK="/home/$USER/.var/app/com.bitwarden.desktop/data/.bitwarden
 # export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/app/com.artemchep.keyguard/ssh-agent.sock"
 export EDITOR=nvim
 export NH_OS_FLAKE="/home/hydroakri/.local/share/chezmoi/flake"
-export NH_HOME_FLAKE="/home/hydroakri/.local/share/chezmoi/flake/home"
+export NH_HOME_FLAKE="$HOME/.config/home-manager" # matches home-manager's own default flake path
 alias vi='nvim'
 alias suvi='sudo nvim -u ~/.config/nvim/init.lua'
 alias ack='ag'
@@ -43,6 +43,7 @@ zstyle ':completion:*' rehash true
 eval "$(starship init zsh)"
 eval "$(atuin init zsh)" # an awesome history/implement plugin !
 eval "$(zoxide init zsh)"
+eval "$(direnv hook zsh)" # NixOS hosts get this for free via /etc/zshrc; foreign distros need it here
 
 # antidote plugin manager
 [[ -d ~/.antidote ]] || git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
