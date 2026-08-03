@@ -42,18 +42,6 @@
   programs.nix-index.enable = true;
   programs.nix-index-database.comma.enable = true;
 
-  # chsh only accepts /etc/shells entries; standalone HM can't write there
-  # itself (needs root), so register+chsh here, idempotently, on activation
-  home.activation.make-zsh-default-shell = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ZSH_PATH="${config.home.homeDirectory}/.nix-profile/bin/zsh"
-    if [[ "$(getent passwd "${config.home.username}")" != *"$ZSH_PATH" ]]; then
-      if ! grep -qxF "$ZSH_PATH" /etc/shells; then
-        run echo "$ZSH_PATH" | sudo tee -a /etc/shells
-      fi
-      run chsh -s "$ZSH_PATH" "${config.home.username}"
-    fi
-  '';
-
   # bare packages, not programs.*: home-manager's programs.zsh/git/neovim
   # would fight chezmoi for ~/.zshrc, ~/.config/git, ~/.config/nvim
   home.packages = with pkgs; [

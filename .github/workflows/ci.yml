@@ -148,8 +148,6 @@ jobs:
 
       - name: Build Home Manager activation package
         working-directory: ./dot_config/home-manager
-        # --impure: home.username/homeDirectory read $USER/$HOME (see home.nix)
-        # so the config works for whoever runs it, not just one hardcoded user.
         run: |
           nix build ".#homeConfigurations.${USER}.activationPackage" \
             --accept-flake-config \
