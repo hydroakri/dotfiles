@@ -24,7 +24,7 @@
     "dnscrypt-blocklist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-bfTRO0M58VTLEKXvsSmIhN0FB396VB8qiJLgZDJRWL4=",
+        "narHash": "sha256-S4WiGgbCYJKWOu0fFWsGsyYVYelaubCMJyZS25RXP2s=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
       },
@@ -145,11 +145,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1785538495,
-        "narHash": "sha256-aqdQ9Xi7fmOe+NmMftzRA7dSIJUCO2ChXbK7wkvcqgA=",
+        "lastModified": 1785624552,
+        "narHash": "sha256-qKrtIPOsHk1qhqH7rjvv/G/K0d5KwU6wm9S514jopnU=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "ef74e7a88c05ffe92198bfbb2a460080d4f77763",
+        "rev": "1da9bbdc9a5cc5b9a550497df1a400c9eb09d92d",
         "type": "github"
       },
       "original": {
@@ -199,11 +199,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1785585308,
-        "narHash": "sha256-D2dDU592s5K7xvl0j/3pHdppdI8q3PUK3StjNcizoDg=",
+        "lastModified": 1785635483,
+        "narHash": "sha256-1oZxM7oFTgz8RN1arD5dymonyp0+8rGK3sGMP4ER9DA=",
         "owner": "nousresearch",
         "repo": "hermes-agent",
-        "rev": "470cf66b039c73bdd2c21d43094ce41a4db74eae",
+        "rev": "ee276a7982507a3901e36bb53f9b8a7c16273646",
         "type": "github"
       },
       "original": {
@@ -307,11 +307,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785046085,
-        "narHash": "sha256-UiK+mmZJuLWQVhJ5b2wDzogIYWAesyRm6LA3h3Ulh3Y=",
+        "lastModified": 1785650611,
+        "narHash": "sha256-q4kR7g+pCcz6NASvoVPYu+CWWUurX03wogtBqGmR4h0=",
         "owner": "nix-community",
         "repo": "nix-index-database",
-        "rev": "11665045df8b9938ef811a3bfdc65cffb02b4b70",
+        "rev": "dbc756c9d7287de19b3e0e38c928c47510d42c3e",
         "type": "github"
       },
       "original": {
@@ -406,11 +406,11 @@
       },
       "locked": {
         "dir": "flake",
-        "lastModified": 1785593994,
-        "narHash": "sha256-vYQ2wzhuWbIQFtpCU5k/5z8esBDuDaVqa4jYY9M+QzQ=",
+        "lastModified": 1785723384,
+        "narHash": "sha256-k8EaLuaLrrbAy42gsjSp/UXlsZXk9rp0KQv2JCvWQn4=",
         "owner": "hydroakri",
         "repo": "dotfiles",
-        "rev": "117c6e4ebb0cb39d556d9d5a5b812a79fec9632a",
+        "rev": "36a42009aa1372a0beab2ad2068beb570a2cfac6",
         "type": "github"
       },
       "original": {
@@ -467,11 +467,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1785454630,
-        "narHash": "sha256-LQy14TZp77TwbQf40gg1V3jo8FwJG0jGDkAH+zRHqg8=",
+        "lastModified": 1785571196,
+        "narHash": "sha256-KoTsyMQqnXQZq8deCEnu4QkyldkwH/bpMMhUcfMdGIw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "1559d3daa3ecc813a650b79375ea61b6741b8746",
+        "rev": "148bab9c1c3c53136ecb44a6ea356a0ed5b39b06",
         "type": "github"
       },
       "original": {
