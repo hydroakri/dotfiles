@@ -84,15 +84,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - name: Free Disk Space (x86_64 only)
-        if: matrix.system == 'x86_64-linux'
+      - name: Free Disk Space
         run: |
-          # 手动清理 GitHub Runner 预装的大型软件，腾出约 20-30GB 空间
+          # 手动清理 GitHub Runner 预装的大型软件，腾出空间（clang/llvm 源码构建对磁盘和内存都吃紧）
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force
+          sudo docker image prune --all --force || true
+
+      - name: Add swap
+        run: |
+          # runner 自带 /swapfile 已激活，fallocate 会因 Text file busy 失败，用独立文件名叠加
+          sudo fallocate -l 8G /extra-swapfile
+          sudo chmod 600 /extra-swapfile
+          sudo mkswap /extra-swapfile
+          sudo swapon /extra-swapfile
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
@@ -119,7 +126,8 @@ jobs:
           nix build '.#${{ matrix.attr }}' \
             --accept-flake-config \
             --print-build-logs \
-            --fallback
+            --fallback \
+            --cores 2
 
   home-manager-build:
     runs-on: ubuntu-latest
