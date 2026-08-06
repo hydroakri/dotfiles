@@ -118,7 +118,7 @@
     services.printing.enable = lib.mkOverride 900 false;
     services.avahi.enable = lib.mkOverride 900 false;
     networking.modemmanager.enable = lib.mkOverride 900 false;
-    services.geoclue2.enable = lib.mkOverride 1500 false;
+    services.geoclue2.enable = lib.mkOverride 900 true;
 
     # Audio (PipeWire)
     security.rtkit.enable = lib.mkOverride 900 true;
@@ -306,9 +306,24 @@
     services.gvfs.enable = lib.mkOverride 900 true;
     services.tumbler.enable = lib.mkOverride 900 true;
 
+    # 深浅主题完全由 darkman 通过 gsettings 管理，这里不写死任何值。
+    # 只保证 dconf 服务存在，gsettings 写入才可用。
+    programs.dconf.enable = true;
+
+    # gsettings 二进制 + schemas；并把 schema 目录加入会话 XDG_DATA_DIRS，
+    # 否则 darkman 脚本里的 gsettings 报 "No schemas installed"。
     environment.systemPackages = [
       #theme
+      pkgs.darkman
       pkgs.darkly
+      pkgs.adw-gtk3
+      pkgs.adwaita-qt
+      pkgs.adwaita-qt6
+      pkgs.qt6Packages.qt6ct
+      pkgs.libsForQt5.qt5ct
+      pkgs.glib
+      pkgs.gsettings-desktop-schemas
+      pkgs.python3 # noctalia's template processor + gtk-refresh script need it in PATH
 
       # clipboard
       pkgs.wl-clipboard
@@ -324,7 +339,6 @@
       pkgs.brightnessctl
       pkgs.pavucontrol
       pkgs.playerctl
-      pkgs.qt6Packages.qt6ct
       # blueman
       # mako
       # snixembed
@@ -333,6 +347,11 @@
       # xfce.xfce4-panel
       # xfce.xfce4-panel-profiles
       # rofi
+    ];
+
+    # 让会话内的 gsettings 能找到 desktop schemas（NixOS 不会自动加这个目录）
+    environment.sessionVariables.XDG_DATA_DIRS = [
+      "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"
     ];
 
     security.nixpak = {

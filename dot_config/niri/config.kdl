@@ -92,6 +92,7 @@ spawn-at-startup "playerctld"
 spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
 spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
+spawn-at-startup "darkman" "run"
 spawn-at-startup "noctalia-shell"
 spawn-at-startup "wl-clip-persist" "--clipboard" "both"
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
@@ -154,6 +155,9 @@ binds {
     XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
     XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "brightnessctl" "set" "5%+"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "5%-"; }
 
     Mod+Q { close-window; }
 
