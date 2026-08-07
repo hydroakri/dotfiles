@@ -453,7 +453,12 @@
       # plain extension-point option a consumer fills in from their own config.
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
-        package = pkgs.pkgsMusl.sing-box;
+        # withNaiveOutbound disabled: pulls in cronet-go, which fails to build
+        # from source on aarch64 on the current nixpkgs pin (libc++/clang
+        # locale identifier errors in vendored Chromium sources, unrelated to
+        # unbound's clangStdenv override in core.nix). Unused here anyway,
+        # since no config in this repo references the naive protocol.
+        package = pkgs.pkgsMusl.sing-box.override { withNaiveOutbound = false; };
         settings = {
           log = {
             level = "warn";
