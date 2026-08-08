@@ -406,11 +406,11 @@
       },
       "locked": {
         "dir": "flake",
-        "lastModified": 1786076404,
-        "narHash": "sha256-T7p+xsZcbNel6OgTtgcnFj7U7xnsgKhmRAHyTsnot+k=",
+        "lastModified": 1786112778,
+        "narHash": "sha256-HCfevZyg9vOH8wWpWz7/LVwWxiWerhxOV6hiqXCgGx0=",
         "owner": "hydroakri",
         "repo": "dotfiles",
-        "rev": "e223bcf925c92ec6541de47b701f112c9929c470",
+        "rev": "71318b52fefa859132f68462adc2104e6ad31dec",
         "type": "github"
       },
       "original": {
