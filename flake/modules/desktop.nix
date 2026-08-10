@@ -65,7 +65,7 @@
           addons = [
             pkgs.fcitx5-gtk
             pkgs.fcitx5-rime
-            pkgs.rime-wanxiang
+            pkgs.rime-ice
             pkgs.libsForQt5.fcitx5-qt
             pkgs.qt6Packages.fcitx5-qt
           ];

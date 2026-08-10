@@ -9,7 +9,9 @@ on:
     # 2h after "Update Flake Lock" (00:00 UTC) — gives its nixpkgs bump time
     # to auto-merge to main before we re-lock nixos-flake here, since our
     # nixpkgs comes from nixos-flake/nixpkgs (dot_config/home-manager/flake.nix)
-    # rather than its own pin.
+    # rather than its own pin. Runs daily but the check_stale gate below
+    # skips actually re-locking unless flake/flake.lock's nixpkgs moved, so
+    # it doesn't PR on every unrelated commit to main.
     - cron: "0 2 * * *"
 
 jobs:
@@ -25,7 +27,24 @@ jobs:
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
+      - name: Check if upstream nixpkgs pin has moved
+        id: check_stale
+        run: |
+          UPSTREAM_REV=$(jq -r '.nodes.nixpkgs.locked.rev' flake/flake.lock)
+          LOCKED_REV=$(jq -r '.nodes.nixpkgs.locked.rev' dot_config/home-manager/flake.lock)
+          echo "flake/flake.lock 的 nixpkgs: $UPSTREAM_REV"
+          echo "home-manager flake.lock 已鎖定的 nixpkgs: $LOCKED_REV"
+
+          if [ "$UPSTREAM_REV" == "$LOCKED_REV" ]; then
+            echo "nixpkgs 未變動，跳過本次更新。"
+            echo "should_update=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "偵測到上游 nixpkgs 變動，準備更新 home-manager lock。"
+            echo "should_update=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Update flake.lock
+        if: steps.check_stale.outputs.should_update == 'true'
         id: update_step
         uses: DeterminateSystems/update-flake-lock@main
         with:
@@ -38,7 +57,7 @@ jobs:
             dependencies
 
       - name: Approve and Enable Auto-merge
-        if: steps.update_step.outputs.pull-request-number != ''
+        if: steps.check_stale.outputs.should_update == 'true' && steps.update_step.outputs.pull-request-number != ''
         run: |
           PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
           gh pr merge "$PR_NUM" --auto --squash
