@@ -8,9 +8,8 @@
 
 let
   localModelGguf = pkgs.fetchurl {
-    url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/main/Qwen3.5-9B-Q4_K_M.gguf";
-    # Placeholder — `nh os build` will fail on the real hash; paste it in here.
-    hash = "sha256-A7dHJ6hgpWM44ELEQguz8Esv7Fc0F19MufqFPa9St+g=";
+    url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/main/Qwen3.5-9B-IQ4_XS.gguf";
+    hash = "sha256-fpGK7KBsUry1KOprBLTslX517owKcxOIVMDfzzcepCk=";
   };
 in
 
@@ -49,7 +48,12 @@ in
         "cache-type-k" = "q8_0";
         "cache-type-v" = "q8_0";
         "parallel" = 1;
-        "cache-reuse" = 256;
+        "temp" = 1.0;
+        "top-k" = 20;
+        "top-p" = 0.95;
+        "min-p" = 0.0;
+        "presence-penalty" = 1.5;
+        "n-predict" = 4096;
       };
     };
 
