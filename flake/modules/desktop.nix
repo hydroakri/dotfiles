@@ -130,17 +130,25 @@
     };
     #I2C
     hardware.i2c.enable = lib.mkOverride 900 true;
-    # Bluetooth
+    # Bluetooth：保留驱动，收紧守护进程行为——可配对/可发现状态限时，开机不自动开
+    # （powerOnBoot 也改 false，否则会跟 AutoEnable=false 冲突：systemd 层上电但
+    # bluez policy 不自动启用，行为不一致）
     hardware.bluetooth = {
       enable = lib.mkOverride 900 true;
-      powerOnBoot = lib.mkOverride 900 true;
+      powerOnBoot = lib.mkOverride 900 false;
       settings = {
         General = {
           Experimental = true;
           FastConnectable = true;
+          PairableTimeout = 30;
+          DiscoverableTimeout = 30;
+          MaxControllers = 1;
         };
         Policy = {
-          AutoEnable = true;
+          AutoEnable = false;
+          # network/on：只接受用随机地址（RPA）广播的对端设备，牺牲部分老设备
+          # 兼容性换隐私
+          Privacy = "network/on";
         };
       };
     };

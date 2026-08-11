@@ -50,13 +50,12 @@ in
       "net.core.default_qdisc" = lib.mkOverride 950 "cake";
       "net.ipv4.tcp_congestion_control" = lib.mkOverride 950 "bbr";
       "net.ipv4.tcp_low_latency" = lib.mkOverride 950 1;
-      # mkOverride 900: intentionally overrides security.nix's mkDefault 0
-      # (TCP timestamps traded for performance here); still yields to a plain
-      # user assignment, unlike a bare literal which would hard-conflict.
+      # mkOverride 900: intentionally overrides security.nix's mkOverride 950
+      # (TCP timestamps traded for performance here).
       "net.ipv4.tcp_timestamps" = lib.mkOverride 900 1;
       "net.ipv4.tcp_fastopen" = lib.mkOverride 950 3;
       "net.core.somaxconn" = lib.mkOverride 950 4096;
-      "net.core.netdev_max_backlog" = lib.mkOverride 950 2048;
+      "net.core.netdev_max_backlog" = lib.mkOverride 950 4096;
       "net.core.rmem_max" = lib.mkOverride 950 16777216;
       "net.core.wmem_max" = lib.mkOverride 950 16777216;
       "net.core.optmem_max" = lib.mkOverride 950 65536;
@@ -99,9 +98,13 @@ in
       "vm.min_free_kbytes" = lib.mkDefault 65536;
       "vm.stat_interval" = lib.mkDefault 10;
       "kernel.hung_task_timeout_secs" = lib.mkDefault 600;
-      "vm.max_map_count" = lib.mkOverride 900 1048576;
-      "fs.inotify.max_user_instances" = lib.mkOverride 900 1024;
+      # Bazzite/Pop!_OS 都默认这个值（几乎 INT_MAX，非游戏专用特例）
+      "vm.max_map_count" = lib.mkOverride 900 2147483642;
+      "fs.inotify.max_user_instances" = lib.mkOverride 900 8192;
     };
+    # kyber-iosched：确保下面 udev 规则给 NVMe 赋值 kyber 调度器时模块已加载，
+    # 否则可能静默失败退回默认调度器
+    boot.kernelModules = [ "kyber-iosched" ];
     services.udev.extraRules = ''
       # NVMe SSD: kyber 提供延迟隔离
       ACTION=="add|change", KERNEL=="nvme[0-9]*", ENV{DEVTYPE}=="disk", ATTR{queue/scheduler}="kyber"
@@ -123,11 +126,18 @@ in
       ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${zswapDisable}"
     '';
     boot.tmp.useTmpfs = lib.mkDefault true;
+    # THP 细粒度调优，跟 boot.kernelParams 的 transparent_hugepage=madvise 不
+    # 重复：那个控制要不要用大页，这两条是分配大页时的行为细化。
+    systemd.tmpfiles.rules = [
+      "w! /sys/kernel/mm/transparent_hugepage/khugepaged/max_ptes_none - - - - 409"
+      "w! /sys/kernel/mm/transparent_hugepage/defrag - - - - defer+madvise"
+    ];
     services.zram-generator = {
       enable = lib.mkDefault true;
       settings = {
         "zram0" = {
-          "zram-size" = "ram/2";
+          # 封顶 16GB，避免大内存机器把过多内存分给 zram
+          "zram-size" = "min(ram/2, 16384)";
           "compression-algorithm" = "zstd";
         };
       };

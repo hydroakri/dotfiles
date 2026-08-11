@@ -29,6 +29,7 @@
   - [CI / 构建流水线](#ci-build-pipeline)
   - [Home Manager](#home-manager)
   - [桌面技术栈](#桌面技术栈)
+  - [参考来源](#参考来源)
 - [License](#license)
 
 <a id="personal-config"></a>
@@ -60,16 +61,16 @@
 | 默认值 | 在哪 | 为什么可能出乎意料 |
 |---|---|---|
 | **用的是 Lix,不是上游 Nix** | `core.nix`:`nix.package = pkgs.lix;`(独立的 home-manager flake 里也单独设了一遍) | 这个仓库管的每台主机上跑的 daemon 都是 Lix fork,不是 `nixpkgs` 自带的 Nix。 |
-| **用 Rust coreutils,不是 GNU** | `core.nix`:`lib.hiPrio pkgs.uutils-coreutils-noprefix` | `uutils` 在 `PATH` 里把 GNU coreutils 遮住了。大部分兼容,但不是逐字节对齐——依赖 GNU 特有 flag 行为的脚本可能踩坑。 |
-| **用 doas,不是 sudo** | `security.nix`:`security.sudo.enable`/`sudo-rs.enable` 都是 `false`,`security.doas.enable = true` | `pkgs.doas-sudo-shim` 让 `sudo` 命令实际走 doas,方便肌肉记忆,但 doas 不支持 sudo 的所有参数——脚本里硬编码了 sudo 专属参数的话会炸。 |
+| **用 Rust coreutils,不是 GNU** | `core.nix`:`lib.hiPrio pkgs.uutils-coreutils-noprefix` | `uutils` 在 `PATH` 中覆盖了 GNU coreutils。大部分兼容,但并非逐字节对齐——依赖 GNU 特有 flag 行为的脚本可能出现异常。 |
+| **用 doas,不是 sudo** | `security.nix`:`security.sudo.enable`/`sudo-rs.enable` 都是 `false`,`security.doas.enable = true` | `pkgs.doas-sudo-shim` 使 `sudo` 命令实际由 doas 处理,以保留原有使用习惯,但 doas 并不支持 sudo 的全部参数——脚本中硬编码 sudo 专属参数时可能报错。 |
 | **默认用加固版内存分配器** | `security.nix`:`environment.memoryAllocator.provider = "graphene-hardened-light"` | 拿一部分性能换加固。模块注释里提到了替代方案:`scudo`(均衡)、`mimalloc`(性能优先)。 |
 | **好几个 daemon 用 musl + LibreSSL + clang 编译** | `core.nix`:unbound、chrony、openssh、wget;`proxy.nix`:dnscrypt-proxy、sing-box(都通过 `pkgsMusl`/`libressl`/`clangStdenv` override) | 攻击面更小、静态二进制——但这些不在标准二进制缓存里,机器上第一次构建得从源码编译。(`oci.nix` 也给自己的 nginx 套了同一层,不过那是主机级的 overlay,不是共用模块。) |
 | **Unbound 在跑,但不一定是你的解析器** | `core.nix` 让 `services.unbound` 监听 `127.0.0.1`,但 `networking.nameservers` 默认直接指向 Cloudflare+Quad9——没有任何主机覆盖过这个值 | 默认情况下没有任何东西把系统 DNS 指向 unbound。只有开启 `modules.proxy` 时才会(`networking.networkmanager.insertNameservers = [ "127.0.0.1" ]`,挂在 `adguardhome`/`dnscrypt-proxy`/`singbox.dns` 后面)。不开代理的话,unbound 是在跑,但从系统角度看是闲置的。 |
-| **WiFi 默认用 iwd——除了我自己的笔记本** | `desktop.nix`:`networking.networkmanager.wifi.backend = "iwd"`(`mkOverride 900`)——但 `omen15.nix` 用一次普通赋值把它改回了 `"wpa_supplicant"`,优先级更高,生效的是后者 | 连参考主机自己都没用模块里给的默认值(应该是驱动兼容性问题,仓库里没写明原因)。别因为模块默认是 iwd 就假设它一定适配你的 WiFi 网卡。 |
-| **Geoclue(定位服务)默认开着** | `desktop.nix`:`services.geoclue2.enable = true`(`mkOverride 900`) | 跟 `privacy.nix` 里其他反指纹追踪的工作是拧着的——不自己关掉的话,应用是能申请到定位权限的。 |
+| **WiFi 默认用 iwd——除了我自己的笔记本** | `desktop.nix`:`networking.networkmanager.wifi.backend = "iwd"`(`mkOverride 900`)——但 `omen15.nix` 用一次普通赋值把它改回了 `"wpa_supplicant"`,优先级更高,生效的是后者 | 即便是参考主机本身,也未采用模块提供的默认值(推测是驱动兼容性问题,仓库中未说明原因)。不应因为模块默认值是 iwd 就假设它适配任意 WiFi 网卡。 |
+| **Geoclue(定位服务)默认开着** | `desktop.nix`:`services.geoclue2.enable = true`(`mkOverride 900`) | 与 `privacy.nix` 中其他反指纹追踪措施相冲突——若不手动关闭,应用仍可申请到定位权限。 |
 | **桌面默认关掉了打印机/mDNS/移动网络发现** | `desktop.nix`:`services.printing.enable`、`services.avahi.enable`、`networking.modemmanager.enable` 都是 `false`(`mkOverride 900`) | 默认没有 CUPS 打印机自动发现,也没有 mDNS 的 `.local` 域名解析。 |
 | **用 earlyoom,不是 systemd-oomd** | `performance.nix`:`systemd.oomd.enable = false`、`services.earlyoom.enable = true`(带一条 `--avoid` 正则保护游戏/Wine/Proton 进程) | 进程被意外 OOM kill 时,该查的是 `earlyoom` 的阈值/保护名单,不是 `oomd`。 |
-| **chrony 开着,但从没显式关过 systemd-timesyncd** | `core.nix` 启用了 `services.chrony`(走 NTS 加密的服务器);没有任何地方设置 `services.timesyncd.enable = false` | nixpkgs 自己 `services.chrony.enable` 的选项说明写得很直白:"启用这个服务时请确保禁用 NTP"——建议在真实主机上查一下 `systemctl status systemd-timesyncd.service`,别想当然认为只有 chrony 在管时间。 |
+| **chrony 已启用,但未显式禁用 systemd-timesyncd** | `core.nix` 启用了 `services.chrony`(使用 NTS 加密的服务器);没有任何地方设置 `services.timesyncd.enable = false` | nixpkgs 中 `services.chrony.enable` 的选项说明明确注明:"启用该服务时请确保禁用 NTP"——建议在实际主机上检查 `systemctl status systemd-timesyncd.service`,不应想当然地认为只有 chrony 在管理时间。 |
 | **`router.nix` 里的 `services.resolved.enable = false` 是防御性的,不是真的在覆盖什么** | `router.nix` 在它的 DHCP server 开启时用 `mkDefault` 设了这个值 | NixOS 自己默认就是关着 `services.resolved` 的——这行只是防止它在别处被打开,并没有关掉什么正在跑的东西。 |
 
 ---
@@ -368,6 +369,34 @@ tmux、zellij、fzf、bat、atuin、zoxide、lazygit、ripgrep、starship……)
   (不走 chezmoi)。
 - **外部插件管理器**:`.chezmoiexternal.toml` 把 tmux 的 TPM 拉到
   `~/.tmux/plugins/tpm`;zsh 插件走 antidote。
+
+### 参考来源
+
+`security.nix`、`privacy.nix`、`performance.nix`、`powersave.nix`、
+`gaming.nix` 和 `networking/*.nix` 里的内核/sysctl/udev 硬化都是**改编而非照抄**
+自以下发行版。每一个值都是先在单台机器上实验过后才合并进来的——模块里没有任何
+一行是上游文件的直接搬运。逐项溯源和季度复查流程见
+[`docs/upstream-settings_zh.md`](docs/upstream-settings_zh.md)（English:
+[`docs/upstream-settings.md`](docs/upstream-settings.md)）。踩过的坑记录在
+[`docs/known-breaking-settings_zh.md`](docs/known-breaking-settings_zh.md)。
+
+| 发行版 | 仓库 | 提取内容 |
+|---|---|---|
+| CachyOS | https://github.com/CachyOS/CachyOS-Settings | sysctl(`70-cachyos-settings.conf`)、udev 规则、modprobe 默认值 |
+| CachyOS(内核) | https://github.com/CachyOS/linux-cachyos | 内核补丁/调度器调优(omen15 锁定的 cachyos-bore 内核 input 的来源) |
+| Pop!_OS | https://github.com/pop-os | 内核 config 级硬化(`pop-os/linux`) |
+| Whonix | https://github.com/Whonix(镜像)/ https://gitlab.com/whonix(上游) | 硬化设置大部分与 Kicksecure 共用 |
+| Tails | https://gitlab.tails.boum.org/tails/tails | `config/` + `features/` 里的 sysctl / AppArmor / 内核硬化 |
+| Qubes OS | https://github.com/QubesOS | `qubes-linux-kernel`、`qubes-core-admin`(隔离/安全架构参考) |
+| secureblue | https://github.com/secureblue/secureblue | 端到端硬化 config(sysctl / udev / dconf) |
+| Bazzite | https://github.com/ublue-os/bazzite | 桌面/游戏向 sysctl + udev 调优(`system_files/desktop/shared`)——`vm.max_map_count`、inotify 限制、调度器 udev 规则 |
+| Kicksecure | https://github.com/Kicksecure | `security-misc`(`990-security-misc.conf` 全套 KSPP sysctl 基线)、`hardened-kernel`、`tirdad` |
+| nix-mineral | https://github.com/cynicsketch/nix-mineral | NixOS 原生 KSPP 硬化模块(sysctl / 内核参数 / 模块黑名单;alpha 质量)。大量借鉴 `security-misc` 和 nixpkgs `hardened.nix`——适合与本仓库 sysctl 基线交叉核对,其 `docs/CAVEATS.md`/`OMITTED.md` 还记录了刻意跳过哪些设置及原因 |
+| Pop!_OS(`default-settings`) | https://github.com/pop-os/default-settings | System76 自己的桌面 sysctl/udev/modules-load/journald 调优(跟 `pop-os/linux` 那个内核配置仓库是两回事,后者没有自动化——见 `docs/upstream-settings.md`「内核 Kconfig 硬化」) |
+| GrapheneOS(`infrastructure`) | https://github.com/GrapheneOS/infrastructure | GrapheneOS 自己那批认证/更新服务器的部署脚本——不是他们(仅 Android)的操作系统本身。secureblue 的 `chrony.conf` 就是从这抄的原始出处;自己还有一份 `sysctl.d`(大部分是服务器网络语境的调优,不是通用加固建议) |
+
+最主要的来源是 Kicksecure 的 `security-misc`(实现了 KSPP 推荐设置,与 Whonix
+共用)以及 Tails/Qubes 自己的硬化;其余更多是性能/桌面调优参考。
 
 ---
 

@@ -251,9 +251,8 @@
         ++ lib.optional hasExtraOutbounds "manual";
     in
     mkIf config.modules.proxy.enable {
-      # 当开启透明代理 (TUN/TProxy) 时，必须优化内核与防火墙以支持非对称路由（如游戏 UDP）
-      # mkOverride 900: intentionally overrides security.nix's mkDefault 1; still
-      # yields to a plain user assignment, unlike a bare literal.
+      # 开启透明代理 (TUN/TProxy) 时需放松 rp_filter 以支持非对称路由（如游戏 UDP）
+      # mkOverride 900: intentionally overrides security.nix's mkOverride 950.
       boot.kernel.sysctl = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) {
         "net.ipv4.conf.all.rp_filter" = mkOverride 900 2;
         "net.ipv4.conf.default.rp_filter" = mkOverride 900 2;
@@ -446,18 +445,15 @@
       };
 
       # sing-box: native structured config via services.sing-box.settings (a real
-      # Nix attrset, not a hand-written JSON string) — see nixos/modules/services/
-      # networking/sing-box.nix. Any `{ _secret = "/path"; }` leaf is substituted
-      # at activation time by the upstream module itself (utils.genJqSecretsReplacementSnippet);
-      # this module declares none, since every value below is either public or a
-      # plain extension-point option a consumer fills in from their own config.
+      # Nix attrset, not a JSON string). `{ _secret = "/path"; }` leaves are
+      # substituted at activation time by the upstream module itself; this
+      # module declares none, since every value below is public or an
+      # extension-point option.
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
-        # withNaiveOutbound disabled: pulls in cronet-go, which fails to build
-        # from source on aarch64 on the current nixpkgs pin (libc++/clang
-        # locale identifier errors in vendored Chromium sources, unrelated to
-        # unbound's clangStdenv override in core.nix). Unused here anyway,
-        # since no config in this repo references the naive protocol.
+        # withNaiveOutbound disabled: cronet-go fails to build on aarch64 on
+        # the current nixpkgs pin (libc++/clang locale errors in vendored
+        # Chromium sources). Unused anyway — nothing here references naive.
         package = pkgs.pkgsMusl.sing-box.override { withNaiveOutbound = false; };
         settings = {
           log = {

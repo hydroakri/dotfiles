@@ -29,6 +29,7 @@
   - [CI / Build Pipeline](#ci-build-pipeline)
   - [Home Manager](#home-manager)
   - [Desktop Stack](#desktop-stack)
+  - [Reference Sources](#reference-sources)
 - [License](#license)
 
 <a id="personal-config"></a>
@@ -387,6 +388,37 @@ fight chezmoi for `~/.zshrc`, `~/.config/git`, `~/.config/nvim`.
   `desktop.nix` (not via chezmoi).
 - **External plugin managers**: `.chezmoiexternal.toml` pulls tmux's TPM into
   `~/.tmux/plugins/tpm`; zsh plugins go through antidote.
+
+### Reference Sources
+
+The kernel/sysctl/udev hardening in `security.nix`, `privacy.nix`,
+`performance.nix`, `powersave.nix`, `gaming.nix` and `networking/*.nix` is
+**adapted, not copied**, from these upstream distributions. Every value is
+experimented with per-host before being merged in — nothing in the modules
+below is a verbatim drop-in of an upstream file. Per-setting provenance and
+the quarterly review process live in
+[`docs/upstream-settings.md`](docs/upstream-settings.md). Settings that broke
+something on real hardware are tracked in
+[`docs/known-breaking-settings.md`](docs/known-breaking-settings.md).
+
+| Distro | Repository | What I take from it |
+|---|---|---|
+| CachyOS | https://github.com/CachyOS/CachyOS-Settings | sysctl (`70-cachyos-settings.conf`), udev rules, modprobe defaults |
+| CachyOS (kernel) | https://github.com/CachyOS/linux-cachyos | kernel patches/scheduler tweaks (source of omen15's pinned cachyos-bore kernel input) |
+| Pop!_OS | https://github.com/pop-os | kernel config-level hardening (`pop-os/linux`) |
+| Whonix | https://github.com/Whonix (mirror) / https://gitlab.com/whonix (upstream) | hardening settings largely shared with Kicksecure |
+| Tails | https://gitlab.tails.boum.org/tails/tails | sysctl / AppArmor / kernel hardening in `config/` + `features/` |
+| Qubes OS | https://github.com/QubesOS | `qubes-linux-kernel`, `qubes-core-admin` (isolation/security-architecture reference) |
+| secureblue | https://github.com/secureblue/secureblue | end-to-end hardening config (sysctl / udev / dconf) |
+| Bazzite | https://github.com/ublue-os/bazzite | desktop/gaming sysctl + udev tuning (`system_files/desktop/shared`) — `vm.max_map_count`, inotify limits, scheduler udev rules |
+| Kicksecure | https://github.com/Kicksecure | `security-misc` (full KSPP sysctl baseline in `990-security-misc.conf`), `hardened-kernel`, `tirdad` |
+| nix-mineral | https://github.com/cynicsketch/nix-mineral | NixOS-native KSPP hardening module (sysctl / boot params / module blacklist; alpha). Heavily borrows from `security-misc` + nixpkgs `hardened.nix` — good cross-check for the sysctl baseline, and its `docs/CAVEATS.md`/`OMITTED.md` list what it deliberately skips and why |
+| Pop!_OS (`default-settings`) | https://github.com/pop-os/default-settings | System76's own desktop sysctl/udev/modules-load/journald tuning (distinct from `pop-os/linux`, the kernel-config repo, which isn't automated — see "Kernel Kconfig hardening" in `docs/upstream-settings.md`) |
+| GrapheneOS (`infrastructure`) | https://github.com/GrapheneOS/infrastructure | Server deployment scripts for GrapheneOS's own attestation/update servers — not their (Android-only) OS itself. The original source secureblue's `chrony.conf` was copied from; also has its own `sysctl.d` (mostly server-networking-context tuning, not general hardening advice) |
+
+The main take-away sources are Kicksecure's `security-misc` (it implements the
+KSPP recommended settings and is shared with Whonix) and Tails'/Qubes' own
+hardening. The rest are mostly performance/desktop tuning references.
 
 ---
 

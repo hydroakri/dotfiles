@@ -1,0 +1,6 @@
+# Vendored upstream config snapshots — regenerable via
+# docs/upstream-vendor/refresh.sh, not source. Keeping them out of git
+# avoids ~1MB of third-party GPL/AGPL/Apache text growing in history every
+# time a quarterly review re-syncs, and sidesteps redistribution/licensing
+# questions entirely since they're never committed or published.
+docs/upstream-vendor/*/

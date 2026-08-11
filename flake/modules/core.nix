@@ -174,16 +174,31 @@
       enable = lib.mkDefault true;
       servers = [ ];
       enableMemoryLocking = lib.mkDefault false;
+      # rtcsync（下方 extraConfig）与 enableRTCTrimming 二选一；选 rtcsync（每 11 分钟同步一次）
+      enableRTCTrimming = lib.mkDefault false;
+      extraFlags = lib.mkDefault [
+        "-F 1" # seccomp 沙箱：限制 chronyd 崩溃/被攻破后能调用的系统调用集合
+        "-r" # 重启后复用 dumpdir 里存的历史测量数据，加快收敛
+      ];
       extraConfig = ''
         server time.grapheneos.org iburst
         server time.cloudflare.com iburst nts
         server nts.netnod.se iburst nts
+        server ntppool1.time.nl iburst nts
+        server time.dfm.dk iburst nts
+        server time.cifelli.xyz iburst nts
         server 129.6.15.27 iburst
 
+        minsources 3
+        authselectmode prefer
+        dscp 46
         noclientlog
         makestep 1.0 3
         ntsdumpdir /var/lib/chrony
         driftfile /var/lib/chrony/chrony.drift
+        dumpdir /var/lib/chrony
+        rtcsync
+        leapseclist ${pkgs.tzdata}/share/zoneinfo/leap-seconds.list
       '';
     };
     #SMART monitor

@@ -23,21 +23,14 @@
         zerotrust.stamp = config.sops.placeholder.doh_stamp;
       };
       singbox = {
-        # NOT config.sops.placeholder.zerotrust: this value is spliced into
-        # services.sing-box.settings (a real Nix attrset the sing-box module
-        # renders and injects secrets into itself), not a sops.templates
-        # string — sops-nix's own placeholder substitution never runs on it.
-        # sing-box's native `_secret` marker is the mechanism that actually
-        # works here (see proxy.nix's dohServerName option docs).
+        # Not sops.placeholder — this splices into a Nix attrset sing-box
+        # renders itself, so sops-nix's placeholder substitution never runs
+        # on it. sing-box's native `_secret` marker is what works here.
         dohServerName = {
           _secret = config.sops.secrets.zerotrust.path;
         };
-        # Whole-block JSON import via sing-box's _secret mechanism with
-        # quote = false (parses file content as JSON, not a string).
-        # These contain WireGuard/Tailscale endpoint definitions and the
-        # isp/proxy/manual outbound selectors respectively, as opaque JSON
-        # arrays from secrets.yaml — the sing-box native substitution
-        # (not sops.placeholder) handles injection at activation time.
+        # Whole-block JSON import via sing-box's _secret with quote = false
+        # (parses as JSON, not a string); opaque JSON arrays from secrets.yaml.
         endpointsFile = {
           _secret = config.sops.secrets.sing-box-endpoints.path;
           quote = false;
@@ -53,11 +46,9 @@
           "pdf.hydroakri.cc"
         ];
         forceOverseasDomains = [ "tradingview.com" ];
-        # tailscaleDirectIps needs the full CIDR (prefix included) in the
-        # secret's own stored value now — the old design appended "/32" in
-        # Nix code, which can't run on a value only known at activation time.
-        # If oracle_ip's stored content is still just the bare IP, update it
-        # via `sops` to "<ip>/32" before relying on this.
+        # tailscaleDirectIps needs the full CIDR in the secret itself (e.g.
+        # "<ip>/32") — can't be appended in Nix since the value is only
+        # known at activation time.
         tailscaleDirectDomains = [ { _secret = config.sops.secrets.oracle_domain.path; } ];
         tailscaleDirectIps = [ { _secret = config.sops.secrets.oracle_ip.path; } ];
       };

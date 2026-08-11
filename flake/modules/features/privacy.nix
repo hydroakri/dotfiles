@@ -65,17 +65,13 @@
           "BlockExternalExtensions" = true; # 阻止安装来自 Web Store 之外的外部扩展
         }
       );
-      # nixpkgs 的 kloak 包只打了二进制，没带上游（Whonix/kloak）那套 systemd 单元和
-      # find_wl_compositor 探测脚本，且上游脚本认的 compositor 名单里没有 niri，没法
-      # 直接抄。这里写一个只认 niri 的简化版：这台机器只有 mainUser 一个会话，不需要
-      # 像上游那样扫全部 VT 找 compositor，直接看 mainUser 的 /run/user/<uid> 下有
-      # 没有 wayland-* socket。
+      # nixpkgs 的 kloak 只有二进制，没有上游 systemd 单元/compositor 探测脚本，且
+      # 上游 compositor 名单没有 niri。这里写一个只认 niri 的简化版：mainUser 只有
+      # 一个会话，直接看 /run/user/<uid> 下有没有 wayland-* socket。
       kloakWaylandEnv = pkgs.writeShellScript "kloak-find-wayland" ''
         set -euo pipefail
-        # mainUser 的 uid 在这个仓库里从没显式钉死过（users.users.<name>.uid 默认是
-        # null，真正的 uid 是激活时 useradd 才分配的，Nix 求值期根本不知道），所以不能
-        # 直接 toString config.users.users.${config.mainUser}.uid，得在脚本运行时用
-        # id -u 现查。
+        # users.users.<name>.uid 默认 null，真正的 uid 是激活时 useradd 分配的，
+        # Nix 求值期拿不到，所以用 id -u 在脚本运行时现查。
         uid="$(${pkgs.coreutils}/bin/id -u ${lib.escapeShellArg config.mainUser})"
         runtime_dir="/run/user/$uid"
         wayland_display=""
@@ -101,11 +97,8 @@
       ];
 
       # IPv6 隐私扩展：生成随机临时地址，保护本机真实 MAC 地址不被追踪
-      # networking.tempAddresses（非直接写 sysctl）："default" 对应
-      # nixos/modules/tasks/network-interfaces.nix 内部算出
-      # net.ipv6.conf.default.use_tempaddr 的 sysctl 值本身就是这个选项的
-      # nixpkgs 自带默认值——显式写出防止 nixpkgs 未来改默认值，或宿主关闭
-      # IPv6 时 nixpkgs 自己把 tempAddresses 隐式改成 "disabled"。
+      # "default" 已是 nixpkgs 自带默认值，显式写出防止未来改默认值，或宿主关闭
+      # IPv6 时被隐式改成 "disabled"。
       networking.tempAddresses = lib.mkDefault "default";
       boot.kernel.sysctl = {
         # networking.tempAddresses 只驱动 *.default.use_tempaddr；.all 不受
@@ -158,22 +151,27 @@
 
       networking.networkmanager = {
         settings.connection."dhcp-send-hostname" = lib.mkDefault false;
+        # NM 是实际写 use_tempaddr sysctl 的执行者；默认 -1 理应继承下面
+        # networking.tempAddresses 的全局值，但曾有 NM 未正确继承的历史 bug，显式声明规避
+        settings.connection."ipv6.ip6-privacy" = lib.mkDefault 2;
         wifi.macAddress = lib.mkDefault "random";
         wifi.scanRandMacAddress = lib.mkDefault true;
         # 以太网 MAC 随机化仅对桌面机有意义；服务器固定 MAC 以避免 DHCP 绑定失败
         ethernet.macAddress = lib.mkIf config.services.displayManager.enable (lib.mkDefault "random");
       };
 
-      # kloak 硬编码检查非 root 就 FATAL ERROR 退出，所以是 system service、不设
-      # User——root 天然有 /dev/input/event*、/dev/uinput 访问权。ExecStartPre 跑
-      # kloakWaylandEnv 探测 Wayland socket，失败就 exit 1，交给 Restart=on-failure 重试。
+      # 机器序列号是一个设备指纹向量，收紧到 root/wheel 可读
+      systemd.tmpfiles.rules = [
+        "z /sys/class/dmi/id/product_serial 440 root wheel - -"
+      ];
+
+      # kloak 非 root 会 FATAL ERROR 退出，故为 system service、不设 User——root
+      # 天然有 /dev/input/event*、/dev/uinput 权限。ExecStartPre 探测 Wayland
+      # socket 失败就 exit 1，交给 Restart=on-failure 重试。
       #
-      # 不设 wantedBy：kloak 独占抓取真实键盘，niri 自身的全局快捷键和 fcitx5 的
-      # Ctrl+Space 切输入法都要靠直接读原始 libinput 事件，收不到经
-      # zwp_virtual_keyboard_v1（只转发给当前焦点应用）转发出来的事件，因此这两者在
-      # kloak 运行时会系统性失效，不能常驻。只在需要防击键/鼠标指纹追踪时手动
-      # `doas systemctl start kloak`，用完 `doas systemctl stop kloak`。没有
-      # WantedBy，`systemctl enable` 不会创建任何符号链接。
+      # 不设 wantedBy：kloak 独占抓取键盘，niri 全局快捷键和 fcitx5 切换都依赖原始
+      # libinput 事件，kloak 运行时会系统性失效，不能常驻。需要时手动
+      # `doas systemctl start/stop kloak`。
       systemd.services.kloak = lib.mkIf config.i18n.inputMethod.enable {
         description = "Keystroke and mouse timing anonymization";
         after = [ "graphical.target" ];
