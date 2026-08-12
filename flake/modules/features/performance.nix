@@ -75,6 +75,8 @@ in
       "net.ipv4.tcp_sack" = lib.mkOverride 950 1;
       "net.ipv4.tcp_adv_win_scale" = lib.mkDefault (-2);
       "net.ipv4.tcp_notsent_lowat" = lib.mkDefault 16384;
+      # 内存压力下主动收缩接收窗口而非仅停止增长；新内核选项(6.x+)，无明显下行
+      "net.ipv4.tcp_shrink_window" = lib.mkDefault 1;
       "net.netfilter.nf_conntrack_max" = lib.mkOverride 950 1048576;
       "net.netfilter.nf_conntrack_tcp_timeout_established" = lib.mkOverride 950 120;
 
@@ -124,6 +126,17 @@ in
 
       # When used with ZRAM, it is better to prefer page out only anonymous pages
       ACTION=="change", KERNEL=="zram0", ATTR{initstate}=="1", RUN+="${zswapDisable}"
+
+      # 低延迟专业音频计时权限，与上面的 cpu_dma_latency 同一套（CachyOS）
+      KERNEL=="rtc0", GROUP="audio"
+      KERNEL=="hpet", GROUP="audio"
+
+      # SATA 链路电源管理强制最高性能，禁止 ALPM 节电唤醒延迟（CachyOS）
+      ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", \
+          ATTR{link_power_management_supported}=="1", \
+          ATTR{link_power_management_policy}=="*", \
+          ATTR{link_power_management_policy}="max_performance"
+
     '';
     boot.tmp.useTmpfs = lib.mkDefault true;
     # THP 细粒度调优，跟 boot.kernelParams 的 transparent_hugepage=madvise 不
@@ -144,7 +157,14 @@ in
     };
     hardware.ksm.enable = lib.mkDefault true;
     services.fwupd.enable = lib.mkDefault true;
-    services.fstrim.enable = lib.mkDefault true;
+    services.fstrim = {
+      enable = lib.mkDefault true;
+      interval = lib.mkDefault "daily";
+    };
+    systemd.services.fstrim.serviceConfig = {
+      CPUSchedulingPolicy = "idle";
+      IOSchedulingClass = "idle";
+    };
     services.earlyoom = {
       enable = lib.mkDefault true;
       freeMemThreshold = lib.mkDefault 5;
@@ -168,6 +188,8 @@ in
     };
     services.journald.extraConfig = lib.mkDefault ''
       SystemMaxUse=64M
+      ForwardToWall=no
+      Storage=persistent
     '';
     environment.systemPackages = [
       pkgs.hdparm # udev rules require hdparm

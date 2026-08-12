@@ -31,13 +31,18 @@
       "randomize_kstack_offset=on"
       "bdev_allow_write_mounted=0"
       "erst_disable"
+      # 死代码：内核未编 CONFIG_LATENT_ENTROPY（且是 clang 编译，与 GCC 插件机制不兼容）
       "extra_latent_entropy"
       "hash_pointers=always"
-      "iommu=strict"
+      # 通用层严格 TLB 失效；不是 iommu=strict——那不是真实参数，之前从未生效
+      "iommu.strict=1"
+      # 编译默认是更严格的 always 档；这里降到 ptrace 档是刻意的兼容性考量
       "proc_mem.force_override=ptrace"
-      "lockdown=confidentiality"
-      # "lockdown=integrity"
-      # slightly performance loss
+      # 死代码：内核未编 CONFIG_SECURITY_LOCKDOWN_LSM，没有注册解析器，"unknown
+      # kernel command line parameter" 已实测证实——值本身不会被读到，改哪个
+      # 都零风险，不需要单独隔离测试
+      "lockdown=integrity"
+      # 死代码：CONFIG_CFI 没编（即使是 clang 编译也不够，还需要这个开关）
       "cfi=kcfi"
       "init_on_alloc=1"
       "vdso32=0"
@@ -45,7 +50,7 @@
       "random.trust_cpu=0"
       "random.trust_bootloader=0"
       "oops=panic"
-      # lockdown=confidentiality + zram 已让休眠不可用；显式禁用防止替换休眠镜像恢复内核
+      # zram 已让休眠不可用；显式禁用防止替换休眠镜像恢复内核
       "nohibernate"
       "kfence.sample_interval=100"
       # 提高 HWRNG 对内核熵池的贡献质量（ANSSI R8）
@@ -76,6 +81,8 @@
           "kernel.printk_devkmsg" = lib.mkOverride 950 "off";
           # when '3' can cause steam games stop working
           "kernel.yama.ptrace_scope" = lib.mkOverride 950 1;
+          # 32 位兼容模式 vsyscall 页；待验证是否影响 Steam
+          "abi.vsyscall32" = lib.mkOverride 950 0;
           # 1 = 仅禁非特权用户；服务器块覆盖为 2（完全禁止）
           "kernel.io_uring_disabled" = lib.mkOverride 950 1;
           "dev.tty.legacy_tiocsti" = lib.mkOverride 950 0;
@@ -109,6 +116,7 @@
           "net.ipv4.conf.*.arp_ignore" = lib.mkOverride 950 2;
           "net.ipv4.conf.*.arp_announce" = lib.mkOverride 950 2;
           "net.ipv4.conf.all.drop_gratuitous_arp" = lib.mkOverride 950 1;
+          "net.ipv4.conf.default.drop_gratuitous_arp" = lib.mkOverride 950 1;
           # 忽略违规的 ICMP 错误消息
           "net.ipv4.icmp_ignore_bogus_error_responses" = lib.mkOverride 950 1;
           # 忽略广播 ICMP echo，防御 Smurf 放大攻击
@@ -116,6 +124,9 @@
           # Disable ICMP echo（ping）, use TCP ping instead
           "net.ipv4.icmp_echo_ignore_all" = lib.mkOverride 950 1;
           "net.ipv6.icmp.echo_ignore_all" = lib.mkOverride 950 1;
+          # 组播/泛播 ping 静默补齐；不影响 NDP（用 ICMPv6 type 135/136，不是 echo）
+          "net.ipv6.icmp.echo_ignore_anycast" = lib.mkOverride 950 1;
+          "net.ipv6.icmp.echo_ignore_multicast" = lib.mkOverride 950 1;
           "net.ipv4.conf.all.secure_redirects" = lib.mkOverride 950 1;
           "net.ipv4.conf.default.secure_redirects" = lib.mkOverride 950 1;
           "net.ipv4.tcp_dsack" = lib.mkOverride 950 0;
@@ -130,6 +141,8 @@
           "net.core.bpf_jit_harden" = lib.mkOverride 950 2;
           # 禁止非特权用户调用 eBPF (除非你在进行内核级开发，否则建议开启)
           "kernel.unprivileged_bpf_disabled" = lib.mkOverride 950 1;
+          # podman/Flatpak 沙箱依赖 unprivileged userns
+          "kernel.unprivileged_userns_clone" = lib.mkOverride 950 1;
           # 限制内核指针地址泄露 (防止攻击者探测内核内存布局)
           "kernel.kptr_restrict" = lib.mkOverride 950 2;
           # 限制 dmesg 日志访问权限 (防止普通用户查看启动日志中的敏感信息)
@@ -237,11 +250,28 @@
       [PStore]
       Storage=none
     '';
+    # rescue/emergency 模式强制要求 root 密码，而不是直接掉进未认证的 root
+    # shell（Kicksecure）；物理接触已经约等于沦陷，但改动成本几乎为零
+    systemd.services.rescue.serviceConfig.Environment = "SYSTEMD_SULOGIN_FORCE=1";
+    systemd.services.emergency.serviceConfig.Environment = "SYSTEMD_SULOGIN_FORCE=1";
+    # 核心系统服务内存 cgroup 保底，防止内存压力下被过度压缩（grapheneos-infra；
+    # 未用 systemd-oomd，这里纯粹是内存 cgroup 权重，不依赖 oomd）
+    systemd.slices."-".sliceConfig = {
+      MemoryLow = "64M";
+      MemoryMin = "64M";
+    };
+    # sshd：提高文件描述符上限 + 崩溃后自动重启带退避（grapheneos-infra）
+    systemd.services.sshd.serviceConfig = {
+      LimitNOFILE = 8192;
+      Restart = "always";
+      RestartSec = "100ms";
+      RestartSteps = 5;
+      RestartMaxDelaySec = "10s";
+    };
     # 每次启动清理 /tmp 和 /var/tmp，防止上次会话残留的敏感数据（srvos）
     boot.tmp.cleanOnBoot = lib.mkDefault true;
     # ANSSI R33：审计权限提升与凭证变更事件（不审计 execve，避免桌面/游戏性能损耗）
     # security.auditd.enable = true;
-    security.unprivilegedUsernsClone = lib.mkDefault false;
     environment.memoryAllocator.provider = lib.mkDefault "graphene-hardened-light"; # balance:scudo performance:mimalloc security:graphene-hardened-light
     environment.systemPackages = [
       pkgs.ssh-copy-id
@@ -262,6 +292,8 @@
       pkgs.doas-sudo-shim
 
     ];
+    # libfido2 只装了 CLI 工具不会自动装它自带的 udev 规则，得显式注册
+    services.udev.packages = [ pkgs.libfido2 ];
     security = {
       sudo-rs.enable = lib.mkDefault false;
       sudo.enable = lib.mkDefault false;
@@ -284,11 +316,24 @@
     networking.firewall = {
       enable = lib.mkDefault true;
       allowedTCPPorts = [ 22 ];
+      # 失效兜底：firewall.service 关机时因 conflicts=shutdown.target 被停,
+      # 会删掉 INPUT 跳转规则,而 INPUT 链自身默认策略是 ACCEPT,留出一段无
+      # 防护窗口（同 Tails #20536 对 ferm 的修复）。这里固定 INPUT 默认策略
+      # 为 DROP，跳转规则还在时不影响正常判决，规则被删时兜底拒绝
+      extraCommands = ''
+        ip46tables -P INPUT DROP
+      '';
     };
 
     services.usbguard = {
       enable = lib.mkDefault true;
       presentDevicePolicy = lib.mkDefault "allow";
+      # 不匹配任何规则的 USB 设备默认拒绝（Kicksecure 默认）
+      implicitPolicyTarget = lib.mkDefault "block";
+      # 启动时已插的 USB 控制器保持现状，不重新评估
+      presentControllerPolicy = lib.mkDefault "keep";
+      # 规则只按设备 ID 匹配，不细化到物理插口
+      deviceRulesWithPort = lib.mkDefault false;
       IPCAllowedUsers = [
         "root"
         config.mainUser

@@ -18,6 +18,7 @@
 | `pcie_aspm=force` + `pcie_port_pm=force` | 潜在的 idle 挂起/设备唤醒异常 | 强制 ASPM 与部分设备电源管理不兼容 | 保留但代码注释标记"出问题先关这两个" | CachyOS | 挂起/唤醒循环测试（`systemctl suspend`→唤醒） |
 | amdgpu PSR（`amdgpu.dcfeaturemask=0x8`） | 显示冻结 | Cezanne 上 amdgpu DMCUB 固件在 PSR 开启时崩溃 | 回滚（注释留档） | CachyOS | 显示空闲一段时间后是否冻结 |
 | `kernel.kexec_load_disabled=1` | `systemctl kexec` 快速重启、kdump 失效 | 设计如此（防未过 BIOS 自检加载新内核） | 保留（已知代价） | Kicksecure | 无 |
+| `amd_iommu=force_isolation` | 开机内核 panic（omen15，第 106 代）；journal 完全没记录——panic 发生在 `systemd-journald` 启动之前 | 强制每设备独立 IOMMU 组；这块主板的 PCIe 拓扑很可能不是每一跳都干净支持 ACS。加之前就注意到内核 6.13 上有过卡启动的报告，但没实测就想当然认为这仓库的 7.1.6 内核大概率已修复 | 已回滚，从 `boot.kernelParams` 删除 | nix-mineral / Kicksecure | 确认是唯一元凶：第 107 代（105 + 仅 `iommu.strict=1` + `lockdown=integrity`，不含 `amd_iommu`）正常开机 |
 | `random.trust_cpu=0` + `random.trust_bootloader=0` | 启动阶段熵不足时明显变慢 | 不信 CPU RDRAND/固件熵，等真实熵源 | 保留 | Kicksecure | 对比启动时间 |
 
 ## B. 功能损坏级（不影响启动，但会废掉某些软件）
@@ -33,6 +34,12 @@
 | `net.ipv4.conf.all.rp_filter=1`（严格模式） | 透明代理（dae / sing-box TUN）流量被丢弃 | 反向路径过滤太严，代理场景必须松散 | 保留——`proxy.nix` 检测到代理时自动覆盖为 2 | Kicksecure | 开代理后出口流量测试 |
 | `net.ipv4.tcp_timestamps=0` | 性能下降（高带宽长连接） | 禁时间戳是安全项，性能上吃亏 | 保留——`performance.nix` 有意覆盖回 1（优先级 900 < 基线 950） | Kicksecure | 带宽测试对比 |
 | iwd WiFi 后端 | omen15 无线不稳定/断连 | Realtek 网卡驱动与 iwd 兼容问题 | omen15 覆盖回 `wpa_supplicant`（模块默认仍是 iwd） | 实测 | 长时间挂机测试 |
+| `services.openssh.settings` 里的 `DebianBanner=false` | 重建失败，sshd 配置校验拒绝一个不认识的指令 | `DebianBanner` 是 Debian/Ubuntu 专属的 sshd_config 补丁，nixpkgs 原生上游 OpenSSH 没有 | 回滚（手动删除）；`PrintMotd=false` 保留，覆盖同样的横幅抑制意图 | Kicksecure | `nixos-rebuild build` 配置校验失败 |
+| `iommu=strict` 内核参数 | 不会导致启动失败，但一直没起到看起来该起的作用 | 不是真实内核参数——通用 IOMMU 层真正的开关是带点号命名空间的 `iommu.strict=1`；`iommu=strict` 被静默当作无法识别的值接受，没有任何效果 | 已修复——换成 `iommu.strict=1` | nix-mineral（`strict-iommu.nix` 里写的就是正确形式） | 第 107 代：`journalctl -k` 显示 "strict mode (set via kernel command line)" |
+| `lockdown=confidentiality` 内核参数 | 不会导致启动失败，但压根什么都没做 | 跟 `iommu=strict` 是不同类型的失败——参数名和取值都合法，但这颗仓库自己编的 cachyos-bore-lto 内核从一开始就没编 `CONFIG_SECURITY_LOCKDOWN_LSM`（`/proc/config.gz` 确认：`# CONFIG_SECURITY_LOCKDOWN_LSM is not set`），这个参数配置的整个 LSM 在跑着的内核里根本不存在。另外 NixOS 自己的 `security.lsm`/`security.apparmor` 模块也会显式声明 `lsm=` 启动参数（`landlock,yama,apparmor,bpf`），从来没把 lockdown 列进去——就算真编进内核了，不加进这个列表也不会激活。`/sys/kernel/security/lockdown` 不存在，确认这个 LSM 从没加载过 | 保留，值改正为 `lockdown=integrity`（原来是 `confidentiality`）——现阶段仍然完全无效，但等哪天真的给 `CONFIG_SECURITY_LOCKDOWN_LSM` 打上 Kconfig 补丁，就是对的值不用再改。现在不追——跟 2026-08-11 对内核加固整体定下的"不值这个 Kconfig 维护成本"是同一个判断。`security.nix` 里其他单项设置（`kexec_load_disabled=1`、`debugfs=off`、`nohibernate`）已经覆盖了 lockdown 本该提供的部分保护；它独有的那部分（原始 `/dev/mem`/`/proc/kcore`、MSR 写入、ACPI 表覆盖）目前没有替代 | KSPP / 本仓库自己的 `security.nix` | `cat /sys/kernel/security/lockdown`——这个文件存在才说明 LSM 真的激活了；`/proc/config.gz` 查 Kconfig 符号 |
+| `cfi=kcfi` 内核参数 | 不会导致启动失败，静默无效 | `/proc/config.gz` 里 `# CONFIG_CFI is not set`——控制流完整性本身没编进去，即使内核是 clang 编译的（`CONFIG_CC_IS_CLANG=y`，这只是必要条件不是充分条件） | 保留原样，无害死代码——不追（同样是 Kconfig 维护成本的判断） | Kicksecure / KSPP | `zgrep CONFIG_CFI /proc/config.gz` |
+| `extra_latent_entropy` 内核参数 | 不会导致启动失败，静默无效 | `/proc/config.gz` 全文搜不到 `CONFIG_LATENT_ENTROPY`/`CONFIG_GCC_PLUGIN_LATENT_ENTROPY` 任何符号。双重不适用：latent_entropy 传统上是 GCC 插件功能，这颗内核是 clang 编译的（`CONFIG_CC_IS_CLANG=y`）——GCC 插件 ABI 跟 clang 工具链压根不兼容 | 保留原样，无害死代码——不追 | KSPP / madaidans-insecurities | `zgrep -i LATENT_ENTROPY /proc/config.gz` |
+| `proc_mem.force_override=ptrace` 内核参数 | 不是死代码——是真实生效的覆盖，但方向是变宽松 | `CONFIG_PROC_MEM_ALWAYS_FORCE=y` 是这颗内核编译期的默认值（`/proc/pid/mem` 访问最严格档）；这个启动参数在运行时主动把它降级成 `ptrace` 档。确认是真实生效的运行时覆盖（这类特性的启动参数本来就优先于 Kconfig 默认值），不是 Kconfig 缺口 | 刻意保留在 `ptrace` 档——已知的兼容性考量（某些工具需要在非 ptrace 关系下访问 `/proc/pid/mem`，`always` 档会挡住） | Kicksecure / KSPP | 不适用——这是设计如此，不是 bug；哪天要收紧到 `always` 前先确认那个兼容性需求是否还在 |
 | hardened malloc（graphene-hardened-light） | 部分游戏/性能敏感应用掉帧 | 硬化分配器有开销 | 保留；注释留档 scudo（均衡）/mimalloc（性能）备选 | hardened.nix | 游戏帧率对比 |
 | `cfi=kcfi` | 整体性能损耗 | 内核 CFI 是复杂度换安全 | 保留（已注明 slightly performance loss） | KSPP | 无 |
 | `slub_debug=FZP` | 10-20% 性能开销 | 分配调试（完整性+红区+填毒） | 停用，仅开发排查期临时开 | 实测（注释留档） | 无 |

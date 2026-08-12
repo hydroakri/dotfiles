@@ -184,6 +184,14 @@
         };
       };
     };
+    # 崩溃后自动重启带退避，NixOS 自带模块沙箱已比 secureblue 的加固版更严格，
+    # 这里只补重启行为（grapheneos-infra）
+    systemd.services.unbound.serviceConfig = {
+      Restart = lib.mkForce "always";
+      RestartSec = lib.mkForce "100ms";
+      RestartSteps = 5;
+      RestartMaxDelaySec = "10s";
+    };
     services.chrony = {
       package = pkgs.pkgsMusl.chrony;
       enable = lib.mkDefault true;

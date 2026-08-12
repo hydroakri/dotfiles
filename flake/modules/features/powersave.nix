@@ -83,6 +83,8 @@ in
     ];
     boot.kernel.sysctl = {
       "kernel.nmi_watchdog" = lib.mkOverride 950 0;
+      # 硬件 lockup watchdog 总开关；nmi_watchdog 只关 NMI 子类型，这个更彻底
+      "kernel.watchdog" = lib.mkOverride 950 0;
     };
     services.udev.extraRules = ''
       SUBSYSTEM=="pci", ATTR{power/control}="auto"

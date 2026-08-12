@@ -4,9 +4,11 @@ Vendors upstream distro/project settings files locally and diffs them
 against `flake/modules/features/*.nix`, instead of hand-diffing during the
 quarterly review. Covers every source under `docs/upstream-settings.md`
 that's a flat `key = value` table (CachyOS, Kicksecure, secureblue,
-Bazzite, nix-mineral). Tails/Qubes/Pop!_OS/Kicksecure kernel source trees
-are architecture references, not settings tables — those stay on the
-manual clone+diff process described in `docs/upstream-settings.md`.
+Bazzite, nix-mineral), plus non-flat sources reviewed manually against the
+vendored snapshot (Tails' `config/` — AppArmor hardening). Qubes/Pop!_OS's
+kernel source and Kicksecure's `hardened-kernel` are architecture
+references, not settings tables — those stay on the manual clone+diff
+process described in `docs/upstream-settings.md`.
 
 **Only `refresh.sh`, `diff_sysctl.py`, `diff_misc.py`, and this README are
 committed.** Vendored `<source>/` subdirectories are gitignored
@@ -38,6 +40,11 @@ keeps out multi-MB binary blobs (wallpapers/firmware).
    in at least one vendored source. See Coverage map below.
 4. **udev rules** — vendored for manual `diff -ru`, not parsed (rule
    syntax isn't a settings table).
+5. **systemd `*.service.d`/`*.slice.d` overrides** — not parsed (no automated
+   diff, `ini`-shaped but too varied to key-match generically). Manual
+   review only; found during the 2026-08-12 sweep, added to the coverage
+   map below. Re-check this bucket on future refreshes — it wasn't part of
+   the original coverage-map audit and could drift again.
 
 ## Coverage map
 
@@ -70,6 +77,7 @@ this repo declares nothing in that option namespace to compare against):
 | `systemd/coredump.conf.d`, `resolved.conf.d`, `system.conf.d`, `networkd.conf.d`, `pstore.conf.d`, `timesyncd.conf.d`, `user.conf.d` | none of these have a raw-string/settings escape hatch this repo currently uses |
 | `NetworkManager/conf.d` | `networking.networkmanager.*` sets high-level options, not raw conf.d keys — no direct mapping exists yet |
 | `openbsd/etc/unbound.conf` | `services.unbound.settings.server` — real key overlap (`hide-identity`, `aggressive-nsec`, `tls-cert-bundle`, etc.) but no parser: unbound.conf's `section:`-nested format isn't a flat `key = value` list like `sysctl.d` |
+| `*/etc/systemd/system/*.service.d`, `*.slice.d` (grapheneos-infra, Kicksecure) | `systemd.services.<name>.serviceConfig` / `systemd.slices.<name>.sliceConfig` — real overlap (found `unbound.service.d`, `chronyd.service.d`, `sshd.service.d`, `rescue.service.d`, `-.slice.d`, `system.slice.d`, `fstrim.service.d`/`.timer.d`, `systemd-boot-update.service.d`) but no parser, reviewed manually 2026-08-12 |
 
 **3. Deliberately not diffed** (format or scope reasons):
 
@@ -126,6 +134,7 @@ whatever license that upstream project chose:
 | pop-default-settings | GPL-3.0 |
 | grapheneos-infra | MIT |
 | openbsd | BSD-2-Clause/ISC (per-file; no repo-wide `LICENSE`) |
+| tails | GPL-3.0-or-later |
 
 Vendoring doesn't put this repo's own MIT code under GPL: settings values
 (`vm.swappiness = 180`) are facts/parameters, not copyrightable
@@ -171,4 +180,13 @@ files).
   can both contribute a same-named key; whichever file sorts last wins,
   with no "pick the relevant variant" logic. Treat any single value shown
   as "the vendored value" with the same skepticism as the rest of this
-  tool.
+  tool. Confirmed hardware-variant false positives (2026-08-12): Bazzite's
+  `deck/shared` `logind.conf.d`, `hid_nintendo`/`hid_playstation`
+  modules-load, and handheld-specific `pipewire.conf.d` hardware profiles
+  (Legion Go, GPD Win) — none apply to a desktop/server fleet.
+- **`diff_sysctl.py` only scans `flake/modules/features/*.nix`**: sysctl
+  set in `desktop.nix`, `server.nix`, or any other top-level module under
+  `flake/modules/` (outside `features/`) won't be seen and will
+  false-flag as "not ported". Confirmed case: `kernel.printk="3 3 3 3"`
+  is set in `desktop.nix`, not `features/`, and showed up as a false gap
+  in the 2026-08-12 sweep.

@@ -35,6 +35,7 @@ sources=(
   "pop-default-settings|https://github.com/pop-os/default-settings.git|master|LICENSE.md|GPL-3.0|"
   "grapheneos-infra|https://github.com/GrapheneOS/infrastructure.git|main|LICENSE|MIT|"
   "openbsd|https://github.com/openbsd/src.git|master||BSD-2-Clause/ISC (per-file; no repo-wide LICENSE)|etc"
+  "tails|https://gitlab.tails.boum.org/tails/tails.git|stable|COPYING|GPL-3.0-or-later|config"
 )
 
 # Config files are always small text; a 256K cap is generous headroom over

@@ -91,6 +91,19 @@
       options nvidia NVreg_InitializeSystemMemoryAllocations=0
       options nvidia NVreg_DynamicPowerManagement=0x02
       options nvidia NVreg_RegistryDwords=RmEnableAggressiveVblank=1
+      # omen15 默认走 S0ix modern standby（/sys/power/mem_sleep 实测），补上
+      # S0ix 场景的电源管理，和上面的 DynamicPowerManagement 是不同层
+      options nvidia NVreg_EnableS0ixPowerManagement=1
+    '';
+
+    services.udev.extraRules = lib.mkIf (config.modules.nvidia.variant != "nouveau") ''
+      # PCI 运行时电源管理：绑定 nvidia 驱动时开启 auto，解绑时还原为 on（CachyOS）
+      ACTION=="add|bind", SUBSYSTEM=="pci", DRIVERS=="nvidia", \
+          ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", \
+          TEST=="power/control", ATTR{power/control}="auto"
+      ACTION=="remove|unbind", SUBSYSTEM=="pci", DRIVERS=="nvidia", \
+          ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", \
+          TEST=="power/control", ATTR{power/control}="on"
     '';
 
     hardware.nvidia-container-toolkit.enable = lib.mkIf (config.modules.nvidia.variant != "nouveau") (
