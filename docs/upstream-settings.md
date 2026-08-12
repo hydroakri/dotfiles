@@ -33,6 +33,8 @@ bottom of this file) diffs against.
 | PCIe ASPM policy, `amd_pstate=active`, teo governor | CachyOS / TLP-style approach (self-authored udev script) | `powersave.nix` | Ported | Not yet reviewed |
 | kloak (keystroke/mouse timing anonymization) | Whonix / kloak upstream (nixpkgs only ships the binary) | `privacy.nix` | Partial (self-written systemd unit + Wayland detection) | Not yet reviewed |
 | IPv6 privacy addresses, MAC randomization | General baseline (also present in Kicksecure network hardening) | `privacy.nix` | Ported | Not yet reviewed |
+| Unbound resolver hardening (`hide-identity`/`hide-version`, `aggressive-nsec`, `harden-large-queries`, `use-caps-for-id`, `private-address` DNS-rebinding block) | OpenBSD `etc/unbound.conf` (base structure) + secureblue `unbound/conf.d` (`harden-large-queries`/`use-caps-for-id`) + GrapheneOS `infrastructure` `etc/unbound/unbound.conf` (`tls-cert-bundle`/`private-address`) | `core.nix` `services.unbound.settings.server` | Ported | 2026-08-12 |
+| DoT forward-zone: single vs. multi-provider pool | secureblue's `dnsconfd`/`dns_selector.py` picks exactly one provider (+ same-provider secondary IP) | `privacy.nix` `forward-zone` | Reference-only — kept existing 5-provider pool | 2026-08-12 |
 | Kernel module blacklist | Kicksecure `security-misc` (bluetooth etc.) → also in nix-mineral | Not ported (only essential items disabled currently) | Reference-only | — |
 | Full item-by-item sysctl comparison | nix-mineral, secureblue, Bazzite | `docs/upstream-vendor/diff_sysctl.py` — automated per-key diff against this repo's declared sysctl, not a decision on any individual key | Reference-only (tool) | 2026-08-11 |
 | Kernel Kconfig hardening | Pop!_OS `linux`, Qubes `qubes-linux-kernel`, Kicksecure `hardened-kernel`, KSPP recommendations generally | — | Not pursued (removed 2026-08-11: this repo builds its own CachyOS kernel; acting on any Kconfig finding means maintaining kernel patches/`structuredExtraConfig`, not a one-line Nix change — not worth the maintenance burden) | — |
@@ -46,8 +48,8 @@ bottom of this file) diffs against.
 
 One row per settings decision. Vendored sources: CachyOS, Kicksecure,
 secureblue, Bazzite, nix-mineral, Pop!_OS `default-settings`, GrapheneOS
-`infrastructure` (7 total). Tooling and process notes (bugs fixed, sources
-checked and rejected, coverage methodology) live in
+`infrastructure`, OpenBSD (8 total). Tooling and process notes (bugs fixed,
+sources checked and rejected, coverage methodology) live in
 `docs/upstream-vendor/README.md`, not here.
 
 ### 2026-08-11
@@ -111,6 +113,17 @@ checked and rejected, coverage methodology) live in
 | Per-service systemd sandboxing (`ProtectSystem` etc.) deferred | Different axis (per-service, not system-wide), substantial enough for its own pass |
 | `net.mptcp.enabled=0` (new) | Unused protocol on this desktop; one less parser in the attack surface |
 | `vm.memfd_noexec=1` (new) | Modern anti-fileless-malware mitigation; mainstream distros converging on it |
+
+### 2026-08-12
+
+| Item | Tradeoff |
+|---|---|
+| `do-ip6` kept `true` | Matches OpenBSD default; avoids dead IPv6 `forward-addr` entries |
+| `harden-large-queries`/`use-caps-for-id` (new) | secureblue baseline; free on TLS-only forwarding |
+| `private-address` DNS-rebinding block (new, all hosts) | GrapheneOS `infrastructure`; only filters upstream answers, not a host's own binding |
+| `tls-cert-bundle` explicit line declined | Already `mkDefault config.security.pki.caBundle` in nixpkgs' `unbound.nix` |
+| DoT forward-zone kept at 5 providers | secureblue narrows to one; diversity preferred over exposure here |
+| OpenBSD added as 8th vendored source (`etc/` sparse checkout) | Only real hand-written `unbound.conf` in the vendor set; full `src` clone is ~1.6GB |
 
 ## Quarterly review process (Plan A: manual)
 

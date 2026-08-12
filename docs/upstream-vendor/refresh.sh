@@ -22,15 +22,19 @@ vendor_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# name | repo url | branch | license file in repo root | SPDX id
+# name | repo url | branch | license file in repo root | SPDX id | sparse checkout paths (space-separated, empty = whole repo)
+#
+# openbsd/src is ~1.6GB (whole base-system source, not a settings repo) —
+# sparse-checkout paths let it vendor just `etc` via blobless partial clone.
 sources=(
-  "cachyos|https://github.com/CachyOS/CachyOS-Settings.git|master|LICENSE.md|GPL-3.0"
-  "kicksecure|https://github.com/Kicksecure/security-misc.git|master|COPYING|AGPL-3.0-or-later"
-  "secureblue|https://github.com/secureblue/secureblue.git|live|LICENSE|Apache-2.0"
-  "bazzite|https://github.com/ublue-os/bazzite.git|main|LICENSE|Apache-2.0"
-  "nix-mineral|https://github.com/cynicsketch/nix-mineral.git|main|LICENSE|GPL-3.0"
-  "pop-default-settings|https://github.com/pop-os/default-settings.git|master|LICENSE.md|GPL-3.0"
-  "grapheneos-infra|https://github.com/GrapheneOS/infrastructure.git|main|LICENSE|MIT"
+  "cachyos|https://github.com/CachyOS/CachyOS-Settings.git|master|LICENSE.md|GPL-3.0|"
+  "kicksecure|https://github.com/Kicksecure/security-misc.git|master|COPYING|AGPL-3.0-or-later|"
+  "secureblue|https://github.com/secureblue/secureblue.git|live|LICENSE|Apache-2.0|"
+  "bazzite|https://github.com/ublue-os/bazzite.git|main|LICENSE|Apache-2.0|"
+  "nix-mineral|https://github.com/cynicsketch/nix-mineral.git|main|LICENSE|GPL-3.0|"
+  "pop-default-settings|https://github.com/pop-os/default-settings.git|master|LICENSE.md|GPL-3.0|"
+  "grapheneos-infra|https://github.com/GrapheneOS/infrastructure.git|main|LICENSE|MIT|"
+  "openbsd|https://github.com/openbsd/src.git|master||BSD-2-Clause/ISC (per-file; no repo-wide LICENSE)|etc"
 )
 
 # Config files are always small text; a 256K cap is generous headroom over
@@ -66,11 +70,19 @@ vendor_whole_repo() {
 }
 
 for entry in "${sources[@]}"; do
-  IFS='|' read -r name url branch license_file license_id <<<"$entry"
+  IFS='|' read -r name url branch license_file license_id sparse <<<"$entry"
   dest="$vendor_dir/$name"
   clone="$work/$name"
 
-  git clone --quiet --depth 1 --branch "$branch" "$url" "$clone"
+  if [ -n "$sparse" ]; then
+    git clone --quiet --depth 1 --branch "$branch" --filter=blob:none --sparse "$url" "$clone"
+    # shellcheck disable=SC2086 # $sparse is an intentional word-split list of paths
+    git -C "$clone" sparse-checkout set $sparse
+    scope="sparse checkout ($sparse)"
+  else
+    git clone --quiet --depth 1 --branch "$branch" "$url" "$clone"
+    scope="entire repo"
+  fi
   commit="$(git -C "$clone" rev-parse HEAD)"
   date="$(date -u +%Y-%m-%dT%H:%MZ)"
 
@@ -79,7 +91,7 @@ for entry in "${sources[@]}"; do
 
   vendor_whole_repo "$clone" "$dest"
 
-  if [ -f "$clone/$license_file" ]; then
+  if [ -n "$license_file" ] && [ -f "$clone/$license_file" ]; then
     cp "$clone/$license_file" "$dest/LICENSE.upstream"
   fi
 
@@ -92,10 +104,10 @@ for entry in "${sources[@]}"; do
 - Branch: $branch
 - Commit: $commit
 - Fetched: $date
-- Vendored: entire repo (minus .git, minus files over ${MAX_BYTES} bytes) — $file_count files
-- License: $license_id (see \`LICENSE.upstream\` in this directory — NOT this
+- Vendored: $scope (minus .git, minus files over ${MAX_BYTES} bytes) — $file_count files
+- License: $license_id$([ -n "$license_file" ] && echo " (see \`LICENSE.upstream\` in this directory — NOT this
   repo's top-level MIT license; these files are third-party content, see
-  ../README.md "Licensing")
+  ../README.md \"Licensing\")")
 
 Re-run \`docs/upstream-vendor/refresh.sh\` to update. Files here are kept
 byte-identical to upstream (packaging suffixes stripped) — do not hand-edit.

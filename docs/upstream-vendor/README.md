@@ -69,6 +69,7 @@ this repo declares nothing in that option namespace to compare against):
 | `tmpfiles.d` | `systemd.tmpfiles.rules` |
 | `systemd/coredump.conf.d`, `resolved.conf.d`, `system.conf.d`, `networkd.conf.d`, `pstore.conf.d`, `timesyncd.conf.d`, `user.conf.d` | none of these have a raw-string/settings escape hatch this repo currently uses |
 | `NetworkManager/conf.d` | `networking.networkmanager.*` sets high-level options, not raw conf.d keys — no direct mapping exists yet |
+| `openbsd/etc/unbound.conf` | `services.unbound.settings.server` — real key overlap (`hide-identity`, `aggressive-nsec`, `tls-cert-bundle`, etc.) but no parser: unbound.conf's `section:`-nested format isn't a flat `key = value` list like `sysctl.d` |
 
 **3. Deliberately not diffed** (format or scope reasons):
 
@@ -120,7 +121,11 @@ whatever license that upstream project chose:
 | cachyos | GPL-3.0 |
 | kicksecure | AGPL-3.0-or-later |
 | secureblue | Apache-2.0 |
+| bazzite | Apache-2.0 |
 | nix-mineral | GPL-3.0 |
+| pop-default-settings | GPL-3.0 |
+| grapheneos-infra | MIT |
+| openbsd | BSD-2-Clause/ISC (per-file; no repo-wide `LICENSE`) |
 
 Vendoring doesn't put this repo's own MIT code under GPL: settings values
 (`vm.swappiness = 180`) are facts/parameters, not copyrightable

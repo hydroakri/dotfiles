@@ -30,6 +30,8 @@
 | PCIe ASPM 策略、amd_pstate=active、teo governor | CachyOS / TLP 思路（自研 udev 脚本） | `powersave.nix` | 已移植 | 未复查 |
 | kloak（击键/鼠标时序匿名化） | Whonix / kloak 上游（nixpkgs 只有二进制） | `privacy.nix` | 部分移植（自写 systemd 单元 + Wayland 探测） | 未复查 |
 | IPv6 隐私地址、MAC 随机化 | 通用基线（Kicksecure 网络硬化亦有） | `privacy.nix` | 已移植 | 未复查 |
+| Unbound 解析器硬化（hide-identity/hide-version、aggressive-nsec、harden-large-queries、use-caps-for-id、private-address 反 DNS rebinding） | OpenBSD `etc/unbound.conf`（基础结构）+ secureblue `unbound/conf.d`（harden-large-queries/use-caps-for-id）+ GrapheneOS `infrastructure` `etc/unbound/unbound.conf`（tls-cert-bundle/private-address） | `core.nix` `services.unbound.settings.server` | 已移植 | 2026-08-12 |
+| DoT forward-zone：单一还是多家上游 | secureblue 的 `dnsconfd`/`dns_selector.py` 只选一家（+同厂商备援 IP） | `privacy.nix` `forward-zone` | 仅参考——维持现有 5 家 | 2026-08-12 |
 | 内核模块黑名单 | Kicksecure `security-misc`（蓝牙等）→ nix-mineral 亦有 | 未移植（当前只禁了必要项） | 仅参考 | — |
 | sysctl 全套逐项对照 | nix-mineral、secureblue、Bazzite | `docs/upstream-vendor/diff_sysctl.py`——自动逐项对比本仓库声明的 sysctl,不代表对任何一项做了取舍决定 | 仅参考(工具) | 2026-08-11 |
 | 内核 Kconfig 硬化 | Pop!_OS `linux`、Qubes `qubes-linux-kernel`、Kicksecure `hardened-kernel`、KSPP 推荐项一般性参考 | — | 不追踪(2026-08-11 移除:本仓库自己编译 CachyOS 内核,任何 Kconfig 发现都要靠维护内核补丁/`structuredExtraConfig` 才能落地,不是改一行 Nix 那么简单,维护成本不划算) | — |
@@ -42,9 +44,9 @@
 ## 复查记录
 
 一行一个决定。已 vendor 的来源:CachyOS、Kicksecure、secureblue、Bazzite、
-nix-mineral、Pop!_OS `default-settings`、GrapheneOS `infrastructure`(共 7
-个)。过程/工具类记录(修的 bug、查过但没结果的来源、覆盖面方法论)放在
-`docs/upstream-vendor/README.md`,这里不重复。
+nix-mineral、Pop!_OS `default-settings`、GrapheneOS `infrastructure`、
+OpenBSD(共 8 个)。过程/工具类记录(修的 bug、查过但没结果的来源、覆盖面
+方法论)放在 `docs/upstream-vendor/README.md`,这里不重复。
 
 ### 2026-08-11
 
@@ -107,6 +109,17 @@ nix-mineral、Pop!_OS `default-settings`、GrapheneOS `infrastructure`(共 7
 | 逐服务 systemd 沙箱化(`ProtectSystem` 等)延后 | 结构不同的另一个维度(逐服务而非系统级),体量够独立开一轮 |
 | `net.mptcp.enabled=0`(新增) | 这台桌面机用不到的协议,少一个解析器就少一分攻击面 |
 | `vm.memfd_noexec=1`(新增) | 现代反无文件恶意代码缓解措施,主流发行版正在收敛到这个默认值 |
+
+### 2026-08-12
+
+| 项目 | 取舍理由 |
+|---|---|
+| `do-ip6` 保留 `true` | 跟 OpenBSD 默认一致;避免 IPv6 `forward-addr` 变成死配置 |
+| `harden-large-queries`/`use-caps-for-id`(新增） | secureblue 基线;纯 TLS 转发下几乎零代价 |
+| `private-address` 反 DNS rebinding(新增,全部 host） | GrapheneOS `infrastructure`;只过滤上游返回的答案,不影响 host 自身网卡绑定 |
+| `tls-cert-bundle` 显式写不采纳 | nixpkgs 的 `unbound.nix` 模块本来就 `mkDefault config.security.pki.caBundle` |
+| DoT forward-zone 维持 5 家 | secureblue 只选一家;这里更看重多样性,接受多一点第三方看到查询片段 |
+| OpenBSD 加为第 8 个 vendor 来源(`etc/` 稀疏检出） | vendor 集里唯一一份真实手写的 `unbound.conf`;完整 `src` 约 1.6GB |
 
 ## 季度复查流程（方案 A：手动）
 

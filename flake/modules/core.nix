@@ -135,7 +135,7 @@
           ];
 
           do-ip4 = lib.mkDefault true;
-          do-ip6 = lib.mkDefault false;
+          do-ip6 = lib.mkDefault true;
           do-udp = lib.mkDefault true;
           do-tcp = lib.mkDefault true;
 
@@ -143,10 +143,25 @@
           hide-version = lib.mkDefault true;
           hide-trustanchor = lib.mkDefault true;
           val-clean-additional = lib.mkDefault true;
+          harden-large-queries = lib.mkDefault true;
+          use-caps-for-id = lib.mkDefault true;
 
           auto-trust-anchor-file = lib.mkDefault "/var/lib/unbound/root.key";
           val-log-level = lib.mkDefault 2;
           aggressive-nsec = lib.mkDefault true;
+
+          # DNS rebinding protection: refuse external answers resolving into LAN/link-local ranges.
+          private-address = lib.mkDefault [
+            "10.0.0.0/8"
+            "172.16.0.0/12"
+            "192.168.0.0/16"
+            "169.254.0.0/16"
+            "fd00::/8"
+            "fe80::/10"
+            "127.0.0.0/8"
+            "::1/128"
+            "::ffff:0:0/96"
+          ];
 
           edns-buffer-size = lib.mkDefault 1232;
           cache-min-ttl = lib.mkDefault 300;
