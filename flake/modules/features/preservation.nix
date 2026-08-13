@@ -43,7 +43,13 @@
         "/var/lib/NetworkManager"
         "/etc/NetworkManager/system-connections"
         "/var/lib/unbound"
-        "/var/lib/chrony"
+        {
+          # chronyd 没有 StateDirectory= 自我校正,默认 0755 root:root 会卡住写权限。
+          directory = "/var/lib/chrony";
+          user = "chrony";
+          group = "chrony";
+          mode = "0750";
+        }
         "/var/lib/systemd/coredump"
         "/var/lib/systemd/timers"
         "/var/lib/systemd/rfkill"

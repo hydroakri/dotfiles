@@ -200,8 +200,10 @@
       # rtcsync（下方 extraConfig）与 enableRTCTrimming 二选一；选 rtcsync（每 11 分钟同步一次）
       enableRTCTrimming = lib.mkDefault false;
       extraFlags = lib.mkDefault [
-        "-F 1" # seccomp 沙箱：限制 chronyd 崩溃/被攻破后能调用的系统调用集合
-        "-r" # 重启后复用 dumpdir 里存的历史测量数据，加快收敛
+        # 不加 "-F"：chronyd 内建 seccomp 白名单假设 glibc/glibc malloc，与本仓库的
+        # musl + hardened_malloc 组合不兼容（触发白名单外系统调用，SIGSYS 崩溃）；
+        # systemd 层的 SystemCallFilter（NixOS chrony 模块自带）已提供等价过滤。
+        "-r" # 重启后复用 dumpdir 里存的历史测量数据,加快收敛
       ];
       extraConfig = ''
         server time.grapheneos.org iburst

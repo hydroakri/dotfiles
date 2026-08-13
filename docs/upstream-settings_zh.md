@@ -33,12 +33,12 @@
 | Unbound 解析器硬化（hide-identity/hide-version、aggressive-nsec、harden-large-queries、use-caps-for-id、private-address 反 DNS rebinding） | OpenBSD `etc/unbound.conf`（基础结构）+ secureblue `unbound/conf.d`（harden-large-queries/use-caps-for-id）+ GrapheneOS `infrastructure` `etc/unbound/unbound.conf`（tls-cert-bundle/private-address） | `core.nix` `services.unbound.settings.server` | 已移植 | 2026-08-12 |
 | DoT forward-zone：单一还是多家上游 | secureblue 的 `dnsconfd`/`dns_selector.py` 只选一家（+同厂商备援 IP） | `privacy.nix` `forward-zone` | 仅参考——维持现有 5 家 | 2026-08-12 |
 | 内核模块黑名单 | Kicksecure `security-misc`（蓝牙等）→ nix-mineral 亦有 | 未移植（当前只禁了必要项） | 仅参考 | 2026-08-12 |
-| sysctl 全套逐项对照 | nix-mineral、secureblue、Bazzite | `docs/upstream-vendor/diff_sysctl.py`——自动逐项对比本仓库声明的 sysctl,不代表对任何一项做了取舍决定。已知盲区：只扫描 `flake/modules/features/*.nix`，漏掉 `desktop.nix`/`server.nix` | 仅参考(工具) | 2026-08-12 |
+| sysctl 全套逐项对照 | nix-mineral、secureblue、Bazzite | `docs/upstream-vendor/diff_sysctl.py`——自动逐项对比本仓库声明的 sysctl,不代表对任何一项做了取舍决定。已知盲区：只扫描 `flake/modules/features/*.nix`，漏掉 `desktop.nix`/`server.nix` | 仅参考(工具) | 2026-08-13 |
 | 内核 Kconfig 硬化 | Pop!_OS `linux`、Qubes `qubes-linux-kernel`、Kicksecure `hardened-kernel`、KSPP 推荐项一般性参考 | — | 不追踪(2026-08-11 移除:本仓库自己编译 CachyOS 内核,任何 Kconfig 发现都要靠维护内核补丁/`structuredExtraConfig` 才能落地,不是改一行 Nix 那么简单,维护成本不划算) | — |
 | AppArmor profile 集 | Tails `config/`(AppArmor 硬化) | `security.nix` 只启用了 nixpkgs 自带 profiles | 仅参考——Tails 现为第 9 个已 vendor 来源，已复查；大部分是 Tor/onionshare/Debian FHS 专属，不可移植。`attach_disconnected`（与 `preservation.nix` bind mount 相关）试过又撤回——见复查记录 | 2026-08-12 |
 | 内核 config 级硬化 | Pop!_OS `linux` / Qubes `qubes-linux-kernel` / Kicksecure `hardened-kernel` | 未移植(NixOS 内核 config 改造是独立项目;已自动化的部分见上面 Kconfig 检查) | 仅参考 | — |
-| secureblue 全套(dconf/sysctl/udev) | `secureblue/secureblue` | sysctl:已自动 diff(见上)。udev:`50-usb-realtek-net.rules` 试过又撤回（`performance.nix`），U2F 改用 `services.udev.packages=[pkgs.libfido2]` 而非搬 `70-u2f.rules`，`51-android.rules` 不采纳（nixpkgs 判定被 systemd uaccess 取代）。dconf:不适用（跑 niri，不是 GNOME） | 仅参考 | 2026-08-12 |
-| Bazzite 桌面/游戏向 sysctl + udev | `ublue-os/bazzite` `system_files/desktop/shared` | sysctl:已自动 diff(见上)。udev:2026-08-12 已人工复核，非硬件专属项已无遗留 | 仅参考 | 2026-08-12 |
+| secureblue 全套(dconf/sysctl/udev) | `secureblue/secureblue` | sysctl:已自动 diff(见上)。udev:`50-usb-realtek-net.rules` 试过又撤回（`performance.nix`），U2F 改用 `services.udev.packages=[pkgs.libfido2]` 而非搬 `70-u2f.rules`，`51-android.rules` 不采纳（nixpkgs 判定被 systemd uaccess 取代）。dconf:不适用（跑 niri，不是 GNOME） | 仅参考 | 2026-08-13 |
+| Bazzite 桌面/游戏向 sysctl + udev | `ublue-os/bazzite` `system_files/desktop/shared` | sysctl:已自动 diff(见上)。udev:2026-08-12 已人工复核，非硬件专属项已无遗留 | 仅参考 | 2026-08-13 |
 | srvos(boot.tmp.cleanOnBoot 等) | nix-community/srvos | `security.nix` 个别行 | 部分移植（不是 flake input——一次性手动改编的参考，没有活的来源可以 diff） | 2026-08-12 |
 
 ## 复查记录
@@ -212,6 +212,16 @@ OpenBSD、Tails(共 9 个)。过程/工具类记录(修的 bug、查过但没结
 | `networking.firewall.extraCommands`：`ip46tables -P INPUT DROP`(新增） | NixOS 自己的 iptables `firewall.service` 从没设过 INPUT 链基础策略——所有过滤逻辑都靠一条跳转到 `nixos-fw` 链的规则,关机时 `stopScript` 会把这条规则删掉（`conflicts=shutdown.target`），在机器真正断电前留出一段 INPUT 默认 ACCEPT 策略暴露的窗口。跟 Tails `ferm.service.d` 修的问题（tails#20536）是同一类故障。失效兜底,已在构建出的脚本里验证过会在跳转规则加上之前先执行,不影响正常运行 |
 | `dbus-broker.service.d`(pop-default-settings：`Restart=on-failure`、`LimitNOFILE` 提高)不采纳 | 本轮不追 |
 | Tails 剩下约 40 个新枚举出来的 `*.d` 分类（GNOME 服务、Tor/onion-grater、live-boot 钩子、dconf、应用专属 D-Bus 策略） | 确认不适用——跑 niri 不是 GNOME，没用 Tor，永久安装不是 live-boot |
+
+### 2026-08-13（隔天检查：对全部 9 个来源跑 `git ls-remote`，只对动过的跑 diff）
+
+| 项目 | 取舍理由 |
+|---|---|
+| secureblue/bazzite/grapheneos-infra 有更新，另外 6 个不变 | GitHub compare 直接 diff，不整体重新 vendor：bazzite 只改了 README，grapheneos-infra 只是 `rbl.conf` 域名换位置（无新增），secureblue 除 CI/脚本外见下两条。`diff_sysctl.py`/`diff_misc.py` 重跑：输出跟 2026-08-11/12 完全一致 |
+| 从 `core.nix` 的 `extraFlags` 里删掉 chrony `-F 1`（SCFILTER） | 所有主机上 `chronyd` 崩溃循环（SIGSYS）——其内建 seccomp 白名单假设 glibc + glibc malloc，`pkgsMusl.chrony` 链的是 musl + `libhardened_malloc-light.so`。保留 `-r` |
+| `preservation.nix`：给 `/var/lib/chrony` 显式写上 `user`/`group`/`mode` | 原本继承模块 `0755 root:root` 默认值，悄悄覆盖了 NixOS chrony 模块自己的 `0750 chrony:chrony`，导致建不了新文件。列表里其它条目也查过同类问题，chrony 是唯一真正中招的 |
+| secureblue 新增的 `bash-timeout.sh`（服务器 `TMOUT=300`，空闲自动登出）不采纳 | `server.nix` 的真实候选项，目前本仓库哪都没设 `TMOUT` |
+| 无关发现：`nix flake check` 在 `packages.x86_64-linux.iso-installer` 上失败（`plasma6` vs `niri` 冲突） | 既有问题，跟这次复查无关，没有在这里修 |
 
 ## 季度复查流程（方案 A：手动）
 
