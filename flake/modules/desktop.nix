@@ -64,8 +64,9 @@
         fcitx5 = {
           addons = [
             pkgs.fcitx5-gtk
-            pkgs.fcitx5-rime
-            pkgs.rime-ice
+            (pkgs.fcitx5-rime.override {
+              rimeDataPkgs = [ pkgs.rime-ice ];
+            })
             pkgs.libsForQt5.fcitx5-qt
             pkgs.qt6Packages.fcitx5-qt
           ];
