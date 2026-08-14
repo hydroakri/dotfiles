@@ -1,6 +1,7 @@
 # nixos-rebuild boot --flake .#rpi4 --target-host root@192.168.1.4 --install-bootloader |& nom
 # nh os switch -H rpi4 ./
 {
+  lib,
   inputs,
   ...
 }:
@@ -50,11 +51,9 @@
     modules = {
       proxy = {
         enable = true;
-        dnscrypt-proxy.enable = true;
         singbox = {
           enable = true;
           tun = true;
-          dns = true;
         };
         dae = {
           enable = true;
@@ -100,6 +99,7 @@
       };
     };
 
+    networking.firewall.allowedUDPPorts = [ 53 ];
     networking.hostName = "rpi4";
   };
 }

@@ -119,34 +119,11 @@
         forward-zone = lib.mkDefault [
           {
             name = ".";
-            forward-tls-upstream = true;
-            forward-addr = [
-              # Quad9 (secured: malware blocking + DNSSEC)
-              "9.9.9.9@853#dns.quad9.net"
-              "149.112.112.112@853#dns.quad9.net"
-              "2620:fe::fe@853#dns.quad9.net"
-              "2620:fe::9@853#dns.quad9.net"
-              # Cloudflare (1.1.1.1, unfiltered)
-              "1.1.1.1@853#cloudflare-dns.com"
-              "1.0.0.1@853#cloudflare-dns.com"
-              "2606:4700:4700::1111@853#cloudflare-dns.com"
-              "2606:4700:4700::1001@853#cloudflare-dns.com"
-              # AdGuard Public DNS (default: ad/tracker blocking)
-              "94.140.14.14@853#dns.adguard-dns.com"
-              "94.140.15.15@853#dns.adguard-dns.com"
-              "2a10:50c0::ad1:ff@853#dns.adguard-dns.com"
-              "2a10:50c0::ad2:ff@853#dns.adguard-dns.com"
-              # Mullvad (base: unfiltered)
-              "194.242.2.2@853#dns.mullvad.net"
-              "2a07:e340::2@853#dns.mullvad.net"
-              # Control D Free DNS (p0: unfiltered)
-              "76.76.2.0@853#p0.freedns.controld.com"
-              "76.76.10.0@853#p0.freedns.controld.com"
-              "2606:1a40::0@853#p0.freedns.controld.com"
-              "2606:1a40:1::0@853#p0.freedns.controld.com"
-            ];
+            forward-addr = [ "127.0.0.1@5353" ];
           }
         ];
+        # unbound 默认 do-not-query-localhost=yes,不然拒绝转发到 loopback 地址
+        server.do-not-query-localhost = lib.mkDefault false;
       };
 
       networking.networkmanager = {

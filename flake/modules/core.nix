@@ -11,6 +11,7 @@
     ./features/networking/sqm.nix
     ./features/networking/tuning.nix
     inputs.nix-index-database.nixosModules.default
+    inputs.sops-nix.nixosModules.sops
   ];
 
   options.modules.core = {
@@ -124,14 +125,17 @@
       settings = {
         server = {
           interface = lib.mkDefault [
-            "127.0.0.1"
-            "::1"
+            "0.0.0.0"
+            "::"
           ];
+          # 未匹配的来源默认拒绝,不用另写 refuse
           access-control = lib.mkDefault [
-            "0.0.0.0/0 refuse"
+            "10.0.0.0/8 allow"
+            "172.16.0.0/12 allow"
+            "192.168.0.0/16 allow"
+            "fd00::/8 allow"
             "127.0.0.0/8 allow"
-            "::0/0 refuse"
-            "::1 allow"
+            "::1/128 allow"
           ];
 
           do-ip4 = lib.mkDefault true;
@@ -184,14 +188,101 @@
         };
       };
     };
-    # 崩溃后自动重启带退避，NixOS 自带模块沙箱已比 secureblue 的加固版更严格，
-    # 这里只补重启行为（grapheneos-infra）
-    systemd.services.unbound.serviceConfig = {
-      Restart = lib.mkForce "always";
-      RestartSec = lib.mkForce "100ms";
-      RestartSteps = 5;
-      RestartMaxDelaySec = "10s";
+
+    users = {
+      users.dnscrypt-proxy = {
+        isSystemUser = true;
+        group = "dnscrypt-proxy";
+        uid = lib.mkDefault 970;
+      };
+      groups.dnscrypt-proxy = { };
     };
+    systemd.services.dnscrypt-proxy.serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "dnscrypt-proxy";
+      Group = "dnscrypt-proxy";
+    };
+    services.dnscrypt-proxy = {
+      enable = lib.mkDefault true;
+      package = pkgs.pkgsMusl.dnscrypt-proxy;
+      settings = {
+        listen_addresses = [ "127.0.0.1:5353" ];
+        bootstrap_resolvers = [
+          "9.9.9.9:53"
+          "1.1.1.1:53"
+        ];
+        block_ipv6 = true;
+        cache = true;
+        cache_size = 4096;
+        dnscrypt_servers = true;
+        doh_servers = true;
+        ipv4_servers = true;
+        ipv6_servers = false;
+        lb_strategy = "p2";
+        netprobe_timeout = 300;
+        odoh_servers = true;
+        require_dnssec = false;
+        require_nofilter = false;
+        require_nolog = false;
+        server_names = [
+          "cloudflare"
+          "cloudflare-security"
+          "mullvad-adblock-doh"
+          "mullvad-all-doh"
+          "mullvad-base-doh"
+          "mullvad-doh"
+          "mullvad-extend-doh"
+          "nextdns"
+          "nextdns-ultralow"
+          "controld-block-malware"
+          "controld-block-malware-ad"
+          "controld-block-malware-ad-social"
+          "controld-uncensored"
+          "controld-unfiltered"
+          "dns0"
+          "dns0-unfiltered"
+          "adguard-dns-doh"
+          "adguard-dns-unfiltered-doh"
+          "quad9-dnscrypt-ip4-filter-ecs-pri"
+          "quad9-dnscrypt-ip4-filter-pri"
+          "quad9-dnscrypt-ip4-nofilter-ecs-pri"
+          "quad9-dnscrypt-ip4-nofilter-pri"
+          "quad9-doh-ip4-port443-filter-ecs-pri"
+          "quad9-doh-ip4-port443-filter-pri"
+          "quad9-doh-ip4-port443-nofilter-ecs-pri"
+          "quad9-doh-ip4-port443-nofilter-pri"
+          "quad9-doh-ip4-port5053-filter-ecs-pri"
+          "quad9-doh-ip4-port5053-filter-pri"
+          "quad9-doh-ip4-port5053-nofilter-ecs-pri"
+          "quad9-doh-ip4-port5053-nofilter-pri"
+          "rethinkdns-doh"
+          "flymc-doh"
+          "flymc-doh-8443"
+        ];
+        blocked_names.blocked_names_file = "${inputs.dnscrypt-blocklist}";
+        monitoring_ui = {
+          enabled = true;
+          listen_address = "127.0.0.1:9007";
+          prometheus_enabled = true;
+          username = "";
+          password = "";
+        };
+        sources.public-resolvers = {
+          cache_file = "public-resolvers.md";
+          minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3";
+          refresh_delay = 72;
+          urls = [
+            "https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md"
+            "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"
+          ];
+        };
+        static = {
+          flymc-doh.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
+          flymc-doh-8443.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
+        };
+      };
+    };
+
     services.chrony = {
       package = pkgs.pkgsMusl.chrony;
       enable = lib.mkDefault true;
