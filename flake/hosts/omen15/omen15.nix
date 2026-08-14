@@ -92,11 +92,10 @@
       };
     };
     proxy = {
-      enable = false;
+      enable = true;
       singbox = {
-        enable = true;
+        enable = false;
         tun = true;
-        dns = true;
       };
     };
     powersave = {

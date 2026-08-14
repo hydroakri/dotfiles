@@ -18,46 +18,14 @@
       description = "Enable AdGuardHome as the DNS resolver backend.";
     };
 
-    dnscrypt-proxy = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable dnscrypt-proxy as the DNS resolver backend.";
-      };
-      extraStaticStamps = lib.mkOption {
-        type = lib.types.attrsOf (
-          lib.types.submodule {
-            options.stamp = lib.mkOption {
-              type = lib.types.str;
-              description = "sdns:// DNSCrypt/DoH stamp for this static resolver entry.";
-            };
-          }
-        );
-        default = { };
-        example = lib.literalExpression ''
-          {
-            my-doh = { stamp = "sdns://..."; };
-          }
-        '';
-        description = ''
-          Extra `[static.<name>]` DNSCrypt-proxy resolver entries, appended to the
-          generic `server_names` list. Populate this in your own host config if you
-          want a custom/private DoH resolver — the module itself ships no personal
-          resolver entries or secrets.
-        '';
-      };
-    };
+    # dnscrypt-proxy 本身现在是 core.nix 常驻服务(所有主机都跑,含 server_names/
+    # static 的固定条目),proxy.nix 这里不再有它自己的选项。
 
     singbox = {
       enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
         description = "Enable sing-box as the proxy backend.";
-      };
-      dns = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable sing-box dns-in inbound (127.0.0.1:53).";
       };
       tun = lib.mkOption {
         type = lib.types.bool;
@@ -258,126 +226,36 @@
         "net.ipv4.conf.default.rp_filter" = mkOverride 900 2;
       };
 
-      # dns-in 启用时：unbound 让出 53，sing-box dns-in 接管系统 DNS 入口
-      services.unbound.settings.server.port = mkIf config.modules.proxy.singbox.dns (mkDefault 5353);
-
       # ----------------------------------------------------------------------------
       # start order
       # 1. 配置 Sing-box 的启动顺序：如果在该机器上启用了 AdGuardHome，则等待其启动
 
       # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
+      # dnscrypt-proxy/unbound 现在是 core.nix 常驻服务,不用再按 enable 条件判断
       systemd.services.dae = mkIf config.modules.proxy.dae.enable {
         after = [
           "network-online.target"
+          "unbound.service"
+          "dnscrypt-proxy.service"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.services.unbound.enable "unbound.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
 
         wants = [
           "network-online.target"
+          "unbound.service"
+          "dnscrypt-proxy.service"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.services.unbound.enable "unbound.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
       };
       # start order
       # ----------------------------------------------------------------------------
 
-      sops.templates."dnscrypt-proxy.toml" = lib.mkIf config.modules.proxy.dnscrypt-proxy.enable (
-        let
-          baseServerNames = [
-            "cloudflare"
-            "cloudflare-security"
-            "mullvad-adblock-doh"
-            "mullvad-all-doh"
-            "mullvad-base-doh"
-            "mullvad-doh"
-            "mullvad-extend-doh"
-            "nextdns"
-            "nextdns-ultralow"
-            "controld-block-malware"
-            "controld-block-malware-ad"
-            "controld-block-malware-ad-social"
-            "controld-uncensored"
-            "controld-unfiltered"
-            "dns0"
-            "dns0-unfiltered"
-            "adguard-dns-doh"
-            "adguard-dns-unfiltered-doh"
-            "quad9-dnscrypt-ip4-filter-ecs-pri"
-            "quad9-dnscrypt-ip4-filter-pri"
-            "quad9-dnscrypt-ip4-nofilter-ecs-pri"
-            "quad9-dnscrypt-ip4-nofilter-pri"
-            "quad9-doh-ip4-port443-filter-ecs-pri"
-            "quad9-doh-ip4-port443-filter-pri"
-            "quad9-doh-ip4-port443-nofilter-ecs-pri"
-            "quad9-doh-ip4-port443-nofilter-pri"
-            "quad9-doh-ip4-port5053-filter-ecs-pri"
-            "quad9-doh-ip4-port5053-filter-pri"
-            "quad9-doh-ip4-port5053-nofilter-ecs-pri"
-            "quad9-doh-ip4-port5053-nofilter-pri"
-            "rethinkdns-doh"
-          ];
-          extraNames = lib.attrNames config.modules.proxy.dnscrypt-proxy.extraStaticStamps;
-          allServerNames = baseServerNames ++ extraNames;
-          tomlStringList = names: "[" + lib.concatMapStringsSep ", " (n: ''"${n}"'') names + "]";
-          extraStaticBlocks = lib.concatStrings (
-            lib.mapAttrsToList (name: v: ''
-              [static.${name}]
-              stamp = "${v.stamp}"
-            '') config.modules.proxy.dnscrypt-proxy.extraStaticStamps
-          );
-        in
-        {
-          mode = "0444";
-          content = ''
-            listen_addresses = ['[::]:53']
-            block_ipv6 = true
-            cache = true
-            cache_size = 4096
-            dnscrypt_servers = true
-            doh_servers = true
-            ipv4_servers = true
-            ipv6_servers = false
-            lb_strategy = "p2"
-            netprobe_timeout = 300
-            odoh_servers = true
-            require_dnssec = false
-            require_nofilter = false
-            require_nolog = false
-            server_names = ${tomlStringList allServerNames}
-
-            [blocked_names]
-            blocked_names_file = "${inputs.dnscrypt-blocklist}"
-
-            [monitoring_ui]
-            enabled = true
-            listen_address = "0.0.0.0:9007"
-            prometheus_enabled = true
-            username = ""
-            password = ""
-
-            [sources]
-            [sources.public-resolvers]
-            cache_file = "public-resolvers.md"
-            minisign_key = "RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3"
-            refresh_delay = 72
-            urls = ["https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md", "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"]
-
-            [static]
-            ${extraStaticBlocks}
-          '';
-        }
-      );
-
-      networking.networkmanager.insertNameservers = mkIf (
-        config.modules.proxy.adguardhome.enable
-        || config.modules.proxy.dnscrypt-proxy.enable
-        || config.modules.proxy.singbox.dns
-      ) [ "127.0.0.1" ];
+      # dnscrypt-proxy 是 core.nix 常驻服务,系统级 DNS 已经在那边指向 unbound 了
+      networking.networkmanager.insertNameservers = mkIf config.modules.proxy.adguardhome.enable [
+        "127.0.0.1"
+      ];
 
       networking.firewall = lib.mkMerge [
         {
@@ -401,12 +279,6 @@
             547
             546
           ];
-        })
-
-        # dnscrypt-proxy 的端口规则
-        (mkIf config.modules.proxy.dnscrypt-proxy.enable {
-          allowedTCPPorts = [ 9007 ];
-          allowedUDPPorts = [ 53 ];
         })
 
         # Sing-box 的端口规则
@@ -433,15 +305,6 @@
             "CAP_NET_RAW"
           ];
         };
-      };
-
-      services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
-        enable = mkDefault true;
-        package = pkgs.pkgsMusl.dnscrypt-proxy;
-        configFile = config.sops.templates."dnscrypt-proxy.toml".path;
-      };
-      systemd.services.dnscrypt-proxy = mkIf config.modules.proxy.dnscrypt-proxy.enable {
-        restartTriggers = [ config.sops.templates."dnscrypt-proxy.toml".path ];
       };
 
       # sing-box: native structured config via services.sing-box.settings (a real
@@ -476,7 +339,7 @@
                 type = "udp";
                 tag = "dns-unbound";
                 server = "127.0.0.1";
-                server_port = if config.modules.proxy.singbox.dns then 5353 else 53;
+                server_port = 53;
               }
               {
                 type = "h3";
@@ -601,12 +464,6 @@
               listen_port = 1080;
             }
           ]
-          ++ lib.optional config.modules.proxy.singbox.dns {
-            type = "direct";
-            tag = "dns-in";
-            listen = "127.0.0.1";
-            listen_port = 53;
-          }
           ++ lib.optional config.modules.proxy.singbox.tun {
             type = "tun";
             tag = "tun-in";
@@ -623,6 +480,7 @@
             stack = "mixed";
             exclude_uid_range = [
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
+              "${toString config.users.users.dnscrypt-proxy.uid}:${toString config.users.users.dnscrypt-proxy.uid}"
             ];
           };
 
@@ -686,7 +544,7 @@
               {
                 type = "logical";
                 mode = "or";
-                rules = (lib.optional config.modules.proxy.singbox.dns { inbound = "dns-in"; }) ++ [
+                rules = [
                   { port = 53; }
                   { protocol = "dns"; }
                 ];
@@ -917,17 +775,17 @@
       systemd.services.sing-box = mkIf config.modules.proxy.singbox.enable {
         after = [
           "network-online.target"
+          "unbound.service"
+          "dnscrypt-proxy.service"
         ]
-        ++ (lib.optional config.services.unbound.enable "unbound.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
 
         wants = [
           "network-online.target"
+          "unbound.service"
+          "dnscrypt-proxy.service"
         ]
-        ++ (lib.optional config.services.unbound.enable "unbound.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.dnscrypt-proxy.enable "dnscrypt-proxy.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
 
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。

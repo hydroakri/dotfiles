@@ -10,18 +10,12 @@
     # decrypt secrets it doesn't use — see .sops.yaml's proxy-secrets.yaml$ rule.
     sops.secrets = {
       zerotrust.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
-      doh_stamp.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
       sing-box-endpoints.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
       sing-box-outbounds.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
       oracle_domain.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
       oracle_ip.sopsFile = ../modules/features/secrets/proxy-secrets.yaml;
     };
     modules.proxy = {
-      dnscrypt-proxy.extraStaticStamps = {
-        flymc-doh.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyAAxkbnMuZmx5bWMuY2MKL2Rucy1xdWVyeQ";
-        flymc-doh-8443.stamp = "sdns://AgQAAAAAAAAADjQzLjE1NC4xNTQuMTYyABFkbnMuZmx5bWMuY2M6ODQ0MwovZG5zLXF1ZXJ5";
-        zerotrust.stamp = config.sops.placeholder.doh_stamp;
-      };
       singbox = {
         # Not sops.placeholder — this splices into a Nix attrset sing-box
         # renders itself, so sops-nix's placeholder substitution never runs

@@ -128,6 +128,18 @@
       alsa.enable = lib.mkOverride 900 true;
       alsa.support32Bit = lib.mkOverride 900 true;
       pulse.enable = lib.mkOverride 900 true;
+      # ALSA 节点自动挂起,恢复时容易爆音/杂音
+      wireplumber.extraConfig."51-disable-suspension" = {
+        "monitor.alsa.rules" = [
+          {
+            matches = [
+              { "node.name" = "~alsa_input.*"; }
+              { "node.name" = "~alsa_output.*"; }
+            ];
+            actions.update-props."session.suspend-timeout-seconds" = 0;
+          }
+        ];
+      };
     };
     #I2C
     hardware.i2c.enable = lib.mkOverride 900 true;

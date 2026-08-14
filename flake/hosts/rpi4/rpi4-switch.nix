@@ -91,6 +91,7 @@
     };
 
     networking.hostName = "rpi4-switch";
+    networking.firewall.allowedUDPPorts = [ 53 ];
     environment.etc."tuned/active_profile".text = lib.mkForce "network-throughput";
     networking.networkmanager.unmanaged = [
       "end0"

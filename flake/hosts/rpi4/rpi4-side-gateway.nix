@@ -50,11 +50,9 @@
     modules = {
       proxy = {
         enable = true;
-        dnscrypt-proxy.enable = true;
         singbox = {
           enable = true;
           tun = true;
-          dns = true;
         };
         dae = {
           enable = true;
@@ -100,6 +98,7 @@
       };
     };
 
+    networking.firewall.allowedUDPPorts = [ 53 ];
     networking.hostName = "rpi4";
   };
 }
