@@ -2,24 +2,47 @@ name: Update Flake Lock
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
 
+concurrency:
+  group: update-flake-lock
+  cancel-in-progress: true
+
 jobs:
   update-flake-lock:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure git authentication
+        run: |
+          gh auth setup-git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install Determinate Nix
         uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Setup Attic Cache
+        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
+        with:
+          endpoint: https://cache.hydroakri.cc
+          cache: cachix
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      - name: Setup LanTian Cache
+        run: |
+          printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
 
       - name: Check if Kernel (linuxPackages_latest) needs update and NixOS Status
         id: check_kernel
@@ -49,23 +72,97 @@ jobs:
             echo "should_update=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Update flake.lock
+      - name: Update lock and build before PR
         if: steps.check_kernel.outputs.should_update == 'true'
-        id: update_step
-        uses: DeterminateSystems/update-flake-lock@main
-        with:
-          path-to-flake-dir: flake
-          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
-          pr-title: "nix flake update"
-          commit-msg: "nix flake update"
-          pr-labels: |
-            automated
-            dependencies
-
-      - name: Approve and Enable Auto-merge
-        if: steps.check_kernel.outputs.should_update == 'true' && steps.update_step.outputs.pull-request-number != ''
         run: |
-          PR_NUM=${{ steps.update_step.outputs.pull-request-number }}
-          gh pr merge "$PR_NUM" --auto --squash
+          cp flake/flake.lock /tmp/flake_lock_before.json
+          nix flake update --flake ./flake --accept-flake-config
+
+          CHANGED=$(git status --porcelain)
+          echo "$CHANGED"
+          if [ -n "$(echo "$CHANGED" | grep -v -E '^ M flake/flake.lock$' || true)" ]; then
+            echo "::error::unexpected working-tree changes after nix flake update, aborting"
+            git checkout -- .
+            exit 1
+          fi
+
+          echo "== nix flake check =="
+          nix flake check ./flake --accept-flake-config
+
+          echo "== build omen15 toplevel =="
+          nix build './flake#nixosConfigurations.omen15.config.system.build.toplevel' \
+            --accept-flake-config --print-build-logs --fallback --cores 2
+
+          # aarch64 hosts can't build natively here; they are covered by the
+          # ci.yml matrix once the PR is open.
+
+      - name: Create update PR
+        if: steps.check_kernel.outputs.should_update == 'true'
+        id: create_pr
+        run: |
+          BRANCH="bot/flake-update-$(date +%Y%m%d)"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+
+          jq -r '.nodes | to_entries[] | select(.value.locked) | [.key, .value.locked.rev] | @tsv' /tmp/flake_lock_before.json | sort > /tmp/lock_before.tsv
+          jq -r '.nodes | to_entries[] | select(.value.locked) | [.key, .value.locked.rev] | @tsv' flake/flake.lock | sort > /tmp/lock_after.tsv
+          CHANGED_INPUTS=$(join /tmp/lock_before.tsv /tmp/lock_after.tsv | awk '$2 != $3 { printf "- %s %s -> %s\n", $1, substr($2,1,12), substr($3,1,12) }')
+
+          git checkout -B "$BRANCH"
+          git add flake/flake.lock
+          git commit -m "nix flake update"
+          git push -u origin "$BRANCH"
+
+          BODY_FILE=$(mktemp)
+          {
+            echo 'Automated by `update-flake-lock` — the new lock already passed `nix flake check` and an `omen15` toplevel build in this workflow.'
+            echo 'Merged only when CI is green; rolled back automatically on any failure.'
+            echo
+            echo '### Changed inputs'
+            echo "${CHANGED_INPUTS:-none}"
+            echo
+            echo '> aarch64 hosts are built by the ci.yml matrix once this PR is open.'
+          } > "$BODY_FILE"
+
+          PR_NUM=$(gh pr create --base main --head "$BRANCH" \
+            --title "nix flake update" \
+            --body-file "$BODY_FILE" \
+            --label automated --label dependencies \
+            --json number -q .number)
+          echo "pr_number=$PR_NUM" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CI, merge or roll back
+        if: steps.create_pr.outputs.pr_number != ''
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          PR_NUM: ${{ steps.create_pr.outputs.pr_number }}
+          BRANCH: ${{ steps.create_pr.outputs.branch }}
+        run: |
+          set -e
+
+          for i in $(seq 1 60); do
+            N=$(gh pr view "$PR_NUM" --json statusCheckRollup -q '.statusCheckRollup | length' 2>/dev/null || echo 0)
+            [ "$N" -gt 0 ] && break
+            echo "waiting for CI to register on PR #$PR_NUM..."
+            sleep 10
+          done
+
+          echo "== waiting for CI checks =="
+          if timeout 21600 gh pr checks "$PR_NUM" --watch --interval 60; then
+            echo "== all checks green, merging =="
+            for attempt in 1 2 3; do
+              if gh pr merge "$PR_NUM" --squash --delete-branch; then
+                echo "merged #$PR_NUM"
+                exit 0
+              fi
+              echo "merge attempt $attempt failed, retrying..."
+              sleep 30
+            done
+            echo "::error::CI green but merge kept failing — PR left open for manual intervention"
+            exit 1
+          fi
+
+          echo "::error::CI failed or timed out on #$PR_NUM — rolling back (main keeps the previous lock)"
+          gh pr close "$PR_NUM" --comment "Dependency update CI failed — rolling back automatically; main keeps the previous flake.lock. Details in the Actions log of this run."
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          exit 1

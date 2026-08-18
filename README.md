@@ -357,8 +357,8 @@ nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2'   # ROS2 dev shell 
 | `ci.yml` → `nix-matrix` | same | generates the build matrix from `nix eval .#githubActions.matrix` (`nix-github-actions`) — no manual workflow edit needed to add/remove a host |
 | `ci.yml` → `build` | same | matrix-builds all four `nixosConfigurations.*.toplevel` on x86_64/aarch64 runners, pushes to `cache.hydroakri.cc` (self-hosted Attic) + a secondary "LanTian" cache; x86_64 runner frees disk + adds 8G swap first for from-source clang builds |
 | `ci.yml` → `home-manager-build` | same | builds the standalone home-manager flake's activation package, unrelated to the four-host matrix |
-| `update-flake-lock.yml` | daily cron, manual | bumps `flake/flake.lock` only if the kernel hash changed *and* the NixOS Hydra channel is healthy; auto-merges |
-| `update-home-manager-lock.yml` | daily cron, offset 2h after the above | bumps `dot_config/home-manager/flake.lock` (which follows `flake/`'s nixpkgs rather than pinning its own); auto-merges |
+| `update-flake-lock.yml` | daily cron, manual | bumps `flake/flake.lock` only if the kernel hash changed *and* the NixOS Hydra channel is healthy. Build-gated: the new lock must pass `nix flake check` + an `omen15` toplevel build in the workflow itself, then the full CI matrix on the PR. Merged only when CI is green; on any failure the PR is closed and the old lock kept (rollback) |
+| `update-home-manager-lock.yml` | daily cron, offset 2h after the above | bumps `dot_config/home-manager/flake.lock` (which follows `flake/`'s nixpkgs rather than pinning its own). Build-gated on the activation package; merged only when CI is green, otherwise rolled back |
 
 > Add `cache.hydroakri.cc` to `modules.core.extraSubstituters` if you're
 > consuming this flake as an input — CI keeps it populated.
