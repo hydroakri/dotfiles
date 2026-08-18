@@ -204,6 +204,39 @@
         description = "Extra domain()/geosite matchers always routed via dae's proxy group.";
       };
     };
+
+    # 匿名后端：Tor 跑一个本地 SOCKS5 守护进程 (127.0.0.1:9050 回环地址),
+    # 由 sing-box 的 selector outbounds 选取。回环方向（sing-box -> socks 端口）不
+    # 会经过 tun，无需特殊处理；反方向（tor 自己的对外连接）会被 tun/dae
+    # 拦截，必须用 exclude_uid_range / pname(must_direct) 放行，见下文。
+    # 注：i2pd 曾提供 .i2p 站点访问，但无 outproxy 能力无法访问明网，已移除。
+    tor = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable a Tor client daemon (services.tor) exposing local SOCKS5 on 127.0.0.1:9050 for sing-box to select.";
+      };
+      bridges = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        example = lib.literalExpression ''[ "webtunnel 1.2.3.4:443 <fingerprint> url=https://example.com/somepath ver=0.0.2" ]'';
+        description = ''
+          Tor bridge lines, one per element, as distributed by BridgeDB (or your
+          own bridge operator). `UseBridges = 1` is set automatically whenever
+          this list is non-empty.
+
+          webtunnel is compiled into tor since 0.4.8, so bridge lines using the
+          built-in webtunnel transport need no ClientTransportPlugin entry —
+          just paste the bridge line verbatim.
+
+          These values land in `services.tor.settings`, which renders a plain
+          torrc text file: there is no `_secret` substitution like sing-box has.
+          If a bridge line has to stay out of your git repo, DON'T use this
+          option — leave it empty and override `services.tor.settings` from a
+          host-level `sops.templates` instead.
+        '';
+      };
+    };
   };
 
   config =
@@ -217,6 +250,7 @@
         lib.optional hasExtraOutbounds "isp"
         ++ lib.optional hasExtraOutbounds "proxy"
         ++ lib.optional hasExtraOutbounds "manual";
+      anonSelectorTags = lib.optional config.modules.proxy.tor.enable "tor";
     in
     mkIf config.modules.proxy.enable {
       # 开启透明代理 (TUN/TProxy) 时需放松 rp_filter 以支持非对称路由（如游戏 UDP）
@@ -239,7 +273,8 @@
           "dnscrypt-proxy.service"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
 
         wants = [
           "network-online.target"
@@ -247,7 +282,8 @@
           "dnscrypt-proxy.service"
         ]
         ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
       };
       # start order
       # ----------------------------------------------------------------------------
@@ -481,7 +517,10 @@
             exclude_uid_range = [
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
               "${toString config.users.users.dnscrypt-proxy.uid}:${toString config.users.users.dnscrypt-proxy.uid}"
-            ];
+            ]
+            # tor 自身的对外连接（桥接、出口）必须绕过 tun，
+            # 否则会被 sing-box 重新接管——选中 tor 出站时形成 tor→sing-box→tor 回路。
+            ++ (lib.optional config.modules.proxy.tor.enable "${toString config.users.users.tor.uid}:${toString config.users.users.tor.uid}");
           };
 
           outbounds =
@@ -502,15 +541,26 @@
                     strategy = "prefer_ipv4";
                   };
                 }
+              ]
+              # 匿名出站：tor (9050) 本地 SOCKS。域名目标原样走
+              # SOCKS5 握手（tor 自己解析 .onion），
+              # sing-box 不会先解析，无 DNS 泄漏。
+              ++ (lib.optional config.modules.proxy.tor.enable {
+                type = "socks";
+                tag = "tor";
+                server = "127.0.0.1";
+                server_port = 9050;
+              })
+              ++ [
                 {
                   type = "selector";
                   tag = "cn";
-                  outbounds = [ "direct" ] ++ extraSelectorTags;
+                  outbounds = [ "direct" ] ++ extraSelectorTags ++ anonSelectorTags;
                 }
                 {
                   type = "selector";
                   tag = "oversea";
-                  outbounds = [ "direct" ] ++ extraSelectorTags;
+                  outbounds = [ "direct" ] ++ extraSelectorTags ++ anonSelectorTags;
                 }
                 {
                   type = "selector";
@@ -519,18 +569,19 @@
                     "direct"
                   ]
                   ++ (lib.optional hasExtraOutbounds "isp")
-                  ++ (lib.optional hasExtraOutbounds "manual");
+                  ++ (lib.optional hasExtraOutbounds "manual")
+                  ++ anonSelectorTags;
                 }
                 {
                   type = "selector";
                   tag = "webrtc-bt-proxy";
-                  outbounds = [ "direct" ] ++ extraSelectorTags;
+                  outbounds = [ "direct" ] ++ extraSelectorTags ++ anonSelectorTags;
                 }
               ]
               ++ lib.optional hasExtraEndpoints {
                 type = "selector";
                 tag = "tailscale-out";
-                outbounds = [ "direct" ] ++ extraSelectorTags;
+                outbounds = [ "direct" ] ++ extraSelectorTags ++ anonSelectorTags;
               }
               ++ config.modules.proxy.singbox.extraOutbounds;
 
@@ -606,6 +657,16 @@
                 ];
                 outbound = "webrtc-bt-proxy";
               }
+            ]
+            # 匿名域名直送本地 SOCKS：.onion 由 tor 解析（fakeip 会先兜底 A/AAAA 查询，路由按
+            # 反查出的域名匹配）。必须排在各 catch-all（oversea/cn/geoip）之前。注意
+            # 必须用 ++ 拼接：lib.optional 返回的是 list，直接嵌进 [...] 会生成嵌套
+            # 数组导致 sing-box 启动失败。
+            ++ (lib.optional config.modules.proxy.tor.enable {
+              domain_suffix = [ ".onion" ];
+              outbound = "tor";
+            })
+            ++ [
               {
                 type = "logical";
                 mode = "or";
@@ -778,14 +839,16 @@
           "unbound.service"
           "dnscrypt-proxy.service"
         ]
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
 
         wants = [
           "network-online.target"
           "unbound.service"
           "dnscrypt-proxy.service"
         ]
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
+        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
 
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
@@ -823,6 +886,21 @@
         };
       };
 
+      # ----------------------------------------------------------------------------
+      # 匿名后端：tor 客户端守护进程。只暴露回环 SOCKS5 给 sing-box,
+      # 不开防火墙端口。持久化在 preservation.nix 处理（/var/lib/tor）。
+      services.tor = mkIf config.modules.proxy.tor.enable {
+        enable = mkDefault true;
+        # 仅客户端角色：SOCKS 监听 127.0.0.1:9050（上游默认）。不做 relay/exit。
+        client.enable = mkDefault true;
+        settings = mkIf (config.modules.proxy.tor.bridges != [ ]) {
+          UseBridges = true;
+          Bridge = config.modules.proxy.tor.bridges;
+        };
+      };
+
+      # ----------------------------------------------------------------------------
+
       services.dae = mkIf config.modules.proxy.dae.enable {
         enable = mkDefault true;
         assetsPath = toString (
@@ -844,6 +922,23 @@
                 "geosite:google"
               ]
               ++ config.modules.proxy.dae.extraOverseasDomains
+            );
+            # dae 直连放行的本地代理进程；tor 自身的对外连接不能被
+            # dae 重新接管（否则选中 tor 出站时形成 tor→dae→tor 回路）。
+            directPnames = lib.concatStringsSep ", " (
+              [
+                "NetworkManager"
+                "chronyd"
+                "dnscrypt-proxy"
+                "AdGuardHome"
+                "nekoray"
+                "nekobox_core"
+                "sing-box"
+                "verge-mihomo"
+                "clash-verge"
+                "clash-verge-service"
+              ]
+              ++ lib.optionals config.modules.proxy.tor.enable [ "tor" ]
             );
           in
           ''
@@ -904,7 +999,7 @@
             }
 
             routing {
-              pname(NetworkManager, chronyd, dnscrypt-proxy, AdGuardHome, nekoray, nekobox_core, sing-box, verge-mihomo, clash-verge, clash-verge-service) -> must_direct
+              pname(${directPnames}) -> must_direct
               dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
               domain(geosite:private) -> must_direct
               domain(geosite:category-ads-all) -> block

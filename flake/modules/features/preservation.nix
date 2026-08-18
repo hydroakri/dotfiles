@@ -45,6 +45,12 @@
         "/var/lib/unbound"
         "/var/lib/dnscrypt-proxy" # resolver-list cache, see cache_file in core.nix
         {
+          directory = "/var/lib/tor";
+          user = "tor";
+          group = "tor";
+          mode = "0700";
+        }
+        {
           # chronyd 没有 StateDirectory= 自我校正,默认 0755 root:root 会卡住写权限。
           directory = "/var/lib/chrony";
           user = "chrony";

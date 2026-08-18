@@ -94,9 +94,10 @@
     proxy = {
       enable = true;
       singbox = {
-        enable = false;
+        enable = true;
         tun = true;
       };
+      tor.enable = true;
     };
     powersave = {
       enable = true;
