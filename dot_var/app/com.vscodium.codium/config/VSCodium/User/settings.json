@@ -21,6 +21,7 @@
       "commands": ["whichkey.show"]
     }
   ],
-  "workbench.colorTheme": "Flexoki Dark",
-  "editor.fontFamily": "'Iosevka Extended', 'CommitMono', 'Symbols Nerd Font'"
+  "workbench.colorTheme": "One Hunter Flexoki Light",
+  "editor.fontFamily": "'Iosevka Extended', 'CommitMono', 'Symbols Nerd Font'",
+  "extensions.autoUpdate": "off"
 }
