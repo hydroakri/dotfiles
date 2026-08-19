@@ -515,11 +515,10 @@
             exclude_mptcp = true;
             stack = "mixed";
             exclude_uid_range = [
+              "${toString config.users.users.root.uid}:${toString config.users.users.root.uid}"
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
               "${toString config.users.users.dnscrypt-proxy.uid}:${toString config.users.users.dnscrypt-proxy.uid}"
             ]
-            # tor 自身的对外连接（桥接、出口）必须绕过 tun，
-            # 否则会被 sing-box 重新接管——选中 tor 出站时形成 tor→sing-box→tor 回路。
             ++ (lib.optional config.modules.proxy.tor.enable "${toString config.users.users.tor.uid}:${toString config.users.users.tor.uid}");
           };
 
@@ -542,6 +541,12 @@
                   };
                 }
               ]
+              ++ (lib.optional config.modules.proxy.tor.enable {
+                type = "socks";
+                tag = "zerotrust";
+                server = "127.0.0.1";
+                server_port = 40000;
+              })
               # 匿名出站：tor (9050) 本地 SOCKS。域名目标原样走
               # SOCKS5 握手（tor 自己解析 .onion），
               # sing-box 不会先解析，无 DNS 泄漏。

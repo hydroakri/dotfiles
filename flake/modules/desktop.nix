@@ -477,6 +477,13 @@
 
     # GUI User profile
     services.cloudflare-warp.enable = lib.mkOverride 900 true;
+    sops.secrets."warp_mdm" = {
+      path = "/var/lib/cloudflare-warp/mdm.xml";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "cloudflare-warp.service" ];
+    };
     users.users.${config.mainUser} = {
       extraGroups = [
         "video"
