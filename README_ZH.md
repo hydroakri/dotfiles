@@ -37,10 +37,10 @@
 ## ⚠️ 这是我的个人配置——复用前请先读这段
 
 主机名、`hydroakri.cc` 域名、真实的 SSH/FIDO2 公钥、sops 加密的 secrets,都放在
-`flake/hosts/*`、`flake/hosts/personal-proxy-profile.nix`、
-`flake/modules/features/secrets/` 里。**这些文件都没有导出为
-`nixosModules`**,所以 [Reference](#reference) 里任何一个模块的导入都不会带出
-我的 secrets——模块本身是扩展点,不是身份信息。
+`flake/hosts/*`、`flake/modules/features/secrets/`,以及(代理模块内联后)
+`flake/modules/features/networking/proxy.nix` 本身里。**这些文件都没有导出为
+`nixosModules`**——`proxy.nix` 也因此被从导出表里移除了——所以
+[Reference](#reference) 里任何一个模块的导入都不会带出我的 secrets。
 
 需要你自己填的:`mainUser`、`modules.security.authorizedKeys`、
 `modules.security.u2fMappings`,如果想用自己的二进制缓存还有
@@ -230,7 +230,7 @@ chezmoi update                 # 拉取 + 应用
 
 ```
 flake/                  NixOS flake(多主机,声明式)
-├── hosts/               各主机的入口文件 + personal-proxy-profile.nix
+├── hosts/               各主机的入口文件
 ├── modules/              主机共用的模块
 │   ├── core.nix            所有主机的基础层
 │   ├── desktop.nix         桌面 profile(低延迟调优)
@@ -285,7 +285,7 @@ utils/                    脚本(chezmoi 不部署,目前只有 backup/ 一个�
 | [`preservation`](flake/modules/features/preservation.nix) | 根目录 tmpfs + preservation 状态持久化(NetworkManager、Unbound/Chrony 状态、SSH host key、machine-id、大部分 `/var/lib/*`)。 | 按需:`modules.preservation.enable`/`persistentPath` | 给已有数据的主机加这个模块,得先手动 `rsync` 一次——preservation 不会帮你搬数据。 |
 | [`utils`](flake/modules/features/utils.nix) | Prometheus + node-exporter、Grafana、Uptime Kuma,外加 `enableGraphicTools`(GPU 诊断工具:nvtop、vulkan-tools、clinfo……)。 | 按需:`modules.utils.enable` + `enableGrafana`/`enablePrometheus`/`enableUptime`/`enableGraphicTools` | Grafana 需要一个 `grafana_secret_key` sops secret——自己准备。*这里没有配置 Glance*——`oci` 上 `glance.hydroakri.cc` 那个 vhost 只是个裸的 nginx 反代,指向一个 Nix 里哪儿都没声明的服务(带外运行)。 |
 | [`virtualisation`](flake/modules/features/virtualisation.nix) | Podman + Docker 兼容层、aarch64 binfmt 模拟(两者都常开)。 | KVM/QEMU+libvirtd 按需:`modules.virtualisation.libvirtd.enable` | — |
-| [`networking-proxy`](flake/modules/features/networking/proxy.nix) | sing-box(FakeIP/TUN)+ dnscrypt-proxy + AdGuardHome + dae eBPF 透明代理。 | 按需:`modules.proxy.enable`(还有一堆子开关) | 是真的按可复用来设计的——所有 secret/端点都是扩展点(`extraEndpoints`、`outboundsFile`、sing-box 原生的 `_secret` 标记……),模块本身**不带**任何个人解析器或端点数据。我自己的身份信息通过没有导出的 `flake/hosts/personal-proxy-profile.nix` 单独提供。 |
+| [`proxy.nix`](flake/modules/features/networking/proxy.nix)*(未导出)* | sing-box(FakeIP/TUN)+ dnscrypt-proxy + AdGuardHome + dae eBPF 透明代理。 | 按需:`modules.proxy.enable`(还有 backend/tun/dae/tor 子开关,这些因为每台主机不一样,还是保留成真的选项) | 已经不是一个可复用模块了:我自己的代理身份信息(域名、sops secret 声明,原来在 `flake/hosts/personal-proxy-profile.nix`,后来又变成一批选项化的扩展点)现在直接写死在 settings/route rules 里了,所以它被从 `outputs.nixosModules` 里移除了。想要自己的值,得自己复制/改这个文件。 |
 | [`networking-router`](flake/modules/features/networking/router.nix) | NAT 路由:VLAN、DHCP(dnsmasq)、MSS clamping、放松反向路径过滤。 | 按需:`modules.router.enable` | — |
 | [`networking-sqm`](flake/modules/features/networking/sqm.nix) | 通过 `tc` 做 CAKE SQM,借 NetworkManager 的 dispatcher 脚本触发。 | 按需:`modules.networking.sqm.enable` | 已经被 `core` 带入(默认关闭)——大多数主机不需要直接导入。 |
 | [`networking-tuning`](flake/modules/features/networking/tuning.nix) | sysfs 网卡调优:RPS/XPS CPU 亲和性。 | 按需:`modules.networking.sysfsTuning.enable` | 已经被 `core` 带入。 |

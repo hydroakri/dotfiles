@@ -155,7 +155,6 @@
         preservation = ./modules/features/preservation.nix;
         utils = ./modules/features/utils.nix;
         virtualisation = ./modules/features/virtualisation.nix;
-        networking-proxy = ./modules/features/networking/proxy.nix;
         networking-router = ./modules/features/networking/router.nix;
         networking-sqm = ./modules/features/networking/sqm.nix;
         networking-tuning = ./modules/features/networking/tuning.nix;

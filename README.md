@@ -37,11 +37,11 @@
 ## ⚠️ This is my personal configuration — read before reusing
 
 Hostnames, `hydroakri.cc` domains, real SSH/FIDO2 keys, and sops-encrypted
-secrets live in `flake/hosts/*`, `flake/hosts/personal-proxy-profile.nix`, and
-`flake/modules/features/secrets/`. **None of those files are exported as
-`nixosModules`**, so importing any module from the [Reference](#reference)
-section below never pulls in my secrets — the modules themselves are
-extension points, not identity.
+secrets live in `flake/hosts/*` and `flake/modules/features/secrets/`, plus
+(as of the proxy module) `flake/modules/features/networking/proxy.nix`
+itself. **None of those files are exported as `nixosModules`** — `proxy.nix`
+was dropped from the export table for this reason — so importing any module
+from the [Reference](#reference) section below never pulls in my secrets.
 
 What you *do* need to supply yourself: `mainUser`,
 `modules.security.authorizedKeys`, `modules.security.u2fMappings`, and (if you
@@ -241,7 +241,7 @@ details are in [Reference](#desktop-stack).
 
 ```
 flake/                  NixOS flake (multi-host, declarative)
-├── hosts/               Per-machine entry points + personal-proxy-profile.nix
+├── hosts/               Per-machine entry points
 ├── modules/              Shared modules imported by hosts
 │   ├── core.nix            Base layer for all hosts
 │   ├── desktop.nix         Desktop profile (latency-tuned)
@@ -299,7 +299,7 @@ Two profile modules are mutually exclusive — pick exactly one per host, no
 | [`preservation`](flake/modules/features/preservation.nix) | tmpfs-on-root with preservation-based state persistence (NetworkManager, Unbound/Chrony state, SSH host keys, machine-id, most `/var/lib/*`). | gated: `modules.preservation.enable`/`persistentPath` | Adding to a host with existing data needs a manual `rsync` first — preservation won't migrate it for you. |
 | [`utils`](flake/modules/features/utils.nix) | Prometheus + node-exporter, Grafana, Uptime Kuma, plus `enableGraphicTools` (GPU diagnostic packages: nvtop, vulkan-tools, clinfo, ...). | gated: `modules.utils.enable` + `enableGrafana`/`enablePrometheus`/`enableUptime`/`enableGraphicTools` | Grafana needs a `grafana_secret_key` sops secret — bring your own. *Glance is not configured here* — `oci`'s `glance.hydroakri.cc` vhost is a bare nginx reverse proxy to a service that isn't declared anywhere in Nix (run out-of-band). |
 | [`virtualisation`](flake/modules/features/virtualisation.nix) | Podman + Docker shim, aarch64 binfmt emulation (both always-on). | KVM/QEMU+libvirtd gated: `modules.virtualisation.libvirtd.enable` | — |
-| [`networking-proxy`](flake/modules/features/networking/proxy.nix) | sing-box (FakeIP/TUN) + dnscrypt-proxy + AdGuardHome + dae eBPF transparent proxy. | gated: `modules.proxy.enable` (+ many sub-toggles) | Genuinely designed for reuse — every secret/endpoint is an extension point (`extraEndpoints`, `outboundsFile`, sing-box's native `_secret` marker, ...); ships **no** personal resolver or endpoint data itself. My own identity is supplied separately via `flake/hosts/personal-proxy-profile.nix`, which is not exported. |
+| [`proxy.nix`](flake/modules/features/networking/proxy.nix) *(not exported)* | sing-box (FakeIP/TUN) + dnscrypt-proxy + AdGuardHome + dae eBPF transparent proxy. | gated: `modules.proxy.enable` (+ backend/tun/dae/tor sub-toggles, still real options since they differ per host) | No longer a reusable module: my own proxy identity (domains, sops secret declarations, formerly `flake/hosts/personal-proxy-profile.nix`, then a set of option-based extension points) is hardcoded directly into the settings/route rules, so it was dropped from `outputs.nixosModules`. Copy/adapt the file yourself if you want your own values. |
 | [`networking-router`](flake/modules/features/networking/router.nix) | NAT router: VLAN, DHCP (dnsmasq), MSS clamping, relaxes reverse-path filtering. | gated: `modules.router.enable` | — |
 | [`networking-sqm`](flake/modules/features/networking/sqm.nix) | CAKE SQM via `tc`, applied through a NetworkManager dispatcher script. | gated: `modules.networking.sqm.enable` | Already pulled in by `core` (disabled by default) — most hosts won't import it directly. |
 | [`networking-tuning`](flake/modules/features/networking/tuning.nix) | sysfs NIC tuning: RPS/XPS CPU affinity. | gated: `modules.networking.sysfsTuning.enable` | Already pulled in by `core`. |

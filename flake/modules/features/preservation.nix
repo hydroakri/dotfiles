@@ -77,7 +77,13 @@
         "/var/lib/containers"
         "/var/lib/cni"
         "/var/lib/cloudflare-warp"
-        "/var/lib/docker" # 目前多数主机可能还没用到，先占位，真正启用时数据从一开始就在
+        {
+          directory = "/var/lib/sing-box";
+          user = "sing-box";
+          group = "sing-box";
+          mode = "0700";
+        }
+        "/var/lib/docker"
         "/var/lib/libvirt"
         "/etc/libvirt"
       ];

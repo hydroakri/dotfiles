@@ -4,3 +4,7 @@
 # time a quarterly review re-syncs, and sidesteps redistribution/licensing
 # questions entirely since they're never committed or published.
 docs/upstream-vendor/*/
+
+# nix build/nixos-rebuild output symlinks
+/result
+/result-*

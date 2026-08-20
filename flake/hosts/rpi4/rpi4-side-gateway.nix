@@ -11,9 +11,6 @@
     ./hardware-configuration.nix
     ./rpi4-base.nix
 
-    # Personal config shared across hosts
-    ../personal-proxy-profile.nix
-
     # Core system modules
     ../../modules/core.nix
     ../../modules/server.nix

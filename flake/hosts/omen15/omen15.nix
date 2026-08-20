@@ -16,9 +16,6 @@
     # Hardware configuration
     ./disko.nix
 
-    # Personal config shared across hosts
-    ../personal-proxy-profile.nix
-
     # Core system modules
     ../../modules/core.nix
     ../../modules/desktop.nix
