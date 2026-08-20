@@ -114,11 +114,11 @@ jobs:
             echo "${CHANGED_INPUTS:-none}"
           } > "$BODY_FILE"
 
-          PR_NUM=$(gh pr create --base main --head "$BRANCH" \
+          PR_URL=$(gh pr create --base main --head "$BRANCH" \
             --title "home-manager: nix flake update" \
             --body-file "$BODY_FILE" \
-            --label automated --label dependencies \
-            --json number -q .number)
+            --label automated --label dependencies)
+          PR_NUM=$(basename "$PR_URL")
           echo "pr_number=$PR_NUM" >> "$GITHUB_OUTPUT"
 
       - name: Wait for CI, merge or roll back
