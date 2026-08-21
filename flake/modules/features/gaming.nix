@@ -9,7 +9,10 @@
   boot.kernelModules = [ "ntsync" ];
   hardware.steam-hardware.enable = lib.mkDefault true;
   hardware.uinput.enable = lib.mkDefault true;
-  users.users.${config.mainUser}.extraGroups = [ "uinput" ];
+  users.users.${config.mainUser}.extraGroups = [
+    "uinput"
+    "gamemode"
+  ];
   environment.systemPackages = [
     pkgs.yad # steamtinkerlaunch dependency
     pkgs.ethtool
@@ -29,7 +32,25 @@
     extraCompatPackages = [ pkgs.steamtinkerlaunch ];
   };
 
-  programs.gamemode.enable = lib.mkDefault true;
+  programs.gamemode = {
+    enable = lib.mkDefault true;
+    enableRenice = true;
+    settings = {
+      general = {
+        renice = 10;
+        ioprio = 0;
+        reaper_freq = 5;
+        desiredgov = "performance";
+        desiredprof = "performance";
+        igpu_desiredgov = "powersave";
+        igpu_power_threshold = 0.3;
+        softrealtime = "off";
+        inhibit_screensaver = 1;
+        disable_splitlock = 1;
+      };
+      supervisor.require_supervisor = 0;
+    };
+  };
   environment.sessionVariables.WINEFSYNC = lib.mkDefault "1";
   users.groups.gamemode = { };
 

@@ -1,4 +1,6 @@
 # .chezmoiignore
+docs/
+docs/**
 
 # 忽略 NixOS 系统配置目录
 flake/
