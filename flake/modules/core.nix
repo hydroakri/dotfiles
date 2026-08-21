@@ -80,6 +80,26 @@
       # ter-v24n for 1080p
       # ter-v32n for 2K/4K
       font = lib.mkDefault "ter-v32n";
+      # Flexoki 16-color palette — canonical xresources/flexoki-dark mapping
+      # from kepano/flexoki.  See: https://github.com/kepano/flexoki
+      colors = lib.mkDefault [
+        "100f0f" # black
+        "af3029" # red
+        "66800b" # green
+        "ad8301" # yellow
+        "205ea6" # blue
+        "a02f6f" # magenta
+        "24837b" # cyan
+        "fffcf0" # white (paper)
+        "1c1b1a" # bright black (base-950)
+        "d14d41" # bright red
+        "879a39" # bright green
+        "d0a215" # bright yellow
+        "4385be" # bright blue
+        "ce5d97" # bright magenta
+        "3aa99f" # bright cyan
+        "f2f0e5" # bright white
+      ];
     };
     time.timeZone = lib.mkDefault "UTC";
     i18n = {

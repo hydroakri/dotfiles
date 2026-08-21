@@ -1,5 +1,11 @@
 export LANG=en_US.UTF-8
 
+# ly hands off stdin as a tty but stdout/stderr as a socket; rebind them to
+# the console so command output is visible.  Harmless on normal getty/shell.
+if [[ -t 0 && ! -t 1 ]]; then
+  exec 1>/dev/tty 2>/dev/tty
+fi
+
 # use ssh insteadof https
 # git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 
@@ -64,7 +70,10 @@ nxt-init() {
     nix flake init -t "${NIX_TEMPLATE_SOURCE}#$1"
 }
 
-# zsh-patina syntax highlighting (must be last)
+# zsh-patina syntax highlighting (must be last).
+# Guard: only load inside a real graphical terminal.  ly sets TERM to
+# xterm-256color on the raw VT, so check DISPLAY/WAYLAND_DISPLAY instead.
+if [[ -n "${WAYLAND_DISPLAY}${DISPLAY}" ]]; then
 () {
   local dir="${ZSH_PATINA_DIR:-$HOME/.zsh/zsh-patina}"
   local bin="$dir/zsh-patina"
@@ -93,3 +102,4 @@ nxt-init() {
   mkdir -p "$dir" && curl -sL "$url" | tar xzf - -C "$dir" --strip-components 1
   [[ -x "$bin" ]] && eval "$("$bin" activate)"
 }
+fi

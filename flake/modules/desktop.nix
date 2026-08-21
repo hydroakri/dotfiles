@@ -29,8 +29,9 @@
       ];
     };
 
-    services.displayManager = lib.mkDefault {
+    services.displayManager = {
       ly.enable = true;
+      ly.settings.session_log = "null";
     };
     services.desktopManager = lib.mkDefault {
       cosmic = {
