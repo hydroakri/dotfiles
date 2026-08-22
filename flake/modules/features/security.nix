@@ -422,6 +422,7 @@
       };
     };
     users.users.root.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
+    users.users.${config.mainUser}.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
     # =============================================================================
     # This machine can signing/control key from WHERE?
     programs.git.config = {
