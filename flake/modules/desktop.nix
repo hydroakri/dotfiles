@@ -51,6 +51,7 @@
     };
 
     # X Server and input
+    services.gpm.enable = true; # mouse support on bare virtual consoles
     services.xserver.enable = lib.mkOverride 900 true;
     services.libinput.enable = lib.mkOverride 900 true;
     services.xserver.xkb = {
@@ -336,8 +337,10 @@
     # 否则 darkman 脚本里的 gsettings 报 "No schemas installed"。
     environment.systemPackages = [
       #theme
-      pkgs.darkman
       pkgs.darkly
+      pkgs.bibata-cursors
+      pkgs.papirus-icon-theme
+      pkgs.darkman
       pkgs.adw-gtk3
       pkgs.adwaita-qt
       pkgs.adwaita-qt6
@@ -346,6 +349,10 @@
       pkgs.glib
       pkgs.gsettings-desktop-schemas
       pkgs.python3 # noctalia's template processor + gtk-refresh script need it in PATH
+
+      # GUI Applications
+      pkgs.wezterm
+      pkgs.junction
 
       # clipboard
       pkgs.wl-clipboard
@@ -361,14 +368,18 @@
       pkgs.brightnessctl
       pkgs.pavucontrol
       pkgs.playerctl
-      # blueman
-      # mako
-      # snixembed
-      # waybar
-      # xfce.xfconf
-      # xfce.xfce4-panel
-      # xfce.xfce4-panel-profiles
-      # rofi
+    ]
+    ++ lib.optionals config.services.desktopManager.plasma6.enable [
+      pkgs.kdePackages.partitionmanager
+      pkgs.kdePackages.kpmcore
+      pkgs.kdePackages.krohnkite
+      pkgs.kdePackages.kate
+    ]
+    ++ lib.optionals config.services.desktopManager.gnome.enable [
+      pkgs.gnome-tweaks
+      pkgs.gnomeExtensions.appindicator
+      pkgs.gnomeExtensions.user-themes
+      pkgs.gnomeExtensions.kimpanel
     ];
 
     # 让会话内的 gsettings 能找到 desktop schemas（NixOS 不会自动加这个目录）
@@ -489,30 +500,6 @@
       extraGroups = [
         "video"
         "i2c"
-      ];
-      packages = [
-        # themes/shell/plugin
-        pkgs.bibata-cursors
-        pkgs.papirus-icon-theme
-
-        # GUI Applications
-        pkgs.wezterm
-        # davinci-resolve-studio
-        pkgs.claude-code
-        pkgs.opencode
-        pkgs.junction
-      ]
-      ++ lib.optionals config.services.desktopManager.plasma6.enable [
-        pkgs.kdePackages.partitionmanager
-        pkgs.kdePackages.kpmcore
-        pkgs.kdePackages.krohnkite
-        pkgs.kdePackages.kate
-      ]
-      ++ lib.optionals config.services.desktopManager.gnome.enable [
-        pkgs.gnome-tweaks
-        pkgs.gnomeExtensions.appindicator
-        pkgs.gnomeExtensions.user-themes
-        pkgs.gnomeExtensions.kimpanel
       ];
     };
   };

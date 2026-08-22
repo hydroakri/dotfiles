@@ -67,9 +67,7 @@
       withNodeJs = true;
       withPython3 = true;
     })
-    # terminal multiplexers (dot_config/tmux, dot_config/zellij)
     tmux
-    zellij
     # modern CLI tools
     fzf
     bat

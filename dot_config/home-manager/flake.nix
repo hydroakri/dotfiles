@@ -10,6 +10,12 @@
   #   nix run home-manager/master -- switch --flake ~/.config/home-manager#$USER --impure
   #   nh home switch -- --impure   # note the trailing --, not a leading flag
   #
+  # home-manager auto-resolves the flake output as $USER@$(hostname) first,
+  # falling back to plain $USER when no host-specific entry exists — so
+  # `--flake ~/.config/home-manager#$USER` above picks up omen15's extra
+  # tools automatically on that host, and falls back to the general-only
+  # config everywhere else. No extra flag needed.
+  #
   # make the HM zsh your login shell (skip on NixOS — users.users.<name>.shell
   # already owns this declaratively; doing it here too would just fight it):
   #   ZSH_PATH="$HOME/.nix-profile/bin/zsh"
@@ -36,19 +42,26 @@
       ...
     }:
     let
+      username = builtins.getEnv "USER";
       pkgs = import nixpkgs {
         system = builtins.currentSystem;
         config.allowUnfree = true;
       };
+      mkHome =
+        extraModules:
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = { inherit inputs; };
+          modules = [
+            nix-index-database.homeModules.nix-index
+            ./general.nix
+          ] ++ extraModules;
+        };
     in
     {
-      homeConfigurations.${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit inputs; };
-        modules = [
-          nix-index-database.homeModules.nix-index
-          ./home.nix
-        ];
+      homeConfigurations = {
+        ${username} = mkHome [ ]; # fallback for any host without a dedicated entry
+        "${username}@omen15" = mkHome [ ./extra-tools.nix ];
       };
     };
 }
