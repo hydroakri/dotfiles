@@ -343,6 +343,7 @@
             strict_route = true;
             exclude_mptcp = true;
             stack = "mixed";
+            route_exclude_address_set = [ "geoip-private" ];
             exclude_uid_range = [
               "${toString config.users.users.root.uid}:${toString config.users.users.root.uid}"
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
