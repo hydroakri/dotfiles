@@ -85,7 +85,7 @@ jobs:
           echo "== build home-manager activation package =="
           cd dot_config/home-manager
           nix build ".#homeConfigurations.${USER}.activationPackage" \
-            --accept-flake-config --print-build-logs --fallback --cores 2
+            --accept-flake-config --print-build-logs --fallback --cores 2 --impure
 
       - name: Create update PR
         if: steps.check_stale.outputs.should_update == 'true'
