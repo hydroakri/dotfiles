@@ -26,6 +26,8 @@
         "rd.systemd.show_status=auto"
         # PREEMPT
         "preempt=full"
+        # blank bare VT backlight after 5min idle; wakes on keypress
+        "consoleblank=300"
       ];
     };
 
@@ -433,7 +435,6 @@
             enable = true;
             mode = "transparent";
           };
-          fonts.enable = true;
           timeZone = {
             enable = true;
             provider = "bundle";
@@ -442,16 +443,14 @@
             NIXOS_OZONE_WL = "1";
             LANG = "en_US.UTF-8";
             LC_ALL = "en_US.UTF-8";
+            FONTCONFIG_FILE = "${pkgs.mullvad-browser}/share/mullvad-browser/fonts/fonts.conf";
           };
           bubblewrap.bind.ro = [
             "/etc/brave"
             "/etc/dconf"
-            "/etc/fonts"
-            (sloth.concat' sloth.xdgConfigHome "/fontconfig")
             (sloth.concat' sloth.xdgConfigHome "/dconf")
             (sloth.concat' sloth.xdgConfigHome "/gtk-3.0")
             (sloth.concat' sloth.xdgConfigHome "/gtk-4.0")
-            (sloth.concat' sloth.xdgDataHome "/fonts")
           ];
           bubblewrap.bind.rw = [
             (sloth.mkdir (sloth.concat' sloth.xdgConfigHome "/BraveSoftware"))
@@ -468,7 +467,6 @@
             "org.freedesktop.DBus" = "talk";
             "org.freedesktop.portal.*" = "talk";
           };
-          fonts.enable = true;
           timeZone = {
             enable = true;
             provider = "bundle";
