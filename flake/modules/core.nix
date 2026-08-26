@@ -204,9 +204,9 @@
         };
         rpz = lib.mkDefault [
           {
-            name = "hagezi-pro-mini";
-            url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/rpz/pro.mini.txt";
-            zonefile = "/var/lib/unbound/hagezi-pro-mini.rpz";
+            name = "blocklist-mini";
+            url = "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist-mini.rpz";
+            zonefile = "/var/lib/unbound/blocklist-mini.rpz";
             rpz-log = true;
             for-downstream = false;
           }
