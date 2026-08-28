@@ -190,6 +190,26 @@
             level = "warn";
             timestamp = true;
           };
+          http_clients = [
+            {
+              tag = "spoofed-http";
+              detour = "direct";
+              tls = {
+                enabled = true;
+                utls = {
+                  enabled = true;
+                  fingerprint = "firefox";
+                };
+              };
+              headers = {
+                "User-Agent" = "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0";
+                "Accept-Language" = "en-US,en;q=0.5";
+                "Accept" = "*/*";
+                "TE" = "trailers";
+                "Sec-Gpc" = "1";
+              };
+            }
+          ];
           dns = {
             servers = [
               {
@@ -201,6 +221,14 @@
               {
                 type = "local";
                 tag = "dns-system";
+              }
+              {
+                type = "mdns";
+                tag = "dns-mdns";
+              }
+              {
+                type = "dhcp";
+                tag = "dns-dhcp";
               }
               {
                 type = "udp";
@@ -225,7 +253,7 @@
               }
               {
                 type = "h3";
-                tag = "dns-cloudflare";
+                tag = "dns-zerotrust";
                 server = "172.64.36.2";
                 tls = {
                   enabled = true;
@@ -261,6 +289,10 @@
                 action = "reject";
               }
               {
+                preferred_by = "dns-mdns";
+                server = "dns-mdns";
+              }
+              {
                 type = "logical";
                 mode = "or";
                 rules = [
@@ -270,9 +302,6 @@
                       "msftncsi.com"
                       "linksys.com"
                       "linksyssmartwifi.com"
-                      "file.hydroakri.cc"
-                      "glance.hydroakri.cc"
-                      "pdf.hydroakri.cc"
                     ];
                   }
                   {
@@ -290,7 +319,7 @@
                     rule_set = [ "geosite-private" ];
                   }
                 ];
-                server = "dns-unbound";
+                server = "dns-dhcp";
               }
               # CN 域名解析器选择：桌面 (unbound 可用) 用 dns-alidns（H3 加密，
               # detour:cn 直连阿里 DNS PoP，GeoDNS 覆盖好）。
@@ -301,6 +330,45 @@
                   "geosite-cn"
                 ];
                 server = "dns-alidns";
+              }
+              # geosite list above misses unlisted CN domains; evaluate + match_response
+              # probes the real IP first and routes by GeoIP instead. Known non-CN domains
+              # skip the probe to avoid an extra roundtrip.
+              {
+                rule_set = [
+                  "geosite-gfw"
+                  "geosite-geolocation-!cn"
+                ];
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                server = "fakeip";
+              }
+              {
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                action = "evaluate";
+                server = "dns-zerotrust";
+                timeout = "5s";
+                disable_optimistic_cache = true;
+              }
+              {
+                rule_set = [ "geoip-cn" ];
+                match_response = true;
+                server = "dns-alidns";
+              }
+              {
+                match_response = true;
+                response_rcode = "NXDOMAIN";
+                action = "respond";
+              }
+              {
+                match_response = true;
+                response_rcode = "SERVFAIL";
+                action = "respond";
               }
               {
                 query_type = [
@@ -314,6 +382,8 @@
             strategy = "prefer_ipv4";
             cache_capacity = 4096;
             reverse_mapping = false;
+            timeout = "10s";
+            optimistic = true;
           };
 
           endpoints = {
@@ -338,6 +408,7 @@
               "172.19.0.1/30"
               "fdfe:dcba:9876::1/126"
             ];
+            dns_mode = "hijack";
             auto_route = true;
             auto_redirect = true;
             strict_route = true;
@@ -354,12 +425,17 @@
 
           outbounds = [
             {
+              type = "block";
+              tag = "block";
+            }
+            {
               type = "direct";
               tag = "direct";
               udp_fragment = true;
               tcp_multi_path = true;
+              tcp_fast_open = true;
               domain_resolver = {
-                server = "dns-cloudflare";
+                server = "dns-zerotrust";
                 strategy = "prefer_ipv4";
               };
             }
@@ -368,12 +444,14 @@
               tag = "zerotrust";
               server = "127.0.0.1";
               server_port = 40000;
+              network = "tcp"; # 本地 SOCKS5 不支持 UDP ASSOCIATE，显式禁掉避免静默丢包。
             }
             {
               type = "socks";
               tag = "tor";
               server = "127.0.0.1";
               server_port = 9050;
+              network = "tcp"; # Tor 协议本身不支持 UDP。
             }
             {
               type = "selector";
@@ -383,6 +461,7 @@
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "block"
               ];
             }
             {
@@ -393,6 +472,7 @@
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "block"
               ];
             }
             {
@@ -402,6 +482,7 @@
                 "direct"
                 "🎯 isp"
                 "🎯 manual"
+                "block"
               ];
             }
             {
@@ -412,6 +493,7 @@
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "block"
               ];
             }
             {
@@ -670,6 +752,7 @@
             );
             final = "🚦 oversea";
             auto_detect_interface = true;
+            default_http_client = "spoofed-http";
             # default_domain_resolver：代理 outbound 解析服务器域名时的默认 resolver。
             default_domain_resolver = {
               server = "dns-quad9";
@@ -682,7 +765,7 @@
               enabled = true;
               path = "cache.db";
               store_fakeip = true;
-              store_rdrc = true;
+              store_dns = true;
             };
             clash_api = {
               external_controller = "127.0.0.1:9090";
