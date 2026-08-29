@@ -193,7 +193,7 @@
           http_clients = [
             {
               tag = "spoofed-http";
-              detour = "direct";
+              detour = "➡️ direct";
               tls = {
                 enabled = true;
                 utls = {
@@ -227,12 +227,6 @@
                 tag = "dns-mdns";
               }
               {
-                type = "udp";
-                tag = "dns-unbound";
-                server = "127.0.0.1";
-                server_port = 53;
-              }
-              {
                 type = "h3";
                 tag = "dns-alidns";
                 server = "223.6.6.6";
@@ -241,6 +235,21 @@
                   enabled = true;
                   record_fragment = true;
                   server_name = "dns.alidns.com";
+                  curve_preferences = [
+                    "X25519MLKEM768"
+                    "X25519"
+                  ];
+                };
+              }
+              {
+                type = "h3";
+                tag = "dns-flymc";
+                server = "43.154.154.162";
+                detour = "🚦 cn";
+                tls = {
+                  enabled = true;
+                  record_fragment = true;
+                  server_name = "dns.flymc.cc";
                   curve_preferences = [
                     "X25519MLKEM768"
                     "X25519"
@@ -317,23 +326,26 @@
                 ];
                 server = "dns-system";
               }
-              # CN 域名解析器选择：桌面 (unbound 可用) 用 dns-alidns（H3 加密，
-              # detour:cn 直连阿里 DNS PoP，GeoDNS 覆盖好）。
               {
                 rule_set = [
                   "geosite-tld-cn"
                   "geosite-geolocation-cn"
                   "geosite-cn"
-                ];
-                server = "dns-alidns";
-              }
-              # geosite list above misses unlisted CN domains; evaluate + match_response
-              # probes the real IP first and routes by GeoIP instead. Known non-CN domains
-              # skip the probe to avoid an extra roundtrip.
-              {
-                rule_set = [
                   "geosite-gfw"
                   "geosite-geolocation-!cn"
+                  "geosite-category-ai-chat-!cn"
+                  "geosite-category-media"
+                  "geosite-category-entertainment"
+                  "geosite-category-emby"
+                  "geosite-category-social-media-!cn"
+                  "geosite-apple@cn"
+                  "geosite-category-finance"
+                  "geosite-category-cryptocurrency"
+                  "geosite-category-ecommerce"
+                  "geosite-category-pt"
+                  "geosite-category-public-tracker"
+                  "geosite-category-game-platforms-download"
+                  "geosite-tailscale"
                 ];
                 query_type = [
                   "A"
@@ -354,7 +366,7 @@
               {
                 rule_set = [ "geoip-cn" ];
                 match_response = true;
-                server = "dns-alidns";
+                server = "dns-flymc";
               }
               {
                 match_response = true;
@@ -422,11 +434,11 @@
           outbounds = [
             {
               type = "block";
-              tag = "block";
+              tag = "🚫 block";
             }
             {
               type = "direct";
-              tag = "direct";
+              tag = "➡️ direct";
               udp_fragment = true;
               tcp_multi_path = true;
               tcp_fast_open = true;
@@ -436,15 +448,26 @@
               };
             }
             {
+              type = "direct";
+              tag = "🇨🇳 direct-cn";
+              udp_fragment = true;
+              tcp_multi_path = true;
+              tcp_fast_open = true;
+              domain_resolver = {
+                server = "dns-alidns";
+                strategy = "prefer_ipv4";
+              };
+            }
+            {
               type = "socks";
-              tag = "zerotrust";
+              tag = "🔒 zerotrust";
               server = "127.0.0.1";
               server_port = 40000;
               network = "tcp"; # 本地 SOCKS5 不支持 UDP ASSOCIATE，显式禁掉避免静默丢包。
             }
             {
               type = "socks";
-              tag = "tor";
+              tag = "🧅 tor";
               server = "127.0.0.1";
               server_port = 9050;
               network = "tcp"; # Tor 协议本身不支持 UDP。
@@ -453,43 +476,64 @@
               type = "selector";
               tag = "🚦 cn";
               outbounds = [
-                "direct"
+                "🇨🇳 direct-cn"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
-                "block"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
               tag = "🚦 oversea";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
-                "block"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
-              tag = "🚦 ai-media-social";
+              tag = "🚦 i18n-service";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 manual"
-                "block"
+                "🚫 block"
+              ];
+            }
+            {
+              type = "selector";
+              tag = "🚦 finance";
+              outbounds = [
+                "➡️ direct"
+                "🎯 isp"
+                "🎯 proxy"
+                "🎯 manual"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
               tag = "🚦 webrtc-bt-proxy";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
-                "block"
+                "🚫 block"
+              ];
+            }
+            {
+              type = "selector";
+              tag = "🚦 tailscale-out";
+              outbounds = [
+                "➡️ direct"
+                "🎯 isp"
+                "🎯 proxy"
+                "🎯 manual"
               ];
             }
             {
@@ -498,7 +542,7 @@
               outbounds = [
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
+                "🔒 zerotrust"
               ];
             }
             {
@@ -507,29 +551,19 @@
               outbounds = [
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
-                "tor"
+                "🔒 zerotrust"
+                "🧅 tor"
               ];
             }
             {
               type = "selector";
               tag = "🎯 manual";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
-                "tor"
-              ];
-            }
-            {
-              type = "selector";
-              tag = "🚦 tailscale-out";
-              outbounds = [
-                "direct"
-                "🎯 isp"
-                "🎯 proxy"
-                "🎯 manual"
+                "🔒 zerotrust"
+                "🧅 tor"
               ];
             }
             {
@@ -607,49 +641,34 @@
               }
               {
                 domain_suffix = [ ".onion" ];
-                outbound = "tor";
-              }
-              {
-                type = "logical";
-                mode = "or";
-                rules = [
-                  { domain_suffix = [ "tradingview.com" ]; }
-                  {
-                    rule_set = [
-                      "geosite-google"
-                      "geosite-google-cn"
-                    ];
-                  }
-                ];
-                outbound = "🚦 oversea";
+                outbound = "🧅 tor";
               }
               {
                 rule_set = [
                   "geosite-category-ai-chat-!cn"
-                  "geosite-category-ai-!cn"
-                  "geosite-category-ai-chat-!cn@!cn"
                   "geosite-category-media"
                   "geosite-category-entertainment"
-                  "geosite-category-entertainment@!cn"
                   "geosite-category-emby"
                   "geosite-category-social-media-!cn"
-                  "geosite-category-social-media-!cn@cn"
+                  "geosite-apple@cn"
                 ];
-                outbound = "🚦 ai-media-social";
+                outbound = "🚦 i18n-service";
+              }
+              {
+                rule_set = [ "geosite-gfw" ];
+                outbound = "🚦 oversea";
+              }
+              {
+                rule_set = [ "geosite-category-game-platforms-download" ];
+                outbound = "➡️ direct";
               }
               {
                 rule_set = [
-                  "geosite-apple@cn"
-                  "geosite-category-games-cn"
-                  "geosite-category-game-accelerator-cn"
-                  "geosite-category-game-platforms-download"
-                  "geosite-category-bank-cn"
                   "geosite-category-finance"
-                  "geosite-category-securities-cn"
                   "geosite-category-cryptocurrency"
                   "geosite-category-ecommerce"
                 ];
-                outbound = "direct";
+                outbound = "🚦 finance";
               }
               {
                 rule_set = [
@@ -716,17 +735,11 @@
                 "geoip-private"
                 "geoip-cn"
                 "geosite-private"
-                "geosite-google-cn"
-                "geosite-google"
                 "geosite-apple@cn"
-                "geosite-category-games-cn"
-                "geosite-category-game-accelerator-cn"
                 "geosite-category-game-platforms-download"
                 "geosite-category-pt"
                 "geosite-category-public-tracker"
-                "geosite-category-bank-cn"
                 "geosite-category-finance"
-                "geosite-category-securities-cn"
                 "geosite-category-ecommerce"
                 "geosite-gfw"
                 "geosite-geolocation-!cn"
@@ -735,21 +748,16 @@
                 "geosite-cn"
                 "geosite-category-cryptocurrency"
                 "geosite-category-ai-chat-!cn"
-                "geosite-category-ai-!cn"
-                "geosite-category-ai-chat-!cn@!cn"
                 "geosite-category-media"
                 "geosite-category-entertainment"
-                "geosite-category-entertainment@!cn"
                 "geosite-category-emby"
                 "geosite-category-social-media-!cn"
-                "geosite-category-social-media-!cn@cn"
                 "geosite-tailscale"
               ]
             );
             final = "🚦 oversea";
             auto_detect_interface = true;
             default_http_client = "spoofed-http";
-            # default_domain_resolver：代理 outbound 解析服务器域名时的默认 resolver。
             default_domain_resolver = {
               server = "dns-quad9";
               strategy = "prefer_ipv4";
@@ -767,7 +775,7 @@
               external_controller = "127.0.0.1:9090";
               external_ui = "ui";
               external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
-              external_ui_download_detour = "direct";
+              external_ui_download_detour = "➡️ direct";
               secret = "";
             };
           };
@@ -792,8 +800,6 @@
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
 
         serviceConfig = {
-          # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
-          # TUN 模式需要建立/配置虚拟网卡，因此需要 CAP_NET_ADMIN 和 netlink，且不能 PrivateDevices。
           AmbientCapabilities = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           CapabilityBoundingSet = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           DeviceAllow = lib.optionals config.modules.proxy.singbox.tun [ "/dev/net/tun rw" ];
@@ -812,8 +818,6 @@
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectControlGroups = true;
-          # external_ui_download_url 会把面板 zip 先落到 /tmp 再解压；ProtectSystem=strict
-          # 下 /tmp 默认只读，得靠 PrivateTmp 给它一个私有可写的 /tmp。
           PrivateTmp = true;
           LockPersonality = true;
           RestrictRealtime = true;
