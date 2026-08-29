@@ -337,6 +337,13 @@
 
     services.stirling-pdf = {
       enable = true;
+      # upstream test suite bundles a self-signed cert that has expired,
+      # failing PdfSigningServiceImplTest/ValidateSignatureControllerMoreTest
+      # on every build regardless of environment — nixpkgs#557273, unfixed
+      # upstream as of 2026-08-29; unrelated to whether the app itself works
+      package = pkgs.stirling-pdf.overrideAttrs (_old: {
+        doCheck = false;
+      });
       environment = {
         SERVER_PORT = 8081;
         SECURITY_ENABLE_LOGIN = "true";
