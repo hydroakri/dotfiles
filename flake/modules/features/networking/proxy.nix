@@ -292,15 +292,19 @@
                 ];
                 server = "dns-unbound";
               }
-              # CN 域名解析器选择：桌面 (unbound 可用) 用 dns-alidns（H3 加密，
-              # detour:cn 直连阿里 DNS PoP，GeoDNS 覆盖好）。
               {
                 rule_set = [
                   "geosite-tld-cn"
                   "geosite-geolocation-cn"
                   "geosite-cn"
+                  "geosite-gfw"
+                  "geosite-geolocation-!cn"
                 ];
-                server = "dns-alidns";
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                server = "fakeip";
               }
               {
                 query_type = [
@@ -354,64 +358,97 @@
 
           outbounds = [
             {
+              type = "block";
+              tag = "🚫 block";
+            }
+            {
               type = "direct";
-              tag = "direct";
+              tag = "➡️ direct";
               udp_fragment = true;
               tcp_multi_path = true;
+              tcp_fast_open = true;
               domain_resolver = {
                 server = "dns-cloudflare";
                 strategy = "prefer_ipv4";
               };
             }
             {
-              type = "socks";
-              tag = "zerotrust";
-              server = "127.0.0.1";
-              server_port = 40000;
+              type = "direct";
+              tag = "🇨🇳 direct-cn";
+              udp_fragment = true;
+              tcp_multi_path = true;
+              tcp_fast_open = true;
+              domain_resolver = {
+                server = "dns-alidns";
+                strategy = "prefer_ipv4";
+              };
             }
             {
               type = "socks";
-              tag = "tor";
+              tag = "🔒 zerotrust";
+              server = "127.0.0.1";
+              server_port = 40000;
+              network = "tcp";
+            }
+            {
+              type = "socks";
+              tag = "🧅 tor";
               server = "127.0.0.1";
               server_port = 9050;
+              network = "tcp";
             }
             {
               type = "selector";
               tag = "🚦 cn";
               outbounds = [
-                "direct"
+                "🇨🇳 direct-cn"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
               tag = "🚦 oversea";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
-              tag = "🚦 ai-media-social";
+              tag = "🚦 i18n-service";
               outbounds = [
-                "direct"
                 "🎯 isp"
+                "➡️ direct"
                 "🎯 manual"
+                "🚫 block"
               ];
             }
             {
               type = "selector";
               tag = "🚦 webrtc-bt-proxy";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
+                "🚫 block"
+              ];
+            }
+            {
+              type = "selector";
+              tag = "🚦 finance";
+              outbounds = [
+                "➡️ direct"
+                "🎯 isp"
+                "🎯 proxy"
+                "🎯 manual"
+                "🚫 block"
               ];
             }
             {
@@ -420,7 +457,7 @@
               outbounds = [
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
+                "🔒 zerotrust"
               ];
             }
             {
@@ -429,26 +466,26 @@
               outbounds = [
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
-                "tor"
+                "🔒 zerotrust"
+                "🧅 tor"
               ];
             }
             {
               type = "selector";
               tag = "🎯 manual";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "wg-cloudflare-warp"
                 "reality"
-                "zerotrust"
-                "tor"
+                "🔒 zerotrust"
+                "🧅 tor"
               ];
             }
             {
               type = "selector";
               tag = "🚦 tailscale-out";
               outbounds = [
-                "direct"
+                "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
@@ -529,49 +566,34 @@
               }
               {
                 domain_suffix = [ ".onion" ];
-                outbound = "tor";
-              }
-              {
-                type = "logical";
-                mode = "or";
-                rules = [
-                  { domain_suffix = [ "tradingview.com" ]; }
-                  {
-                    rule_set = [
-                      "geosite-google"
-                      "geosite-google-cn"
-                    ];
-                  }
-                ];
-                outbound = "🚦 oversea";
+                outbound = "🧅 tor";
               }
               {
                 rule_set = [
                   "geosite-category-ai-chat-!cn"
-                  "geosite-category-ai-!cn"
-                  "geosite-category-ai-chat-!cn@!cn"
                   "geosite-category-media"
                   "geosite-category-entertainment"
-                  "geosite-category-entertainment@!cn"
                   "geosite-category-emby"
                   "geosite-category-social-media-!cn"
-                  "geosite-category-social-media-!cn@cn"
+                  "geosite-apple@cn"
                 ];
-                outbound = "🚦 ai-media-social";
+                outbound = "🚦 i18n-service";
+              }
+              {
+                rule_set = [ "geosite-gfw" ];
+                outbound = "🚦 oversea";
+              }
+              {
+                rule_set = [ "geosite-category-game-platforms-download" ];
+                outbound = "➡️ direct";
               }
               {
                 rule_set = [
-                  "geosite-apple@cn"
-                  "geosite-category-games-cn"
-                  "geosite-category-game-accelerator-cn"
-                  "geosite-category-game-platforms-download"
-                  "geosite-category-bank-cn"
                   "geosite-category-finance"
-                  "geosite-category-securities-cn"
                   "geosite-category-cryptocurrency"
                   "geosite-category-ecommerce"
                 ];
-                outbound = "direct";
+                outbound = "🚦 finance";
               }
               {
                 rule_set = [
@@ -638,17 +660,11 @@
                 "geoip-private"
                 "geoip-cn"
                 "geosite-private"
-                "geosite-google-cn"
-                "geosite-google"
                 "geosite-apple@cn"
-                "geosite-category-games-cn"
-                "geosite-category-game-accelerator-cn"
                 "geosite-category-game-platforms-download"
                 "geosite-category-pt"
                 "geosite-category-public-tracker"
-                "geosite-category-bank-cn"
                 "geosite-category-finance"
-                "geosite-category-securities-cn"
                 "geosite-category-ecommerce"
                 "geosite-gfw"
                 "geosite-geolocation-!cn"
@@ -657,14 +673,10 @@
                 "geosite-cn"
                 "geosite-category-cryptocurrency"
                 "geosite-category-ai-chat-!cn"
-                "geosite-category-ai-!cn"
-                "geosite-category-ai-chat-!cn@!cn"
                 "geosite-category-media"
                 "geosite-category-entertainment"
-                "geosite-category-entertainment@!cn"
                 "geosite-category-emby"
                 "geosite-category-social-media-!cn"
-                "geosite-category-social-media-!cn@cn"
                 "geosite-tailscale"
               ]
             );
@@ -688,7 +700,7 @@
               external_controller = "127.0.0.1:9090";
               external_ui = "ui";
               external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
-              external_ui_download_detour = "direct";
+              external_ui_download_detour = "➡️ direct";
               secret = "";
             };
           };
