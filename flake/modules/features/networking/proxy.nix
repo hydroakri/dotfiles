@@ -227,10 +227,6 @@
                 tag = "dns-mdns";
               }
               {
-                type = "dhcp";
-                tag = "dns-dhcp";
-              }
-              {
                 type = "udp";
                 tag = "dns-unbound";
                 server = "127.0.0.1";
@@ -319,7 +315,7 @@
                     rule_set = [ "geosite-private" ];
                   }
                 ];
-                server = "dns-dhcp";
+                server = "dns-system";
               }
               # CN 域名解析器选择：桌面 (unbound 可用) 用 dns-alidns（H3 加密，
               # detour:cn 直连阿里 DNS PoP，GeoDNS 覆盖好）。
