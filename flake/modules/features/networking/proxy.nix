@@ -84,14 +84,93 @@
 
   config =
     with lib;
+    let
+      vlessSecretFields = [
+        "server"
+        "port"
+        "uuid"
+        "sni"
+        "pbk"
+        "sid"
+      ];
+      vlessNodes = [
+        {
+          id = "us-05";
+          tag = "🇺🇸 美国 05 BGP IPv6 流媒体";
+        }
+        {
+          id = "jp-06";
+          tag = "🇯🇵 日本 06 BGP IPv6 流媒体";
+        }
+        {
+          id = "hk-08";
+          tag = "🇭🇰 香港 08 BGP IPv6 流媒体";
+        }
+        {
+          id = "sg-06";
+          tag = "🇸🇬 新加坡 06 BGP IPv6 流媒体";
+        }
+      ];
+      vlessSecretPath = id: field: config.sops.secrets."vless-${id}-${field}".path;
+      mkVlessOutbound =
+        { id, tag }:
+        {
+          type = "vless";
+          inherit tag;
+          server = {
+            _secret = vlessSecretPath id "server";
+          };
+          server_port = {
+            _secret = vlessSecretPath id "port";
+            quote = false;
+          };
+          uuid = {
+            _secret = vlessSecretPath id "uuid";
+          };
+          flow = "xtls-rprx-vision";
+          tls = {
+            enabled = true;
+            server_name = {
+              _secret = vlessSecretPath id "sni";
+            };
+            utls = {
+              enabled = true;
+              fingerprint = "edge";
+            };
+            reality = {
+              enabled = true;
+              public_key = {
+                _secret = vlessSecretPath id "pbk";
+              };
+              short_id = {
+                _secret = vlessSecretPath id "sid";
+              };
+            };
+          };
+          packet_encoding = "xudp";
+        };
+    in
     mkIf config.modules.proxy.enable {
       sops.secrets = {
         zerotrust.sopsFile = ../secrets/proxy-secrets.yaml;
-        sing-box-endpoints.sopsFile = ../secrets/proxy-secrets.yaml;
-        sing-box-outbounds.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_domain.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_ip.sopsFile = ../secrets/proxy-secrets.yaml;
-      };
+        headscale-authkey.sopsFile = ../secrets/proxy-secrets.yaml;
+        warp-address.sopsFile = ../secrets/proxy-secrets.yaml;
+        warp-private-key.sopsFile = ../secrets/proxy-secrets.yaml;
+        warp-peer-address.sopsFile = ../secrets/proxy-secrets.yaml;
+        warp-peer-public-key.sopsFile = ../secrets/proxy-secrets.yaml;
+        warp-peer-reserved.sopsFile = ../secrets/proxy-secrets.yaml;
+      }
+      // listToAttrs (
+        concatMap (
+          n:
+          map (field: {
+            name = "vless-${n.id}-${field}";
+            value.sopsFile = ../secrets/proxy-secrets.yaml;
+          }) vlessSecretFields
+        ) vlessNodes
+      );
 
       # 开启透明代理 (TUN/TProxy) 时需放松 rp_filter 以支持非对称路由（如游戏 UDP）
       # mkOverride 900: intentionally overrides security.nix's mkOverride 950.
@@ -320,10 +399,47 @@
             reverse_mapping = false;
           };
 
-          endpoints = {
-            _secret = config.sops.secrets.sing-box-endpoints.path;
-            quote = false;
-          };
+          endpoints = [
+            {
+              type = "tailscale";
+              tag = "tailscale-in";
+              auth_key = {
+                _secret = config.sops.secrets.headscale-authkey.path;
+              };
+              control_url = "https://headscale.hydroakri.cc";
+            }
+            {
+              type = "wireguard";
+              tag = "wg-cloudflare-warp";
+              mtu = 1280;
+              address = {
+                _secret = config.sops.secrets.warp-address.path;
+                quote = false;
+              };
+              private_key = {
+                _secret = config.sops.secrets.warp-private-key.path;
+              };
+              peers = [
+                {
+                  address = {
+                    _secret = config.sops.secrets.warp-peer-address.path;
+                  };
+                  port = 2408;
+                  public_key = {
+                    _secret = config.sops.secrets.warp-peer-public-key.path;
+                  };
+                  allowed_ips = [
+                    "0.0.0.0/0"
+                    "::/0"
+                  ];
+                  persistent_keepalive_interval = 25;
+                  reserved = {
+                    _secret = config.sops.secrets.warp-peer-reserved.path;
+                  };
+                }
+              ];
+            }
+          ];
 
           inbounds = [
             {
@@ -455,31 +571,32 @@
               type = "selector";
               tag = "🎯 isp";
               outbounds = [
-                "wg-cloudflare-warp"
-                "reality"
                 "🔒 zerotrust"
-              ];
+                "wg-cloudflare-warp"
+              ]
+              ++ (map (n: n.tag) vlessNodes);
             }
             {
               type = "selector";
               tag = "🎯 proxy";
               outbounds = [
-                "wg-cloudflare-warp"
-                "reality"
-                "🔒 zerotrust"
                 "🧅 tor"
-              ];
+                "🔒 zerotrust"
+                "wg-cloudflare-warp"
+              ]
+              ++ (map (n: n.tag) vlessNodes);
             }
             {
               type = "selector";
               tag = "🎯 manual";
               outbounds = [
                 "➡️ direct"
-                "wg-cloudflare-warp"
-                "reality"
-                "🔒 zerotrust"
+                "🇨🇳 direct-cn"
                 "🧅 tor"
-              ];
+                "🔒 zerotrust"
+                "wg-cloudflare-warp"
+              ]
+              ++ (map (n: n.tag) vlessNodes);
             }
             {
               type = "selector";
@@ -491,11 +608,8 @@
                 "🎯 manual"
               ];
             }
-            {
-              _secret = config.sops.secrets.sing-box-outbounds.path;
-              quote = false;
-            }
-          ];
+          ]
+          ++ (map mkVlessOutbound vlessNodes);
 
           route = {
             rules = [
