@@ -244,6 +244,7 @@
           allowedTCPPorts = [
             1080
             9090
+            9091
           ];
           allowedUDPPorts = [ 1080 ];
         })
@@ -888,14 +889,18 @@
               store_fakeip = true;
               store_dns = true;
             };
-            clash_api = {
-              external_controller = "127.0.0.1:9090";
-              external_ui = "ui";
-              external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
-              external_ui_download_detour = "➡️ direct";
-              secret = "";
-            };
           };
+          services = [
+            {
+              type = "api";
+              listen = "127.0.0.1";
+              listen_port = 9091;
+              secret = "";
+              dashboard = {
+                enabled = true;
+              };
+            }
+          ];
         };
       };
 
