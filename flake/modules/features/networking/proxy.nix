@@ -659,8 +659,8 @@
               type = "selector";
               tag = "🎯 isp";
               outbounds = [
-                "wg-cloudflare-warp"
                 "🔒 zerotrust"
+                "wg-cloudflare-warp"
               ]
               ++ (map (n: n.tag) vlessNodes);
             }
@@ -668,9 +668,9 @@
               type = "selector";
               tag = "🎯 proxy";
               outbounds = [
-                "wg-cloudflare-warp"
-                "🔒 zerotrust"
                 "🧅 tor"
+                "🔒 zerotrust"
+                "wg-cloudflare-warp"
               ]
               ++ (map (n: n.tag) vlessNodes);
             }
@@ -679,9 +679,10 @@
               tag = "🎯 manual";
               outbounds = [
                 "➡️ direct"
-                "wg-cloudflare-warp"
-                "🔒 zerotrust"
+                "🇨🇳 direct-cn"
                 "🧅 tor"
+                "🔒 zerotrust"
+                "wg-cloudflare-warp"
               ]
               ++ (map (n: n.tag) vlessNodes);
             }
