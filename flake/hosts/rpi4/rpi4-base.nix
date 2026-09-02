@@ -52,7 +52,9 @@
     # write_chip_bad_status_test on aarch64 (deterministic, not our config) —
     # doCheck=false unblocks raspberrypi-eeprom's build until upstream fixes it
     (pkgs.raspberrypi-eeprom.override {
-      flashrom = pkgs.flashrom.overrideAttrs (_old: { doCheck = false; });
+      flashrom = pkgs.flashrom.overrideAttrs (_old: {
+        doCheck = false;
+      });
     })
     pkgs.ethtool
   ];
