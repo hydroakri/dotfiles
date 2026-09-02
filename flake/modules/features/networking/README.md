@@ -23,8 +23,8 @@
 | `fakeip` | `198.18.0.0/15` + `64:ff9b:1::/48` | 已分类域名（境内境外皆可）优先命中，DNS 阶段零查询，真实 IP 推迟到拨号时由 outbound 的 `domain_resolver` 解析。 |
 | `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——在这台机器上 `type=local` 不经过 unbound/dnscrypt-proxy/RPZ 管道，走网卡分配的 DNS，只把它限制在本就该走本地网络解析的窄范围内。 |
 | `dns-mdns` | mDNS | 局域网设备发现优先命中。 |
-| `dns-alidns` | h3，`detour=🚦 cn` | 用于 `match_response` 阶段对已确认 `geoip-cn` 的响应做二次查询，拿国内 CDN 调度更准的结果。 |
-| `dns-flymc` | h3，`detour=🚦 cn`，无 utls | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。QUIC/h3 传输与 utls 不兼容，DNS 类 h3 server 均不加 utls。 |
+| `dns-alidns` | h3，`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
+| `dns-flymc` | h3，`detour=🚦 cn`，无 utls | 用于 `match_response` 阶段对已确认 `geoip-cn` 的响应做二次查询，拿国内优化结果。QUIC/h3 传输与 utls 不兼容，DNS 类 h3 server 均不加 utls。 |
 | `dns-zerotrust` | h3，无 detour，`server_name` 走 `_secret` | 中立探测服务器：`➡️ direct`/多数 selector 的默认 `domain_resolver`，也是 `evaluate` 阶段对未分类域名探测真实 IP 的查询目标。 |
 | `dns-quad9` | h3，`detour=🚦 oversea` | `dns.final` 兜底，以及 `route.default_domain_resolver`——WireGuard 出站解析域名走这个，不经过 `dns.rules` 匹配链（sing-box 硬约束：该字段只能指定单一 server，无法用 `evaluate`/`race` 竞速）。 |
 
@@ -37,7 +37,7 @@
 | 3 | 内网关键词/后缀/`geosite-private` → `dns-system` | 局域网/内网域名走网卡分配 DNS，不进 fakeip/探测管道。 |
 | 4 | `tld-cn`/`geolocation-cn`/`cn`/`gfw`/`geolocation-!cn` + `🚦 i18n-service`/`🚦 finance`/`🚦 webrtc-bt-proxy`/`🚦 tailscale-out`/`game-platforms-download`（硬编码 direct）用到的全部域名类 `rule_set`（ai-chat-!cn/media/entertainment/emby/social-media-!cn/apple@cn/finance/cryptocurrency/ecommerce/category-pt/category-public-tracker/category-game-platforms-download/tailscale） → `fakeip` | 已分类域名跳过下面的探测，省一次往返。覆盖范围不止境内境外判断——`route.rules` 里这些规则的路由结果全靠 `rule_set` 域名匹配决定、且排在 `geoip-cn` 之前，真实 IP 对路由判断毫无意义，不管出站是走 selector 还是硬编码，都能省掉探测那次往返。未被这些列表覆盖的域名才进入下一步。`🚦 tailscale-out` 规则里 oracle 域名/IP 走的是 `_secret` 模板而非 `rule_set`，没有一并纳入——单独一个 secret 域名要塞进这条规则得改成 `rule_set`+`domain` 的逻辑或结构，为一个低频域名换来的收益太小，没做。 |
 | 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。 |
-| 6 | `geoip-cn` + `match_response=true` → `dns-alidns` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-alidns` 重新查询换取国内优化响应。 |
+| 6 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
 | 7 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
 | 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，DNS 响应本身永远不直接暴露真实境外 IP。 |
 
@@ -58,7 +58,7 @@
 |---|---|
 | `🚫 block` | 硬拒绝。 |
 | `➡️ direct` | 通用直连，`domain_resolver=dns-zerotrust`（中立解析）。 |
-| `🇨🇳 direct-cn` | 国内优化直连，`domain_resolver=dns-flymc`；`🚦 cn` 分组的默认候选。 |
+| `🇨🇳 direct-cn` | 国内优化直连，`domain_resolver=dns-alidns`；`🚦 cn` 分组的默认候选。 |
 | `🔒 zerotrust` | 本地 SOCKS5(`127.0.0.1:40000`)，`network=tcp`——本地 SOCKS5 不支持 UDP ASSOCIATE，显式禁掉避免静默丢包。 |
 | `🧅 tor` | 本地 SOCKS5(`127.0.0.1:9050`)，`network=tcp`——Tor 协议本身不支持 UDP。 |
 

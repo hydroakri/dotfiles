@@ -922,6 +922,7 @@
         ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
 
         serviceConfig = {
+          # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
           AmbientCapabilities = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           CapabilityBoundingSet = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           DeviceAllow = lib.optionals config.modules.proxy.singbox.tun [ "/dev/net/tun rw" ];
