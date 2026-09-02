@@ -349,9 +349,6 @@
                       "msftncsi.com"
                       "linksys.com"
                       "linksyssmartwifi.com"
-                      "file.hydroakri.cc"
-                      "glance.hydroakri.cc"
-                      "pdf.hydroakri.cc"
                     ];
                   }
                   {
@@ -539,8 +536,8 @@
               type = "selector";
               tag = "🚦 i18n-service";
               outbounds = [
-                "🎯 isp"
                 "➡️ direct"
+                "🎯 isp"
                 "🎯 manual"
                 "🚫 block"
               ];
@@ -840,7 +837,6 @@
 
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
-          # TUN 模式需要建立/配置虚拟网卡，因此需要 CAP_NET_ADMIN 和 netlink，且不能 PrivateDevices。
           AmbientCapabilities = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           CapabilityBoundingSet = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
           DeviceAllow = lib.optionals config.modules.proxy.singbox.tun [ "/dev/net/tun rw" ];
