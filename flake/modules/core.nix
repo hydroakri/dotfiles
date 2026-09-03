@@ -215,6 +215,7 @@
           {
             name = ".";
             forward-addr = [ "127.0.0.1@5353" ];
+            forward-first = true;
           }
         ];
       };
