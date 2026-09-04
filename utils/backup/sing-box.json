@@ -1,0 +1,332 @@
+{
+  "log": {
+    "level": "warn",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "fakeip",
+        "tag": "fakeip",
+        "inet4_range": "198.18.0.0/15",
+        "inet6_range": "64:ff9b:1::/48"
+      },
+      {
+        "type": "local",
+        "tag": "dns-system"
+      },
+      {
+        "type": "mdns",
+        "tag": "dns-mdns"
+      },
+      {
+        "type": "h3",
+        "tag": "dns-alidns",
+        "detour": "direct-cn",
+        "server": "223.6.6.6",
+        "tls": {
+          "enabled": true,
+          "server_name": "dns.alidns.com",
+          "curve_preferences": ["X25519MLKEM768", "X25519"],
+          "record_fragment": true
+        }
+      },
+      {
+        "type": "h3",
+        "tag": "dns-flymc",
+        "detour": "direct-cn",
+        "server": "43.154.154.162",
+        "tls": {
+          "enabled": true,
+          "server_name": "dns.flymc.cc",
+          "curve_preferences": ["X25519MLKEM768", "X25519"],
+          "record_fragment": true
+        }
+      },
+      {
+        "type": "h3",
+        "tag": "dns-zerotrust",
+        "server": "172.64.36.2",
+        "tls": {
+          "enabled": true,
+          "server_name": "frd4wvnobp.cloudflare-gateway.com",
+          "curve_preferences": ["X25519MLKEM768", "X25519"],
+          "record_fragment": true
+        }
+      },
+      {
+        "type": "h3",
+        "tag": "dns-quad9",
+        "detour": "direct",
+        "server": "149.112.112.11",
+        "tls": {
+          "enabled": true,
+          "server_name": "dns11.quad9.net",
+          "curve_preferences": ["X25519MLKEM768", "X25519"],
+          "record_fragment": true
+        }
+      }
+    ],
+    "rules": [
+      {
+        "rule_set": "adblock-dns",
+        "action": "reject"
+      },
+      {
+        "preferred_by": "dns-mdns",
+        "server": "dns-mdns"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "domain_keyword": [
+              "msftconnecttest.com",
+              "msftncsi.com",
+              "linksys.com",
+              "linksyssmartwifi.com"
+            ]
+          },
+          {
+            "domain_suffix": [
+              "wlan",
+              "intranet",
+              "private",
+              "domain",
+              "home",
+              "host",
+              "corp"
+            ]
+          },
+          {
+            "rule_set": "geosite-private"
+          }
+        ],
+        "server": "dns-system"
+      },
+      {
+        "rule_set": "fakeip-filter",
+        "query_type": ["A", "AAAA"],
+        "server": "dns-quad9"
+      },
+      {
+        "query_type": ["A", "AAAA"],
+        "rule_set": ["geosite-tld-cn", "geosite-geolocation-cn", "geosite-cn"],
+        "server": "fakeip"
+      },
+      {
+        "query_type": ["A", "AAAA"],
+        "action": "evaluate",
+        "server": "dns-zerotrust",
+        "timeout": "5s",
+        "disable_optimistic_cache": true
+      },
+      {
+        "rule_set": "geoip-cn",
+        "match_response": true,
+        "server": "dns-flymc"
+      },
+      {
+        "match_response": true,
+        "response_rcode": "NXDOMAIN",
+        "action": "respond"
+      },
+      {
+        "match_response": true,
+        "response_rcode": "SERVFAIL",
+        "action": "respond"
+      },
+      {
+        "query_type": ["A", "AAAA"],
+        "server": "fakeip"
+      }
+    ],
+    "final": "dns-quad9",
+    "strategy": "prefer_ipv4",
+    "timeout": "10s",
+    "cache_capacity": 4096,
+    "optimistic": true
+  },
+  "http_clients": [
+    {
+      "tag": "spoofed-http",
+      "version": 2,
+      "headers": {
+        "Accept": "*/*",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Sec-Gpc": "1",
+        "TE": "trailers",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0"
+      },
+      "tls": {
+        "enabled": true,
+        "utls": {
+          "enabled": true,
+          "fingerprint": "firefox"
+        }
+      },
+      "detour": "direct",
+      "stream_receive_window": 0,
+      "connection_receive_window": 0
+    }
+  ],
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 1081
+    },
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "tun0",
+      "mtu": 1280,
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "dns_mode": "hijack",
+      "auto_route": true,
+      // "auto_redirect": true,
+      "exclude_mptcp": true,
+      "strict_route": true,
+      "route_exclude_address_set": "geoip-private",
+      "stack": "mixed"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct",
+      "tcp_fast_open": true,
+      "tcp_multi_path": true,
+      "udp_fragment": true,
+      "domain_resolver": {
+        "server": "dns-zerotrust",
+        "strategy": "prefer_ipv4"
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct-cn",
+      "tcp_fast_open": true,
+      "tcp_multi_path": true,
+      "udp_fragment": true,
+      "domain_resolver": {
+        "server": "dns-alidns",
+        "strategy": "prefer_ipv4"
+      }
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "inbound": ["tun-in", "mixed-in"],
+        "action": "sniff",
+        "timeout": "300ms"
+      },
+      {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "port": 53
+          },
+          {
+            "protocol": "dns"
+          }
+        ],
+        "action": "hijack-dns"
+      },
+      {
+        "rule_set": "adblock-dns",
+        "action": "reject",
+        "method": "drop"
+      },
+      {
+        "rule_set": ["geoip-private", "geosite-private"],
+        "action": "bypass"
+      },
+      {
+        "rule_set": "geoip-cn",
+        "outbound": "direct-cn"
+      },
+      {
+        "rule_set": ["geosite-tld-cn", "geosite-geolocation-cn", "geosite-cn"],
+        "outbound": "direct-cn"
+      }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "adblock-dns",
+        "url": "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "fakeip-filter",
+        "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/fakeip-filter.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geoip-private",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/private.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geoip-cn",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-private",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/private.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-tld-cn",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/tld-cn.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-geolocation-cn",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
+        "update_interval": "24h0m0s"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-cn",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/cn.srs",
+        "update_interval": "24h0m0s"
+      }
+    ],
+    "final": "direct",
+    "auto_detect_interface": true,
+    "default_domain_resolver": {
+      "server": "dns-quad9",
+      "strategy": "prefer_ipv4"
+    },
+    "default_http_client": "spoofed-http"
+  },
+  "services": [
+    {
+      "type": "api",
+      "listen": "127.0.0.1",
+      "listen_port": 9090,
+      "dashboard": false
+    }
+  ],
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db",
+      "store_fakeip": true,
+      "store_dns": true
+    }
+  }
+}

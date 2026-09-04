@@ -85,6 +85,9 @@
   config =
     with lib;
     let
+      # 每个 vless-reality 流媒体节点只有这 6 个字段是每台服务器独有的敏感
+      # 信息，其余（type/flow/tls.enabled/utls/reality.enabled/packet_encoding）
+      # 是这批节点共用的客户端协议参数，写死在 nix 里，见 mkVlessOutbound。
       vlessSecretFields = [
         "server"
         "port"
@@ -264,11 +267,34 @@
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
+        # 临时:nixos-unstable 还没同步 1.14.0,单独从 nixpkgs-unstable 取包。
+        # nixos-unstable 追上后删掉这行，改回默认的 pkgs.sing-box。
+        package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.sing-box;
         settings = {
           log = {
             level = "warn";
             timestamp = true;
           };
+          http_clients = [
+            {
+              tag = "spoofed-http";
+              detour = "➡️ direct";
+              tls = {
+                enabled = true;
+                utls = {
+                  enabled = true;
+                  fingerprint = "firefox";
+                };
+              };
+              headers = {
+                "User-Agent" = "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0";
+                "Accept-Language" = "en-US,en;q=0.5";
+                "Accept" = "*/*";
+                "TE" = "trailers";
+                "Sec-Gpc" = "1";
+              };
+            }
+          ];
           dns = {
             servers = [
               {
@@ -282,10 +308,8 @@
                 tag = "dns-system";
               }
               {
-                type = "udp";
-                tag = "dns-unbound";
-                server = "127.0.0.1";
-                server_port = 53;
+                type = "mdns";
+                tag = "dns-mdns";
               }
               {
                 type = "h3";
@@ -304,7 +328,22 @@
               }
               {
                 type = "h3";
-                tag = "dns-cloudflare";
+                tag = "dns-flymc";
+                server = "43.154.154.162";
+                detour = "🚦 cn";
+                tls = {
+                  enabled = true;
+                  record_fragment = true;
+                  server_name = "dns.flymc.cc";
+                  curve_preferences = [
+                    "X25519MLKEM768"
+                    "X25519"
+                  ];
+                };
+              }
+              {
+                type = "h3";
+                tag = "dns-zerotrust";
                 server = "172.64.36.2";
                 tls = {
                   enabled = true;
@@ -340,6 +379,10 @@
                 action = "reject";
               }
               {
+                preferred_by = "dns-mdns";
+                server = "dns-mdns";
+              }
+              {
                 type = "logical";
                 mode = "or";
                 rules = [
@@ -366,7 +409,17 @@
                     rule_set = [ "geosite-private" ];
                   }
                 ];
-                server = "dns-unbound";
+                server = "dns-system";
+              }
+              {
+                rule_set = [
+                  "fakeip-filter"
+                ];
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                server = "dns-quad9";
               }
               {
                 rule_set = [
@@ -375,12 +428,50 @@
                   "geosite-cn"
                   "geosite-gfw"
                   "geosite-geolocation-!cn"
+                  "geosite-category-ai-chat-!cn"
+                  "geosite-category-media"
+                  "geosite-category-entertainment"
+                  "geosite-category-emby"
+                  "geosite-category-social-media-!cn"
+                  "geosite-apple@cn"
+                  "geosite-category-finance"
+                  "geosite-category-cryptocurrency"
+                  "geosite-category-ecommerce"
+                  "geosite-category-pt"
+                  "geosite-category-public-tracker"
+                  "geosite-category-game-platforms-download"
+                  "geosite-tailscale"
                 ];
                 query_type = [
                   "A"
                   "AAAA"
                 ];
                 server = "fakeip";
+              }
+              {
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                action = "evaluate";
+                server = "dns-zerotrust";
+                timeout = "5s";
+                disable_optimistic_cache = true;
+              }
+              {
+                rule_set = [ "geoip-cn" ];
+                match_response = true;
+                server = "dns-flymc";
+              }
+              {
+                match_response = true;
+                response_rcode = "NXDOMAIN";
+                action = "respond";
+              }
+              {
+                match_response = true;
+                response_rcode = "SERVFAIL";
+                action = "respond";
               }
               {
                 query_type = [
@@ -394,6 +485,8 @@
             strategy = "prefer_ipv4";
             cache_capacity = 4096;
             reverse_mapping = false;
+            timeout = "10s";
+            optimistic = true;
           };
 
           endpoints = [
@@ -455,6 +548,7 @@
               "172.19.0.1/30"
               "fdfe:dcba:9876::1/126"
             ];
+            dns_mode = "hijack";
             auto_route = true;
             auto_redirect = true;
             strict_route = true;
@@ -481,7 +575,7 @@
               tcp_multi_path = true;
               tcp_fast_open = true;
               domain_resolver = {
-                server = "dns-cloudflare";
+                server = "dns-zerotrust";
                 strategy = "prefer_ipv4";
               };
             }
@@ -501,14 +595,14 @@
               tag = "🔒 zerotrust";
               server = "127.0.0.1";
               server_port = 40000;
-              network = "tcp";
+              network = "tcp"; # 本地 SOCKS5 不支持 UDP ASSOCIATE，显式禁掉避免静默丢包。
             }
             {
               type = "socks";
               tag = "🧅 tor";
               server = "127.0.0.1";
               server_port = 9050;
-              network = "tcp";
+              network = "tcp"; # Tor 协议本身不支持 UDP。
             }
             {
               type = "selector";
@@ -544,6 +638,17 @@
             }
             {
               type = "selector";
+              tag = "🚦 finance";
+              outbounds = [
+                "➡️ direct"
+                "🎯 isp"
+                "🎯 proxy"
+                "🎯 manual"
+                "🚫 block"
+              ];
+            }
+            {
+              type = "selector";
               tag = "🚦 webrtc-bt-proxy";
               outbounds = [
                 "➡️ direct"
@@ -555,13 +660,12 @@
             }
             {
               type = "selector";
-              tag = "🚦 finance";
+              tag = "🚦 tailscale-out";
               outbounds = [
                 "➡️ direct"
                 "🎯 isp"
                 "🎯 proxy"
                 "🎯 manual"
-                "🚫 block"
               ];
             }
             {
@@ -594,16 +698,6 @@
                 "wg-cloudflare-warp"
               ]
               ++ (map (n: n.tag) vlessNodes);
-            }
-            {
-              type = "selector";
-              tag = "🚦 tailscale-out";
-              outbounds = [
-                "➡️ direct"
-                "🎯 isp"
-                "🎯 proxy"
-                "🎯 manual"
-              ];
             }
           ]
           ++ (map mkVlessOutbound vlessNodes);
@@ -680,6 +774,10 @@
                 outbound = "🧅 tor";
               }
               {
+                rule_set = [ "geosite-category-game-platforms-download" ];
+                outbound = "➡️ direct";
+              }
+              {
                 rule_set = [
                   "geosite-category-ai-chat-!cn"
                   "geosite-category-media"
@@ -693,10 +791,6 @@
               {
                 rule_set = [ "geosite-gfw" ];
                 outbound = "🚦 oversea";
-              }
-              {
-                rule_set = [ "geosite-category-game-platforms-download" ];
-                outbound = "➡️ direct";
               }
               {
                 rule_set = [
@@ -749,6 +843,12 @@
                 url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs";
                 update_interval = "24h0m0s";
               }
+              {
+                type = "remote";
+                tag = "fakeip-filter";
+                url = "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/fakeip-filter.srs";
+                update_interval = "24h0m0s";
+              }
             ]
             # All public MetaCubeX/meta-rules-dat rule-sets follow
             # .../geo/{geoip|geosite}/{tag-without-that-prefix}.srs, so the URL is
@@ -793,7 +893,7 @@
             );
             final = "🚦 oversea";
             auto_detect_interface = true;
-            # default_domain_resolver：代理 outbound 解析服务器域名时的默认 resolver。
+            default_http_client = "spoofed-http";
             default_domain_resolver = {
               server = "dns-quad9";
               strategy = "prefer_ipv4";
@@ -805,16 +905,20 @@
               enabled = true;
               path = "cache.db";
               store_fakeip = true;
-              store_rdrc = true;
-            };
-            clash_api = {
-              external_controller = "127.0.0.1:9090";
-              external_ui = "ui";
-              external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
-              external_ui_download_detour = "➡️ direct";
-              secret = "";
+              store_dns = true;
             };
           };
+          services = [
+            {
+              type = "api";
+              listen = "127.0.0.1";
+              listen_port = 9090;
+              secret = "";
+              dashboard = {
+                enabled = true;
+              };
+            }
+          ];
         };
       };
 
@@ -855,8 +959,6 @@
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectControlGroups = true;
-          # external_ui_download_url 会把面板 zip 先落到 /tmp 再解压；ProtectSystem=strict
-          # 下 /tmp 默认只读，得靠 PrivateTmp 给它一个私有可写的 /tmp。
           PrivateTmp = true;
           LockPersonality = true;
           RestrictRealtime = true;

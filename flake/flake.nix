@@ -3,6 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # 临时:nixos-unstable 还没同步 sing-box 1.14.0(nixpkgs-unstable 已有),
+    # 单独钉这一个包用,nixos-unstable 追上后删掉这个 input 和对应的 package 覆盖。
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
