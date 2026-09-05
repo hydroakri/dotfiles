@@ -98,7 +98,7 @@ spawn-at-startup "mpris-proxy"
 spawn-at-startup "XDG_MENU_PREFIX=arch-" "kbuildsycoca6"
 spawn-at-startup "dbus-update-activation-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_RUNTIME_DIR"
 spawn-at-startup "darkman" "run"
-spawn-at-startup "noctalia-shell"
+spawn-at-startup "noctalia"
 spawn-at-startup "wl-clip-persist" "--clipboard" "both"
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
 
@@ -149,7 +149,7 @@ binds {
 
     Mod+Return { spawn "wezterm"; }
     Mod+E { spawn "thunar"; }
-    Alt+Space { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
 
     // You can also use a shell:
     // Mod+T { spawn "bash" "-c" "notify-send hello && exec alacritty"; }

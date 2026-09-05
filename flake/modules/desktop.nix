@@ -237,7 +237,7 @@
       path = [ pkgs.flatpak ];
       script = ''
         flatpak uninstall --unused --noninteractive
-        flatpak repair --noninteractive
+        flatpak repair
       '';
       serviceConfig = {
         Type = "oneshot";
@@ -364,8 +364,7 @@
 
       # Wayland compositor
       pkgs.xwayland-satellite # niri
-      pkgs.noctalia-shell
-      pkgs.noctalia-qs
+      pkgs.noctalia
       # pkgs.networkmanagerapplet
       pkgs.brightnessctl
       pkgs.pavucontrol

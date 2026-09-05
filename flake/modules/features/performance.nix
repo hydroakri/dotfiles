@@ -186,11 +186,11 @@ in
       package = pkgs.ananicy-cpp;
       rulesProvider = pkgs.ananicy-rules-cachyos;
     };
-    services.journald.extraConfig = lib.mkDefault ''
-      SystemMaxUse=64M
-      ForwardToWall=no
-      Storage=persistent
-    '';
+    services.journald.settings.Journal = lib.mkDefault {
+      SystemMaxUse = "64M";
+      ForwardToWall = false;
+      Storage = "persistent";
+    };
     environment.systemPackages = [
       pkgs.hdparm # udev rules require hdparm
     ];
