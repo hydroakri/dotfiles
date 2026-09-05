@@ -267,9 +267,6 @@
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
-        # 临时:nixos-unstable 还没同步 1.14.0,单独从 nixpkgs-unstable 取包。
-        # nixos-unstable 追上后删掉这行，改回默认的 pkgs.sing-box。
-        package = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.sing-box;
         settings = {
           log = {
             level = "warn";
@@ -907,18 +904,25 @@
               store_fakeip = true;
               store_dns = true;
             };
-          };
-          services = [
-            {
-              type = "api";
-              listen = "127.0.0.1";
-              listen_port = 9090;
+            clash_api = {
+              external_controller = "127.0.0.1:9090";
+              external_ui = "ui";
+              external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
+              external_ui_download_detour = "➡️ direct";
               secret = "";
-              dashboard = {
-                enabled = true;
-              };
-            }
-          ];
+            };
+          };
+          # services = [
+          #   {
+          #     type = "api";
+          #     listen = "127.0.0.1";
+          #     listen_port = 9090;
+          #     secret = "";
+          #     dashboard = {
+          #       enabled = true;
+          #     };
+          #   }
+          # ];
         };
       };
 

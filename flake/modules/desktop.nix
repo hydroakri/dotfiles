@@ -364,8 +364,7 @@
 
       # Wayland compositor
       pkgs.xwayland-satellite # niri
-      pkgs.noctalia-shell
-      pkgs.noctalia-qs
+      pkgs.noctalia
       # pkgs.networkmanagerapplet
       pkgs.brightnessctl
       pkgs.pavucontrol

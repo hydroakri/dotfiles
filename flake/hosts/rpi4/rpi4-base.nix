@@ -59,11 +59,11 @@
     pkgs.ethtool
   ];
   services.smartd.enable = false;
-  services.journald.extraConfig = ''
-    Storage=volatile
-    SystemMaxUse=64M
-    MaxRetentionSec=1week
-  '';
+  services.journald.settings.Journal = {
+    Storage = "volatile";
+    SystemMaxUse = "64M";
+    MaxRetentionSec = "1week";
+  };
 
   fileSystems = {
     "/" = lib.mkForce {
