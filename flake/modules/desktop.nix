@@ -425,6 +425,7 @@
         brave.configuration = { pkgs, sloth, ... }: {
           app.package = pkgs.brave;
           flatpak.appId = "com.brave.Browser";
+          flatpak.desktopFile = "brave-browser.desktop";
           dbus.policies = {
             "org.freedesktop.DBus" = "talk";
             "ca.desrt.dconf" = "talk";
@@ -478,7 +479,30 @@
             LANG = "en_US.UTF-8";
             LC_ALL = "en_US.UTF-8";
           };
-          bubblewrap.tmpfs = [ (sloth.concat' sloth.homeDir "/.mullvad-browser") ];
+          bubblewrap.tmpfs = [ (sloth.concat' sloth.homeDir "/.mullvad") ];
+          bubblewrap.bind.rw = [ (sloth.mkdir sloth.xdgDownloadDir) ];
+        };
+
+        tor-browser.configuration = { pkgs, sloth, ... }: {
+          app.package = pkgs.tor-browser;
+          flatpak.appId = "org.torproject.tor-browser";
+          dbus.policies = {
+            "org.freedesktop.DBus" = "talk";
+            "org.freedesktop.portal.*" = "talk";
+          };
+          timeZone = {
+            enable = true;
+            provider = "bundle";
+          };
+          pasta = {
+            enable = true;
+            mode = "transparent";
+          };
+          bubblewrap.env = {
+            LANG = "en_US.UTF-8";
+            LC_ALL = "en_US.UTF-8";
+          };
+          bubblewrap.tmpfs = [ (sloth.concat' sloth.homeDir "/.tor project") ];
           bubblewrap.bind.rw = [ (sloth.mkdir sloth.xdgDownloadDir) ];
         };
       };
