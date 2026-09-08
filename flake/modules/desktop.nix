@@ -6,7 +6,10 @@
   ...
 }:
 {
-  imports = [ inputs.nixpak.nixosModules.default ];
+  imports = [
+    inputs.nixpak.nixosModules.default
+    inputs.trivalent-nix.nixosModules.default
+  ];
 
   config = {
     boot = {
@@ -382,6 +385,33 @@
       pkgs.gnomeExtensions.user-themes
       pkgs.gnomeExtensions.kimpanel
     ];
+
+    programs.trivalent = {
+      enable = true;
+      package =
+        let
+          base = inputs.trivalent-nix.packages.${pkgs.stdenv.hostPlatform.system}.trivalent;
+          fontsConf = "${pkgs.mullvad-browser}/share/mullvad-browser/fonts/fonts.conf";
+        in
+        pkgs.symlinkJoin {
+          name = "${base.name}-mullvad-fonts";
+          inherit (base) pname version meta passthru;
+          paths = [ base ];
+          nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
+          postBuild = ''
+            rm "$out/bin/trivalent"
+            makeWrapper "${base}/bin/trivalent" "$out/bin/trivalent" \
+              --set FONTCONFIG_FILE ${fontsConf}
+
+            if [ -e "$out/share/applications/trivalent.desktop" ]; then
+              rm "$out/share/applications/trivalent.desktop"
+              substitute "${base}/share/applications/trivalent.desktop" \
+                "$out/share/applications/trivalent.desktop" \
+                --replace-quiet "${base}/bin/trivalent" "$out/bin/trivalent"
+            fi
+          '';
+        };
+    };
 
     # 让会话内的 gsettings 能找到 desktop schemas（NixOS 不会自动加这个目录）
     environment.sessionVariables.XDG_DATA_DIRS = [

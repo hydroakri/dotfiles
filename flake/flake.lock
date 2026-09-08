@@ -532,7 +532,8 @@
         "nixpkgs": "nixpkgs",
         "preservation": "preservation",
         "sops-nix": "sops-nix",
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": "treefmt-nix",
+        "trivalent-nix": "trivalent-nix"
       }
     },
     "sops-nix": {
@@ -587,6 +588,29 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "trivalent-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788853198,
+        "narHash": "sha256-XDFpTlKNU7Tvcm/gwfADkQRg9a7mtUnk6ZsYSw4p2Ns=",
+        "owner": "hydroakri",
+        "repo": "trivalent-nix",
+        "rev": "34aa2f368c8960257ab2c61b9fd8ed995960734d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hydroakri",
+        "repo": "trivalent-nix",
         "type": "github"
       }
     },
