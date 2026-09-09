@@ -1,5 +1,6 @@
 # nix build '.#packages.x86_64-linux.iso-installer'
 {
+  lib,
   pkgs,
   modulesPath,
   ...
@@ -20,6 +21,11 @@
   # 图形安装器默认开启 ZFS 支持，但 zfs-kernel 模块常跟不上最新内核，标记
   # meta.broken 后会导致构建报错。装机 ISO 用不到 ZFS，直接关掉。
   boot.supportedFilesystems.zfs = false;
+
+  # desktop.nix 启用 niri，会把 services.displayManager.defaultSession 设为
+  # "niri"，与 plasma6 calamares ISO 基础模块的 "plasma" 同优先级冲突。ISO
+  # 用官方 calamares plasma 会话，强制回 "plasma"。
+  services.displayManager.defaultSession = lib.mkForce "plasma";
 
   # 禁用一些服务以简化ISO
   services.smartd.enable = false;

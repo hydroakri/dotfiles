@@ -38,7 +38,7 @@
       ly.enable = true;
       ly.settings.session_log = "null";
     };
-    services.desktopManager = lib.mkDefault {
+    services.desktopManager = {
       cosmic = {
         enable = false;
         xwayland.enable = true;
@@ -116,7 +116,7 @@
     security.pam.services.login.enableGnomeKeyring = lib.mkOverride 900 true;
     services.passSecretService.enable = lib.mkOverride 900 true;
     services.gnome.gcr-ssh-agent.enable = lib.mkOverride 900 false; # disable ssh function managed by gnome-keyring
-    services.dbus.packages = [ pkgs.gcr ];
+    services.dbus.packages = [ pkgs.gcr_4 ];
 
     # For earlyoom and smartd notices
     services.systembus-notify.enable = lib.mkOverride 900 true;
@@ -395,7 +395,12 @@
         in
         pkgs.symlinkJoin {
           name = "${base.name}-mullvad-fonts";
-          inherit (base) pname version meta passthru;
+          inherit (base)
+            pname
+            version
+            meta
+            passthru
+            ;
           paths = [ base ];
           nativeBuildInputs = [ pkgs.makeBinaryWrapper ];
           postBuild = ''
@@ -539,20 +544,6 @@
     };
 
     # GUI User profile
-    services.cloudflare-warp.enable = lib.mkOverride 900 true;
-    # sops-nix places secrets as symlinks; warp-svc opens its MDM policy file
-    # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
-    # never registers. Copy the secret into a real file before each start.
-    sops.secrets."warp_mdm" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "cloudflare-warp.service" ];
-    };
-    systemd.services.cloudflare-warp.preStart = ''
-      install -m 0400 -o root -g root /run/secrets/warp_mdm /var/lib/cloudflare-warp/mdm.xml.tmp
-      mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
-    '';
     users.users.${config.mainUser} = {
       extraGroups = [
         "video"
