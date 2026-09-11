@@ -18,7 +18,7 @@
 | 设置组 | 上游出处 | 本仓库位置 | 状态 | 最近复查 |
 |---|---|---|---|---|
 | 基础 sysctl 基线（kernel.* 指针/dmesg/bpf、net.* ARP/ICMP/重定向、fs.protected_* 等） | Kicksecure `security-misc` 的 `/usr/lib/sysctl.d/990-security-misc.conf`（KSPP 推荐基线）+ ANSSI 指南（注释中 R8/R9/R12/R33） | `security.nix` 950 优先级块 | 已移植（改：合并了 ANSSI 项、`ptrace_scope` 降到 1、`io_uring_disabled` 桌面留 1） | 2026-08-12 |
-| 内核启动参数（slab_nomerge、lockdown、cfi、init_on_alloc、oops=panic…） | KSPP / nixpkgs `hardened.nix` / madaidans-insecurities（nix-mineral 同源思路） | `security.nix` `boot.kernelParams` | 已移植（2026-08-12：修复 `iommu=strict`→`iommu.strict=1` 的 bug；`amd_iommu=force_isolation` 试过导致开机内核 panic，已回滚——见 `known-breaking-settings.md`） | 2026-08-12 |
+| 内核启动参数（slab_nomerge、lockdown、cfi、init_on_alloc、oops=panic…） | KSPP / nixpkgs `hardened.nix` / madaidans-insecurities `guides/linux-hardening.html`（2026-09-11 直接复查过，之前只透过 nix-mineral 的同源思路间接引用） | `security.nix` `boot.kernelParams` | 已移植（2026-08-12：修复 `iommu=strict`→`iommu.strict=1` 的 bug；`amd_iommu=force_isolation` 试过导致开机内核 panic，已回滚——见 `known-breaking-settings.md`。2026-09-11：直接对照原始出处后没发现新的启动参数缺口——见复查日志） | 2026-09-11 |
 | 服务器严格模式块（io_uring/perf/binfmt_misc 全禁） | Kicksecure `security-misc`（server 变体）+ 自研按有无显示服务器区分 | `security.nix` 900 优先级块 | 已移植 | 2026-08-12 |
 | I/O 调度器 udev 规则（kyber/mq-deadline/bfq）、hdparm -B 254 -S 0、cpu_dma_latency 属组 audio | CachyOS `CachyOS-Settings` `usr/lib/udev/rules.d/60-ioschedulers.rules` | `performance.nix` `services.udev.extraRules` | 已移植（规则原文改编；`40-hpet-permissions.rules`/`50-sata.rules` 2026-08-12 一并移植，`71-nvidia.rules` 移进 `nvidia.nix`） | 2026-08-12 |
 | 性能 sysctl（dirty_bytes、vfs_cache_pressure、page-cluster、watermark、min_free_kbytes…） | CachyOS `CachyOS-Settings` `usr/lib/sysctl.d/70-cachyos-settings.conf` | `performance.nix` `boot.kernel.sysctl`（vm.* 块） | 已移植（swappiness 改为 180、补 watermark/compaction 等） | 2026-08-12 |
@@ -28,6 +28,8 @@
 | scx 调度器（scx_rusty） | CachyOS `linux-cachyos`（sched-ext 系） | `performance.nix` `services.scx` | 已移植（无法 diff——`linux-cachyos` 不在已 vendor 的 `CachyOS-Settings` 快照里） | 2026-08-12 |
 | snd-hda-intel AC/电池电源管理 udev | CachyOS `CachyOS-Settings` udev 规则 | `powersave.nix` | 已移植（确认与上游相比是刻意简化——写死数值取代捕获默认值再还原） | 2026-08-12 |
 | PCIe ASPM 策略、amd_pstate=active、teo governor | CachyOS / TLP 思路（自研 udev 脚本） | `powersave.nix` | 已移植（确认自研——已 vendor 的 `cachyos` 快照里没有对应文件） | 2026-08-12 |
+| systemd Manager 调优：`pci-latency.service`、`user@.service.d` cgroup delegate、`rtkit-daemon` 日志封顶 | CachyOS `CachyOS-Settings` `usr/lib/systemd/system/{pci-latency.service,user@.service.d/delegate.conf,rtkit-daemon.service.d/override.conf}` | `performance.nix` | 已移植（同一个上游 `.conf.d` 目录里的 `DefaultTimeoutStartSec`/`StopSec` 和 `DefaultLimitNOFILE` 已在 2026-08-11 复查另行决定，见复查日志） | 2026-09-11 |
+| CachyOS 命令行工具（`kerver`） | CachyOS `CachyOS-Settings` `usr/bin/{kerver,game-performance,zink-run}` | `performance.nix` `environment.systemPackages` | 部分移植（`game-performance`/`zink-run` 移植后于 2026-09-11 移除——与现有 `gamemode`+`steamtinkerlaunch` 重复；`topmem` 被否；`dlss-swapper`/`dlss-swapper-dll` 被否——见复查日志） | 2026-09-11 |
 | kloak（击键/鼠标时序匿名化） | Whonix / kloak 上游（nixpkgs 只有二进制） | `privacy.nix` | 部分移植（自写 systemd 单元 + Wayland 探测） | 无法复查（kloak 上游不在 8 个已 vendor 来源之列） |
 | IPv6 隐私地址、MAC 随机化 | 通用基线（Kicksecure 网络硬化亦有） | `privacy.nix` | 已移植 | 2026-08-12 |
 | Unbound 解析器硬化（hide-identity/hide-version、aggressive-nsec、harden-large-queries、use-caps-for-id、private-address 反 DNS rebinding） | OpenBSD `etc/unbound.conf`（基础结构）+ secureblue `unbound/conf.d`（harden-large-queries/use-caps-for-id）+ GrapheneOS `infrastructure` `etc/unbound/unbound.conf`（tls-cert-bundle/private-address） | `core.nix` `services.unbound.settings.server` | 已移植 | 2026-08-12 |
@@ -222,6 +224,85 @@ OpenBSD、Tails(共 9 个)。过程/工具类记录(修的 bug、查过但没结
 | `preservation.nix`：给 `/var/lib/chrony` 显式写上 `user`/`group`/`mode` | 原本继承模块 `0755 root:root` 默认值，悄悄覆盖了 NixOS chrony 模块自己的 `0750 chrony:chrony`，导致建不了新文件。列表里其它条目也查过同类问题，chrony 是唯一真正中招的 |
 | secureblue 新增的 `bash-timeout.sh`（服务器 `TMOUT=300`，空闲自动登出）不采纳 | `server.nix` 的真实候选项，目前本仓库哪都没设 `TMOUT` |
 | 无关发现：`nix flake check` 在 `packages.x86_64-linux.iso-installer` 上失败（`plasma6` vs `niri` 冲突） | 既有问题，跟这次复查无关，没有在这里修 |
+
+### 2026-09-11（起因：一个第三方 Nix 移植仓库，交叉核对已 vendor 的上游而非直接信任它）
+
+`github.com/vivekanandan-ks/ksv-cachyos-settings-nixos` 是另一个 `CachyOS-Settings`
+的 Nix 移植。没有直接信任它的输出——它引用的每个文件都跟本仓库自己 vendor 的
+副本（`docs/upstream-vendor/cachyos`，commit `aba2ea7`）逐字节比对确认一致。
+这个第三方仓库本身没有带来任何新的上游内容，只是让本仓库还没复查过的几组
+设置浮出水面。
+
+| 项目 | 取舍 |
+|---|---|
+| `pci-latency.service`（新增，`performance.nix`） | 之前没复查过；低风险的 oneshot `setpci` 调用，修的是 cachyos 同一套音频延迟相关 PCI 计时器默认值 |
+| `user@.service.d` cgroup `Delegate`（新增，`performance.nix`） | 之前没复查过；让用户会话管理器（gamescope 等）能管理 `cpu`/`cpuset`/`io`/`memory`/`pids` 这几个 controller |
+| `rtkit-daemon` `LogLevelMax=info`（新增，`performance.nix`） | 之前没复查过；纯粹降日志噪音，无功能影响 |
+| `kerver` 诊断脚本（新增，`performance.nix`） | 内核版本/微架构/当前调度器信息汇总工具；用 `writeShellScriptBin` 打包，已在 omen15 上冒烟测试（正确报出 cachyos-bore-lto 内核和 scx 状态） |
+| `game-performance` 封装脚本——移植后当天移除 | 重复：`gaming.nix` 里已有的 `gamemode.settings.general.desiredprof = "performance"` 本来就会在游戏走 `gamemoderun` 期间让 gamemode 自己把 `power-profiles-daemon` 切到 performance——跟这个脚本手动做的事完全一样 |
+| `zink-run` 封装脚本——移植后当天移除 | 重复：`gaming.nix` 里已经通过 `extraCompatPackages` 引入的 SteamTinkerLaunch 自带「按游戏设置自定义环境变量」功能，能做到同样的 `MESA_LOADER_DRIVER_OVERRIDE=zink` 覆盖，还能按游戏持久化、有 GUI，不需要再装一个系统级二进制 |
+| `topmem` 被否 | 需要 `lua5_4` + `luaPackages.luv`；这个约 200 行的第三方脚本得整段打包/内联，相对已有的 `ananicy`/`scx` 工具链维护成本划不来；有真实需求再重新考虑 |
+| `dlss-swapper`/`dlss-swapper-dll` 被否 | 只对 NVIDIA DLSS 有意义；omen15 是 AMD（`hardware-amd.nix`） |
+| `DefaultTimeoutStartSec`/`StopSec` 15s/10s 重新确认维持否决 | 2026-08-11 已决定（怕误杀真的启动慢的服务）；ksv 这个移植没提供新的理由推翻 |
+| `@audio` PAM `rtprio`/`nice` 重新确认维持否决 | 2026-08-11 已决定；`security.rtkit.enable`（已开）是更现代的按进程等价方案 |
+| cachyos `30-zram.rules` 内联的 `SYSCTL{vm.swappiness}="150"` 重新确认维持否决 | 2026-08-12（续）已决定；会跟现有刻意设的 `180` sysctl 打架 |
+| `amdgpu`/`radeon` `si_support`/`cik_support` 重新确认维持否决 | 2026-08-12 已决定；GPU 世代不对（针对 2012–2014 年的 GCN 1.0/2.x） |
+| journald `SystemMaxUse` 50M vs. 维持 64M 重新确认 | 2026-08-11 已决定；纯磁盘保留期取舍，跟安全/性能无关 |
+
+### 2026-09-11（续：把 vendor 过来的 `cachyos` 52 个文件从头到尾走一遍，不只是 `diff_sysctl.py` 能覆盖到的那几行——补上溯源表「完整逐项 sysctl 对比」那行一直存在的盲区）
+
+| 项目 | 取舍 |
+|---|---|
+| `NetworkManager/conf.d/dns.conf`（`dns=systemd-resolved`）被否 | 会把 DNS 解析权交给 `systemd-resolved`，但这里 `services.resolved.enable` 一直刻意维持默认的 `false`（见 2026-08-11 复查日志），改用 `core.nix` 里现有的 `unbound`（验证 DNSSEC、带 RPZ 黑名单）→ `dnscrypt-proxy`（DoH/DNSCrypt）这条链。照抄这行会在不知不觉中打断这条链——值得明确记下来，而不是留一个没复查过的地雷 |
+| `usr/bin/sbctl-batch-sign` 被否 | 这个类别本身确实相关（omen15 用 limine + `secureBoot.sbctl` 双系统 Windows——查过 `hosts/omen15/omen15.nix` 确认），但机制是多余的：`boot.loader.limine.secureBoot.sbctl` 已经在每次切换 generation 时自动签好所有 NixOS 管理的开机文件，而这支脚本本身就设计成跳过 Microsoft/Windows 签名的文件（`/boot` 下唯一剩下的东西）——没有东西留给它抓 |
+| `usr/bin/paste-cachyos` + `usr/bin/cachyos-bugreport.sh` 被否 | 写死指向 `paste.cachyos.org`（第三方上传、无认证）、并依赖 `pacman`/`cachyos-v3`/`v4`/`znver4` 仓库侦测——不适用于 NixOS，而且「自动上传到第三方服务器」这种工具本身就跟本仓库 `privacy.nix` 的立场相悖 |
+| `usr/lib/systemd/timesyncd.conf.d/10-timesyncd.conf` 被否 | 这台机器上 `systemd-timesyncd.service` 根本不存在（`systemctl is-enabled` → `not-found`）——实际生效的 NTP 客户端是 `chrony`，它的服务器列表里已经有 `time.cloudflare.com`，而且是走 NTS（有认证）而非上游那种明文 NTP，比上游更严格 |
+| `usr/lib/tmpfiles.d/coredump.conf`（`3d` 保留期）重新确认是空操作 | 跟 secureblue 那份逐字节一致，2026-08-12（续）已经记录过大概率是空操作——coredump 已经被三重禁止（`DumpCore=false` + ulimit `core=0` + `systemd.coredump.enable=false`），根本没有东西会写进那个目录等着过期 |
+| `usr/share/X11/xorg.conf.d/20-touchpad.conf`（libinput `Tapping=True`）+ `usr/share/glib-2.0/schemas/…gnome.login-screen…` 被否 | 两个都不适用：niri 是纯 Wayland，没有 Xorg 输入栈，也不是 GNOME。如果想要点击触控板，那是 `dot_config/` 里 niri 自己 KDL 配置该管的事，不归这个 flake |
+| `etc/debuginfod/cachyos.urls` 被否 | 让 `gdb`/`coredumpctl` 去查 CachyOS 自己的 debuginfod 服务器，但那上面只有 Arch/CachyOS 自己二进制构建的符号——对 NixOS store 路径（build ID 完全不同）毫无用处 |
+| `usr/lib/modprobe.d/nvidia.conf`（`NVreg_InitializeSystemMemoryAllocations=0`、`NVreg_DynamicPowerManagement=0x02`）——无缺口 | 已经存在于 `modules/hardware/nvidia.nix:91-92`（意外发现 omen15 其实是 AMD CPU + NVIDIA 独显的混合本，不是纯 AMD——`hardware/nvidia.nix` 跟 `hardware-amd` 一起被引入） |
+
+**这轮的结论**：vendor 过来的 `cachyos` 快照（52 个文件）现在每一个都有交代——已移植、上面有明确理由被否、或是之前的复查已经记过。截至此时没有遗留缺口。
+
+### 2026-09-11（续：直接复查 madaidans-insecurities.github.io 的 Linux Hardening Guide——把第 21 行之前的间接引用升级成直接核对原始出处）
+
+範圍：`guides/linux-hardening.html`（可執行的檢查清單）、`linux.html`（架構層批判）、`encrypted-dns.html`（跟本倉庫實際跑的 unbound + dnscrypt-proxy 直接相關）。網站另外 5 篇（android、firefox-chromium、linux-phones、browser-tracking、messengers、vpns）跟 `security-privacy-advice.html` 這篇 guide 講的是瀏覽器/VPN/通訊軟體選型，不是 NixOS 系統配置，這次不看。
+
+這份指南是寫給從零開始建置 Gentoo/musl/無 systemd 系統的讀者看的，所以裡面很大一塊（發行版/init/libc 選型、LibreSSL、rolling release、tirdad、sdwdate、解除安裝 NTP）套不到 NixOS+glibc+systemd+chrony 的系統上，下面不重複討論。核心的 kernel/sysctl/PAM/USBGuard/coredump/ASLR 基線**幾乎逐行對上**——`kptr_restrict=2`、`dmesg_restrict=1`、`unprivileged_bpf_disabled=1`、`bpf_jit_harden=2`、`kexec_load_disabled=1`、`dev.tty.ldisc_autoload=0`、`vm.unprivileged_userfaultfd=0`、`fs.protected_{symlinks,hardlinks,fifos,regular}`、`vm.mmap_rnd_bits=32`、`slab_nomerge`、`init_on_alloc=1`、`page_alloc.shuffle=1`、`oops=panic`、`debugfs=off`、`vsyscall=none`、`random.trust_cpu=off`、ICMP/重定向/來源路由封鎖、`su.requireWheel=true`、`fs.suid_dumpable=0` + 三重 coredump 禁止、所有已部署主機上 root 都沒有密碼雜湊（鎖死狀態，效果等同指南要求的 `passwd -l root`）——這些都早就移植過了，沒有新動作。
+
+**新發現——留給你逐項決定，目前都沒動手改：**
+
+| 項目 | 指南怎麼說 | 現狀 | 為什麼值得提出來 |
+|---|---|---|---|
+| **全磁碟加密** | §21.1：FDE 是必要的，`/boot` 是它唯一蓋不到的地方 | `hosts/omen15/disko.nix`——NVMe root 就是純 btrfs，整個倉庫 grep 不到任何 LUKS/dm-crypt 層 | 這是整次審查裡最重要的單一發現。omen15 是台已經雙系統 Windows、也已經上了 Secure Boot（`limine.secureBoot.sbctl`）的筆電——實體遺失/被偷會讓硬碟上所有東西明文暴露（瀏覽器 profile、下載檔案、shell history；sops-nix 的密鑰是另外 age 加密的，那部分沒事）。這裡沒有動手——在活著的 root 上改加 LUKS 是真的會中斷服務的遷移工程，特意留給你排時間做 |
+| `module.sig_enforce=1` | §2.3：只載入已簽名的核心模組 | 哪裡都沒設 | **不是舉手之勞**——這裡的 Secure Boot 只簽開機映像（`limine.secureBoot.sbctl`），不簽個別 `.ko` 檔；NixOS 沒有像 Fedora 那種現成的模組簽章管線。盲目開這個很可能讓 `zenpower`（`hosts/omen15/omen15.nix:124-154`，透過 `kernelPackages.zenpower` 建置的樹外模組）載入失敗，開機壞掉。得先研究 nixpkgs 到底支不支援用核心自己的金鑰簽樹外模組，才談得上動手 |
+| `/home` 掛載的 `noexec` | §17：`/home` 要掛 `noexec` | `disko.nix` 已經在 `/home`/`/nix`/`/persistent` 子卷上設了 `nosuid,nodev`——就差 `noexec` 這一個沒加 | 指南自己也承認「`noexec` 可以被 shell script 繞過」；而且很可能會弄壞 AppImage 或裝在 `~/.local/bin` 下的使用者自裝二進位檔。是個真實的選項，不是疏漏——值得明確問一聲要不要，而不是悄悄跳過 |
+| 主機名/使用者名稱通用化 | §10.1：用通用主機名+使用者名稱，避免留下獨特識別碼 | 各主機的 `networking.hostName` 分別是 `omen15`/`oci`/`rpi4-switch`/`rpi4`；`mainUser = "hydroakri"` 到處都是 | 跟 `privacy.nix` 其他地方（MAC 隨機化、IPv6 隱私地址、kloak）那種積極程度放在一起看有點不搭。持平說，暴露面沒聽起來那麼大——主機名主要在區網/DHCP 廣播時洩漏，不是洩漏給遠端網路追蹤器（那才是 `privacy.nix` 真正的威脅模型）——但這是個值得點名的不一致，不該悄悄放過 |
+| Encrypted Client Hello（ECH） | `linux-hardening.html` 沒要求，但 `encrypted-dns.html` 自己的結論直接指向它（見下） | `privacy.nix` 裡 Brave 的 `castration.json` policy 沒有任何 ECH 相關的 key | `encrypted-dns.html` 的論點是：光加密 DNS 什麼都藏不住，因為 TLS 握手時 SNI 還是明文洩漏主機名——ECH 才是真正補這個洞的東西，而且這對本倉庫來說是完全沒碰過的新領域。Brave 的 policy schema 到底有沒有暴露一個真的能用的 ECH 開關（`EncryptedClientHelloEnabled2` 之類的 Chromium policy key），得先查清楚才能決定 |
+| `dnscrypt-proxy` 的 `require_dnssec=false` | 加密 DNS 的一般最佳實踐隱含要求 | `core.nix` `services.dnscrypt-proxy.settings.require_dnssec=false` | 實際風險偏低：整個系統真正在問的是 `unbound`，它自己會獨立做 DNSSEC 驗證，不管 dnscrypt-proxy 對上游回應怎麼宣稱——這個開關只影響 dnscrypt-proxy 自己要不要拒絕轉發沒有 DNSSEC 的回應，不影響驗證本身有沒有發生。列出來是為了讓你明確決定一次，而不是讓它一直停留在沒人審查過的 `false` |
+| `hosts/rpi-image/rpi-image.nix`：`users.users.root.initialPassword = "root"` | §8.3：鎖住 root 帳號 | 只有這一台主機設了，其他實際部署的路由器/桌機都沒有 | 值得你一句話確認這是刻意的（SD 卡開機映像的首次開機/安裝便利設定，不是長期部署的主機），而不是遺留物——脫離脈絡看，擺在這張表其他項目旁邊挺嚇人的 |
+
+**需要拿捏、不是照抄能解決的（已經考慮過或視情境而定）：**
+
+| 項目 | 指南要求 | 現狀 | 理由 |
+|---|---|---|---|
+| `kernel.perf_event_paranoid` | `3`（僅 CAP_PERFMON） | 桌面是 `2`（`security.nix:168`，註解寫明：僅 root 可用 `perf`，靠 `doas` 臨時升權；server 用 `mkOverride 900` 蓋成 `3`） | 早就是刻意做的桌面/伺服器分流，為了保留開發用的 perf 工具，不是疏漏——對照原始出處後重新確認，不改 |
+| `vm.swappiness` | `1`——指南給的理由是「避免敏感資料透過 swap 落到磁碟上」 | `180`（`performance.nix`，跟 zram 大小綁定） | 指南針對的威脅模型是磁碟型 swap；這個倉庫的 swap 100% 是 `zram`（透過 `services.zram-generator` 壓縮進 RAM，`zswap.enabled=0`）——換出去的東西從來不會碰到持久化磁碟，指南要防的那個特定風險在這裡不成立。只有哪天真的加了磁碟型 swap 才需要重新考慮 |
+| `kernel.sysrq` | `4`（僅 SAK） | `246`（`core.nix`，「精選過的安全子集」，2026-08-12 已經對照 Kicksecure/secureblue 的全開全關二選一重新確認過一次） | madaidan 的 `4` 是第三個獨立來源，而且比現在的 `246` 更窄——上次的決定只權衡了兩個「全有全無」的極端跟現有精選子集，這次值得真的去查一下 `246` 除了 SAK 之外還開了哪些 SysRq 按鍵，不是隨便重新確認一次就過 |
+| `kernel.yama.ptrace_scope` | `2`（僅管理員，無例外） | `1`（2026-08-11 已決定維持：「GrapheneOS 的 `2` 沒測過，風險不值得冒」；`3` 弄壞過 Steam） | madaidan 明確要 `2`，剛好就是上次那個決定裡已經標記為「沒測過但可能可行」的同一個值——不改變原本的權衡，沒有一台可以隨便犧牲的測試機先驗證之前，還是不值得直接上正式機 |
+| `net.ipv4.tcp_sack`/`tcp_dsack`/`tcp_fack` | 全部設 `0` | `sack=1`（效能優先覆蓋，理由「CVE 都在 2019 年後修了」）、`dsack=0`/`fack=0`（已加固） | 對照原始出處後重新確認：這個拆分本來就是刻意的，不是「三個裡只加固了兩個」的疏漏 |
+| AppArmor「開了框架但大多數進程沒被限制」（`linux.html` 明確批判的就是這種模式） | 要有全系統的 MAC 政策，不能只是開個框架 | `security.apparmor.enable=true` + 只用 nixpkgs 內建的 profile（溯源表第 41 行） | 這個批判是對的，也不是新資訊，但寫一套完整的自訂政策是它自己獨立的大工程，不是改個設定就好——明確接受這是範圍限制，不是被悄悄忽略。`desktop.nix` 的 `security.nixpak` bubblewrap 沙盒已經把風險最高、確實沒被限制的那幾個進程（brave/mullvad-browser/tor-browser）圈起來了，對同一個問題是個真實但部分的緩解 |
+| 沙盒工具選型 | 明確要 bubblewrap 而不是 Firejail（「Firejail：不安全的沙盒實作」） | `desktop.nix` 的 `security.nixpak`——基於 bubblewrap，整個倉庫沒有 Firejail | 早就對上了；值得明確點出來，因為單看 `security.nix`/`privacy.nix` 看不到這個，它在 `desktop.nix` 裡 |
+| 加固記憶體分配器 | `hardened_malloc`，`VARIANT=light` 把破壞性降到最低 | `environment.memoryAllocator.provider = "graphene-hardened-light"` | 幾乎完全對上——GrapheneOS 的 hardened_malloc，light 版本 |
+
+**被否 / 不適用：**
+
+| 項目 | 理由 |
+|---|---|
+| musl / Gentoo / LibreSSL / 無 systemd / rolling release 這種基礎發行版層級的建議 | 屬於基礎平台層級的意見；重新爭論 NixOS+glibc+systemd 這個選擇不在這次設定審查的範圍內 |
+| 解除安裝 NTP client，改用 sdwdate | `core.nix` 的 `chrony` 搭配 NTS 已經解決了指南真正在意的問題——「NTP 沒有認證」——用有認證的時間同步做到，不需要照抄指南那個針對 Tor 專案場景的 sdwdate 建議 |
+| `tirdad`（隨機化 TCP ISN） | Whonix/Tor 專案專屬的核心模組，nixpkgs 沒有對應套件，這裡也沒有對應的威脅模型 |
+| `encrypted-dns.html` 本身的結論 | 不是設定缺口——這篇文章的重點是：不管 DNS 層的隱私工具做得多精緻，SNI/OCSP/來源 IP 還是會洩漏網站身份，建議改用 VPN/Tor 而不是繼續在 DNS 層打磨。沒有東西可以從裡面移植；上面提到它純粹是因為它直接促成了去查 ECH 支援這件事 |
 
 ## 季度复查流程（方案 A：手动）
 

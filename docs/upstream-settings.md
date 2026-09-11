@@ -21,7 +21,7 @@ bottom of this file) diffs against.
 | Setting group | Upstream source | Location in this repo | Status | Last reviewed |
 |---|---|---|---|---|
 | Baseline sysctl (kernel.* pointers/dmesg/bpf, net.* ARP/ICMP/redirects, fs.protected_* etc.) | Kicksecure `security-misc`'s `/usr/lib/sysctl.d/990-security-misc.conf` (KSPP recommended baseline) + ANSSI guide (R8/R9/R12/R33 in comments) | `security.nix` priority-950 block | Ported (modified: merged in ANSSI items, `ptrace_scope` lowered to 1, `io_uring_disabled` kept at 1 on desktop) | 2026-08-12 |
-| Kernel boot params (slab_nomerge, lockdown, cfi, init_on_alloc, oops=panic…) | KSPP / nixpkgs `hardened.nix` / madaidans-insecurities (same lineage nix-mineral draws from) | `security.nix` `boot.kernelParams` | Ported (2026-08-12: fixed `iommu=strict`→`iommu.strict=1` bug; `amd_iommu=force_isolation` tried, caused a kernel panic, reverted — see `known-breaking-settings.md`) | 2026-08-12 |
+| Kernel boot params (slab_nomerge, lockdown, cfi, init_on_alloc, oops=panic…) | KSPP / nixpkgs `hardened.nix` / madaidans-insecurities `guides/linux-hardening.html` (directly reviewed 2026-09-11, previously only cited indirectly via nix-mineral's lineage) | `security.nix` `boot.kernelParams` | Ported (2026-08-12: fixed `iommu=strict`→`iommu.strict=1` bug; `amd_iommu=force_isolation` tried, caused a kernel panic, reverted — see `known-breaking-settings.md`. 2026-09-11: direct-source audit found no new boot-param gaps — see Review log) | 2026-09-11 |
 | Server strict-mode block (io_uring/perf/binfmt_misc fully disabled) | Kicksecure `security-misc` (server variant) + self-authored desktop/server split | `security.nix` priority-900 block | Ported | 2026-08-12 |
 | I/O scheduler udev rules (kyber/mq-deadline/bfq), `hdparm -B 254 -S 0`, `cpu_dma_latency` group `audio` | CachyOS `CachyOS-Settings` `usr/lib/udev/rules.d/60-ioschedulers.rules` | `performance.nix` `services.udev.extraRules` | Ported (rules adapted from original; `40-hpet-permissions.rules`/`50-sata.rules` also ported 2026-08-12, `71-nvidia.rules` ported into `nvidia.nix`) | 2026-08-12 |
 | Performance sysctl (dirty_bytes, vfs_cache_pressure, page-cluster, watermark, min_free_kbytes…) | CachyOS `CachyOS-Settings` `usr/lib/sysctl.d/70-cachyos-settings.conf` | `performance.nix` `boot.kernel.sysctl` (vm.* block) | Ported (swappiness changed to 180, watermark/compaction etc. added) | 2026-08-12 |
@@ -31,6 +31,8 @@ bottom of this file) diffs against.
 | scx scheduler (scx_rusty) | CachyOS `linux-cachyos` (sched-ext family) | `performance.nix` `services.scx` | Ported (not diffable — `linux-cachyos` isn't part of the vendored `CachyOS-Settings` snapshot) | 2026-08-12 |
 | snd-hda-intel AC/battery power management udev | CachyOS `CachyOS-Settings` udev rules | `powersave.nix` | Ported (confirmed intentional simplification vs. upstream — hardcoded value instead of captured-default restore) | 2026-08-12 |
 | PCIe ASPM policy, `amd_pstate=active`, teo governor | CachyOS / TLP-style approach (self-authored udev script) | `powersave.nix` | Ported (confirmed self-authored — no matching file in vendored `cachyos` snapshot) | 2026-08-12 |
+| systemd Manager tuning: `pci-latency.service`, `user@.service.d` cgroup delegate, `rtkit-daemon` log cap | CachyOS `CachyOS-Settings` `usr/lib/systemd/system/{pci-latency.service,user@.service.d/delegate.conf,rtkit-daemon.service.d/override.conf}` | `performance.nix` | Ported (`DefaultTimeoutStartSec`/`StopSec` and `DefaultLimitNOFILE` from the same upstream `.conf.d` pair were already decided separately — see 2026-08-11 review log) | 2026-09-11 |
+| CachyOS CLI tools (`kerver`) | CachyOS `CachyOS-Settings` `usr/bin/{kerver,game-performance,zink-run}` | `performance.nix` `environment.systemPackages` | Partial (`game-performance`/`zink-run` ported then removed 2026-09-11 — redundant with existing `gamemode`+`steamtinkerlaunch`; `topmem` declined; `dlss-swapper`/`dlss-swapper-dll` declined — see Review log) | 2026-09-11 |
 | kloak (keystroke/mouse timing anonymization) | Whonix / kloak upstream (nixpkgs only ships the binary) | `privacy.nix` | Partial (self-written systemd unit + Wayland detection) | Not reviewable (kloak upstream not among the 8 vendored sources) |
 | IPv6 privacy addresses, MAC randomization | General baseline (also present in Kicksecure network hardening) | `privacy.nix` | Ported | 2026-08-12 |
 | Unbound resolver hardening (`hide-identity`/`hide-version`, `aggressive-nsec`, `harden-large-queries`, `use-caps-for-id`, `private-address` DNS-rebinding block) | OpenBSD `etc/unbound.conf` (base structure) + secureblue `unbound/conf.d` (`harden-large-queries`/`use-caps-for-id`) + GrapheneOS `infrastructure` `etc/unbound/unbound.conf` (`tls-cert-bundle`/`private-address`) | `core.nix` `services.unbound.settings.server` | Ported | 2026-08-12 |
@@ -227,6 +229,106 @@ mobile/handset tuning.
 | `preservation.nix`: `/var/lib/chrony` given explicit `user`/`group`/`mode` | Was inheriting the module's blanket `0755 root:root`, silently overriding the NixOS chrony module's own `0750 chrony:chrony` tmpfiles rule — blocked new-file creation. Rest of the `directories` list swept for the same bug class, chrony was the only real mismatch |
 | secureblue's new `bash-timeout.sh` (server `TMOUT=300`, idle shell auto-logout) declined | Real candidate for `server.nix`; no `TMOUT` set anywhere currently |
 | Unrelated: `nix flake check` fails on `packages.x86_64-linux.iso-installer` (`plasma6` vs `niri` `defaultSession` conflict) | Pre-existing, not from this review; not fixed here |
+
+### 2026-09-11 (triggered by a third-party Nix port, cross-checked against our own vendored upstream instead of trusted directly)
+
+`github.com/vivekanandan-ks/ksv-cachyos-settings-nixos` is a separate Nix
+port of `CachyOS-Settings`. Rather than trusting its output, every file it
+referenced was diffed against this repo's own vendored copy
+(`docs/upstream-vendor/cachyos`, commit `aba2ea7`) and confirmed
+byte-identical — the port itself introduced no new upstream content, it just
+surfaced settings groups this repo hadn't reviewed yet.
+
+| Item | Tradeoff |
+|---|---|
+| `pci-latency.service` (new, `performance.nix`) | Not previously reviewed; low-risk oneshot `setpci` call, fixes the same audio-latency-relevant PCI timer defaults cachyos ships |
+| `user@.service.d` cgroup `Delegate` (new, `performance.nix`) | Not previously reviewed; lets the user session manager (gamescope etc.) manage `cpu`/`cpuset`/`io`/`memory`/`pids` controllers |
+| `rtkit-daemon` `LogLevelMax=info` (new, `performance.nix`) | Not previously reviewed; pure log-noise reduction, no functional effect |
+| `kerver` diagnostic script (new, `performance.nix`) | Kernel/microarch/active-scheduler dump tool; packaged as `writeShellScriptBin`, smoke-tested on omen15 (correctly reported cachyos-bore-lto kernel + scx state) |
+| `game-performance` wrapper — ported, then removed same day | Redundant: `gamemode.settings.general.desiredprof = "performance"` (already in `gaming.nix`) makes gamemode itself switch `power-profiles-daemon` to performance for the game's duration once launched under `gamemoderun` — which is exactly what this wrapper did by hand |
+| `zink-run` wrapper — ported, then removed same day | Redundant: SteamTinkerLaunch (already in `gaming.nix` via `extraCompatPackages`) has a per-game custom-environment-variable feature that covers the same `MESA_LOADER_DRIVER_OVERRIDE=zink` override with per-game persistence and a GUI, without a separate system-wide binary |
+| `topmem` declined | Needs `lua5_4` + `luaPackages.luv`; the ~200-line third-party script would have to be packaged/inlined whole — maintenance weight not justified next to existing `ananicy`/`scx` tooling; revisit if a real need comes up |
+| `dlss-swapper`/`dlss-swapper-dll` declined | NVIDIA DLSS-only; omen15 is AMD (`hardware-amd.nix`) |
+| `DefaultTimeoutStartSec`/`StopSec` 15s/10s reconfirmed declined | Already decided 2026-08-11 (risk of killing a legitimately slow-starting service); the ksv port didn't surface a new reason to revisit |
+| `@audio` PAM `rtprio`/`nice` reconfirmed declined | Already decided 2026-08-11; `security.rtkit.enable` (already on) is the modern per-process equivalent |
+| cachyos `30-zram.rules` inline `SYSCTL{vm.swappiness}="150"` reconfirmed declined | Already decided 2026-08-12 (continued); would fight the existing deliberate `180` sysctl |
+| `amdgpu`/`radeon` `si_support`/`cik_support` reconfirmed declined | Already decided 2026-08-12; wrong GPU generation (targets 2012–2014 GCN 1.0/2.x) |
+| journald `SystemMaxUse` 50M vs. kept 64M reconfirmed | Already decided 2026-08-11; pure disk-retention tradeoff, not security/perf |
+
+### 2026-09-11 (continued: full 52-file vendored `cachyos` tree walked end-to-end, not just the `diff_sysctl.py`-covered rows — closes the gap the provenance table's "Full item-by-item sysctl comparison" row always had)
+
+| Item | Tradeoff |
+|---|---|
+| `NetworkManager/conf.d/dns.conf` (`dns=systemd-resolved`) declined | Would hand DNS resolution to `systemd-resolved`, which is intentionally off here (`services.resolved.enable` stays at its default `false` — see 2026-08-11 review log) in favor of the existing `unbound` (DNSSEC-validating, RPZ blocklist) → `dnscrypt-proxy` (DoH/DNSCrypt) chain in `core.nix`. Porting this line blind would have silently broken that chain — worth recording explicitly rather than leaving it an unreviewed landmine |
+| `usr/bin/sbctl-batch-sign` declined | Category is genuinely relevant here (omen15 dual-boots Windows via limine with `secureBoot.sbctl` — checked `hosts/omen15/omen15.nix`), but the mechanism is redundant: `boot.loader.limine.secureBoot.sbctl` already auto-signs every NixOS-managed boot file on each generation switch, and the script explicitly skips Microsoft/Windows-signed files (the only other thing under `/boot`) by design — nothing is left for it to catch |
+| `usr/bin/paste-cachyos` + `usr/bin/cachyos-bugreport.sh` declined | Hardcoded to `paste.cachyos.org` (third-party upload, no auth) and to `pacman`/`cachyos-v3`/`v4`/`znver4` repo detection — not portable to NixOS, and an auto-upload-to-a-third-party-server tool cuts against this repo's `privacy.nix` posture |
+| `usr/lib/systemd/timesyncd.conf.d/10-timesyncd.conf` declined | `systemd-timesyncd.service` doesn't even exist on this system (`systemctl is-enabled` → `not-found`) — `chrony` is the active NTP client, and its server list already includes `time.cloudflare.com` as an NTS (authenticated) source, stricter than upstream's plain NTP entry |
+| `usr/lib/tmpfiles.d/coredump.conf` (`3d` retention) reconfirmed no-op | Byte-identical to secureblue's version already logged 2026-08-12 (continued) as a likely no-op — coredumps are triple-banned (`DumpCore=false` + ulimit `core=0` + `systemd.coredump.enable=false`), so nothing ever lands in that directory to expire |
+| `usr/share/X11/xorg.conf.d/20-touchpad.conf` (libinput `Tapping=True`) + `usr/share/glib-2.0/schemas/…gnome.login-screen…` declined | Both are non-issues here: niri is Wayland-only (no Xorg input stack) and not GNOME. Tap-to-click, if wanted, is a niri KDL config concern in `dot_config/`, not this flake |
+| `etc/debuginfod/cachyos.urls` declined | Points `gdb`/`coredumpctl` at CachyOS's debuginfod server, which only has symbols for Arch/CachyOS's own binary builds — useless against NixOS store paths (different build IDs entirely) |
+| `usr/lib/modprobe.d/nvidia.conf` (`NVreg_InitializeSystemMemoryAllocations=0`, `NVreg_DynamicPowerManagement=0x02`) — no gap | Already present in `modules/hardware/nvidia.nix:91-92` (omen15 turns out to be an AMD-CPU + NVIDIA-dGPU hybrid laptop, not pure AMD — `hardware/nvidia.nix` is imported alongside `hardware-amd`) |
+
+**Conclusion of this pass**: every file in the vendored `cachyos` snapshot (52
+files) is now accounted for — ported, explicitly declined with a reason
+above, or already logged in an earlier review. No outstanding gap remains
+as of this date.
+
+### 2026-09-11 (continued: madaidans-insecurities.github.io Linux Hardening Guide audited directly — upgrades row 24's prior indirect citation to a primary-source review)
+
+Scope: `guides/linux-hardening.html` (actionable checklist), `linux.html`
+(architecture critique), `encrypted-dns.html` (directly relevant — this repo
+runs a real unbound + dnscrypt-proxy stack). The site's other 5 pages
+(android, firefox-chromium, linux-phones, browser-tracking, messengers, vpns)
+and its `security-privacy-advice.html` guide are about browser/VPN/messenger
+choices, not NixOS system config — out of scope for this pass.
+
+The guide is written for a from-scratch Gentoo/musl/no-systemd build, so a
+large fraction of it (distro/init/libc selection, LibreSSL, rolling release,
+tirdad, sdwdate, uninstalling NTP) doesn't transfer to a NixOS+glibc+systemd+
+chrony system and isn't re-litigated below. The kernel/sysctl/PAM/USBGuard/
+coredump/ASLR baseline **matches almost line-for-line** — `kptr_restrict=2`,
+`dmesg_restrict=1`, `unprivileged_bpf_disabled=1`, `bpf_jit_harden=2`,
+`kexec_load_disabled=1`, `dev.tty.ldisc_autoload=0`, `vm.unprivileged_userfaultfd=0`,
+`fs.protected_{symlinks,hardlinks,fifos,regular}`, `vm.mmap_rnd_bits=32`,
+`slab_nomerge`, `init_on_alloc=1`, `page_alloc.shuffle=1`, `oops=panic`,
+`debugfs=off`, `vsyscall=none`, `random.trust_cpu=off`, ICMP/redirect/source-route
+lockdown, `su.requireWheel=true`, `fs.suid_dumpable=0` + triple coredump ban,
+root has no password hash on any deployed host (locked, matches the guide's
+`passwd -l root` intent by construction) — all already ported, no new action.
+
+**New findings — for the user to decide, nothing applied:**
+
+| Item | What the guide says | Current state | Why it's flagged |
+|---|---|---|---|
+| **Full-disk encryption** | §21.1: FDE essential, `/boot` is the one thing it can't cover | `hosts/omen15/disko.nix` — plain btrfs on the NVMe root, no LUKS/dm-crypt layer anywhere in the repo (grepped, zero hits) | The single most consequential gap found. omen15 is a laptop that already dual-boots Windows and has Secure Boot live (`limine.secureBoot.sbctl`) — physical loss/theft exposes everything on disk in plaintext (browser profiles, downloaded files, shell history; sops-nix secrets are separately age-encrypted so those specifically are fine). Not attempted here — repartitioning a live root to add LUKS is a real, disruptive migration, explicitly left for the user to schedule |
+| `module.sig_enforce=1` | §2.3: only load signed kernel modules | Not set anywhere | **Not a quick win** — Secure Boot here only signs the boot image (`limine.secureBoot.sbctl`), not individual `.ko` files; NixOS has no turnkey module-signing pipeline the way e.g. Fedora does. Enabling this blind would very likely fail to load `zenpower` (`hosts/omen15/omen15.nix:124-154`, an out-of-tree module built via `kernelPackages.zenpower`) and break boot. Needs its own investigation (does nixpkgs support signing out-of-tree modules against the kernel's own key at all?) before it's actionable |
+| `/home` mount `noexec` | §17: `noexec` on `/home` | `disko.nix` already sets `nosuid,nodev` on the `/home`/`/nix`/`/persistent` subvolumes — `noexec` specifically is the one flag missing | The guide itself concedes "`noexec` can be bypassed via shell scripts"; also would likely break AppImages/user-installed binaries under `~/.local/bin`. Real option, not an oversight — worth an explicit yes/no rather than silence |
+| Hostname/username genericization | §10.1: generic hostname+username, avoid unique identifiers | `networking.hostName` is `omen15`/`oci`/`rpi4-switch`/`rpi4` per host; `mainUser = "hydroakri"` everywhere | Sits oddly next to how aggressive `privacy.nix` otherwise is (MAC randomization, IPv6 privacy addresses, kloak). In fairness the exposure is narrower than it sounds — hostname mostly leaks over local/DHCP broadcast, not to remote web trackers, which is `privacy.nix`'s actual threat model — but it's an inconsistency worth naming rather than leaving unexamined |
+| Encrypted Client Hello (ECH) | Not asked for by `linux-hardening.html`, but directly implied by `encrypted-dns.html`'s own conclusion (see below) | No ECH-related key in `privacy.nix`'s Brave `castration.json` policy | `encrypted-dns.html` argues DNS encryption alone doesn't hide anything because SNI leaks the hostname in plaintext during the TLS handshake — ECH is the actual fix for that specific leak, and it's genuinely new ground this repo hasn't touched. Whether Brave's policy schema exposes a working ECH toggle (`EncryptedClientHelloEnabled2` or similar Chromium policy key) needs checking before deciding |
+| `dnscrypt-proxy` `require_dnssec=false` | Implied by encrypted-DNS best practice generally | `core.nix` `services.dnscrypt-proxy.settings.require_dnssec=false` | Low actual risk: `unbound` (the resolver the whole system actually talks to) does its own independent DNSSEC validation regardless of what dnscrypt-proxy claims about upstream responses — this flag only affects whether dnscrypt-proxy itself refuses to relay a non-DNSSEC answer, not whether validation happens. Flagged for an explicit decision rather than left as an unexamined "false" |
+| `hosts/rpi-image/rpi-image.nix`: `users.users.root.initialPassword = "root"` | §8.3: lock root account | Set only on this one host, not on any deployed router/desktop | Worth a one-line confirmation this is intentional (SD-card image first-boot/installer convenience, not a persistently deployed host) rather than a leftover — it reads alarming out of context next to everything else in this table |
+
+**Needs nuance, not a blind port (already-considered or context-dependent):**
+
+| Item | Guide's ask | Current state | Reasoning |
+|---|---|---|---|
+| `kernel.perf_event_paranoid` | `3` (CAP_PERFMON only) | `2` on desktop (`security.nix:168`, explicit comment: root-only `perf` via `doas`, server overrides to `3` at `mkOverride 900`) | Already a deliberate desktop/server split for dev-tooling access, not an oversight — reconfirmed against the direct source, no change |
+| `vm.swappiness` | `1` — guide's stated reason is "avoid sensitive data on disk via swap" | `180` (`performance.nix`, tied to zram sizing) | The guide's threat model is disk-backed swap; this repo's swap is 100% `zram` (compressed RAM via `services.zram-generator`, `zswap.enabled=0`) — nothing swapped ever touches persistent disk, so the specific risk the guide is defending against doesn't apply here. Would need revisiting only if disk-backed swap were ever added |
+| `kernel.sysrq` | `4` (SAK only) | `246` (`core.nix`, "curated safe subset", already reconfirmed once 2026-08-12 against Kicksecure/secureblue's blunt on/off) | Madaidan's `4` is a *third* independent source landing on a narrower value than the repo's current `246` — the previous decision only weighed two all-or-nothing alternatives against the curated subset. Worth an actual second look at which SysRq keys `246` enables beyond SAK, not a blind reconfirm this time |
+| `kernel.yama.ptrace_scope` | `2` (admin-only, no exceptions) | `1` (kept 2026-08-11: "GrapheneOS's `2` untested, not worth the risk"; `3` broke Steam) | Madaidan explicitly wanting `2` is the same value that decision already flagged as untested-but-plausible — doesn't change the calculus, still not worth testing on a daily driver without a throwaway host to verify on first |
+| `net.ipv4.tcp_sack`/`tcp_dsack`/`tcp_fack` | All `0` | `sack=1` (perf override, "CVEs patched since 2019"), `dsack=0`/`fack=0` (hardened) | Reconfirmed against the direct source: the split was already deliberate, not an oversight that only 2 of 3 got hardened |
+| AppArmor "enabled but mostly unconfined" (`linux.html`'s explicit critique of exactly this pattern) | Full system-wide MAC policy, not just the framework enabled | `security.apparmor.enable=true` + nixpkgs' bundled profiles only (provenance table row 41) | The critique is valid and not new information, but authoring a full custom policy is its own substantial project, not a config tweak — explicitly accepted as a scope limit rather than silently ignored. `desktop.nix`'s `security.nixpak` bubblewrap sandboxing on the actual highest-risk unconfined processes (brave/mullvad-browser/tor-browser) is a real, if partial, mitigation for the same underlying concern |
+| Sandboxing tool choice | Bubblewrap over Firejail explicitly ("Firejail: unsafe sandbox implementation") | `desktop.nix` `security.nixpak` — bubblewrap-based, no Firejail anywhere in the repo | Already matches; worth citing explicitly since `security.nix`/`privacy.nix` alone don't show this — it lives in `desktop.nix` |
+| Hardened memory allocator | `hardened_malloc`, `VARIANT=light` to minimize breakage | `environment.memoryAllocator.provider = "graphene-hardened-light"` | Already matches almost exactly — GrapheneOS's hardened_malloc, light variant |
+
+**Declined / not applicable:**
+
+| Item | Reason |
+|---|---|
+| musl / Gentoo / LibreSSL / non-systemd / rolling-release base distro | Base-platform-level advice; re-litigating NixOS+glibc+systemd isn't in scope for a settings audit |
+| Uninstall NTP clients, use sdwdate instead | `chrony` with NTS (`core.nix`) already addresses the guide's actual complaint — "NTP is unauthenticated" — via authenticated time sync, without going as far as the guide's Tor-project-specific sdwdate suggestion |
+| `tirdad` (random TCP ISNs) | Whonix/Tor-project-specific kernel module, no nixpkgs package, no matching threat model here |
+| `encrypted-dns.html`'s actual conclusion | Not a settings gap — the article's point is that DNS-layer privacy tooling (however elaborate) doesn't hide site identity because SNI/OCSP/source-IP still leak it, and recommends VPN/Tor instead of more DNS tuning. There's nothing to port from it; noted above only insofar as it directly motivates checking ECH support |
 
 ## Quarterly review process (Plan A: manual)
 

@@ -138,6 +138,27 @@ in
           ATTR{link_power_management_policy}="max_performance"
 
     '';
+    systemd.services.pci-latency = lib.mkIf config.services.displayManager.enable {
+      description = "Adjust latency timers for PCI peripherals";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.writeShellScript "pci-latency" ''
+          ${pkgs.pciutils}/bin/setpci -v -s '*:*' latency_timer=20
+          ${pkgs.pciutils}/bin/setpci -v -s '0:0' latency_timer=0
+          ${pkgs.pciutils}/bin/setpci -v -d "*:*:04xx" latency_timer=80
+        ''}";
+      };
+    };
+    systemd.services."user@".serviceConfig.Delegate = lib.mkIf config.services.displayManager.enable [
+      "cpu"
+      "cpuset"
+      "io"
+      "memory"
+      "pids"
+    ];
+    systemd.services.rtkit-daemon.serviceConfig.LogLevelMax =
+      lib.mkIf config.services.displayManager.enable "info";
     boot.tmp.useTmpfs = lib.mkDefault true;
     # THP 细粒度调优，跟 boot.kernelParams 的 transparent_hugepage=madvise 不
     # 重复：那个控制要不要用大页，这两条是分配大页时的行为细化。
