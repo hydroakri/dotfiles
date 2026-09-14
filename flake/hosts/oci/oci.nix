@@ -61,6 +61,9 @@
         webdav_htpasswd = { };
         attic_jwt_secret = { };
         searx_secret_key = { };
+        pds_jwt_secret = { };
+        pds_admin_password = { };
+        pds_plc_rotation_key = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -84,6 +87,14 @@
           RCLONE_CONFIG_R2_ENDPOINT=${config.sops.placeholder.r2_endpoint}
           R2_BUCKET_NAME=${config.sops.placeholder.r2_bucket}
           RCLONE_CONFIG_R2_ACL=private
+        '';
+      };
+      templates."pds.env" = {
+        owner = "pds";
+        content = ''
+          PDS_JWT_SECRET=${config.sops.placeholder.pds_jwt_secret}
+          PDS_ADMIN_PASSWORD=${config.sops.placeholder.pds_admin_password}
+          PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX=${config.sops.placeholder.pds_plc_rotation_key}
         '';
       };
       templates."webdav-auth" = {
@@ -129,15 +140,6 @@
 
     };
     disko.devices.disk.main.device = "/dev/sda";
-    modules = {
-      utils = {
-        enable = true;
-        enableUptime = true;
-        enableGrafana = false;
-        enablePrometheus = false;
-        enableGraphicTools = false;
-      };
-    };
 
     networking.hostName = "oci";
     # OCI 虚拟盘(virtio-blk)不支持 SMART，smartd 会一直探测失败
@@ -318,17 +320,6 @@
       };
     };
 
-    # services.filebrowser = {
-    #   enable = true;
-    #   settings = {
-    #     port = 8082;
-    #     address = "127.0.0.1";
-    #     database = "/var/lib/filebrowser/filebrowser.db";
-    #     root = "/var/lib/filebrowser/my-files";
-    #     noauth = false;
-    #   };
-    # };
-
     services.vaultwarden = {
       enable = true;
       dbBackend = "sqlite";
@@ -341,13 +332,30 @@
       };
     };
 
-    services.stirling-pdf = {
+    services.bluesky-pds = {
       enable = true;
-      environment = {
-        SERVER_PORT = 8081;
-        SECURITY_ENABLE_LOGIN = "true";
-        INSTALLATION_NAME = "Private PDF Station";
-        APP_LOCALE = "zh_CN";
+      pdsadmin.enable = true;
+      environmentFiles = [ config.sops.templates."pds.env".path ];
+      settings = {
+        PDS_HOSTNAME = "bsky.hydroakri.cc";
+        PDS_INVITE_REQUIRED = "true"; # 个人账号，关闭开放注册
+        PDS_CRAWLERS = "https://bsky.network"; # 让官方 relay 抓取，账号才能被搜索/展示
+      };
+    };
+
+    services.cryptpad = {
+      enable = true;
+      # oci 的 nginx 已手动客制化（commonHttpConfig/recommendedXxx 均已设置），
+      # 不用 configureNginx 自动接管，改成跟其他 vhost 一致的手写风格
+      configureNginx = false;
+      settings = {
+        httpUnsafeOrigin = "https://pad.hydroakri.cc";
+        httpSafeOrigin = "https://pad-sandbox.hydroakri.cc"; # 沙盒 origin，必须跟主域名不同才能隔离 iframe
+        httpAddress = "127.0.0.1";
+        httpPort = 3005; # 3000/3003 默认端口跟 bluesky-pds 的 3000 冲突，改开这两个
+        websocketPort = 3006;
+        blockDailyCheck = true; # 关闭 telemetry
+        adminKeys = [ "[squeeze2997@pad.hydroakri.cc/En2Qnt107rNTYNChvlqtAHBHr-StoROLlTuEMXSglko=]" ];
       };
     };
 
@@ -488,6 +496,15 @@
         environmentFile = config.sops.templates."cf_oracle.env".path;
         reloadServices = [ "nginx.service" ];
       };
+      # 独立签发：PDS 账号 handle 未来要支持 <user>.bsky.hydroakri.cc 这种二级子域，
+      # 现有的 *.hydroakri.cc 只覆盖一层，盖不到这个深度
+      certs."bsky.hydroakri.cc" = {
+        domain = "*.bsky.hydroakri.cc";
+        extraDomainNames = [ "bsky.hydroakri.cc" ];
+        dnsProvider = "cloudflare";
+        environmentFile = config.sops.templates."cf_oracle.env".path;
+        reloadServices = [ "nginx.service" ];
+      };
     };
     users.users.nginx.extraGroups = [ "acme" ];
     services.nginx = {
@@ -543,19 +560,6 @@
         };
       };
 
-      # virtualHosts."file.hydroakri.cc" = {
-      #   useACMEHost = "hydroakri.cc";
-      #   forceSSL = true;
-      #   extraConfig = ''
-      #     allow 100.64.0.0/10;
-      #     allow fd7a:115c:a1e0::/48;
-      #     deny all;
-      #   '';
-      #   locations."/" = {
-      #     proxyPass = "http://127.0.0.1:8082";
-      #   };
-      # };
-
       virtualHosts."vault.hydroakri.cc" = {
         # enableACME = true;
         useACMEHost = "hydroakri.cc";
@@ -563,20 +567,6 @@
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:8222";
-          proxyWebsockets = true;
-        };
-      };
-
-      virtualHosts."pdf.hydroakri.cc" = {
-        useACMEHost = "hydroakri.cc";
-        forceSSL = true;
-        extraConfig = ''
-          allow 100.64.0.0/10;
-          allow fd7a:115c:a1e0::/48;
-          deny all;
-        '';
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8081";
           proxyWebsockets = true;
         };
       };
@@ -592,31 +582,6 @@
             add_header X-Frame-Options "SAMEORIGIN";
             add_header X-Content-Type-Options "nosniff";
           '';
-        };
-      };
-
-      virtualHosts."glance.hydroakri.cc" = {
-        useACMEHost = "hydroakri.cc";
-        acmeRoot = null;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8080";
-          proxyWebsockets = true;
-        };
-        extraConfig = ''
-          allow 100.64.0.0/10;
-          allow fd7a:115c:a1e0::/48;
-          deny all;
-        '';
-      };
-
-      virtualHosts."status.hydroakri.cc" = {
-        useACMEHost = "hydroakri.cc";
-        acmeRoot = null;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:3001";
-          proxyWebsockets = true;
         };
       };
 
@@ -687,6 +652,42 @@
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
           '';
+        };
+      };
+
+      virtualHosts."bsky.hydroakri.cc" = {
+        useACMEHost = "bsky.hydroakri.cc";
+        serverAliases = [ "*.bsky.hydroakri.cc" ]; # 为未来的 <user>.bsky.hydroakri.cc 账号 handle 预留
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:3000";
+          proxyWebsockets = true; # AT Proto firehose 是长连接 websocket
+          extraConfig = ''
+            client_max_body_size 0;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Host $host;
+          '';
+        };
+      };
+
+      virtualHosts."pad.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        # 沙盒 origin 跟主站共用同一个后端，靠不同域名让浏览器隔离 iframe（官方 configureNginx 的做法）
+        serverAliases = [ "pad-sandbox.hydroakri.cc" ];
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:3005";
+          extraConfig = ''
+            client_max_body_size 150m;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Host $host;
+          '';
+        };
+        locations."/cryptpad_websocket" = {
+          proxyPass = "http://127.0.0.1:3006";
+          proxyWebsockets = true;
         };
       };
 
