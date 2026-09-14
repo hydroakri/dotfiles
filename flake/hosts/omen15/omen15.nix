@@ -206,6 +206,7 @@
   };
   environment.systemPackages = [
     pkgs.nbfc-linux
+    # pkgs.winboat
   ];
   # Application-specific programs (host-specific)
   # systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
@@ -225,7 +226,7 @@
     mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
   '';
   services.sunshine = {
-    enable = true;
+    enable = false;
     autoStart = true;
     capSysAdmin = true;
     openFirewall = true;

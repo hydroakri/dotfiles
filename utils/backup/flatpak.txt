@@ -1,6 +1,6 @@
 ca.desrt.dconf-editor
-chat.simplex.simplex
 com.artemchep.keyguard
+com.bitwarden.desktop
 com.discordapp.Discord
 com.github.flxzt.rnote
 com.github.marhkb.Pods
@@ -9,6 +9,7 @@ com.github.xournalpp.xournalpp
 com.heroicgameslauncher.hgl
 com.mattjakeman.ExtensionManager
 com.mojang.Minecraft
+com.nitrokey.nitrokey-app2
 com.notesnook.Notesnook
 com.obsproject.Studio
 com.pot_app.pot
@@ -22,18 +23,18 @@ com.valvesoftware.Steam
 com.valvesoftware.Steam.Utility.steamtinkerlaunch
 com.vscodium.codium
 com.vysp3r.ProtonPlus
-com.yubico.yubioath
 dev.edfloreshz.CosmicTweaks
 io.bassi.Amberol
+io.freetubeapp.FreeTube
 io.github.electronstudio.WeylusCommunityEdition
 io.github.flattool.Warehouse
 io.github.forkgram.tdesktop
-io.github.ungoogled_software.ungoogled_chromium
 io.github.xiaoyifang.goldendict_ng
 io.mpv.Mpv
 it.mijorus.gearlever
 net.agalwood.Motrix
 org.darktable.Darktable
+org.getmonero.Monero
 org.kde.kdenlive
 org.kde.krita
 org.kde.okular
