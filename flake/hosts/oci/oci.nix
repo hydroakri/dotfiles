@@ -64,6 +64,7 @@
         pds_jwt_secret = { };
         pds_admin_password = { };
         pds_plc_rotation_key = { };
+        cloudflared_tunnel_credentials = { }; # `cloudflared tunnel create` 在本机生成的经典 credentials.json 原文
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -356,6 +357,63 @@
         websocketPort = 3006;
         blockDailyCheck = true; # 关闭 telemetry
         adminKeys = [ "[squeeze2997@pad.hydroakri.cc/En2Qnt107rNTYNChvlqtAHBHr-StoROLlTuEMXSglko=]" ];
+      };
+    };
+
+    # cloudflared tunnel：pad/pad-sandbox 已验证可用，逐步把其他 vhost 也搬过来，统一藏住 oci 的源站 IP
+    # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
+    services.cloudflared = {
+      enable = true;
+      tunnels."901e5935-3f36-4609-9bb3-9a204bf7f79a" = {
+        credentialsFile = config.sops.secrets.cloudflared_tunnel_credentials.path;
+        default = "http_status:404";
+        # 全部转给本机 nginx 443（不是 80）：nginx vhost 都设了 forceSSL，转 80 会被 301 回
+        # https，cloudflared 再用 http 转一次会死循环；originServerName 带对 SNI/Host 让
+        # nginx（同一个 IP、多个 vhost）选到正确的 server block 和证书
+        ingress = {
+          "pad.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "pad.hydroakri.cc";
+          };
+          "pad-sandbox.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "pad-sandbox.hydroakri.cc";
+          };
+          "searx.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "searx.hydroakri.cc";
+          };
+          "vault.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "vault.hydroakri.cc";
+          };
+          "tools.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "tools.hydroakri.cc";
+          };
+          "dav.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "dav.hydroakri.cc";
+          };
+          "cache.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "cache.hydroakri.cc";
+          };
+          "ntfy.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "ntfy.hydroakri.cc";
+          };
+          "headscale.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "headscale.hydroakri.cc";
+          };
+          "bsky.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "bsky.hydroakri.cc";
+          };
+          # *.bsky.hydroakri.cc（未来多用户子网域 handle）先不加：originServerName 不能是
+          # 字面量的 wildcard SNI，等真的开放注册、有第二个账号时再处理
+        };
       };
     };
 
