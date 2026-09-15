@@ -65,7 +65,9 @@
         pds_admin_password = { };
         pds_plc_rotation_key = { };
         cloudflared_tunnel_credentials = { }; # `cloudflared tunnel create` 在本机生成的经典 credentials.json 原文
-        restic_vaultwarden_password = { }; # restic 仓库加密密码，需手动 `sops secrets.yaml` 写入（如 `openssl rand -base64 32` 生成）
+        restic_vaultwarden_password = { }; # restic 仓库加密密码
+        r2_bucket_attic = { }; # atticd 独立 bucket
+        photoprism_admin_password = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -110,11 +112,11 @@
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
         '';
       };
-      templates."restic-vaultwarden.env" = {
+      templates."vaultwarden-backup.env" = {
         content = ''
           AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
-          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/restic-vaultwarden
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/vaultwarden-backup
         '';
       };
       # 渲染完整的 TOML 配置文件
@@ -132,7 +134,7 @@
           [storage]
           type = "s3"
           region = "us-east-1"
-          bucket = "${config.sops.placeholder.r2_bucket}"
+          bucket = "${config.sops.placeholder.r2_bucket_attic}"
           endpoint = "${config.sops.placeholder.r2_endpoint}"
 
           [chunking]
@@ -349,7 +351,7 @@
       backupPrepareCommand = "systemctl start backup-vaultwarden.service";
       paths = [ "/var/backup/vaultwarden" ];
       exclude = [ "icon_cache" ]; # favicon 缓存，可重建，没必要备份
-      environmentFile = config.sops.templates."restic-vaultwarden.env".path;
+      environmentFile = config.sops.templates."vaultwarden-backup.env".path;
       passwordFile = config.sops.secrets.restic_vaultwarden_password.path;
       initialize = true;
       timerConfig = {
@@ -390,6 +392,32 @@
       };
     };
 
+    # originalsPath 是 dav-storage 底下的子目录（不是根目录本身），跟一般 webdav
+    # 文件分开命名空间；本来就在 rclone-webdav-backup 每日同步范围内，不用另开备份
+    services.photoprism = {
+      enable = true;
+      originalsPath = "/var/lib/dav-storage/photos";
+      address = "127.0.0.1";
+      port = 2342;
+      # 跟 rclone-webdav(User/Group = nginx)共用 nginx 群组，两边都能读写同一个
+      # originals 目录，不用另外搞 ACL
+      group = "nginx";
+      passwordFile = config.sops.secrets.photoprism_admin_password.path;
+      # storagePath 保持默认（不放 dav-storage 底下）：缩图/sidecar/数据库都是可重建的
+      # 衍生数据，没必要占用每日备份的空间
+      settings = {
+        PHOTOPRISM_SITE_URL = "https://photos.hydroakri.cc/";
+        PHOTOPRISM_DISABLE_TENSORFLOW = "true"; # 小机器先关掉人脸/物件识别，有需要再开
+      };
+    };
+    # nixpkgs photoprism module 的 bug：databasePasswordFile 为 null 时，LoadCredential
+    # 列表里会混进一个空字符串元素，渲染成第二行空的 `LoadCredential=`，systemd 对空赋值
+    # 的语义是"清空前面所有 LoadCredential"，直接把 admin 密码那条也清没了。我们没用
+    # databasePasswordFile（SQLite 不需要），强制只保留 admin 密码这一条绕过去。
+    systemd.services.photoprism.serviceConfig.LoadCredential = lib.mkForce [
+      "PHOTOPRISM_ADMIN_PASSWORD_FILE:${config.sops.secrets.photoprism_admin_password.path}"
+    ];
+
     # cloudflared tunnel：pad/pad-sandbox 已验证可用，逐步把其他 vhost 也搬过来，统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
@@ -416,6 +444,10 @@
           "vault.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "vault.hydroakri.cc";
+          };
+          "photos.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "photos.hydroakri.cc";
           };
           "tools.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -447,10 +479,7 @@
       };
     };
 
-    # WebDAV 本地優先：真實資料存在本機磁盤，R2 只當異步備份目標（見下方
-    # rclone-webdav-backup）。切換前記得先手動執行一次性遷移：
-    #   rclone copy r2:$R2_BUCKET_NAME/webdav /var/lib/dav-storage -P
-    # 把舊的 R2-cache 模式下已有的內容拉下來，避免資料遺失。
+    # WebDAV 本地優先：真實資料存在本機磁盤，R2 只當異步備份目標（見下方 rclone-webdav-backup）
     systemd.services.rclone-webdav = {
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -476,6 +505,7 @@
       };
       script = ''
         ${pkgs.pkgsMusl.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
+          --exclude "photos/**" \
           --transfers 8 \
           --s3-upload-concurrency 8 \
           --s3-chunk-size 16M
@@ -672,6 +702,15 @@
         };
       };
 
+      virtualHosts."photos.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc"; # 已覆盖 *.hydroakri.cc，不用另开证书
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:2342";
+          proxyWebsockets = true; # PhotoPrism 前端用 websocket 做即时更新
+        };
+      };
+
       virtualHosts."tools.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
@@ -694,6 +733,8 @@
           basicAuthFile = config.sops.templates."webdav-auth".path;
 
           extraConfig = ''
+            gzip off;
+
             client_max_body_size 0;
             client_body_buffer_size 512k;
 
@@ -797,6 +838,9 @@
     systemd.tmpfiles.rules = [
       "d /var/cache/nginx/attic 0750 nginx nginx -"
       "d /var/lib/dav-storage 0750 nginx nginx -"
+      # photoprism 用 systemd DynamicUser，没有静态用户可 chown，owner 用真实存在
+      # 的 nginx、靠 group=nginx（services.photoprism.group 设的）让动态用户读写
+      "d /var/lib/dav-storage/photos 0770 nginx nginx -"
     ];
 
     system.stateVersion = "25.11";
