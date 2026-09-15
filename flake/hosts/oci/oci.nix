@@ -65,6 +65,7 @@
         pds_admin_password = { };
         pds_plc_rotation_key = { };
         cloudflared_tunnel_credentials = { }; # `cloudflared tunnel create` 在本机生成的经典 credentials.json 原文
+        restic_vaultwarden_password = { }; # restic 仓库加密密码，需手动 `sops secrets.yaml` 写入（如 `openssl rand -base64 32` 生成）
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -107,6 +108,13 @@
           ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64=${config.sops.placeholder.attic_jwt_secret}
           AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+        '';
+      };
+      templates."restic-vaultwarden.env" = {
+        content = ''
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/restic-vaultwarden
         '';
       };
       # 渲染完整的 TOML 配置文件
@@ -325,12 +333,34 @@
       enable = true;
       dbBackend = "sqlite";
       environmentFile = config.sops.templates."vaultwarden.env".path;
+      # 模块自带 backup-vaultwarden.service/.timer（每天 23:00），用 sqlite
+      # .backup 拿一致性快照到这里，再由下面的 restic job 加密备份到 R2
+      backupDir = "/var/backup/vaultwarden";
       config = {
         DOMAIN = "https://vault.hydroakri.cc";
         SIGNUPS_ALLOWED = false; # 建议直接关掉，或者注册完就关掉
         ROCKET_ADDRESS = "127.0.0.1";
         ROCKET_PORT = 8222;
       };
+    };
+
+    services.restic.backups.vaultwarden = {
+      # 强制先跑一次 vaultwarden 自己的快照 service，不依赖时间表交错
+      backupPrepareCommand = "systemctl start backup-vaultwarden.service";
+      paths = [ "/var/backup/vaultwarden" ];
+      exclude = [ "icon_cache" ]; # favicon 缓存，可重建，没必要备份
+      environmentFile = config.sops.templates."restic-vaultwarden.env".path;
+      passwordFile = config.sops.secrets.restic_vaultwarden_password.path;
+      initialize = true;
+      timerConfig = {
+        OnCalendar = "04:00";
+        Persistent = true;
+      };
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
     };
 
     services.bluesky-pds = {
@@ -417,33 +447,46 @@
       };
     };
 
+    # WebDAV 本地優先：真實資料存在本機磁盤，R2 只當異步備份目標（見下方
+    # rclone-webdav-backup）。切換前記得先手動執行一次性遷移：
+    #   rclone copy r2:$R2_BUCKET_NAME/webdav /var/lib/dav-storage -P
+    # 把舊的 R2-cache 模式下已有的內容拉下來，避免資料遺失。
     systemd.services.rclone-webdav = {
-      after = [
-        "network.target"
-        "sops-nix.service"
-      ]; # 确保在 sops 渲染后启动
+      after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        EnvironmentFile = config.sops.templates."rclone-r2.env".path;
-        CacheDirectory = "rclone-webdav";
         User = "nginx";
         Group = "nginx";
         Restart = "always";
+        ExecStart = "${pkgs.pkgsMusl.rclone}/bin/rclone serve webdav /var/lib/dav-storage --addr 127.0.0.1:8083";
+      };
+    };
+
+    # 本地資料單向同步回 R2 當備份，跟本地 serve 完全解耦
+    systemd.services.rclone-webdav-backup = {
+      after = [
+        "network.target"
+        "sops-nix.service"
+      ];
+      serviceConfig = {
+        Type = "oneshot";
+        EnvironmentFile = config.sops.templates."rclone-r2.env".path;
+        User = "nginx";
+        Group = "nginx";
       };
       script = ''
-        ${pkgs.pkgsMusl.rclone}/bin/rclone serve webdav r2:$R2_BUCKET_NAME/webdav \
-          --addr 127.0.0.1:8083 \
-          --vfs-cache-mode full \
-          --cache-dir /var/cache/rclone-webdav \
-          --vfs-read-chunk-size 128M \
-          --vfs-read-chunk-size-limit off \
-          --buffer-size 64M \
+        ${pkgs.pkgsMusl.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
           --transfers 8 \
           --s3-upload-concurrency 8 \
-          --s3-chunk-size 16M \
-          --dir-cache-time 10m \
-          --vfs-cache-max-age 24h
+          --s3-chunk-size 16M
       '';
+    };
+    systemd.timers.rclone-webdav-backup = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "daily";
+        Persistent = true;
+      };
     };
 
     services.atticd = {
@@ -753,6 +796,7 @@
 
     systemd.tmpfiles.rules = [
       "d /var/cache/nginx/attic 0750 nginx nginx -"
+      "d /var/lib/dav-storage 0750 nginx nginx -"
     ];
 
     system.stateVersion = "25.11";
