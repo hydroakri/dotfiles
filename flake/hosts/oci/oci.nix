@@ -74,6 +74,8 @@
         # 的值方便手动填表单，见 flake/hosts/oci/README.md
         oci_email_delivery_username = { };
         oci_email_delivery_password = { };
+        restic_stalwart_password = { }; # 邮件数据 restic 仓库加密密码
+        restic_pds_password = { }; # bluesky-pds restic 仓库加密密码
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -123,6 +125,20 @@
           AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
           RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/vaultwarden-backup
+        '';
+      };
+      templates."stalwart-mail-backup.env" = {
+        content = ''
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/stalwart-mail-backup
+        '';
+      };
+      templates."pds-backup.env" = {
+        content = ''
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/pds-backup
         '';
       };
       # 渲染完整的 TOML 配置文件
@@ -362,6 +378,44 @@
       initialize = true;
       timerConfig = {
         OnCalendar = "04:00";
+        Persistent = true;
+      };
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+
+    # RocksDB 没有像 vaultwarden 那种一致性快照命令，靠 WAL 理论上能撑过热备份，
+    # 但邮件数据比较要紧，保险起见备份前后直接停/启服务，换几秒收信空窗期换绝对一致
+    services.restic.backups.stalwart-mail = {
+      backupPrepareCommand = "systemctl stop stalwart.service";
+      backupCleanupCommand = "systemctl start stalwart.service";
+      paths = [ "/var/lib/stalwart-mail" ];
+      environmentFile = config.sops.templates."stalwart-mail-backup.env".path;
+      passwordFile = config.sops.secrets.restic_stalwart_password.path;
+      initialize = true;
+      timerConfig = {
+        OnCalendar = "04:30";
+        Persistent = true;
+      };
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+
+    services.restic.backups.bluesky-pds = {
+      backupPrepareCommand = "systemctl stop bluesky-pds.service";
+      backupCleanupCommand = "systemctl start bluesky-pds.service";
+      paths = [ "/var/lib/pds" ]; # PDS_DATA_DIRECTORY 默认值，包含 blob 存储（PDS_BLOBSTORE_DISK_LOCATION 是它的子目录）
+      environmentFile = config.sops.templates."pds-backup.env".path;
+      passwordFile = config.sops.secrets.restic_pds_password.path;
+      initialize = true;
+      timerConfig = {
+        OnCalendar = "05:00";
         Persistent = true;
       };
       pruneOpts = [

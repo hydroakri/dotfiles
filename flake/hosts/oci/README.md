@@ -56,6 +56,8 @@ Developer Services → Email Delivery:
 - **atticd**:全新 bucket 用 Cloudflare R2 的 **Data Migration** 功能從舊資料搬,或直接讓它冷啟動重建(binary cache 本來就是可重建的衍生資料,不算真正的資料遺失)
 - **webdav 本地資料**(`/var/lib/dav-storage`):`rclone copy r2:$R2_BUCKET_NAME/webdav-backup /var/lib/dav-storage -P`
 - **vaultwarden**:`sudo restic-vaultwarden restore latest --target /var/lib/vaultwarden-restore`,restic 密碼是 `restic_vaultwarden_password`,丟了就真的救不回來
+- **Stalwart 邮件**:`sudo restic-stalwart-mail restore latest --target /var/lib/stalwart-mail-restore`,restic 密碼是 `restic_stalwart_password`
+- **Bluesky PDS**:`sudo restic-bluesky-pds restore latest --target /var/lib/pds-restore`,restic 密碼是 `restic_pds_password`,連同帳號金鑰(PLC rotation key)一起在裡面,丟了等於丟了 handle 的控制權
 
 ## 6. 已知的坑,重新部署時會再踩一次
 
