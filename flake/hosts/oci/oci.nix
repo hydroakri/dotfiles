@@ -68,6 +68,12 @@
         restic_vaultwarden_password = { }; # restic 仓库加密密码
         r2_bucket_attic = { }; # atticd 独立 bucket
         photoprism_admin_password = { };
+        stalwart_admin_password = { }; # Stalwart fallback-admin，用来登录 /admin 做域名/邮箱/DKIM 设置
+        # OCI Email Delivery 控制台生成的 SMTP 凭证。没有被任何 nix 配置引用——outbound
+        # relay route 是数据库对象，必须在 Stalwart /admin 手动建，这两个只是保留一份解密好
+        # 的值方便手动填表单，见 flake/hosts/oci/README.md
+        oci_email_delivery_username = { };
+        oci_email_delivery_password = { };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -418,6 +424,66 @@
       "PHOTOPRISM_ADMIN_PASSWORD_FILE:${config.sops.secrets.photoprism_admin_password.path}"
     ];
 
+    # mail.hydroakri.cc：SMTP/IMAP 没法走 Cloudflare Tunnel（它只代理 HTTP/HTTPS），
+    # 这个域名的 DNS 直接指向 oci 真实公网 IP（DNS-only，不走橘色云朵代理）。
+    #
+    # Stalwart 把 domain/账号/DKIM/outbound route/outbound strategy 这类「资源」存
+    # 数据库，不是这份 TOML 文件——即使在这里声明了同名 key，运行时也会被数据库那份
+    # 覆盖/忽略（实测过：mta.route 写在这里完全不生效，报 "Gateway not found"，必须
+    # 去 /admin 手动建）。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
+    # （fallback-admin 登录）设置，完整的手动步骤见 flake/hosts/oci/README.md。
+    services.stalwart = {
+      enable = true;
+      stateVersion = config.system.stateVersion; # 首次启用，跟系统本身对齐
+      openFirewall = true; # 自动开放 settings.server.listener 里声明的端口
+      credentials = {
+        admin_password = config.sops.secrets.stalwart_admin_password.path;
+      };
+      settings = {
+        server = {
+          hostname = "mail.hydroakri.cc";
+          tls.certificate = "default";
+          listener = {
+            smtp = {
+              bind = [ "0.0.0.0:25" ];
+              protocol = "smtp";
+            };
+            submission = {
+              bind = [ "0.0.0.0:587" ];
+              protocol = "smtp";
+            };
+            submissions = {
+              bind = [ "0.0.0.0:465" ];
+              protocol = "smtp";
+              tls.implicit = true;
+            };
+            imaps = {
+              bind = [ "0.0.0.0:993" ];
+              protocol = "imap";
+              tls.implicit = true;
+            };
+            # JMAP/管理 API（webadmin）只绑本机，nginx（stalwart.hydroakri.cc）代理进来，不直接对外开放
+            jmap = {
+              bind = [ "127.0.0.1:8080" ];
+              protocol = "http";
+              url = "https://mail.hydroakri.cc";
+            };
+          };
+        };
+
+        certificate.default = {
+          cert = "%{file:/var/lib/acme/hydroakri.cc/fullchain.pem}%";
+          private-key = "%{file:/var/lib/acme/hydroakri.cc/key.pem}%";
+          default = true;
+        };
+
+        authentication.fallback-admin = {
+          user = "admin";
+          secret = "%{file:/run/credentials/stalwart.service/admin_password}%";
+        };
+      };
+    };
+
     # cloudflared tunnel：pad/pad-sandbox 已验证可用，逐步把其他 vhost 也搬过来，统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
@@ -448,6 +514,14 @@
           "photos.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "photos.hydroakri.cc";
+          };
+          "stalwart.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "stalwart.hydroakri.cc";
+          };
+          "mta-sts.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "mta-sts.hydroakri.cc";
           };
           "tools.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -625,7 +699,10 @@
         dnsProvider = "cloudflare";
         # 记得将 Cloudflare API Token 放在这个文件里，并设置权限 600
         environmentFile = config.sops.templates."cf_oracle.env".path;
-        reloadServices = [ "nginx.service" ];
+        reloadServices = [
+          "nginx.service"
+          "stalwart.service"
+        ];
       };
       # 独立签发：PDS 账号 handle 未来要支持 <user>.bsky.hydroakri.cc 这种二级子域，
       # 现有的 *.hydroakri.cc 只覆盖一层，盖不到这个深度
@@ -638,6 +715,9 @@
       };
     };
     users.users.nginx.extraGroups = [ "acme" ];
+    # module 的默认使用者名字跟 stateVersion 挂钩：25.11 < 26.05，实际是 "stalwart-mail"
+    # 不是 "stalwart"（见 nixpkgs services/mail/stalwart.nix 的 stalwartIdentifier）
+    users.users.stalwart-mail.extraGroups = [ "acme" ]; # 复用现有 *.hydroakri.cc 证书，不用 Stalwart 自己再走一次 ACME
     services.nginx = {
       enable = true;
       recommendedProxySettings = true;
@@ -708,6 +788,31 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:2342";
           proxyWebsockets = true; # PhotoPrism 前端用 websocket 做即时更新
+        };
+      };
+
+      # Stalwart 自己的 /admin（建域名/DKIM/catch-all/建信箱用）；纯 HTTP(S)，
+      # 走 cloudflared tunnel 藏起来，不像 SMTP/IMAP 那样必须直连真实 IP
+      virtualHosts."stalwart.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8080";
+          proxyWebsockets = true;
+        };
+      };
+
+      # MTA-STS policy 必须放在 mta-sts.<domain> 这个固定路径，纯 HTTPS，走 tunnel
+      # 就行，不需要跟 mail.hydroakri.cc 一样直连真实 IP。mode 先用 testing 观察，
+      # 等确认没问题（配合 TLS-RPT 报告）再手动改成 enforce
+      virtualHosts."mta-sts.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/.well-known/mta-sts.txt" = {
+          extraConfig = ''
+            default_type "text/plain";
+            return 200 "version: STSv1\nmode: testing\nmx: mail.hydroakri.cc\nmax_age: 604800\n";
+          '';
         };
       };
 
