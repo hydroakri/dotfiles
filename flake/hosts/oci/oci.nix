@@ -601,6 +601,10 @@
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "bsky.hydroakri.cc";
           };
+          "map.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "map.hydroakri.cc";
+          };
           # *.bsky.hydroakri.cc（未来多用户子网域 handle）先不加：originServerName 不能是
           # 字面量的 wildcard SNI，等真的开放注册、有第二个账号时再处理
         };
@@ -832,6 +836,15 @@
         forceSSL = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:8222";
+          proxyWebsockets = true;
+        };
+      };
+
+      virtualHosts."map.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:3417";
           proxyWebsockets = true;
         };
       };
