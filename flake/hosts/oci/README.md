@@ -20,18 +20,27 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `searx` `headscale` `pad`(+`pad-sandbox`)`photos` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `searx` `pad`(+`pad-sandbox`)`photos` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
-**直連真實 IP(A 記錄,灰雲/DNS-only,SMTP/IMAP 沒法走 tunnel)**:
-`mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)
+**直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
+- `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援
+- `headscale.hydroakri.cc` → 同一個 oci 公網 IP——Cloudflare 會剝掉 POST 請求的 `Upgrade` 頭,TS2021 握手就是靠這個,搬去 tunnel 會導致節點全部掉線(headscale#3287,官方確認無解)。別手滑搬回 tunnel
 
 **其他**:
 - `hydroakri.cc` MX → `mail.hydroakri.cc`,優先度任意正整數
-- `hydroakri.cc` TXT (SPF):`v=spf1 include:ap.rp.oracleemaildelivery.com ~all`
+- `hydroakri.cc` TXT (SPF):`v=spf1 include:ap.rp.oracleemaildelivery.com -all`(硬失敗;唯一授權的寄信路徑就是這個 relay,沒有其他來源要顧慮)
 - `stalwart._domainkey.hydroakri.cc` CNAME → OCI Email Domain 的 DKIM 設定產生的值(見下方 Stalwart 章節)
-- `_mta-sts.hydroakri.cc` TXT:`v=STSv1; id=<改 policy 內容時要换新值>`
+- `_mta-sts.hydroakri.cc` TXT:`v=STSv1; id=<改 oci.nix 里那份 policy 内容时要换新值,否则缓存旧 policy 的发信方不会重新抓取>`(目前 `oci.nix` 里的 policy `mode` 是 `enforce`)
 - `_smtp._tls.hydroakri.cc` TXT:`v=TLSRPTv1; rua=mailto:tls-reports@hydroakri.cc`
 - `_dmarc.hydroakri.cc` TXT:`p=quarantine`(舊 Cloudflare Email Routing 年代留下的,現在繼續沿用,不用動)
+- **DNSSEC**:Cloudflare Dashboard → 這個 zone → DNS → 開關,domain 是在 CF 買的所以不用跨註冊商處理 DS 記錄,開了才能發布下面的 TLSA
+- `_25._tcp.mail.hydroakri.cc` **TLSA**(DANE,usage 3 / selector 1 / matching-type 1):值是目前這張憑證公鑰的 SHA-256 hash,算法見下方指令。因為 `security.acme.certs."hydroakri.cc"` 設了 `extraLegoRenewFlags = [ "--reuse-key" ]`,續期只換憑證不換金鑰,**這條記錄理論上發布後永久有效,不用跟著憑證續期更新**——除非哪天手動改了這個 nix 選項或整組金鑰重新生成,才需要重算:
+  ```bash
+  openssl x509 -in /var/lib/acme/hydroakri.cc/cert.pem -noout -pubkey \
+    | openssl pkey -pubin -outform DER \
+    | openssl dgst -sha256 -binary \
+    | xxd -p -c 32
+  ```
 
 ## 3. OCI Email Delivery 主控台
 
@@ -50,6 +59,7 @@ Developer Services → Email Delivery:
 3. **Catch-all**:domain 設定裡指向主信箱(讓舊的 `隨機字符@hydroakri.cc` 轉發地址繼續有效)
 4. **Outbound → Routes**:建一條 relay route,名稱 `oci-email-delivery`,address/port/帳密用上方 OCI Email Delivery 那組
 5. **Outbound → Strategy → Routing**:預設值(else,沒有條件框的那個)從 `'mx'` 改成 `'oci-email-delivery'`,讓非本機網域一律走 relay,不然會直接撞 OCI 封鎖的 outbound port 25
+6. **2FA/TOTP**:主信箱帳號(`me@hydroakri.cc`)跟 `admin`(fallback-admin)都各自在自己的帳號設定裡開,兩個要分開開,不共用
 
 ## 5. R2 資料復原(災難復原情境用,平時不用管)
 

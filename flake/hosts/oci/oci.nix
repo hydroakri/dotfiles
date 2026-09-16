@@ -485,6 +485,10 @@
     # 数据库，不是这份 TOML 文件——即使在这里声明了同名 key，运行时也会被数据库那份
     # 覆盖/忽略。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
     # （fallback-admin 登录）设置，完整的手动步骤见 flake/hosts/oci/README.md。
+    #
+    # TODO: nixpkgs 钉死 services.stalwart 在 0.15.5，stalwart_0_16 存在但官方标注
+    # 不兼容这个 module（0.16 管理层破坏性更新，邮件数据不受影响）。等 module 跟上
+    # 0.16 再评估升级
     services.stalwart = {
       enable = true;
       stateVersion = config.system.stateVersion; # 首次启用，跟系统本身对齐
@@ -591,10 +595,6 @@
           "ntfy.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "ntfy.hydroakri.cc";
-          };
-          "headscale.hydroakri.cc" = {
-            service = "https://127.0.0.1:443";
-            originRequest.originServerName = "headscale.hydroakri.cc";
           };
           "bsky.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -760,6 +760,9 @@
           "nginx.service"
           "stalwart.service"
         ];
+        # 续期时复用同一把私钥（只换证书本身），这样 mail.hydroakri.cc 的 DANE/TLSA
+        # 记录绑死这把公钥指纹后就永远不用跟着换证书更新
+        extraLegoRenewFlags = [ "--reuse-key" ];
       };
       # 独立签发：PDS 账号 handle 未来要支持 <user>.bsky.hydroakri.cc 这种二级子域，
       # 现有的 *.hydroakri.cc 只覆盖一层，盖不到这个深度
@@ -802,6 +805,9 @@
           use_temp_path=off;
       '';
 
+      # 故意不走 cloudflared tunnel：Cloudflare 边缘会剥掉 POST 请求的 Upgrade 头，
+      # 而 TS2021 握手就是靠 POST 带 Upgrade，会导致节点全部掉线（headscale#3287，
+      # 官方确认无解）。DNS 必须是直连真实 IP 的 A 记录
       virtualHosts."headscale.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
@@ -869,15 +875,15 @@
       };
 
       # MTA-STS policy 必须放在 mta-sts.<domain> 这个固定路径，纯 HTTPS，走 tunnel
-      # 就行，不需要跟 mail.hydroakri.cc 一样直连真实 IP。mode 先用 testing 观察，
-      # 等确认没问题（配合 TLS-RPT 报告）再手动改成 enforce
+      # 就行，不需要跟 mail.hydroakri.cc 一样直连真实 IP。改这里的 mode 之后，记得
+      # 同步换 DNS 那条 _mta-sts TXT 的 id 值，不然缓存了旧 policy 的发信方不会重新抓取
       virtualHosts."mta-sts.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
         locations."/.well-known/mta-sts.txt" = {
           extraConfig = ''
             default_type "text/plain";
-            return 200 "version: STSv1\nmode: testing\nmx: mail.hydroakri.cc\nmax_age: 604800\n";
+            return 200 "version: STSv1\nmode: enforce\nmx: mail.hydroakri.cc\nmax_age: 604800\n";
           '';
         };
       };
