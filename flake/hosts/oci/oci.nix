@@ -483,8 +483,7 @@
     #
     # Stalwart 把 domain/账号/DKIM/outbound route/outbound strategy 这类「资源」存
     # 数据库，不是这份 TOML 文件——即使在这里声明了同名 key，运行时也会被数据库那份
-    # 覆盖/忽略（实测过：mta.route 写在这里完全不生效，报 "Gateway not found"，必须
-    # 去 /admin 手动建）。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
+    # 覆盖/忽略。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
     # （fallback-admin 登录）设置，完整的手动步骤见 flake/hosts/oci/README.md。
     services.stalwart = {
       enable = true;
@@ -538,7 +537,7 @@
       };
     };
 
-    # cloudflared tunnel：pad/pad-sandbox 已验证可用，逐步把其他 vhost 也搬过来，统一藏住 oci 的源站 IP
+    # cloudflared tunnel：统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
       enable = true;
@@ -774,7 +773,7 @@
     };
     users.users.nginx.extraGroups = [ "acme" ];
     # module 的默认使用者名字跟 stateVersion 挂钩：25.11 < 26.05，实际是 "stalwart-mail"
-    # 不是 "stalwart"（见 nixpkgs services/mail/stalwart.nix 的 stalwartIdentifier）
+    # 不是 "stalwart"
     users.users.stalwart-mail.extraGroups = [ "acme" ]; # 复用现有 *.hydroakri.cc 证书，不用 Stalwart 自己再走一次 ACME
     services.nginx = {
       enable = true;

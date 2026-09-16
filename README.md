@@ -208,26 +208,18 @@ details are in [Reference](#desktop-stack).
 
 ### ...fix the known dotfiles gotchas?
 
-1. **Hyprland keybinds don't work.** `dot_config/hypr/hyprland.conf` execs
-   `~/utils/bemenu`, `~/utils/rofi.sh`, `~/utils/gamemode.sh` — none of these
-   are checked into `utils/` (chezmoi-ignored, currently just a `backup/`
-   folder of static extension-setting exports). Write them yourself, or stay
-   on Niri, which has no such references — `flake/modules/desktop.nix` only
-   enables Niri at the NixOS level anyway.
-
-2. **Wallpaper doesn't show up on a new machine.** Two unrelated hardcoded
-   paths need editing: `dot_config/noctalia/settings.json` →
+1. **Wallpaper doesn't show up on a new machine.** Edit
+   `dot_config/noctalia/settings.json` →
    `"directory": "/home/hydroakri/Pictures/Wallpapers"` (Niri, via noctalia's
-   rotation), and `dot_config/hypr/hyprland.conf`'s live `exec-once = swaybg
-   -i ~/Pictures/wllppr/wall.jpg -m fill` (Hyprland, unrelated to noctalia).
+   rotation).
 
-3. **Shell startup is slow on a fresh machine or after clearing `~/.zsh/`.**
+2. **Shell startup is slow on a fresh machine or after clearing `~/.zsh/`.**
    Two blocking network fetches happen on first run: antidote's
    `git clone --depth=1`, and zsh-patina's `curl`+`tar` release fetch. Nothing
    to fix — pre-seed `~/.antidote` and `~/.zsh/zsh-patina` yourself if you
    want to skip the pause.
 
-4. **Git commits aren't signed / signature shows as unverified.**
+3. **Git commits aren't signed / signature shows as unverified.**
    `modify_dot_gitconfig` sets `commit.gpgsign = true` + `gpg.format = ssh`
    for you, but the key still needs to exist in your GitHub account *and* in
    the target host's sops `allowed_signers` template — currently only wired
@@ -372,9 +364,9 @@ fight chezmoi for `~/.zshrc`, `~/.config/git`, `~/.config/nvim`.
 
 ### Desktop Stack
 
-- **Compositors**: config directories exist for Hyprland, Niri, and Sway —
-  but `flake/modules/desktop.nix` only sets `programs.niri.enable`; Hyprland
-  and Sway aren't wired to a NixOS-level enable option here.
+- **Compositors**: Niri only — `flake/modules/desktop.nix` sets
+  `programs.niri.enable`. Hyprland/Sway/waybar/mako/swaylock config dirs were
+  removed as unused leftovers from an earlier stack.
 - **Shell**: zsh is the declared login shell (`core.nix` sets it for both
   root and `mainUser`), bootstrapped via **antidote** plus **zsh-patina** for
   syntax highlighting. A lighter **fish** config also exists but isn't set as

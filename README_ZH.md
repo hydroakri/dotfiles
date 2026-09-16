@@ -200,24 +200,16 @@ chezmoi update                 # 拉取 + 应用
 
 ### ...解决已知的 dotfiles 坑?
 
-1. **Hyprland 的快捷键不生效。** `dot_config/hypr/hyprland.conf` 里 exec 了
-   `~/utils/bemenu`、`~/utils/rofi.sh`、`~/utils/gamemode.sh`——这些都没提交
-   进 `utils/`(chezmoi 忽略,目前只有一个装着静态扩展设置备份的 `backup/`
-   文件夹)。自己写这些脚本,或者干脆用 Niri——它没有这类引用,而且
-   `flake/modules/desktop.nix` 在 NixOS 层本来也只开了 Niri。
+1. **新机器上壁纸不显示。** 改 `dot_config/noctalia/settings.json` 里
+   `"directory": "/home/hydroakri/Pictures/Wallpapers"`(Niri,靠 noctalia
+   轮换)。
 
-2. **新机器上壁纸不显示。** 有两处互不相关的硬编码路径要改:
-   `dot_config/noctalia/settings.json` 里 `"directory":
-   "/home/hydroakri/Pictures/Wallpapers"`(Niri,靠 noctalia 轮换),以及
-   `dot_config/hypr/hyprland.conf` 里那行没被注释掉的 `exec-once = swaybg -i
-   ~/Pictures/wllppr/wall.jpg -m fill`(Hyprland,跟 noctalia 无关)。
-
-3. **新机器或清空 `~/.zsh/` 后 shell 启动很慢。** 首次运行有两次阻塞式网络
+2. **新机器或清空 `~/.zsh/` 后 shell 启动很慢。** 首次运行有两次阻塞式网络
    请求:antidote 的 `git clone --depth=1`,和 zsh-patina 通过 `curl`+`tar`
    拉取 release。这不是 bug,没法"修"——想跳过这次停顿就自己提前把
    `~/.antidote` 和 `~/.zsh/zsh-patina` 准备好。
 
-4. **Git commit 没签名 / 签名显示未验证。** `modify_dot_gitconfig` 已经帮你
+3. **Git commit 没签名 / 签名显示未验证。** `modify_dot_gitconfig` 已经帮你
    设置好了 `commit.gpgsign = true` + `gpg.format = ssh`,但签名密钥还得同时
    存在于你的 GitHub 账号,以及目标主机的 sops `allowed_signers` 模板里——
    目前只给 `omen15` 接好了。
@@ -354,9 +346,9 @@ tmux、zellij、fzf、bat、atuin、zoxide、lazygit、ripgrep、starship……)
 
 ### 桌面技术栈
 
-- **窗口合成器**:Hyprland、Niri、Sway 的配置目录都存在——但
-  `flake/modules/desktop.nix` 只设置了 `programs.niri.enable`;Hyprland 和
-  Sway 在这里没有接到任何 NixOS 层面的 enable 选项。
+- **窗口合成器**:只有 Niri——`flake/modules/desktop.nix` 设置了
+  `programs.niri.enable`。Hyprland/Sway/waybar/mako/swaylock 的配置目录作为
+  旧技术栈的残留已经删掉。
 - **Shell**:zsh 是声明的登录 shell(`core.nix` 给 root 和 `mainUser` 都设了),
   通过 **antidote** 加 **zsh-patina** 做语法高亮来引导。还有一份更轻量的
   **fish** 配置,但没被设成任何人的登录 shell。

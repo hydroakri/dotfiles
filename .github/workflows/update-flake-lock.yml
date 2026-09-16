@@ -72,7 +72,7 @@ jobs:
             echo "should_update=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Update lock and build before PR
+      - name: Update lock and check before PR
         if: steps.check_kernel.outputs.should_update == 'true'
         run: |
           cp flake/flake.lock /tmp/flake_lock_before.json
@@ -89,12 +89,10 @@ jobs:
           echo "== nix flake check =="
           nix flake check ./flake --accept-flake-config
 
-          echo "== build omen15 toplevel =="
-          nix build './flake#nixosConfigurations.omen15.config.system.build.toplevel' \
-            --accept-flake-config --print-build-logs --fallback --cores 2
-
-          # aarch64 hosts can't build natively here; they are covered by the
-          # ci.yml matrix once the PR is open.
+          # No local toplevel build here: nix flake check only validates eval/
+          # assertions/formatting, not that any host actually builds. Full
+          # builds for all four hosts run in ci.yml's matrix once the PR is
+          # open; a build failure there rolls this PR back automatically.
 
       - name: Create update PR
         if: steps.check_kernel.outputs.should_update == 'true'
@@ -116,13 +114,13 @@ jobs:
 
           BODY_FILE=$(mktemp)
           {
-            echo 'Automated by `update-flake-lock` — the new lock already passed `nix flake check` and an `omen15` toplevel build in this workflow.'
+            echo 'Automated by `update-flake-lock` — the new lock already passed `nix flake check` in this workflow.'
             echo 'Merged only when CI is green; rolled back automatically on any failure.'
             echo
             echo '### Changed inputs'
             echo "${CHANGED_INPUTS:-none}"
             echo
-            echo '> aarch64 hosts are built by the ci.yml matrix once this PR is open.'
+            echo '> All four hosts are built by the ci.yml matrix once this PR is open.'
           } > "$BODY_FILE"
 
           PR_URL=$(gh pr create --base main --head "$BRANCH" \

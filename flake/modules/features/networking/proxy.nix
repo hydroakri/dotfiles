@@ -56,7 +56,6 @@
     # 由 sing-box 的 selector outbounds 选取。回环方向（sing-box -> socks 端口）不
     # 会经过 tun，无需特殊处理；反方向（tor 自己的对外连接）会被 tun/dae
     # 拦截，必须用 exclude_uid_range / pname(must_direct) 放行，见下文。
-    # 注：i2pd 曾提供 .i2p 站点访问，但无 outproxy 能力无法访问明网，已移除。
     tor = {
       enable = lib.mkOption {
         type = lib.types.bool;

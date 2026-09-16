@@ -38,9 +38,7 @@
       "iommu.strict=1"
       # 编译默认是更严格的 always 档；这里降到 ptrace 档是刻意的兼容性考量
       "proc_mem.force_override=ptrace"
-      # 死代码：内核未编 CONFIG_SECURITY_LOCKDOWN_LSM，没有注册解析器，"unknown
-      # kernel command line parameter" 已实测证实——值本身不会被读到，改哪个
-      # 都零风险，不需要单独隔离测试
+      # 死代码：内核未编 CONFIG_SECURITY_LOCKDOWN_LSM，没有注册解析器，值不会被读到
       "lockdown=integrity"
       # 死代码：CONFIG_CFI 没编（即使是 clang 编译也不够，还需要这个开关）
       "cfi=kcfi"

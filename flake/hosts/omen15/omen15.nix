@@ -208,9 +208,6 @@
     pkgs.nbfc-linux
     # pkgs.winboat
   ];
-  # Application-specific programs (host-specific)
-  # systemd.services.dae.wantedBy = lib.mkForce [ ]; # prevent dae auto start
-  # systemd.services.dnscrypt-proxy.wantedBy = lib.mkForce [ ];
   services.cloudflare-warp.enable = true;
   # sops-nix places secrets as symlinks; warp-svc opens its MDM policy file
   # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
