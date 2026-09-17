@@ -20,7 +20,7 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `searx` `pad`(+`pad-sandbox`)`photos` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `searx` `photos` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
 - `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援

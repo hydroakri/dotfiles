@@ -39,6 +39,10 @@
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= hydroakri"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE"
     ];
+    modules.utils = {
+      enable = true;
+      enableUptime = true;
+    };
 
     nixpkgs.overlays = [
       inputs.nix-minecraft.overlay
@@ -214,6 +218,61 @@
       pkgs.pkgsMusl.rclone
       pkgs.apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
+
+    # CrowdSec：解析 sshd/nginx 日志判定攻击，firewall bouncer 落地成 nftables/iptables
+    # 丢包规则。跟 stalwart 自带的 auto-ban（见下方注释）分工——那边管
+    # 25/587/465/993，这边管 sshd 爆破和仍公网直连的 headscale.hydroakri.cc vhost。
+    services.crowdsec = {
+      enable = true;
+      hub.collections = [
+        "crowdsecurity/linux"
+        "crowdsecurity/sshd"
+        "crowdsecurity/nginx"
+      ];
+      settings = {
+        general.api.server = {
+          enable = true;
+          # 默认 127.0.0.1:8080 跟 stalwart 的 JMAP/webadmin 监听端口撞车
+          listen_uri = "127.0.0.1:8081";
+        };
+        lapi.credentialsFile = "/etc/crowdsec/local_api_credentials.yaml";
+        capi.credentialsFile = "/etc/crowdsec/online_api_credentials.yaml";
+      };
+      localConfig.acquisitions = [
+        {
+          source = "journalctl";
+          journalctl_filter = [ "_SYSTEMD_UNIT=sshd.service" ];
+          labels.type = "syslog";
+        }
+        {
+          # nginx access/error log 都走 nixos 默认的 stdout/stderr → journal，
+          # 没有落文件，只能从这边的 journalctl 拿
+          source = "journalctl";
+          journalctl_filter = [ "_SYSTEMD_UNIT=nginx.service" ];
+          labels.type = "nginx";
+        }
+      ];
+    };
+    # crowdsec-firewall-bouncer-register.service 的 StateDirectory 也声明了
+    # "crowdsec"，会让 systemd 把该路径建成符号链接，跟 crowdsec.service 自己用
+    # ReadWritePaths 认领的所有权冲突。两边统一改走 ReadWritePaths。
+    systemd.services.crowdsec-firewall-bouncer-register.serviceConfig = {
+      StateDirectory = lib.mkForce "crowdsec-firewall-bouncer-register";
+      ReadWritePaths = [ "/var/lib/crowdsec" ];
+    };
+    # register 脚本调用裸 cscli（不带 -c），走 cscli 默认路径
+    # /etc/crowdsec/config.yaml；crowdsec.service 自己的配置只写在 nix store 里，
+    # 从没落到这个默认路径上，镜像一份过去让裸 cscli 也能找到同一份配置
+    environment.etc."crowdsec/config.yaml".source =
+      (pkgs.formats.yaml { }).generate "crowdsec.yaml"
+        config.services.crowdsec.settings.general;
+    services.crowdsec-firewall-bouncer = {
+      enable = true;
+      registerBouncer = {
+        enable = true;
+        bouncerName = "oci-firewall-bouncer";
+      };
+    };
 
     services.tailscale.enable = true;
     services.headscale = {
@@ -436,22 +495,6 @@
       };
     };
 
-    services.cryptpad = {
-      enable = true;
-      # oci 的 nginx 已手动客制化（commonHttpConfig/recommendedXxx 均已设置），
-      # 不用 configureNginx 自动接管，改成跟其他 vhost 一致的手写风格
-      configureNginx = false;
-      settings = {
-        httpUnsafeOrigin = "https://pad.hydroakri.cc";
-        httpSafeOrigin = "https://pad-sandbox.hydroakri.cc"; # 沙盒 origin，必须跟主域名不同才能隔离 iframe
-        httpAddress = "127.0.0.1";
-        httpPort = 3005; # 3000/3003 默认端口跟 bluesky-pds 的 3000 冲突，改开这两个
-        websocketPort = 3006;
-        blockDailyCheck = true; # 关闭 telemetry
-        adminKeys = [ "[squeeze2997@pad.hydroakri.cc/En2Qnt107rNTYNChvlqtAHBHr-StoROLlTuEMXSglko=]" ];
-      };
-    };
-
     # originalsPath 是 dav-storage 底下的子目录（不是根目录本身），跟一般 webdav
     # 文件分开命名空间；本来就在 rclone-webdav-backup 每日同步范围内，不用另开备份
     services.photoprism = {
@@ -486,6 +529,10 @@
     # 覆盖/忽略。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
     # （fallback-admin 登录）设置，完整的手动步骤见 flake/hosts/oci/README.md。
     #
+    # 25/587/465/993 直连真实 IP，没有 nginx/tunnel 挡在前面，靠 Stalwart 自带的
+    # auto-ban（web admin › Settings › Security › Settings，同样是数据库管理）按
+    # IP+账号追踪认证失败/RCPT 探测/端口扫描并丢连接。默认阈值（如 authBanRate
+    # 100 次/天）对个人域名偏松，建议登进 admin 收紧。
     # TODO: nixpkgs 钉死 services.stalwart 在 0.15.5，stalwart_0_16 存在但官方标注
     # 不兼容这个 module（0.16 管理层破坏性更新，邮件数据不受影响）。等 module 跟上
     # 0.16 再评估升级
@@ -552,14 +599,6 @@
         # https，cloudflared 再用 http 转一次会死循环；originServerName 带对 SNI/Host 让
         # nginx（同一个 IP、多个 vhost）选到正确的 server block 和证书
         ingress = {
-          "pad.hydroakri.cc" = {
-            service = "https://127.0.0.1:443";
-            originRequest.originServerName = "pad.hydroakri.cc";
-          };
-          "pad-sandbox.hydroakri.cc" = {
-            service = "https://127.0.0.1:443";
-            originRequest.originServerName = "pad-sandbox.hydroakri.cc";
-          };
           "searx.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "searx.hydroakri.cc";
@@ -599,6 +638,10 @@
           "bsky.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "bsky.hydroakri.cc";
+          };
+          "uptime.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "uptime.hydroakri.cc";
           };
           "map.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -821,6 +864,10 @@
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         forceSSL = true;
+        # 只走 cloudflared tunnel（连本机 127.0.0.1:443）；真实 IP 已经因为
+        # mail/headscale 的 DNS-only 记录暴露，绑死 loopback 避免有人拿真实 IP + 正确
+        # SNI 直接打到这个 vhost，绕过 Cloudflare 的隐藏/WAF/限速
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:8888";
           proxyWebsockets = true;
@@ -839,6 +886,7 @@
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:8222";
           proxyWebsockets = true;
@@ -848,6 +896,7 @@
       virtualHosts."map.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:3417";
           proxyWebsockets = true;
@@ -857,6 +906,7 @@
       virtualHosts."photos.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc"; # 已覆盖 *.hydroakri.cc，不用另开证书
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:2342";
           proxyWebsockets = true; # PhotoPrism 前端用 websocket 做即时更新
@@ -868,6 +918,7 @@
       virtualHosts."stalwart.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:8080";
           proxyWebsockets = true;
@@ -880,6 +931,7 @@
       virtualHosts."mta-sts.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/.well-known/mta-sts.txt" = {
           extraConfig = ''
             default_type "text/plain";
@@ -891,6 +943,7 @@
       virtualHosts."tools.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         root = "${pkgs.it-tools}/lib";
         locations."/" = {
           index = "index.html";
@@ -905,6 +958,7 @@
       virtualHosts."dav.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:8083";
           basicAuthFile = config.sops.templates."webdav-auth".path;
@@ -935,6 +989,7 @@
       virtualHosts."cache.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:8088";
           extraConfig = ''
@@ -962,6 +1017,7 @@
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:8084";
           proxyWebsockets = true;
@@ -978,6 +1034,7 @@
         useACMEHost = "bsky.hydroakri.cc";
         serverAliases = [ "*.bsky.hydroakri.cc" ]; # 为未来的 <user>.bsky.hydroakri.cc 账号 handle 预留
         forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
           proxyWebsockets = true; # AT Proto firehose 是长连接 websocket
@@ -990,22 +1047,12 @@
         };
       };
 
-      virtualHosts."pad.hydroakri.cc" = {
+      virtualHosts."uptime.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        # 沙盒 origin 跟主站共用同一个后端，靠不同域名让浏览器隔离 iframe（官方 configureNginx 的做法）
-        serverAliases = [ "pad-sandbox.hydroakri.cc" ];
+        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
         locations."/" = {
-          proxyPass = "http://127.0.0.1:3005";
-          extraConfig = ''
-            client_max_body_size 150m;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header Host $host;
-          '';
-        };
-        locations."/cryptpad_websocket" = {
-          proxyPass = "http://127.0.0.1:3006";
+          proxyPass = "http://127.0.0.1:3001";
           proxyWebsockets = true;
         };
       };
@@ -1018,6 +1065,10 @@
       # photoprism 用 systemd DynamicUser，没有静态用户可 chown，owner 用真实存在
       # 的 nginx、靠 group=nginx（services.photoprism.group 设的）让动态用户读写
       "d /var/lib/dav-storage/photos 0770 nginx nginx -"
+      # cscli machine add 启动时会读取 capi credentials 文件本身（不只是检查存不
+      # 存在），空文件也能解析。先占位一个空文件，后面 cscli capi register 再把
+      # 真实内容写进去覆盖——"f" 类型只在文件不存在时创建，不会覆盖已写好的内容
+      "f /etc/crowdsec/online_api_credentials.yaml 0600 crowdsec crowdsec -"
     ];
 
     system.stateVersion = "25.11";
