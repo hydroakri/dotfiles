@@ -313,14 +313,6 @@
     },
     "default_http_client": "spoofed-http"
   },
-  "services": [
-    {
-      "type": "api",
-      "listen": "127.0.0.1",
-      "listen_port": 9090,
-      "dashboard": false
-    }
-  ],
   "experimental": {
     "cache_file": {
       "enabled": true,

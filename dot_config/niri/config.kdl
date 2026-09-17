@@ -44,7 +44,7 @@ layout {
     default-column-width { proportion 0.618; }
 
     focus-ring {
-        width 5
+        width 1
         active-color "#E6E6FA"
         inactive-gradient from="#D6D6D6" to="#FFF8E7" angle=90
     }
@@ -52,7 +52,7 @@ layout {
     border {
         off
 
-        width 5
+        width 1
         active-color "#ffc87f"
         inactive-color "#505050"
 

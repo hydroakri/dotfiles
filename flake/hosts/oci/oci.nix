@@ -310,10 +310,26 @@
       install -m 0400 -o root -g root /run/secrets/warp_mdm /var/lib/cloudflare-warp/mdm.xml.tmp
       mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
     '';
+
+    services.redis.package = pkgs.valkey;
+    systemd.services.redis-searx.serviceConfig.BindReadOnlyPaths = [
+      "/dev/null:/etc/ld-nix.so.preload"
+    ];
     services.searx = {
       enable = true;
       package = pkgs.searxng;
-      redisCreateLocally = false;
+      redisCreateLocally = true;
+      # 只信任 nginx 自己（同机 loopback）转发过来的身份判断；nginx 那边已经用
+      # realip 模块把 $remote_addr 纠正成 Cloudflare 上报的真实访客 IP 了（见
+      # nginx commonHttpConfig），所以这里认 127.0.0.1 是安全的。
+      limiterSettings = {
+        botdetection = {
+          trusted_proxies = [
+            "127.0.0.0/8"
+            "::1"
+          ];
+        };
+      };
       settings = {
         outgoing = {
           proxies = {
@@ -331,17 +347,22 @@
           base_url = "https://searx.hydroakri.cc";
           method = "POST";
           image_proxy = true;
+          limiter = true;
         };
         search = {
           safe_search = 0;
-          autocomplete = "duckduckgo";
+          autocomplete = "";
           favicon_resolver = "duckduckgo";
-          autocomplete_min_chars = 1;
           formats = [
             "html"
             "json"
             "rss"
           ];
+          suspended_times = {
+            SearxEngineAccessDenied = 86400;
+            SearxEngineCaptcha = 86400;
+            SearxEngineTooManyRequests = 3600;
+          };
         };
         ui = {
           hotkeys = "default";
@@ -394,7 +415,8 @@
           }
           {
             name = "mojeek";
-            disabled = true;
+            disabled = false;
+            weight = 2;
           }
           {
             name = "qwant";
@@ -407,6 +429,10 @@
           {
             name = "karmasearch";
             disabled = true;
+          }
+          {
+            name = "yacy";
+            disabled = false;
           }
         ];
       };
@@ -835,6 +861,10 @@
         proxy_headers_hash_max_size 4096;
         proxy_headers_hash_bucket_size 256;
 
+        set_real_ip_from 127.0.0.1;
+        set_real_ip_from ::1;
+        real_ip_header CF-Connecting-IP;
+
         map $http_destination $webdav_dest {
             ~^https://(.*)$ http://$1;
             default $http_destination;
@@ -873,10 +903,6 @@
           proxyWebsockets = true;
           extraConfig = ''
             proxy_cookie_path / "/; secure; SameSite=Lax";
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header Host $host;
           '';
         };
       };
