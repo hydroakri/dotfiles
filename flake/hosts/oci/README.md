@@ -11,8 +11,11 @@
 | `cf_oracle` | Cloudflare API Token,DNS 編輯權限,`hydroakri.cc` 這個 zone |
 | `r2_access_key_id` / `r2_secret_access_key` / `r2_endpoint` / `r2_bucket` | Cloudflare R2 → Manage API Tokens,**all-buckets** scope(webdav 備份 + vaultwarden restic 都靠這組) |
 | `r2_bucket_attic` | R2 裡另一個獨立 bucket 的名稱(atticd 專用,見下方遷移步驟) |
+| `r2_bucket_ente` | R2 裡另一個獨立 bucket 的名稱(ente 的照片/影片/縮圖 blob 專用) |
+| `ente_key_encryption` / `ente_key_hash` | 本機生成,32/64 bytes random,standard base64(`openssl rand -base64 32`,hash 用 64):**建第一個帳號後就不能換** |
+| `ente_jwt_secret` | 本機生成,32 bytes random,但要 **URL-safe base64**(不是 standard!見下方第 7 節):`openssl rand -base64 32 \| tr '+/' '-_'`:**建第一個帳號後就不能換** |
 | `cloudflared_tunnel_credentials` | `cloudflared tunnel create` 在本機產生的 `credentials.json` 原文(classic tunnel,tunnel ID:`901e5935-3f36-4609-9bb3-9a204bf7f79a`) |
-| `oci_email_delivery_username` / `oci_email_delivery_password` | OCI Console → Identity & Security → Users → 你的使用者 → Resources → SMTP credentials → Generate |
+| `oci_email_delivery_username` / `oci_email_delivery_password` | OCI Console → Identity & Security → Users → 你的使用者 → Resources → SMTP credentials → Generate(同一組憑證 stalwart outbound relay 和 ente 登入驗證碼信都在用) |
 | `pds_plc_rotation_key` | Bluesky PDS 官方文件的 keygen 流程 |
 | `warp_mdm` | Cloudflare Zero Trust WARP 的 MDM policy XML |
 | `webdav_htpasswd` | `htpasswd -nb user pass` 產生(`apacheHttpd` 已在 `environment.systemPackages` 裡) |
@@ -20,7 +23,7 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `searx` `photos` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `searx` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
 - `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援
@@ -61,7 +64,30 @@ Developer Services → Email Delivery:
 5. **Outbound → Strategy → Routing**:預設值(else,沒有條件框的那個)從 `'mx'` 改成 `'oci-email-delivery'`,讓非本機網域一律走 relay,不然會直接撞 OCI 封鎖的 outbound port 25
 6. **2FA/TOTP**:主信箱帳號(`me@hydroakri.cc`)跟 `admin`(fallback-admin)都各自在自己的帳號設定裡開,兩個要分開開,不共用
 
-## 5. R2 資料復原(災難復原情境用,平時不用管)
+## 5. Ente 帳號(`https://ente-photos.hydroakri.cc`)
+
+5 個子域名統一用 `ente-*` 前綴(`ente-photos`/`ente-accounts`/`ente-cast`/`ente-albums`/`ente-api`),不是裸的 `photos`/`accounts`/...。
+
+沒有 PhotoPrism 那種部署時就設好的 admin 密碼——第一個真實帳號是上網頁走 email OTP 註冊出來的(驗證碼信走上面的 OCI Email Delivery SMTP)。想把某個帳號設成 instance admin,拿到該帳號的 user ID 後手動加 `services.ente.api.settings.internal.admin` 再重新部署。
+
+**單人自架的收尾三步**(`internal.disable-registration = true` 已經寫進 `oci.nix` 了,⚠️ **部署前要先確認自己已經註冊完帳號**,不然會把自己也鎖在門外,要解封只能先改回 `false` 重新部署):
+1. 查自己的數字 user id(不是 email,欄位叫 `user_id` 不是 `id`):`doas -u postgres psql ente -c "SELECT user_id, email FROM users;"`
+2. 把這個數字加進 `oci.nix` 的 `services.ente.api.settings.internal.admin`,重新部署
+3. 拉滿儲存空間走 `ente-cli`,不是 nix 配置:
+   ```yaml
+   # ~/.ente/config.yaml
+   endpoint:
+     api: https://ente-api.hydroakri.cc
+   ```
+   ```bash
+   ente account add     # 登入剛註冊的帳號
+   ente admin update-subscription -a <你的email> -u <你的email> --no-limit
+   ```
+   `--no-limit` 給到 100TB + 有效期 +100 年;這步依賴第 2 步的 admin 白名單先生效
+
+**存儲走 Cloudflare R2**,不是本機磁碟——museum 只認 S3 協議,原本試過用 `rclone serve s3` 在本機起一個 S3-compatible endpoint 存本機磁碟,但 Ente 的上傳是客戶端(瀏覽器/手機)直接對著這個 endpoint 發 presigned URL 傳檔案、不經過 museum,綁 `127.0.0.1` 的話手機/瀏覽器根本連不到,等於得再開一個公開子域名 + nginx + tunnel 才能用,權衡下來不如直接用本來就全球可連的 R2(見上方 `r2_bucket_ente`)。
+
+## 6. R2 資料復原(災難復原情境用,平時不用管)
 
 - **atticd**:全新 bucket 用 Cloudflare R2 的 **Data Migration** 功能從舊資料搬,或直接讓它冷啟動重建(binary cache 本來就是可重建的衍生資料,不算真正的資料遺失)
 - **webdav 本地資料**(`/var/lib/dav-storage`):`rclone copy r2:$R2_BUCKET_NAME/webdav-backup /var/lib/dav-storage -P`
@@ -69,7 +95,16 @@ Developer Services → Email Delivery:
 - **Stalwart 邮件**:`sudo restic-stalwart-mail restore latest --target /var/lib/stalwart-mail-restore`,restic 密碼是 `restic_stalwart_password`
 - **Bluesky PDS**:`sudo restic-bluesky-pds restore latest --target /var/lib/pds-restore`,restic 密碼是 `restic_pds_password`,連同帳號金鑰(PLC rotation key)一起在裡面,丟了等於丟了 handle 的控制權
 
-## 6. 已知的坑,重新部署時會再踩一次
+## 7. 已知的坑,重新部署時會再踩一次
 
-- `services.stalwart`/`services.photoprism` 之類模組的預設使用者名/資料目錄名字跟 `stateVersion` 掛鉤(見 `oci.nix` 裡對應註解),第一次部署遇到 assertion 失敗多半是這個
+- `services.stalwart` 之類模組的預設使用者名/資料目錄名字跟 `stateVersion` 掛鉤(見 `oci.nix` 裡對應註解),第一次部署遇到 assertion 失敗多半是這個
+- ente 的 `_secret` 是 museum preStart 自己讀檔案(非 root),不是走 systemd LoadCredential——所有餵給 `services.ente.api.settings.*._secret` 的 sops secret 都要設 `owner = "ente"`,不然 `/run/secrets/<name>` 預設 root:root 0400 讀不到,`ente.service` 起不來
+- `services.ente.api.nginx.enable` 那個模組自帶的 nginx 集成把 upstream 寫死在 `localhost:8080`,跟 `services.stalwart` 的 JMAP/webadmin(`127.0.0.1:8080`)撞——已經關掉這個集成,museum 自己改監聽 `settings.http.port = 8082`,nginx vhost 手動寫
+- `jwt.secret` 這個 key museum 要求 **URL-safe base64**(`base64.URLEncoding`,`-`/`_` 不是 `+`/`/`),`key.encryption`/`key.hash` 才是一般 standard base64——`openssl rand -base64` 產出的是 standard,直接餵給 `jwt.secret` 有機率(產出的隨機值剛好含 `+`或`/`)炸出 `Could not decode jwt-secret: illegal base64 data`。生成 `jwt.secret` 要用:
+  ```bash
+  openssl rand -base64 32 | tr '+/' '-_'
+  ```
+- `services.ente.api.settings.smtp.encryption = "tls"`(或 `"ssl"`)在 museum 裡是**隱式 TLS**(`tls.Dial` 直接握手),只適合 465 這種端口;OCI Email Delivery 的 587 是 **STARTTLS**(先明文再升級),`encryption` 要留空(museum 沒設就走 `net/smtp.SendMail`,自動談 STARTTLS)——設成 `"tls"` 配 587 會炸 `tls: first record does not look like a TLS handshake`
 - sops-nix 的 secrets 渲染路徑是 `/run/secrets/<name>`,template 是 `/run/secrets/rendered/<name>`,兩個不一樣,不要搞混
+- `s3.b2-eu-cen` 這個 key 名字是 museum 寫死要找的(跟實際接的是不是 Backblaze B2 無關,改別的名字它認不到),我們接的其實是 R2,別被名字誤導去改
+- Ente 的上傳是客戶端(瀏覽器/手機)直接對著 `s3.b2-eu-cen.endpoint` 發 presigned URL 傳檔案,museum 只負責發 URL、不經手內容——這個地址**必須是客戶端連得到的**,不能是只有伺服器自己連得到的內部地址(這也是這裡直接用 R2、不用本機 S3 endpoint 的原因,見上方)

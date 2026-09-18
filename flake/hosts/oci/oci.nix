@@ -58,9 +58,16 @@
       secrets = {
         vault_token = { };
         cf_oracle = { };
-        r2_access_key_id = { };
-        r2_secret_access_key = { };
-        r2_endpoint = { };
+        # owner = "ente"：museum 的 s3 配置也读这三个文件，见 README
+        r2_access_key_id = {
+          owner = "ente";
+        };
+        r2_secret_access_key = {
+          owner = "ente";
+        };
+        r2_endpoint = {
+          owner = "ente";
+        };
         r2_bucket = { };
         webdav_htpasswd = { };
         attic_jwt_secret = { };
@@ -71,13 +78,26 @@
         cloudflared_tunnel_credentials = { }; # `cloudflared tunnel create` 在本机生成的经典 credentials.json 原文
         restic_vaultwarden_password = { }; # restic 仓库加密密码
         r2_bucket_attic = { }; # atticd 独立 bucket
-        photoprism_admin_password = { };
+        # owner = "ente"：museum preStart 直接读文件，非 root 默认读不到，见 README
+        ente_key_encryption = {
+          owner = "ente";
+        }; # museum local.yaml 的 key.encryption，建号后不可更换
+        ente_key_hash = {
+          owner = "ente";
+        }; # museum local.yaml 的 key.hash，建号后不可更换
+        ente_jwt_secret = {
+          owner = "ente";
+        };
+        r2_bucket_ente = {
+          owner = "ente";
+        }; # ente 独立 bucket，S3 存 blob（照片/视频/缩图）
         stalwart_admin_password = { }; # Stalwart fallback-admin，用来登录 /admin 做域名/邮箱/DKIM 设置
-        # OCI Email Delivery 控制台生成的 SMTP 凭证。没有被任何 nix 配置引用——outbound
-        # relay route 是数据库对象，必须在 Stalwart /admin 手动建，这两个只是保留一份解密好
-        # 的值方便手动填表单，见 flake/hosts/oci/README.md
-        oci_email_delivery_username = { };
-        oci_email_delivery_password = { };
+        oci_email_delivery_username = {
+          owner = "ente";
+        };
+        oci_email_delivery_password = {
+          owner = "ente";
+        };
         restic_stalwart_password = { }; # 邮件数据 restic 仓库加密密码
         restic_pds_password = { }; # bluesky-pds restic 仓库加密密码
       };
@@ -521,31 +541,58 @@
       };
     };
 
-    # originalsPath 是 dav-storage 底下的子目录（不是根目录本身），跟一般 webdav
-    # 文件分开命名空间；本来就在 rclone-webdav-backup 每日同步范围内，不用另开备份
-    services.photoprism = {
+    # Museum（API server）+ web 前端（Photos/Accounts/Cast/Albums）。四个 web 子域名
+    services.ente.api = {
       enable = true;
-      originalsPath = "/var/lib/dav-storage/photos";
-      address = "127.0.0.1";
-      port = 2342;
-      # 跟 rclone-webdav(User/Group = nginx)共用 nginx 群组，两边都能读写同一个
-      # originals 目录，不用另外搞 ACL
-      group = "nginx";
-      passwordFile = config.sops.secrets.photoprism_admin_password.path;
-      # storagePath 保持默认（不放 dav-storage 底下）：缩图/sidecar/数据库都是可重建的
-      # 衍生数据，没必要占用每日备份的空间
+      nginx.enable = false; # 跟 stalwart JMAP 撞 127.0.0.1:8080，见 README
+      domain = "ente-api.hydroakri.cc";
+      enableLocalDB = true;
       settings = {
-        PHOTOPRISM_SITE_URL = "https://photos.hydroakri.cc/";
-        PHOTOPRISM_DISABLE_TENSORFLOW = "true"; # 小机器先关掉人脸/物件识别，有需要再开
+        http.port = 8082;
+        # key.encryption/key.hash/jwt.secret 建号后不可更换，见 sops secrets 里的注释
+        key.encryption._secret = config.sops.secrets.ente_key_encryption.path;
+        key.hash._secret = config.sops.secrets.ente_key_hash.path;
+        jwt.secret._secret = config.sops.secrets.ente_jwt_secret.path;
+
+        # "b2-eu-cen" 是 museum 写死要找的 bucket key 名字，跟 Backblaze 无关，见 README
+        s3.b2-eu-cen = {
+          are_local_buckets = false;
+          use_path_style_urls = true;
+          region = "auto";
+          key._secret = config.sops.secrets.r2_access_key_id.path;
+          secret._secret = config.sops.secrets.r2_secret_access_key.path;
+          endpoint._secret = config.sops.secrets.r2_endpoint.path;
+          bucket._secret = config.sops.secrets.r2_bucket_ente.path;
+        };
+
+        # ente 的登录流程不依赖这台机器另一个服务的配置/可用性
+        smtp = {
+          # 值不一样，别直接照抄到别的账号上
+          host = "smtp.email.ap-singapore-2.oci.oraclecloud.com";
+          port = 587; # STARTTLS，不能设 encryption=tls（那是 465 那种隐式 TLS），见 README
+          email = "me@hydroakri.cc"; # OCI Email Delivery 控制台里已验证过的 Approved Sender，跟 stalwart 主信箱共用
+          username._secret = config.sops.secrets.oci_email_delivery_username.path;
+          password._secret = config.sops.secrets.oci_email_delivery_password.path;
+        };
+
+        # 单人自架，注册完就关掉
+        internal = {
+          disable-registration = true;
+          admin = 1580559962386438; # 唯一账号的 user_id
+        };
       };
     };
-    # nixpkgs photoprism module 的 bug：databasePasswordFile 为 null 时，LoadCredential
-    # 列表里会混进一个空字符串元素，渲染成第二行空的 `LoadCredential=`，systemd 对空赋值
-    # 的语义是"清空前面所有 LoadCredential"，直接把 admin 密码那条也清没了。我们没用
-    # databasePasswordFile（SQLite 不需要），强制只保留 admin 密码这一条绕过去。
-    systemd.services.photoprism.serviceConfig.LoadCredential = lib.mkForce [
-      "PHOTOPRISM_ADMIN_PASSWORD_FILE:${config.sops.secrets.photoprism_admin_password.path}"
-    ];
+
+    services.ente.web = {
+      enable = true;
+      domains = {
+        photos = "ente-photos.hydroakri.cc";
+        accounts = "ente-accounts.hydroakri.cc";
+        cast = "ente-cast.hydroakri.cc";
+        albums = "ente-albums.hydroakri.cc";
+        # domains.api 由 module 自动接管（api + web 都开时），不用手动设
+      };
+    };
 
     # mail.hydroakri.cc：SMTP/IMAP 没法走 Cloudflare Tunnel（它只代理 HTTP/HTTPS），
     # 这个域名的 DNS 直接指向 oci 真实公网 IP（DNS-only，不走橘色云朵代理）。
@@ -633,9 +680,25 @@
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "vault.hydroakri.cc";
           };
-          "photos.hydroakri.cc" = {
+          "ente-photos.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
-            originRequest.originServerName = "photos.hydroakri.cc";
+            originRequest.originServerName = "ente-photos.hydroakri.cc";
+          };
+          "ente-accounts.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "ente-accounts.hydroakri.cc";
+          };
+          "ente-cast.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "ente-cast.hydroakri.cc";
+          };
+          "ente-albums.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "ente-albums.hydroakri.cc";
+          };
+          "ente-api.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "ente-api.hydroakri.cc";
           };
           "stalwart.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -705,7 +768,6 @@
       };
       script = ''
         ${pkgs.pkgsMusl.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
-          --exclude "photos/**" \
           --transfers 8 \
           --s3-upload-concurrency 8 \
           --s3-chunk-size 16M
@@ -929,13 +991,31 @@
         };
       };
 
-      virtualHosts."photos.hydroakri.cc" = {
+      virtualHosts."ente-photos.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc"; # 已覆盖 *.hydroakri.cc，不用另开证书
-        forceSSL = true;
         listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+      };
+      virtualHosts."ente-accounts.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        listenAddresses = [ "127.0.0.1" ];
+      };
+      virtualHosts."ente-cast.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        listenAddresses = [ "127.0.0.1" ];
+      };
+      virtualHosts."ente-albums.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        listenAddresses = [ "127.0.0.1" ];
+      };
+      virtualHosts."ente-api.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
-          proxyPass = "http://127.0.0.1:2342";
-          proxyWebsockets = true; # PhotoPrism 前端用 websocket 做即时更新
+          proxyPass = "http://127.0.0.1:8082";
+          extraConfig = ''
+            client_max_body_size 4M;
+          '';
         };
       };
 
@@ -1088,9 +1168,6 @@
     systemd.tmpfiles.rules = [
       "d /var/cache/nginx/attic 0750 nginx nginx -"
       "d /var/lib/dav-storage 0750 nginx nginx -"
-      # photoprism 用 systemd DynamicUser，没有静态用户可 chown，owner 用真实存在
-      # 的 nginx、靠 group=nginx（services.photoprism.group 设的）让动态用户读写
-      "d /var/lib/dav-storage/photos 0770 nginx nginx -"
       # cscli machine add 启动时会读取 capi credentials 文件本身（不只是检查存不
       # 存在），空文件也能解析。先占位一个空文件，后面 cscli capi register 再把
       # 真实内容写进去覆盖——"f" 类型只在文件不存在时创建，不会覆盖已写好的内容
