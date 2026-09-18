@@ -391,11 +391,6 @@
         init = {
           defaultBranch = "main";
         };
-        url = {
-          "ssh://git@github.com/" = {
-            pushInsteadOf = [ "https://github.com/" ];
-          };
-        };
       };
     };
 

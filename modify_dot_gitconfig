@@ -12,6 +12,24 @@ set -euo pipefail
 BEGIN="# BEGIN chezmoi-managed git config (see dot_config/git in dotfiles repo)"
 END="# END chezmoi-managed git config"
 
+has_ssh_identity() {
+    local f
+    for f in id_ed25519 id_ecdsa id_rsa id_ed25519_sk id_ecdsa_sk; do
+        [ -f "$HOME/.ssh/$f" ] && return 0
+    done
+    ssh-add -l >/dev/null 2>&1
+}
+
+ssh_block=""
+if has_ssh_identity; then
+    ssh_block="$(
+        cat <<'EOF'
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+EOF
+    )"
+fi
+
 block="$(
     cat <<EOF
 $BEGIN
@@ -19,8 +37,7 @@ $BEGIN
 	gpgsign = true
 [gpg]
 	format = ssh
-[url "ssh://git@github.com/"]
-	insteadOf = https://github.com/
+$ssh_block
 $END
 EOF
 )"
