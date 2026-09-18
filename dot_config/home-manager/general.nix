@@ -51,6 +51,7 @@
     curl
     unar
     _7zz
+    unzip
     # net utils
     lsof
     iputils

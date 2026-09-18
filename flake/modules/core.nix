@@ -220,6 +220,10 @@
         ];
       };
     };
+    systemd.services.unbound = {
+      after = [ "dnscrypt-proxy.service" ];
+      wants = [ "dnscrypt-proxy.service" ];
+    };
 
     users = {
       users.dnscrypt-proxy = {
@@ -371,12 +375,14 @@
     programs.ssh = {
       package = pkgs.openssh.override { openssl = pkgs.libressl; };
       startAgent = lib.mkDefault true;
-      extraConfig = ''
+      extraConfig = lib.mkBefore ''
         Host github.com
           # ProxyCommand nc -X connect -x 127.0.0.1:1080 %h %p
           ServerAliveInterval 10
           Hostname ssh.github.com
           Port 443
+
+          ControlMaster no
       '';
     };
     programs.git = {

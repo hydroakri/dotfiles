@@ -19,6 +19,8 @@ $BEGIN
 	gpgsign = true
 [gpg]
 	format = ssh
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
 $END
 EOF
 )"
