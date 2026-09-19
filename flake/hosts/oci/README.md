@@ -23,7 +23,7 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `searx` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `searx` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
 - `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援
@@ -87,6 +87,8 @@ Developer Services → Email Delivery:
 
 **存儲走 Cloudflare R2**,不是本機磁碟——museum 只認 S3 協議,原本試過用 `rclone serve s3` 在本機起一個 S3-compatible endpoint 存本機磁碟,但 Ente 的上傳是客戶端(瀏覽器/手機)直接對著這個 endpoint 發 presigned URL 傳檔案、不經過 museum,綁 `127.0.0.1` 的話手機/瀏覽器根本連不到,等於得再開一個公開子域名 + nginx + tunnel 才能用,權衡下來不如直接用本來就全球可連的 R2(見上方 `r2_bucket_ente`)。
 
+**`ente` 這個 postgres 資料庫有 restic 備份(`restic-backups-ente-db.timer`,05:30)**,存的是 E2EE 主密鑰/單檔案密鑰這類加密後的金鑰材料——不是密碼/recovery key 算得出來的,資料庫丟了 R2 裡的照片就永久解不開,跟 atticd 那種可重建 cache 完全不是一回事,還原步驟見下方第 6 節。
+
 ## 6. R2 資料復原(災難復原情境用,平時不用管)
 
 - **atticd**:全新 bucket 用 Cloudflare R2 的 **Data Migration** 功能從舊資料搬,或直接讓它冷啟動重建(binary cache 本來就是可重建的衍生資料,不算真正的資料遺失)
@@ -94,6 +96,15 @@ Developer Services → Email Delivery:
 - **vaultwarden**:`sudo restic-vaultwarden restore latest --target /var/lib/vaultwarden-restore`,restic 密碼是 `restic_vaultwarden_password`,丟了就真的救不回來
 - **Stalwart 邮件**:`sudo restic-stalwart-mail restore latest --target /var/lib/stalwart-mail-restore`,restic 密碼是 `restic_stalwart_password`
 - **Bluesky PDS**:`sudo restic-bluesky-pds restore latest --target /var/lib/pds-restore`,restic 密碼是 `restic_pds_password`,連同帳號金鑰(PLC rotation key)一起在裡面,丟了等於丟了 handle 的控制權
+- **ente 資料庫**(全新機器/災難復原情境,順序很重要):
+  1. `nh os switch` 部署完後**先 `doas systemctl stop ente`**——`enableLocalDB` 會在全新部署時自動建一個空 `ente` db,museum 一啟動就會在裡面跑 migration 建表,之後灌真實資料會撞 "relation already exists"
+  2. `doas -u postgres dropdb ente && doas -u postgres createdb ente`(確保是真正空的)
+  3. `doas restic-ente-db restore latest --target /var/lib/ente-db-restore`,restic 密碼是 `restic_ente_password`
+  4. `doas -u postgres psql ente < /var/lib/ente-db-restore/var/lib/ente-db-backup/ente.sql` 灌回去
+  5. 確認灌回去沒報錯,才 `doas systemctl start ente`
+  - ⚠️ **`ente_key_encryption`/`ente_key_hash`/`ente_jwt_secret` 絕對不能重新生成**——用 sops 裡原本那份原封不動的值重新部署,這三個「建號後就不能換」,換了資料庫裡靠這幾把 key 保護的資料全部對不上
+  - 這份資料庫存的是 E2EE 加密金鑰材料,丟了 R2 裡的照片全部解不開,比 R2 blob 本身更關鍵,見上方第 5 節
+  - R2 blob(`r2_bucket_ente`)本身不用搬,新機器用 sops 裡同一組 R2 憑證/bucket 名稱接上去就是同一批檔案;cloudflared tunnel 同理,`cloudflared_tunnel_credentials` 從 sops 帶過去,DNS(CNAME 指向 tunnel ID,不是機器 IP)完全不用動
 
 ## 7. 已知的坑,重新部署時會再踩一次
 

@@ -100,6 +100,7 @@
         };
         restic_stalwart_password = { }; # 邮件数据 restic 仓库加密密码
         restic_pds_password = { }; # bluesky-pds restic 仓库加密密码
+        restic_ente_password = { }; # ente 数据库（E2EE 加密密钥材料所在）restic 仓库加密密码
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -163,6 +164,13 @@
           AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
           RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/pds-backup
+        '';
+      };
+      templates."ente-db-backup.env" = {
+        content = ''
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/ente-db-backup
         '';
       };
       # 渲染完整的 TOML 配置文件
@@ -521,6 +529,38 @@
       initialize = true;
       timerConfig = {
         OnCalendar = "05:00";
+        Persistent = true;
+      };
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+
+    # ente 数据库存的是 E2EE 主密钥/单文件密钥这类加密后的密钥材料——不是可重建数据，
+    # 丢了这份 R2 里的照片全部解不开，跟 atticd 那种纯 cache 不是一回事
+    systemd.services.backup-ente-db = {
+      after = [ "postgresql.service" ];
+      requires = [ "postgresql.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "postgres";
+        StateDirectory = "ente-db-backup";
+      };
+      script = ''
+        ${config.services.postgresql.package}/bin/pg_dump ente > /var/lib/ente-db-backup/ente.sql
+      '';
+    };
+
+    services.restic.backups.ente-db = {
+      backupPrepareCommand = "systemctl start backup-ente-db.service";
+      paths = [ "/var/lib/ente-db-backup" ];
+      environmentFile = config.sops.templates."ente-db-backup.env".path;
+      passwordFile = config.sops.secrets.restic_ente_password.path;
+      initialize = true;
+      timerConfig = {
+        OnCalendar = "05:30";
         Persistent = true;
       };
       pruneOpts = [
