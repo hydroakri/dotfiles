@@ -108,11 +108,18 @@ jobs:
             cores = 0
 
       - name: Setup Attic Cache
-        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
+        uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
           endpoint: https://cache.hydroakri.cc
           cache: cachix
           token: ${{ secrets.ATTIC_TOKEN }}
+          # cache.hydroakri.cc is only reachable through a Cloudflare Tunnel (oci.nix), and any
+          # hostname routed through Cloudflare's edge is capped at ~100MB/request on Free/Pro
+          # plans — enforced at the edge itself, confirmed by nginx's own client_max_body_size
+          # being 0 (unlimited) yet still 413ing, and by the error page being Cloudflare's, not
+          # nginx's. Skip the action's own push and filter by actual NAR size instead (below),
+          # so this doesn't need updating whenever a new oversized package shows up.
+          skip-push: true
 
       - name: Setup LanTian Cache
         run: |
@@ -127,6 +134,28 @@ jobs:
             --print-build-logs \
             --fallback \
             --cores 2
+
+      - name: Push to Attic
+        if: always()
+        run: |
+          # Cloudflare's edge (see Setup Attic Cache step) rejects any single request over
+          # ~100MB regardless of plan headroom, so stay comfortably under it. --json-format 2
+          # is required: upstream Nix's plain --json for --all is a deprecated object-keyed
+          # format with no .path field, not an array (mirrors ryanccn/attic-action's own parsing).
+          THRESHOLD=$((95 * 1000 * 1000))
+          nix path-info --all --json --json-format 2 \
+            | jq -r --argjson max "$THRESHOLD" '
+                .storeDir as $sd | .info
+                | to_entries[] | select(.value.narSize >= $max)
+                | "  skip \($sd)/\(.key) (\(.value.narSize / 1e6 | floor)MB)"
+              '
+          nix path-info --all --json --json-format 2 \
+            | jq -r --argjson max "$THRESHOLD" '
+                .storeDir as $sd | .info
+                | to_entries[] | select(.value.narSize < $max)
+                | "\($sd)/\(.key)"
+              ' \
+            | attic push -j 2 --stdin cachix && echo "attic push OK" || echo "::warning::attic push had non-fatal errors, see log above"
 
   home-manager-build:
     runs-on: ubuntu-latest
@@ -143,11 +172,14 @@ jobs:
             cores = 0
 
       - name: Setup Attic Cache
-        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
+        uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
           endpoint: https://cache.hydroakri.cc
           cache: cachix
           token: ${{ secrets.ATTIC_TOKEN }}
+          # See the build job's Setup Attic Cache step for why: Cloudflare edge request-size
+          # cap, not an origin/nginx limit.
+          skip-push: true
 
       - name: Setup LanTian Cache
         run: |
@@ -163,3 +195,21 @@ jobs:
             --impure
         env:
           USER: runner
+
+      - name: Push to Attic
+        if: always()
+        run: |
+          THRESHOLD=$((95 * 1000 * 1000))
+          nix path-info --all --json --json-format 2 \
+            | jq -r --argjson max "$THRESHOLD" '
+                .storeDir as $sd | .info
+                | to_entries[] | select(.value.narSize >= $max)
+                | "  skip \($sd)/\(.key) (\(.value.narSize / 1e6 | floor)MB)"
+              '
+          nix path-info --all --json --json-format 2 \
+            | jq -r --argjson max "$THRESHOLD" '
+                .storeDir as $sd | .info
+                | to_entries[] | select(.value.narSize < $max)
+                | "\($sd)/\(.key)"
+              ' \
+            | attic push -j 2 --stdin cachix && echo "attic push OK" || echo "::warning::attic push had non-fatal errors, see log above"

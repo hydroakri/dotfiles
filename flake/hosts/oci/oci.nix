@@ -305,6 +305,10 @@
     services.tailscale.enable = true;
     services.headscale = {
       enable = true;
+      # 26.05 ships 0.28.0; this host's db.sqlite was already migrated by unstable's 0.29.3
+      # (added a database_versions table) before the nixpkgs pin switch — 0.28.0's schema
+      # validator rejects it as unexpected. Pin forward to unstable until 26.05 catches up.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.headscale;
       address = "127.0.0.1";
       port = 6313;
       settings = {
@@ -584,6 +588,11 @@
     # Museum（API server）+ web 前端（Photos/Accounts/Cast/Albums）。四个 web 子域名
     services.ente.api = {
       enable = true;
+      # 26.05 ships museum 1.3.36; its bundled migrations/ dir is missing files that postgres
+      # already recorded as applied by unstable's 1.3.63 before the nixpkgs pin switch —
+      # golang-migrate panics "file does not exist" in m.Up(). Pin forward to unstable until
+      # 26.05 catches up. Same failure class as atticd/headscale above.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.museum;
       nginx.enable = false; # 跟 stalwart JMAP 撞 127.0.0.1:8080，见 README
       domain = "ente-api.hydroakri.cc";
       enableLocalDB = true;
@@ -708,6 +717,8 @@
       tunnels."901e5935-3f36-4609-9bb3-9a204bf7f79a" = {
         credentialsFile = config.sops.secrets.cloudflared_tunnel_credentials.path;
         default = "http_status:404";
+        # 本机 enp0s6 只有 link-local IPv6，没有公网 IPv6 出口；不强制会偶尔尝试 IPv6 边缘连接失败重试
+        edgeIPVersion = "4";
         # 全部转给本机 nginx 443（不是 80）：nginx vhost 都设了 forceSSL，转 80 会被 301 回
         # https，cloudflared 再用 http 转一次会死循环；originServerName 带对 SNI/Host 让
         # nginx（同一个 IP、多个 vhost）选到正确的 server block 和证书
@@ -823,6 +834,11 @@
 
     services.atticd = {
       enable = true;
+      # 26.05 ships the 2025-09-24 snapshot; this host's postgres db already has migrations
+      # applied by unstable's 2026-07-06 snapshot before the nixpkgs pin switch — the older
+      # binary's embedded migrator doesn't even contain those migration files. Pin forward to
+      # unstable until 26.05 catches up.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.attic-server;
       environmentFile = config.sops.templates."attic-env".path;
     };
     users.users.atticd = {
@@ -859,6 +875,10 @@
 
     services.ntfy-sh = {
       enable = true;
+      # 26.05 ships 2.26.0 (cache.db schema v8 reader); this host's cache.db was already
+      # migrated to schema v9 by unstable's 2.28.0 before the nixpkgs pin switch — pin
+      # forward to unstable until 26.05 catches up, or the service refuses to start.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.ntfy-sh;
       settings = {
         listen-http = "127.0.0.1:8084";
         base-url = "https://ntfy.hydroakri.cc";
