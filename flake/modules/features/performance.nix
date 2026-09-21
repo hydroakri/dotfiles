@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -10,6 +11,11 @@ let
   '';
 in
 {
+  # journald.settings not yet backported to 26.05's module tree (unstable-only as of this writing);
+  # swap in unstable's journald module until it lands in stable.
+  disabledModules = [ "system/boot/systemd/journald.nix" ];
+  imports = [ "${inputs.unstable}/nixos/modules/system/boot/systemd/journald.nix" ];
+
   options.modules.performance.vendor = lib.mkOption {
     type = lib.types.enum [
       "amd"

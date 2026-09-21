@@ -2,10 +2,17 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 {
-  imports = [ ../options.nix ];
+  # systemd.user.settings not yet backported to 26.05's module tree (unstable-only as of
+  # this writing); swap in unstable's user.nix until it lands in stable.
+  disabledModules = [ "system/boot/systemd/user.nix" ];
+  imports = [
+    ../options.nix
+    "${inputs.unstable}/nixos/modules/system/boot/systemd/user.nix"
+  ];
 
   options.modules.security = {
     authorizedKeys = lib.mkOption {
