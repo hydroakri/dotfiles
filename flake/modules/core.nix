@@ -225,14 +225,12 @@
       wants = [ "dnscrypt-proxy.service" ];
     };
 
-    users = {
-      users.dnscrypt-proxy = {
-        isSystemUser = true;
-        group = "dnscrypt-proxy";
-        uid = lib.mkDefault 970;
-      };
-      groups.dnscrypt-proxy = { };
+    users.users.dnscrypt-proxy = {
+      isSystemUser = true;
+      group = "dnscrypt-proxy";
+      uid = lib.mkDefault 970;
     };
+    users.groups.dnscrypt-proxy = { };
     systemd.services.dnscrypt-proxy.serviceConfig = {
       DynamicUser = lib.mkForce false;
       User = "dnscrypt-proxy";

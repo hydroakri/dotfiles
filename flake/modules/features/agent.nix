@@ -14,9 +14,13 @@ let
 in
 
 {
+  # llama-cpp's settings-based option not yet backported to 26.05's module tree
+  # (unstable-only as of this writing); swap in unstable's module until it lands in stable.
+  disabledModules = [ "services/misc/llama-cpp.nix" ];
   imports = [
     inputs.hermes-agent.nixosModules.default
     inputs.sops-nix.nixosModules.sops
+    "${inputs.unstable}/nixos/modules/services/misc/llama-cpp.nix"
   ];
 
   options.modules.agent = {

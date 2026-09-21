@@ -77,7 +77,6 @@
         pds_plc_rotation_key = { };
         cloudflared_tunnel_credentials = { }; # `cloudflared tunnel create` 在本机生成的经典 credentials.json 原文
         restic_vaultwarden_password = { }; # restic 仓库加密密码
-        r2_bucket_attic = { }; # atticd 独立 bucket
         # owner = "ente"：museum preStart 直接读文件，非 root 默认读不到，见 README
         ente_key_encryption = {
           owner = "ente";
@@ -141,8 +140,6 @@
       templates."attic-env" = {
         content = ''
           ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64=${config.sops.placeholder.attic_jwt_secret}
-          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
-          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
         '';
       };
       templates."vaultwarden-backup.env" = {
@@ -186,10 +183,10 @@
           url = "postgresql:///atticd?host=/run/postgresql&user=atticd"
 
           [storage]
-          type = "s3"
-          region = "us-east-1"
-          bucket = "${config.sops.placeholder.r2_bucket_attic}"
-          endpoint = "${config.sops.placeholder.r2_endpoint}"
+          type = "local"
+          # 落在 systemd StateDirectory=atticd（/var/lib/atticd）默认路径下，
+          # 不用额外 ReadWritePaths；放弃 R2，缓存数据存本机磁盘，减少一个外部依赖
+          path = "/var/lib/atticd/storage"
 
           [chunking]
           nar-size-threshold = 262144
@@ -305,6 +302,10 @@
     services.tailscale.enable = true;
     services.headscale = {
       enable = true;
+      # 26.05 ships 0.28.0; this host's db.sqlite was already migrated by unstable's 0.29.3
+      # (added a database_versions table) before the nixpkgs pin switch — 0.28.0's schema
+      # validator rejects it as unexpected. Pin forward to unstable until 26.05 catches up.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.headscale;
       address = "127.0.0.1";
       port = 6313;
       settings = {
@@ -584,6 +585,11 @@
     # Museum（API server）+ web 前端（Photos/Accounts/Cast/Albums）。四个 web 子域名
     services.ente.api = {
       enable = true;
+      # 26.05 ships museum 1.3.36; its bundled migrations/ dir is missing files that postgres
+      # already recorded as applied by unstable's 1.3.63 before the nixpkgs pin switch —
+      # golang-migrate panics "file does not exist" in m.Up(). Pin forward to unstable until
+      # 26.05 catches up. Same failure class as atticd/headscale above.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.museum;
       nginx.enable = false; # 跟 stalwart JMAP 撞 127.0.0.1:8080，见 README
       domain = "ente-api.hydroakri.cc";
       enableLocalDB = true;
@@ -708,6 +714,8 @@
       tunnels."901e5935-3f36-4609-9bb3-9a204bf7f79a" = {
         credentialsFile = config.sops.secrets.cloudflared_tunnel_credentials.path;
         default = "http_status:404";
+        # 本机 enp0s6 只有 link-local IPv6，没有公网 IPv6 出口；不强制会偶尔尝试 IPv6 边缘连接失败重试
+        edgeIPVersion = "4";
         # 全部转给本机 nginx 443（不是 80）：nginx vhost 都设了 forceSSL，转 80 会被 301 回
         # https，cloudflared 再用 http 转一次会死循环；originServerName 带对 SNI/Host 让
         # nginx（同一个 IP、多个 vhost）选到正确的 server block 和证书
@@ -755,10 +763,6 @@
           "dav.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "dav.hydroakri.cc";
-          };
-          "cache.hydroakri.cc" = {
-            service = "https://127.0.0.1:443";
-            originRequest.originServerName = "cache.hydroakri.cc";
           };
           "ntfy.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -823,6 +827,11 @@
 
     services.atticd = {
       enable = true;
+      # 26.05 ships the 2025-09-24 snapshot; this host's postgres db already has migrations
+      # applied by unstable's 2026-07-06 snapshot before the nixpkgs pin switch — the older
+      # binary's embedded migrator doesn't even contain those migration files. Pin forward to
+      # unstable until 26.05 catches up.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.attic-server;
       environmentFile = config.sops.templates."attic-env".path;
     };
     users.users.atticd = {
@@ -859,6 +868,10 @@
 
     services.ntfy-sh = {
       enable = true;
+      # 26.05 ships 2.26.0 (cache.db schema v8 reader); this host's cache.db was already
+      # migrated to schema v9 by unstable's 2.28.0 before the nixpkgs pin switch — pin
+      # forward to unstable until 26.05 catches up, or the service refuses to start.
+      package = inputs.unstable.legacyPackages.${pkgs.system}.ntfy-sh;
       settings = {
         listen-http = "127.0.0.1:8084";
         base-url = "https://ntfy.hydroakri.cc";
@@ -1134,8 +1147,10 @@
 
       virtualHosts."cache.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        # DNS-only 直连真实 IP（不走 cloudflared tunnel），见 headscale vhost 同理：
+        # 大 NAR push 会撞 Cloudflare 代理的 100MB 请求体上限，直连绕开这个限制
         locations."/" = {
           proxyPass = "http://127.0.0.1:8088";
           extraConfig = ''
