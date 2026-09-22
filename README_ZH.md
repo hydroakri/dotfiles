@@ -6,7 +6,7 @@
 
 > 多主机 NixOS flake + 一个可移植的 home-manager flake + chezmoi dotfiles。
 
-*[English](README.md)*
+_[English](README.md)_
 
 ## 目录
 
@@ -58,20 +58,20 @@
 下面这些都不是 secret——是藏在共用模块里的基础设施/软件包选择,复用的人
 (或者未来的我)很容易漏看:
 
-| 默认值 | 在哪 | 为什么可能出乎意料 |
-|---|---|---|
-| **用的是 Lix,不是上游 Nix** | `core.nix`:`nix.package = pkgs.lix;`(独立的 home-manager flake 里也单独设了一遍) | 这个仓库管的每台主机上跑的 daemon 都是 Lix fork,不是 `nixpkgs` 自带的 Nix。 |
-| **用 Rust coreutils,不是 GNU** | `core.nix`:`lib.hiPrio pkgs.uutils-coreutils-noprefix` | `uutils` 在 `PATH` 中覆盖了 GNU coreutils。大部分兼容,但并非逐字节对齐——依赖 GNU 特有 flag 行为的脚本可能出现异常。 |
-| **用 doas,不是 sudo** | `security.nix`:`security.sudo.enable`/`sudo-rs.enable` 都是 `false`,`security.doas.enable = true` | `pkgs.doas-sudo-shim` 使 `sudo` 命令实际由 doas 处理,以保留原有使用习惯,但 doas 并不支持 sudo 的全部参数——脚本中硬编码 sudo 专属参数时可能报错。 |
-| **默认用加固版内存分配器** | `security.nix`:`environment.memoryAllocator.provider = "graphene-hardened-light"` | 拿一部分性能换加固。模块注释里提到了替代方案:`scudo`(均衡)、`mimalloc`(性能优先)。 |
-| **好几个 daemon 用 musl + LibreSSL + clang 编译** | `core.nix`:unbound、chrony、openssh、wget;`proxy.nix`:dnscrypt-proxy、sing-box(都通过 `pkgsMusl`/`libressl`/`clangStdenv` override) | 攻击面更小、静态二进制——但这些不在标准二进制缓存里,机器上第一次构建得从源码编译。(`oci.nix` 也给自己的 nginx 套了同一层,不过那是主机级的 overlay,不是共用模块。) |
-| **unbound 在每台机器上都监听所有网卡——包括 oci** | `core.nix`:`services.unbound.settings.server.interface = [ "0.0.0.0" "::" ]` 无条件生效;`dnscrypt-proxy`(同样在 core.nix 里常驻)是它的转发目标,监听 `127.0.0.1:5353`,不是应用直接对话的对象 | 没有按主机单独收窄,是故意的——真正兜底的是 `access-control`(只放行私网网段,公网来源一律拒绝),不是靠 interface 绑定。`networking.nameservers` 也是只要 `services.unbound.enable`(默认开)就无条件指向 `127.0.0.1`/`::1`。 |
-| **WiFi 默认用 iwd——除了我自己的笔记本** | `desktop.nix`:`networking.networkmanager.wifi.backend = "iwd"`(`mkOverride 900`)——但 `omen15.nix` 用一次普通赋值把它改回了 `"wpa_supplicant"`,优先级更高,生效的是后者 | 即便是参考主机本身,也未采用模块提供的默认值(推测是驱动兼容性问题,仓库中未说明原因)。不应因为模块默认值是 iwd 就假设它适配任意 WiFi 网卡。 |
-| **Geoclue(定位服务)默认开着** | `desktop.nix`:`services.geoclue2.enable = true`(`mkOverride 900`) | 与 `privacy.nix` 中其他反指纹追踪措施相冲突——若不手动关闭,应用仍可申请到定位权限。 |
-| **桌面默认关掉了打印机/mDNS/移动网络发现** | `desktop.nix`:`services.printing.enable`、`services.avahi.enable`、`networking.modemmanager.enable` 都是 `false`(`mkOverride 900`) | 默认没有 CUPS 打印机自动发现,也没有 mDNS 的 `.local` 域名解析。 |
-| **用 earlyoom,不是 systemd-oomd** | `performance.nix`:`systemd.oomd.enable = false`、`services.earlyoom.enable = true`(带一条 `--avoid` 正则保护游戏/Wine/Proton 进程) | 进程被意外 OOM kill 时,该查的是 `earlyoom` 的阈值/保护名单,不是 `oomd`。 |
-| **chrony 已启用,但未显式禁用 systemd-timesyncd** | `core.nix` 启用了 `services.chrony`(使用 NTS 加密的服务器);没有任何地方设置 `services.timesyncd.enable = false` | nixpkgs 中 `services.chrony.enable` 的选项说明明确注明:"启用该服务时请确保禁用 NTP"——建议在实际主机上检查 `systemctl status systemd-timesyncd.service`,不应想当然地认为只有 chrony 在管理时间。 |
-| **`router.nix` 里的 `services.resolved.enable = false` 是防御性的,不是真的在覆盖什么** | `router.nix` 在它的 DHCP server 开启时用 `mkDefault` 设了这个值 | NixOS 自己默认就是关着 `services.resolved` 的——这行只是防止它在别处被打开,并没有关掉什么正在跑的东西。 |
+| 默认值                                                                                 | 在哪                                                                                                                                                                                        | 为什么可能出乎意料                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **用的是 Lix,不是上游 Nix**                                                            | `core.nix`:`nix.package = pkgs.lix;`(独立的 home-manager flake 里也单独设了一遍)                                                                                                            | 这个仓库管的每台主机上跑的 daemon 都是 Lix fork,不是 `nixpkgs` 自带的 Nix。                                                                                                                                            |
+| **用 Rust coreutils,不是 GNU**                                                         | `core.nix`:`lib.hiPrio pkgs.uutils-coreutils-noprefix`                                                                                                                                      | `uutils` 在 `PATH` 中覆盖了 GNU coreutils。大部分兼容,但并非逐字节对齐——依赖 GNU 特有 flag 行为的脚本可能出现异常。                                                                                                    |
+| **用 doas,不是 sudo**                                                                  | `security.nix`:`security.sudo.enable`/`sudo-rs.enable` 都是 `false`,`security.doas.enable = true`                                                                                           | `pkgs.doas-sudo-shim` 使 `sudo` 命令实际由 doas 处理,以保留原有使用习惯,但 doas 并不支持 sudo 的全部参数——脚本中硬编码 sudo 专属参数时可能报错。                                                                       |
+| **默认用加固版内存分配器**                                                             | `security.nix`:`environment.memoryAllocator.provider = "graphene-hardened-light"`                                                                                                           | 拿一部分性能换加固。模块注释里提到了替代方案:`scudo`(均衡)、`mimalloc`(性能优先)。                                                                                                                                     |
+| **好几个 daemon 用 musl + LibreSSL + clang 编译**                                      | `core.nix`:unbound、chrony、openssh、wget;`proxy.nix`:dnscrypt-proxy、sing-box(都通过 `pkgsMusl`/`libressl`/`clangStdenv` override)                                                         | 攻击面更小、静态二进制——但这些不在标准二进制缓存里,机器上第一次构建得从源码编译。(`oci.nix` 也给自己的 nginx 套了同一层,不过那是主机级的 overlay,不是共用模块。)                                                       |
+| **unbound 在每台机器上都监听所有网卡——包括 oci**                                       | `core.nix`:`services.unbound.settings.server.interface = [ "0.0.0.0" "::" ]` 无条件生效;`dnscrypt-proxy`(同样在 core.nix 里常驻)是它的转发目标,监听 `127.0.0.1:5353`,不是应用直接对话的对象 | 没有按主机单独收窄,是故意的——真正兜底的是 `access-control`(只放行私网网段,公网来源一律拒绝),不是靠 interface 绑定。`networking.nameservers` 也是只要 `services.unbound.enable`(默认开)就无条件指向 `127.0.0.1`/`::1`。 |
+| **WiFi 默认用 iwd——除了我自己的笔记本**                                                | `desktop.nix`:`networking.networkmanager.wifi.backend = "iwd"`(`mkOverride 900`)——但 `omen15.nix` 用一次普通赋值把它改回了 `"wpa_supplicant"`,优先级更高,生效的是后者                       | 即便是参考主机本身,也未采用模块提供的默认值(推测是驱动兼容性问题,仓库中未说明原因)。不应因为模块默认值是 iwd 就假设它适配任意 WiFi 网卡。                                                                              |
+| **Geoclue(定位服务)默认开着**                                                          | `desktop.nix`:`services.geoclue2.enable = true`(`mkOverride 900`)                                                                                                                           | 与 `privacy.nix` 中其他反指纹追踪措施相冲突——若不手动关闭,应用仍可申请到定位权限。                                                                                                                                     |
+| **桌面默认关掉了打印机/mDNS/移动网络发现**                                             | `desktop.nix`:`services.printing.enable`、`services.avahi.enable`、`networking.modemmanager.enable` 都是 `false`(`mkOverride 900`)                                                          | 默认没有 CUPS 打印机自动发现,也没有 mDNS 的 `.local` 域名解析。                                                                                                                                                        |
+| **用 earlyoom,不是 systemd-oomd**                                                      | `performance.nix`:`systemd.oomd.enable = false`、`services.earlyoom.enable = true`(带一条 `--avoid` 正则保护游戏/Wine/Proton 进程)                                                          | 进程被意外 OOM kill 时,该查的是 `earlyoom` 的阈值/保护名单,不是 `oomd`。                                                                                                                                               |
+| **chrony 已启用,但未显式禁用 systemd-timesyncd**                                       | `core.nix` 启用了 `services.chrony`(使用 NTS 加密的服务器);没有任何地方设置 `services.timesyncd.enable = false`                                                                             | nixpkgs 中 `services.chrony.enable` 的选项说明明确注明:"启用该服务时请确保禁用 NTP"——建议在实际主机上检查 `systemctl status systemd-timesyncd.service`,不应想当然地认为只有 chrony 在管理时间。                        |
+| **`router.nix` 里的 `services.resolved.enable = false` 是防御性的,不是真的在覆盖什么** | `router.nix` 在它的 DHCP server 开启时用 `mkDefault` 设了这个值                                                                                                                             | NixOS 自己默认就是关着 `services.resolved` 的——这行只是防止它在别处被打开,并没有关掉什么正在跑的东西。                                                                                                                 |
 
 ---
 
@@ -246,12 +246,12 @@ utils/                    脚本(chezmoi 不部署,目前只有 backup/ 一个�
 
 ### 主机
 
-| 主机 | 架构 | Profile | 角色 |
-|------|------|---------|------|
-| `omen15` | x86_64 | desktop | 主力笔记本(AMD + NVIDIA 双显卡,锁定 CachyOS 内核) |
-| `oci` | aarch64 | server | Oracle Cloud——vaultwarden、searx、atticd、headscale、一个 Minecraft 服务器,nginx 反代若干 `*.hydroakri.cc` 子域 |
-| `rpi4-side-gateway` | aarch64 | server | 树莓派 4——透明代理(sing-box + dnscrypt-proxy + dae),不管 DHCP/NAT |
-| `rpi4-switch` | aarch64 | server | 树莓派 4——局域网路由:DHCP、NAT、SQM,不跑代理栈 |
+| 主机                | 架构    | Profile | 角色                                                                                                     |
+| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| `omen15`            | x86_64  | desktop | 主力笔记本(AMD + NVIDIA 双显卡,锁定 CachyOS 内核)                                                        |
+| `oci`               | aarch64 | server  | Oracle Cloud——vaultwarden、atticd、headscale、一个 Minecraft 服务器,nginx 反代若干 `*.hydroakri.cc` 子域 |
+| `rpi4-side-gateway` | aarch64 | server  | 树莓派 4——透明代理(sing-box + dnscrypt-proxy + dae),不管 DHCP/NAT                                        |
+| `rpi4-switch`       | aarch64 | server  | 树莓派 4——局域网路由:DHCP、NAT、SQM,不跑代理栈                                                           |
 
 还有两个 flake package 构建的是独立镜像,不是主机配置:
 `packages.x86_64-linux.iso-installer`(图形化 Calamares 安装器 ISO)和
@@ -264,26 +264,26 @@ utils/                    脚本(chezmoi 不部署,目前只有 backup/ 一个�
 
 ### 可用的 `nixosModules`
 
-| 名称 | 说明 | 配置路径 | 复用须知 |
-|------|------|--------------|-------------|
-| [`core`](flake/modules/core.nix) | Nix 设置/额外缓存、Unbound DNS、Chrony NTS、终端工具、SMART 监控。还会带入 `sqm.nix`/`tuning.nix`(默认关闭)。 | 常开;`modules.core.extraSubstituters`/`extraTrustedPublicKeys` | 需要 `specialArgs={inherit inputs;}`。硬编码了 DNS(Cloudflare+Quad9)和 GitHub 走 443 的 SSH 路由,这两个是普通默认值,不是 option。 |
-| [`desktop`](flake/modules/desktop.nix) | `preempt=full`、PipeWire、XDG portals、`hardware.graphics`(Vulkan/OpenGL/OpenCL)、fcitx5、用 nixpak 沙箱跑 Brave/Mullvad Browser。这里只有 Niri 真正接了 `programs.*.enable`。 | 常开 | — |
-| [`server`](flake/modules/server.nix) | `preempt=voluntary`、tuned、fail2ban、irqbalance、抗 bufferbloat 的 sysctl。 | 常开 | — |
-| [`performance`](flake/modules/features/performance.nix) | BBR+CAKE、MGLRU/zram、scx 调度器、I/O 调度器 udev 规则、厂商微码。 | 常开;`modules.performance.vendor` | 默认 `"other"` 会跳过微码——记得显式设置。 |
-| [`security`](flake/modules/features/security.nix) | 内核加固、AppArmor、doas、FIDO2 SSH/PAM、USBGuard、sysctl 基线(无桌面主机还有一段更严格的覆盖)。 | 常开;`modules.security.authorizedKeys`/`u2fMappings` | ⚠️ 两个都默认空——不设置的话 root SSH 登录和 u2f PAM 实际上是关闭的。 |
-| [`privacy`](flake/modules/features/privacy.nix) | 反指纹追踪:Brave 加固策略、kloak 键鼠时序匿名化、MAC/IPv6 隐私地址、Unbound RPZ 屏蔽名单 + DoT 上游。 | 常开 | 上游都是公共解析器(Quad9/Cloudflare/AdGuard/Mullvad/Control D),不是个人端点。 |
-| [`powersave`](flake/modules/features/powersave.nix) | 省电内核参数、激进的 PCIe ASPM、按交流电/电池切换的 udev 规则,优化 s2idle 效率。 | 按需:`modules.powersave.enable` | — |
-| [`gaming`](flake/modules/features/gaming.nix) | scx_lavd 调度器、Gamescope、GameMode、Steam 防火墙端口。导入它不会自动开 Steam——`programs.steam.enable` 默认还是 `false`。 | 常开(Steam 需单独开启) | — |
-| [`preservation`](flake/modules/features/preservation.nix) | 根目录 tmpfs + preservation 状态持久化(NetworkManager、Unbound/Chrony 状态、SSH host key、machine-id、大部分 `/var/lib/*`)。 | 按需:`modules.preservation.enable`/`persistentPath` | 给已有数据的主机加这个模块,得先手动 `rsync` 一次——preservation 不会帮你搬数据。 |
-| [`utils`](flake/modules/features/utils.nix) | Prometheus + node-exporter、Grafana、Uptime Kuma,外加 `enableGraphicTools`(GPU 诊断工具:nvtop、vulkan-tools、clinfo……)。 | 按需:`modules.utils.enable` + `enableGrafana`/`enablePrometheus`/`enableUptime`/`enableGraphicTools` | Grafana 需要一个 `grafana_secret_key` sops secret——自己准备。*这里没有配置 Glance*——`oci` 上 `glance.hydroakri.cc` 那个 vhost 只是个裸的 nginx 反代,指向一个 Nix 里哪儿都没声明的服务(带外运行)。 |
-| [`virtualisation`](flake/modules/features/virtualisation.nix) | Podman + Docker 兼容层、aarch64 binfmt 模拟(两者都常开)。 | KVM/QEMU+libvirtd 按需:`modules.virtualisation.libvirtd.enable` | — |
-| [`proxy.nix`](flake/modules/features/networking/proxy.nix)*(未导出)* | sing-box(FakeIP/TUN)+ dnscrypt-proxy + AdGuardHome + dae eBPF 透明代理。 | 按需:`modules.proxy.enable`(还有 backend/tun/dae/tor 子开关,这些因为每台主机不一样,还是保留成真的选项) | 已经不是一个可复用模块了:我自己的代理身份信息(域名、sops secret 声明,原来在 `flake/hosts/personal-proxy-profile.nix`,后来又变成一批选项化的扩展点)现在直接写死在 settings/route rules 里了,所以它被从 `outputs.nixosModules` 里移除了。想要自己的值,得自己复制/改这个文件。 |
-| [`networking-router`](flake/modules/features/networking/router.nix) | NAT 路由:VLAN、DHCP(dnsmasq)、MSS clamping、放松反向路径过滤。 | 按需:`modules.router.enable` | — |
-| [`networking-sqm`](flake/modules/features/networking/sqm.nix) | 通过 `tc` 做 CAKE SQM,借 NetworkManager 的 dispatcher 脚本触发。 | 按需:`modules.networking.sqm.enable` | 已经被 `core` 带入(默认关闭)——大多数主机不需要直接导入。 |
-| [`networking-tuning`](flake/modules/features/networking/tuning.nix) | sysfs 网卡调优:RPS/XPS CPU 亲和性。 | 按需:`modules.networking.sysfsTuning.enable` | 已经被 `core` 带入。 |
-| [`hardware-amd`](flake/modules/hardware/amd.nix) | AMD 显卡:常开 `hardware.amdgpu.overdrive` + `services.lact`;ROCm 按需。 | ROCm 按需:`modules.amd.rocm` | 不配置 zenpower——那是每台主机自己手搭的(见 `omen15.nix` 的 `boot.extraModulePackages`)。 |
-| [`hardware-nvidia`](flake/modules/hardware/nvidia.nix) | NVIDIA 驱动(通过 `variant` 选 open/proprietary/nouveau),给 AMD+NVIDIA 混合显卡笔记本用的 PRIME offload。 | 按需:`modules.nvidia.enable`/`variant` | 总线 ID 默认是我笔记本的(`PCI:7@0:0:0` / `PCI:1@0:0:0`)——按你自己的硬件改。 |
-| [`filesystem-btrfs`](flake/modules/filesystems/btrfs.nix) | `services.btrfs.autoScrub`、每月 balance 定时器、`/` 和 `/home` 每小时 Snapper 快照。 | 常开 | 不设置子卷布局/挂载选项——参见 `flake/hosts/omen15/disko.nix`,目前唯一的使用者。 |
+| 名称                                                                 | 说明                                                                                                                                                                           | 配置路径                                                                                               | 复用须知                                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`core`](flake/modules/core.nix)                                     | Nix 设置/额外缓存、Unbound DNS、Chrony NTS、终端工具、SMART 监控。还会带入 `sqm.nix`/`tuning.nix`(默认关闭)。                                                                  | 常开;`modules.core.extraSubstituters`/`extraTrustedPublicKeys`                                         | 需要 `specialArgs={inherit inputs;}`。硬编码了 DNS(Cloudflare+Quad9)和 GitHub 走 443 的 SSH 路由,这两个是普通默认值,不是 option。                                                                                                                                           |
+| [`desktop`](flake/modules/desktop.nix)                               | `preempt=full`、PipeWire、XDG portals、`hardware.graphics`(Vulkan/OpenGL/OpenCL)、fcitx5、用 nixpak 沙箱跑 Brave/Mullvad Browser。这里只有 Niri 真正接了 `programs.*.enable`。 | 常开                                                                                                   | —                                                                                                                                                                                                                                                                           |
+| [`server`](flake/modules/server.nix)                                 | `preempt=voluntary`、tuned、fail2ban、irqbalance、抗 bufferbloat 的 sysctl。                                                                                                   | 常开                                                                                                   | —                                                                                                                                                                                                                                                                           |
+| [`performance`](flake/modules/features/performance.nix)              | BBR+CAKE、MGLRU/zram、scx 调度器、I/O 调度器 udev 规则、厂商微码。                                                                                                             | 常开;`modules.performance.vendor`                                                                      | 默认 `"other"` 会跳过微码——记得显式设置。                                                                                                                                                                                                                                   |
+| [`security`](flake/modules/features/security.nix)                    | 内核加固、AppArmor、doas、FIDO2 SSH/PAM、USBGuard、sysctl 基线(无桌面主机还有一段更严格的覆盖)。                                                                               | 常开;`modules.security.authorizedKeys`/`u2fMappings`                                                   | ⚠️ 两个都默认空——不设置的话 root SSH 登录和 u2f PAM 实际上是关闭的。                                                                                                                                                                                                        |
+| [`privacy`](flake/modules/features/privacy.nix)                      | 反指纹追踪:Brave 加固策略、kloak 键鼠时序匿名化、MAC/IPv6 隐私地址、Unbound RPZ 屏蔽名单 + DoT 上游。                                                                          | 常开                                                                                                   | 上游都是公共解析器(Quad9/Cloudflare/AdGuard/Mullvad/Control D),不是个人端点。                                                                                                                                                                                               |
+| [`powersave`](flake/modules/features/powersave.nix)                  | 省电内核参数、激进的 PCIe ASPM、按交流电/电池切换的 udev 规则,优化 s2idle 效率。                                                                                               | 按需:`modules.powersave.enable`                                                                        | —                                                                                                                                                                                                                                                                           |
+| [`gaming`](flake/modules/features/gaming.nix)                        | scx_lavd 调度器、Gamescope、GameMode、Steam 防火墙端口。导入它不会自动开 Steam——`programs.steam.enable` 默认还是 `false`。                                                     | 常开(Steam 需单独开启)                                                                                 | —                                                                                                                                                                                                                                                                           |
+| [`preservation`](flake/modules/features/preservation.nix)            | 根目录 tmpfs + preservation 状态持久化(NetworkManager、Unbound/Chrony 状态、SSH host key、machine-id、大部分 `/var/lib/*`)。                                                   | 按需:`modules.preservation.enable`/`persistentPath`                                                    | 给已有数据的主机加这个模块,得先手动 `rsync` 一次——preservation 不会帮你搬数据。                                                                                                                                                                                             |
+| [`utils`](flake/modules/features/utils.nix)                          | Prometheus + node-exporter、Grafana、Uptime Kuma,外加 `enableGraphicTools`(GPU 诊断工具:nvtop、vulkan-tools、clinfo……)。                                                       | 按需:`modules.utils.enable` + `enableGrafana`/`enablePrometheus`/`enableUptime`/`enableGraphicTools`   | Grafana 需要一个 `grafana_secret_key` sops secret——自己准备。_这里没有配置 Glance_——`oci` 上 `glance.hydroakri.cc` 那个 vhost 只是个裸的 nginx 反代,指向一个 Nix 里哪儿都没声明的服务(带外运行)。                                                                           |
+| [`virtualisation`](flake/modules/features/virtualisation.nix)        | Podman + Docker 兼容层、aarch64 binfmt 模拟(两者都常开)。                                                                                                                      | KVM/QEMU+libvirtd 按需:`modules.virtualisation.libvirtd.enable`                                        | —                                                                                                                                                                                                                                                                           |
+| [`proxy.nix`](flake/modules/features/networking/proxy.nix)_(未导出)_ | sing-box(FakeIP/TUN)+ dnscrypt-proxy + AdGuardHome + dae eBPF 透明代理。                                                                                                       | 按需:`modules.proxy.enable`(还有 backend/tun/dae/tor 子开关,这些因为每台主机不一样,还是保留成真的选项) | 已经不是一个可复用模块了:我自己的代理身份信息(域名、sops secret 声明,原来在 `flake/hosts/personal-proxy-profile.nix`,后来又变成一批选项化的扩展点)现在直接写死在 settings/route rules 里了,所以它被从 `outputs.nixosModules` 里移除了。想要自己的值,得自己复制/改这个文件。 |
+| [`networking-router`](flake/modules/features/networking/router.nix)  | NAT 路由:VLAN、DHCP(dnsmasq)、MSS clamping、放松反向路径过滤。                                                                                                                 | 按需:`modules.router.enable`                                                                           | —                                                                                                                                                                                                                                                                           |
+| [`networking-sqm`](flake/modules/features/networking/sqm.nix)        | 通过 `tc` 做 CAKE SQM,借 NetworkManager 的 dispatcher 脚本触发。                                                                                                               | 按需:`modules.networking.sqm.enable`                                                                   | 已经被 `core` 带入(默认关闭)——大多数主机不需要直接导入。                                                                                                                                                                                                                    |
+| [`networking-tuning`](flake/modules/features/networking/tuning.nix)  | sysfs 网卡调优:RPS/XPS CPU 亲和性。                                                                                                                                            | 按需:`modules.networking.sysfsTuning.enable`                                                           | 已经被 `core` 带入。                                                                                                                                                                                                                                                        |
+| [`hardware-amd`](flake/modules/hardware/amd.nix)                     | AMD 显卡:常开 `hardware.amdgpu.overdrive` + `services.lact`;ROCm 按需。                                                                                                        | ROCm 按需:`modules.amd.rocm`                                                                           | 不配置 zenpower——那是每台主机自己手搭的(见 `omen15.nix` 的 `boot.extraModulePackages`)。                                                                                                                                                                                    |
+| [`hardware-nvidia`](flake/modules/hardware/nvidia.nix)               | NVIDIA 驱动(通过 `variant` 选 open/proprietary/nouveau),给 AMD+NVIDIA 混合显卡笔记本用的 PRIME offload。                                                                       | 按需:`modules.nvidia.enable`/`variant`                                                                 | 总线 ID 默认是我笔记本的(`PCI:7@0:0:0` / `PCI:1@0:0:0`)——按你自己的硬件改。                                                                                                                                                                                                 |
+| [`filesystem-btrfs`](flake/modules/filesystems/btrfs.nix)            | `services.btrfs.autoScrub`、每月 balance 定时器、`/` 和 `/home` 每小时 Snapper 快照。                                                                                          | 常开                                                                                                   | 不设置子卷布局/挂载选项——参见 `flake/hosts/omen15/disko.nix`,目前唯一的使用者。                                                                                                                                                                                             |
 
 下面这些模块存在但故意没有导出:`flake/modules/features/agent.nix`(Hermes
 Agent / llama.cpp——里面硬编码了一个私人 Telegram 用户 ID,只有 `omen15` 直接
@@ -292,21 +292,21 @@ Agent / llama.cpp——里面硬编码了一个私人 Telegram 用户 ID,只有 
 
 ### 关键选项
 
-**`mainUser`** *(字符串,默认 `"user"`)* ⚠️ ——系统用户名,模块里到处用它算
+**`mainUser`** _(字符串,默认 `"user"`)_ ⚠️ ——系统用户名,模块里到处用它算
 home 路径、组、PAM。默认值故意是不可用的。
 
-**`modules.core.extraSubstituters`/`extraTrustedPublicKeys`** *(列表,默认
-`[]`)* ——追加在 `cache.nixos.org` + `nix-community.cachix.org` 之后的二进制
+**`modules.core.extraSubstituters`/`extraTrustedPublicKeys`** _(列表,默认
+`[]`)_ ——追加在 `cache.nixos.org` + `nix-community.cachix.org` 之后的二进制
 缓存。我的主机在这里加了 `cache.hydroakri.cc`;你会加你自己的。
 
-**`modules.security.authorizedKeys`** *(列表,默认 `[]`)* ⚠️ ——授权 root 登录
+**`modules.security.authorizedKeys`** _(列表,默认 `[]`)_ ⚠️ ——授权 root 登录
 的 SSH 公钥。空值意味着 root SSH 是关闭的。
 
-**`modules.security.u2fMappings`** *(多行字符串,默认 `""`)* ⚠️ ——
+**`modules.security.u2fMappings`** _(多行字符串,默认 `""`)_ ⚠️ ——
 `/etc/u2f_mappings` 的内容,来自 `pamu2fcfg -n`。空值完全关闭 u2f PAM。
 
-**`modules.performance.vendor`** *(枚举 `amd`\|`intel`\|`other`,默认
-`"other"`)* ——选微码包。`"other"` 会跳过微码。
+**`modules.performance.vendor`** _(枚举 `amd`\|`intel`\|`other`,默认
+`"other"`)_ ——选微码包。`"other"` 会跳过微码。
 
 ### 常用命令
 
@@ -325,14 +325,14 @@ nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2'   # 在别处初始
 
 ### CI / 构建流水线
 
-| Job / 工作流 | 触发条件 | 做什么 |
-|---|---|---|
-| `ci.yml` → `check` | push/PR 到 `flake/**` 或 `dot_config/home-manager/**`,每晚,手动 | `nix flake check` |
-| `ci.yml` → `nix-matrix` | 同上 | 从 `nix eval .#githubActions.matrix` 生成构建矩阵(`nix-github-actions`)——加减主机不用手改工作流 |
-| `ci.yml` → `build` | 同上 | 在 x86_64/aarch64 runner 上矩阵构建四台主机的 `nixosConfigurations.*.toplevel`,推到 `cache.hydroakri.cc`(自建 Attic)+ 备用的"LanTian"缓存;x86_64 runner 会先清盘、加 8G swap,应付从源码构建 clang 的开销 |
-| `ci.yml` → `home-manager-build` | 同上 | 单独构建独立 home-manager flake 的 activation package,跟四主机矩阵无关 |
-| `update-flake-lock.yml` | 每天定时,手动 | 只有内核 hash 真的变了、且 NixOS Hydra channel 健康时才更新 `flake/flake.lock`,然后自动合并 |
-| `update-home-manager-lock.yml` | 每天定时,比上面晚 2 小时 | 更新 `dot_config/home-manager/flake.lock`(跟的是 `flake/` 的 nixpkgs,自己没单独锁定);自动合并 |
+| Job / 工作流                    | 触发条件                                                        | 做什么                                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml` → `check`              | push/PR 到 `flake/**` 或 `dot_config/home-manager/**`,每晚,手动 | `nix flake check`                                                                                                                                                                                        |
+| `ci.yml` → `nix-matrix`         | 同上                                                            | 从 `nix eval .#githubActions.matrix` 生成构建矩阵(`nix-github-actions`)——加减主机不用手改工作流                                                                                                          |
+| `ci.yml` → `build`              | 同上                                                            | 在 x86_64/aarch64 runner 上矩阵构建四台主机的 `nixosConfigurations.*.toplevel`,推到 `cache.hydroakri.cc`(自建 Attic)+ 备用的"LanTian"缓存;x86_64 runner 会先清盘、加 8G swap,应付从源码构建 clang 的开销 |
+| `ci.yml` → `home-manager-build` | 同上                                                            | 单独构建独立 home-manager flake 的 activation package,跟四主机矩阵无关                                                                                                                                   |
+| `update-flake-lock.yml`         | 每天定时,手动                                                   | 只有内核 hash 真的变了、且 NixOS Hydra channel 健康时才更新 `flake/flake.lock`,然后自动合并                                                                                                              |
+| `update-home-manager-lock.yml`  | 每天定时,比上面晚 2 小时                                        | 更新 `dot_config/home-manager/flake.lock`(跟的是 `flake/` 的 nixpkgs,自己没单独锁定);自动合并                                                                                                            |
 
 > 如果你把这个 flake 当 input 用,建议把 `cache.hydroakri.cc` 加进
 > `modules.core.extraSubstituters`——CI 一直在往里推预构建产物。
@@ -372,20 +372,20 @@ tmux、zellij、fzf、bat、atuin、zoxide、lazygit、ripgrep、starship……)
 [`docs/upstream-settings.md`](docs/upstream-settings.md)）。踩过的坑记录在
 [`docs/known-breaking-settings_zh.md`](docs/known-breaking-settings_zh.md)。
 
-| 发行版 | 仓库 | 提取内容 |
-|---|---|---|
-| CachyOS | https://github.com/CachyOS/CachyOS-Settings | sysctl(`70-cachyos-settings.conf`)、udev 规则、modprobe 默认值 |
-| CachyOS(内核) | https://github.com/CachyOS/linux-cachyos | 内核补丁/调度器调优(omen15 锁定的 cachyos-bore 内核 input 的来源) |
-| Pop!_OS | https://github.com/pop-os | 内核 config 级硬化(`pop-os/linux`) |
-| Whonix | https://github.com/Whonix(镜像)/ https://gitlab.com/whonix(上游) | 硬化设置大部分与 Kicksecure 共用 |
-| Tails | https://gitlab.tails.boum.org/tails/tails | `config/` + `features/` 里的 sysctl / AppArmor / 内核硬化 |
-| Qubes OS | https://github.com/QubesOS | `qubes-linux-kernel`、`qubes-core-admin`(隔离/安全架构参考) |
-| secureblue | https://github.com/secureblue/secureblue | 端到端硬化 config(sysctl / udev / dconf) |
-| Bazzite | https://github.com/ublue-os/bazzite | 桌面/游戏向 sysctl + udev 调优(`system_files/desktop/shared`)——`vm.max_map_count`、inotify 限制、调度器 udev 规则 |
-| Kicksecure | https://github.com/Kicksecure | `security-misc`(`990-security-misc.conf` 全套 KSPP sysctl 基线)、`hardened-kernel`、`tirdad` |
-| nix-mineral | https://github.com/cynicsketch/nix-mineral | NixOS 原生 KSPP 硬化模块(sysctl / 内核参数 / 模块黑名单;alpha 质量)。大量借鉴 `security-misc` 和 nixpkgs `hardened.nix`——适合与本仓库 sysctl 基线交叉核对,其 `docs/CAVEATS.md`/`OMITTED.md` 还记录了刻意跳过哪些设置及原因 |
-| Pop!_OS(`default-settings`) | https://github.com/pop-os/default-settings | System76 自己的桌面 sysctl/udev/modules-load/journald 调优(跟 `pop-os/linux` 那个内核配置仓库是两回事,后者没有自动化——见 `docs/upstream-settings.md`「内核 Kconfig 硬化」) |
-| GrapheneOS(`infrastructure`) | https://github.com/GrapheneOS/infrastructure | GrapheneOS 自己那批认证/更新服务器的部署脚本——不是他们(仅 Android)的操作系统本身。secureblue 的 `chrony.conf` 就是从这抄的原始出处;自己还有一份 `sysctl.d`(大部分是服务器网络语境的调优,不是通用加固建议) |
+| 发行版                       | 仓库                                                             | 提取内容                                                                                                                                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CachyOS                      | https://github.com/CachyOS/CachyOS-Settings                      | sysctl(`70-cachyos-settings.conf`)、udev 规则、modprobe 默认值                                                                                                                                                             |
+| CachyOS(内核)                | https://github.com/CachyOS/linux-cachyos                         | 内核补丁/调度器调优(omen15 锁定的 cachyos-bore 内核 input 的来源)                                                                                                                                                          |
+| Pop!_OS                      | https://github.com/pop-os                                        | 内核 config 级硬化(`pop-os/linux`)                                                                                                                                                                                         |
+| Whonix                       | https://github.com/Whonix(镜像)/ https://gitlab.com/whonix(上游) | 硬化设置大部分与 Kicksecure 共用                                                                                                                                                                                           |
+| Tails                        | https://gitlab.tails.boum.org/tails/tails                        | `config/` + `features/` 里的 sysctl / AppArmor / 内核硬化                                                                                                                                                                  |
+| Qubes OS                     | https://github.com/QubesOS                                       | `qubes-linux-kernel`、`qubes-core-admin`(隔离/安全架构参考)                                                                                                                                                                |
+| secureblue                   | https://github.com/secureblue/secureblue                         | 端到端硬化 config(sysctl / udev / dconf)                                                                                                                                                                                   |
+| Bazzite                      | https://github.com/ublue-os/bazzite                              | 桌面/游戏向 sysctl + udev 调优(`system_files/desktop/shared`)——`vm.max_map_count`、inotify 限制、调度器 udev 规则                                                                                                          |
+| Kicksecure                   | https://github.com/Kicksecure                                    | `security-misc`(`990-security-misc.conf` 全套 KSPP sysctl 基线)、`hardened-kernel`、`tirdad`                                                                                                                               |
+| nix-mineral                  | https://github.com/cynicsketch/nix-mineral                       | NixOS 原生 KSPP 硬化模块(sysctl / 内核参数 / 模块黑名单;alpha 质量)。大量借鉴 `security-misc` 和 nixpkgs `hardened.nix`——适合与本仓库 sysctl 基线交叉核对,其 `docs/CAVEATS.md`/`OMITTED.md` 还记录了刻意跳过哪些设置及原因 |
+| Pop!_OS(`default-settings`)  | https://github.com/pop-os/default-settings                       | System76 自己的桌面 sysctl/udev/modules-load/journald 调优(跟 `pop-os/linux` 那个内核配置仓库是两回事,后者没有自动化——见 `docs/upstream-settings.md`「内核 Kconfig 硬化」)                                                 |
+| GrapheneOS(`infrastructure`) | https://github.com/GrapheneOS/infrastructure                     | GrapheneOS 自己那批认证/更新服务器的部署脚本——不是他们(仅 Android)的操作系统本身。secureblue 的 `chrony.conf` 就是从这抄的原始出处;自己还有一份 `sysctl.d`(大部分是服务器网络语境的调优,不是通用加固建议)                  |
 
 最主要的来源是 Kicksecure 的 `security-misc`(实现了 KSPP 推荐设置,与 Whonix
 共用)以及 Tails/Qubes 自己的硬化;其余更多是性能/桌面调优参考。

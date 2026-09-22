@@ -6,30 +6,32 @@
 
 `sops secrets.yaml` 補值。大部分隨便生一組強密碼/random string 就行(`openssl rand -base64 24`),下面只列**需要額外步驟才拿得到值**的:
 
-| Secret | 從哪拿 |
-|---|---|
-| `cf_oracle` | Cloudflare API Token,DNS 編輯權限,`hydroakri.cc` 這個 zone |
-| `r2_access_key_id` / `r2_secret_access_key` / `r2_endpoint` / `r2_bucket` | Cloudflare R2 → Manage API Tokens,**all-buckets** scope(webdav 備份 + vaultwarden restic 都靠這組) |
-| `r2_bucket_attic` | R2 裡另一個獨立 bucket 的名稱(atticd 專用,見下方遷移步驟) |
-| `r2_bucket_ente` | R2 裡另一個獨立 bucket 的名稱(ente 的照片/影片/縮圖 blob 專用) |
-| `ente_key_encryption` / `ente_key_hash` | 本機生成,32/64 bytes random,standard base64(`openssl rand -base64 32`,hash 用 64):**建第一個帳號後就不能換** |
-| `ente_jwt_secret` | 本機生成,32 bytes random,但要 **URL-safe base64**(不是 standard!見下方第 7 節):`openssl rand -base64 32 \| tr '+/' '-_'`:**建第一個帳號後就不能換** |
-| `cloudflared_tunnel_credentials` | `cloudflared tunnel create` 在本機產生的 `credentials.json` 原文(classic tunnel,tunnel ID:`901e5935-3f36-4609-9bb3-9a204bf7f79a`) |
-| `oci_email_delivery_username` / `oci_email_delivery_password` | OCI Console → Identity & Security → Users → 你的使用者 → Resources → SMTP credentials → Generate(同一組憑證 stalwart outbound relay 和 ente 登入驗證碼信都在用) |
-| `pds_plc_rotation_key` | Bluesky PDS 官方文件的 keygen 流程 |
-| `warp_mdm` | Cloudflare Zero Trust WARP 的 MDM policy XML |
-| `webdav_htpasswd` | `htpasswd -nb user pass` 產生(`apacheHttpd` 已在 `environment.systemPackages` 裡) |
+| Secret                                                                    | 從哪拿                                                                                                                                                          |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cf_oracle`                                                               | Cloudflare API Token,DNS 編輯權限,`hydroakri.cc` 這個 zone                                                                                                      |
+| `r2_access_key_id` / `r2_secret_access_key` / `r2_endpoint` / `r2_bucket` | Cloudflare R2 → Manage API Tokens,**all-buckets** scope(webdav 備份 + vaultwarden restic 都靠這組)                                                              |
+| `r2_bucket_attic`                                                         | R2 裡另一個獨立 bucket 的名稱(atticd 專用,見下方遷移步驟)                                                                                                       |
+| `r2_bucket_ente`                                                          | R2 裡另一個獨立 bucket 的名稱(ente 的照片/影片/縮圖 blob 專用)                                                                                                  |
+| `ente_key_encryption` / `ente_key_hash`                                   | 本機生成,32/64 bytes random,standard base64(`openssl rand -base64 32`,hash 用 64):**建第一個帳號後就不能換**                                                    |
+| `ente_jwt_secret`                                                         | 本機生成,32 bytes random,但要 **URL-safe base64**(不是 standard!見下方第 7 節):`openssl rand -base64 32 \| tr '+/' '-_'`:**建第一個帳號後就不能換**             |
+| `cloudflared_tunnel_credentials`                                          | `cloudflared tunnel create` 在本機產生的 `credentials.json` 原文(classic tunnel,tunnel ID:`901e5935-3f36-4609-9bb3-9a204bf7f79a`)                               |
+| `oci_email_delivery_username` / `oci_email_delivery_password`             | OCI Console → Identity & Security → Users → 你的使用者 → Resources → SMTP credentials → Generate(同一組憑證 stalwart outbound relay 和 ente 登入驗證碼信都在用) |
+| `pds_plc_rotation_key`                                                    | Bluesky PDS 官方文件的 keygen 流程                                                                                                                              |
+| `warp_mdm`                                                                | Cloudflare Zero Trust WARP 的 MDM policy XML                                                                                                                    |
+| `webdav_htpasswd`                                                         | `htpasswd -nb user pass` 產生(`apacheHttpd` 已在 `environment.systemPackages` 裡)                                                                               |
 
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `searx` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
+
 - `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援
 - `headscale.hydroakri.cc` → 同一個 oci 公網 IP——Cloudflare 會剝掉 POST 請求的 `Upgrade` 頭,TS2021 握手就是靠這個,搬去 tunnel 會導致節點全部掉線(headscale#3287,官方確認無解)。別手滑搬回 tunnel
 
 **其他**:
+
 - `hydroakri.cc` MX → `mail.hydroakri.cc`,優先度任意正整數
 - `hydroakri.cc` TXT (SPF):`v=spf1 include:ap.rp.oracleemaildelivery.com -all`(硬失敗;唯一授權的寄信路徑就是這個 relay,沒有其他來源要顧慮)
 - `stalwart._domainkey.hydroakri.cc` CNAME → OCI Email Domain 的 DKIM 設定產生的值(見下方 Stalwart 章節)
@@ -48,6 +50,7 @@
 ## 3. OCI Email Delivery 主控台
 
 Developer Services → Email Delivery:
+
 1. **Email Domains** → 建 `hydroakri.cc` → DKIM 分頁 → Add DKIM(selector `stalwart`)→ 拿到 CNAME 值填進 DNS → 用 SPF/DKIM verification 確認狀態變 **Active**
 2. **Approved Senders** → 建 `me@hydroakri.cc`(或實際用的寄件地址)
 3. Identity & Security → Users → SMTP credentials → 生成憑證(見上方 secrets 表格)
@@ -71,6 +74,7 @@ Developer Services → Email Delivery:
 沒有 PhotoPrism 那種部署時就設好的 admin 密碼——第一個真實帳號是上網頁走 email OTP 註冊出來的(驗證碼信走上面的 OCI Email Delivery SMTP)。想把某個帳號設成 instance admin,拿到該帳號的 user ID 後手動加 `services.ente.api.settings.internal.admin` 再重新部署。
 
 **單人自架的收尾三步**(`internal.disable-registration = true` 已經寫進 `oci.nix` 了,⚠️ **部署前要先確認自己已經註冊完帳號**,不然會把自己也鎖在門外,要解封只能先改回 `false` 重新部署):
+
 1. 查自己的數字 user id(不是 email,欄位叫 `user_id` 不是 `id`):`doas -u postgres psql ente -c "SELECT user_id, email FROM users;"`
 2. 把這個數字加進 `oci.nix` 的 `services.ente.api.settings.internal.admin`,重新部署
 3. 拉滿儲存空間走 `ente-cli`,不是 nix 配置:

@@ -34,7 +34,6 @@ in
     sops = {
       secrets = {
         hermes_env = { };
-        searx_secret_key = { };
         telegram_bot_token = { };
       };
     };

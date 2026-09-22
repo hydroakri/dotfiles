@@ -71,7 +71,6 @@
         r2_bucket = { };
         webdav_htpasswd = { };
         attic_jwt_secret = { };
-        searx_secret_key = { };
         pds_jwt_secret = { };
         pds_admin_password = { };
         pds_plc_rotation_key = { };
@@ -340,133 +339,6 @@
       mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
     '';
 
-    services.redis.package = pkgs.valkey;
-    systemd.services.redis-searx.serviceConfig.BindReadOnlyPaths = [
-      "/dev/null:/etc/ld-nix.so.preload"
-    ];
-    services.searx = {
-      enable = true;
-      package = pkgs.searxng;
-      redisCreateLocally = true;
-      # 只信任 nginx 自己（同机 loopback）转发过来的身份判断；nginx 那边已经用
-      # realip 模块把 $remote_addr 纠正成 Cloudflare 上报的真实访客 IP 了（见
-      # nginx commonHttpConfig），所以这里认 127.0.0.1 是安全的。
-      limiterSettings = {
-        botdetection = {
-          trusted_proxies = [
-            "127.0.0.0/8"
-            "::1"
-          ];
-        };
-      };
-      settings = {
-        outgoing = {
-          proxies = {
-            http = "socks5h://127.0.0.1:40000";
-            https = "socks5h://127.0.0.1:40000";
-          };
-          request_timeout = 5.0;
-          pool_connections = 100;
-          pool_maxsize = 10;
-        };
-        server = {
-          port = 8888;
-          bind_address = "0.0.0.0";
-          secret_key = config.sops.placeholder.searx_secret_key;
-          base_url = "https://searx.hydroakri.cc";
-          method = "POST";
-          image_proxy = true;
-          limiter = true;
-        };
-        search = {
-          safe_search = 0;
-          autocomplete = "";
-          favicon_resolver = "duckduckgo";
-          formats = [
-            "html"
-            "json"
-            "rss"
-          ];
-          suspended_times = {
-            SearxEngineAccessDenied = 86400;
-            SearxEngineCaptcha = 86400;
-            SearxEngineTooManyRequests = 3600;
-          };
-        };
-        ui = {
-          hotkeys = "default";
-          contact_url = "null";
-          show_thumbnails = true;
-          infinite_scroll = true;
-          query_in_title = false;
-          results_on_new_tab = true;
-          theme_args = {
-            simple_style = "auto";
-            center_alignment = false;
-          };
-        };
-        enabled_plugins = [
-          "Tracker Protection"
-          "Hostnames replace"
-          "Favicons"
-        ];
-        engines = [
-          {
-            name = "google";
-            disabled = true;
-          }
-          {
-            name = "bing";
-            disabled = true;
-          }
-          {
-            name = "yahoo";
-            disabled = true;
-          }
-          {
-            name = "yandex";
-            disabled = true;
-          }
-          {
-            name = "duckduckgo";
-            disabled = false;
-            weight = 2;
-          }
-          {
-            name = "startpage";
-            disabled = false;
-            weight = 2;
-          }
-          {
-            name = "brave";
-            disabled = false;
-            weight = 2;
-          }
-          {
-            name = "mojeek";
-            disabled = false;
-            weight = 2;
-          }
-          {
-            name = "qwant";
-            disabled = true;
-          }
-          {
-            name = "ecosia";
-            disabled = true;
-          }
-          {
-            name = "karmasearch";
-            disabled = true;
-          }
-          {
-            name = "yacy";
-            disabled = false;
-          }
-        ];
-      };
-    };
-
     services.vaultwarden = {
       enable = true;
       dbBackend = "sqlite";
@@ -720,10 +592,6 @@
         # https，cloudflared 再用 http 转一次会死循环；originServerName 带对 SNI/Host 让
         # nginx（同一个 IP、多个 vhost）选到正确的 server block 和证书
         ingress = {
-          "searx.hydroakri.cc" = {
-            service = "https://127.0.0.1:443";
-            originRequest.originServerName = "searx.hydroakri.cc";
-          };
           "vault.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "vault.hydroakri.cc";
@@ -1005,29 +873,13 @@
           proxyWebsockets = true;
         };
       };
-      virtualHosts."searx.hydroakri.cc" = {
-        useACMEHost = "hydroakri.cc";
-        acmeRoot = null;
-        forceSSL = true;
-        # 只走 cloudflared tunnel（连本机 127.0.0.1:443）；真实 IP 已经因为
-        # mail/headscale 的 DNS-only 记录暴露，绑死 loopback 避免有人拿真实 IP + 正确
-        # SNI 直接打到这个 vhost，绕过 Cloudflare 的隐藏/WAF/限速
-        listenAddresses = [ "127.0.0.1" ];
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8888";
-          proxyWebsockets = true;
-          extraConfig = ''
-            proxy_cookie_path / "/; secure; SameSite=Lax";
-          '';
-        };
-      };
 
       virtualHosts."vault.hydroakri.cc" = {
         # enableACME = true;
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:8222";
           proxyWebsockets = true;
@@ -1037,7 +889,7 @@
       virtualHosts."map.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:3417";
           proxyWebsockets = true;
@@ -1046,7 +898,7 @@
 
       virtualHosts."ente-photos.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc"; # 已覆盖 *.hydroakri.cc，不用另开证书
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
       };
       virtualHosts."ente-accounts.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
@@ -1077,7 +929,7 @@
       virtualHosts."stalwart.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:8080";
           proxyWebsockets = true;
@@ -1090,7 +942,7 @@
       virtualHosts."mta-sts.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/.well-known/mta-sts.txt" = {
           extraConfig = ''
             default_type "text/plain";
@@ -1102,7 +954,7 @@
       virtualHosts."tools.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         root = "${pkgs.it-tools}/lib";
         locations."/" = {
           index = "index.html";
@@ -1117,7 +969,7 @@
       virtualHosts."dav.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:8083";
           basicAuthFile = config.sops.templates."webdav-auth".path;
@@ -1178,7 +1030,7 @@
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:8084";
           proxyWebsockets = true;
@@ -1195,7 +1047,7 @@
         useACMEHost = "bsky.hydroakri.cc";
         serverAliases = [ "*.bsky.hydroakri.cc" ]; # 为未来的 <user>.bsky.hydroakri.cc 账号 handle 预留
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
           proxyWebsockets = true; # AT Proto firehose 是长连接 websocket
@@ -1211,7 +1063,7 @@
       virtualHosts."uptime.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
-        listenAddresses = [ "127.0.0.1" ]; # 只走 tunnel，见 searx vhost 注释
+        listenAddresses = [ "127.0.0.1" ];
         locations."/" = {
           proxyPass = "http://127.0.0.1:3001";
           proxyWebsockets = true;
