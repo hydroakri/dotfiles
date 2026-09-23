@@ -104,7 +104,6 @@
       ];
     };
     preservation.enable = true;
-    agent."llama-cpp".enable = true;
   };
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {

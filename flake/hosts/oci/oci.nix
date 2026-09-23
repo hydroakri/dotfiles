@@ -919,7 +919,7 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:8082";
           extraConfig = ''
-            client_max_body_size 4M;
+            client_max_body_size 0;
           '';
         };
       };
