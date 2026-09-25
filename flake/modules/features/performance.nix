@@ -109,6 +109,8 @@ in
       # Bazzite/Pop!_OS 都默认这个值（几乎 INT_MAX，非游戏专用特例）
       "vm.max_map_count" = lib.mkOverride 900 2147483642;
       "fs.inotify.max_user_instances" = lib.mkOverride 900 8192;
+      # CachyOS 默认值
+      "fs.file-max" = lib.mkDefault 2097152;
     };
     # kyber-iosched：确保下面 udev 规则给 NVMe 赋值 kyber 调度器时模块已加载，
     # 否则可能静默失败退回默认调度器
@@ -217,6 +219,24 @@ in
       SystemMaxUse = "64M";
       ForwardToWall = false;
       Storage = "persistent";
+    };
+    # tcp_fastopen_key 不轮换的话内核会在启动时生成一个固定 key 一直用下去
+    systemd.services."tcp-fastopen-rotate-key" = {
+      description = "Rotate TCP Fast Open cookie-signing key";
+      serviceConfig.Type = "oneshot";
+      script = ''
+        key=$(${pkgs.openssl}/bin/openssl rand -hex 16 | ${pkgs.gnused}/bin/sed -E 's/(.{8})(.{8})(.{8})(.{8})/\1-\2-\3-\4/')
+        echo "$key" > /proc/sys/net/ipv4/tcp_fastopen_key
+      '';
+    };
+    systemd.timers."tcp-fastopen-rotate-key" = {
+      description = "Daily TCP Fast Open key rotation";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "daily";
+        Persistent = true;
+        RandomizedDelaySec = "1h";
+      };
     };
     environment.systemPackages = [
       pkgs.hdparm # udev rules require hdparm

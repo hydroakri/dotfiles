@@ -209,7 +209,10 @@
     nixpkgs.hostPlatform = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {
-      systemd-boot.enable = true;
+      systemd-boot = {
+        enable = true;
+        editor = false;
+      };
       efi.canTouchEfiVariables = false;
     };
     boot.plymouth.enable = false;

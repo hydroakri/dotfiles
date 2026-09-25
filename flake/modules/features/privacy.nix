@@ -107,7 +107,9 @@
       };
 
       networking.networkmanager = {
-        settings.connection."dhcp-send-hostname" = lib.mkDefault false;
+        # 裸 key 不生效，NM 只认带协议前缀的写法
+        settings.connection."ipv4.dhcp-send-hostname" = lib.mkDefault false;
+        settings.connection."ipv6.dhcp-send-hostname" = lib.mkDefault false;
         # NM 是实际写 use_tempaddr sysctl 的执行者；默认 -1 理应继承下面
         # networking.tempAddresses 的全局值，但曾有 NM 未正确继承的历史 bug，显式声明规避
         settings.connection."ipv6.ip6-privacy" = lib.mkDefault 2;

@@ -244,10 +244,14 @@
     systemd.settings.Manager = {
       DefaultLimitNOFILE = "2048:2097152";
       DumpCore = false;
+      DefaultTimeoutStartSec = "15s";
+      DefaultTimeoutStopSec = "10s";
     };
     systemd.user.settings.Manager = {
       DefaultLimitNOFILE = "1024:1048576";
       DumpCore = false;
+      DefaultTimeoutStartSec = "15s";
+      DefaultTimeoutStopSec = "10s";
     };
     # systemd-pstore 没有对应的 NixOS 选项包装，直接写配置文件；关闭跨重启崩溃
     # 信息持久化（EFI pstore/ACPI ERST），与已有的 "erst_disable" 内核参数呼应
@@ -345,6 +349,40 @@
       ];
     };
 
+    # secureblue 的 NetworkManager 沙箱；只上桌面机，oci/rpi4 还没实测过，先不动
+    systemd.services.NetworkManager.serviceConfig = lib.mkIf config.services.displayManager.enable {
+      CapabilityBoundingSet = "~CAP_AUDIT_WRITE CAP_BPF CAP_DAC_OVERRIDE CAP_KILL CAP_SYS_CHROOT CAP_SYS_MODULE";
+      DeviceAllow = "/dev/net/tun";
+      DevicePolicy = "closed";
+      # NM 需要能连 /run/dbus/
+      InaccessiblePaths = "/run/user/";
+      LockPersonality = true;
+      MemoryDenyWriteExecute = true;
+      PrivateTmp = "disconnected";
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectHome = "read-only";
+      ProtectHostname = "private";
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      ProtectProc = "invisible";
+      ProtectSystem = "strict";
+      ReadWritePaths = "/proc/sys/net/ /var/lib/NetworkManager/ /etc/NetworkManager/";
+      RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK AF_PACKET";
+      RestrictNamespaces = true;
+      RestrictRealtime = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+      SystemCallFilter = [
+        "@system-service @privileged"
+        "~@clock @module @mount @obsolete @swap @reboot @raw-io @module"
+        "~@resources @memlock @aio @keyring"
+      ];
+      UMask = "0077";
+      KillMode = "control-group";
+    };
+
     systemd.user.services.usbguard-notifier = {
       description = "USBGuard device notifier";
       wantedBy = [ "graphical-session.target" ];
@@ -357,6 +395,9 @@
       };
     };
     # ===========================================================================
+    # yescrypt 是 ENCRYPT_METHOD 默认值（nixpkgs shadow.nix），cost factor 默认 5，
+    # 调高到 8（secureblue 值）增加密码 hash 泄露后的破解成本；只对之后新设的密码生效
+    security.loginDefs.settings.YESCRYPT_COST_FACTOR = lib.mkDefault 8;
     #PAM
     security.pam = {
       u2f = {
@@ -373,7 +414,9 @@
 
         system-login.failDelay.enable = lib.mkDefault true;
         system-login.failDelay.delay = lib.mkDefault 4000000;
-        passwd.rules.password.unix.settings.rounds = lib.mkDefault 65536;
+        # yescrypt 下 rounds 就是 cost factor(1-11),65536 会让 crypt_gensalt 报错
+        # invalid argument,详见 docs/known-breaking-settings.md
+        passwd.rules.password.unix.settings.rounds = lib.mkDefault 8;
         su.requireWheel = lib.mkDefault true;
       };
     };
@@ -399,8 +442,6 @@
         X11Forwarding = lib.mkDefault false;
         AllowTcpForwarding = lib.mkDefault "no";
         AllowStreamLocalForwarding = lib.mkDefault false;
-        # Ciphers/KexAlgorithms narrowed beyond NixOS's default set; Macs left
-        # alone (already matches via enableRecommendedAlgorithms).
         AllowAgentForwarding = lib.mkDefault false;
         ClientAliveCountMax = lib.mkDefault 2;
         Compression = lib.mkDefault false;
@@ -423,6 +464,12 @@
           "mlkem768x25519-sha256"
           "curve25519-sha256"
           "curve25519-sha256@libssh.org"
+        ];
+        # Mirrors the client-side narrowing below (programs.ssh.extraConfig).
+        Macs = lib.mkDefault [
+          "umac-128-etm@openssh.com"
+          "hmac-sha2-512-etm@openssh.com"
+          "hmac-sha2-256-etm@openssh.com"
         ];
       };
     };
@@ -1210,6 +1257,7 @@
       "vt8623fb"
       "walkera0701"
       "warrior"
+      "wdat_wdt"
       "winbond-cir"
       "x25"
       "x86-android-tablets"
