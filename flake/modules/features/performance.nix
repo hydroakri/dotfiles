@@ -197,11 +197,12 @@ in
     services.earlyoom = {
       enable = lib.mkDefault true;
       freeMemThreshold = lib.mkDefault 5;
-      freeSwapThreshold = lib.mkDefault 5;
+      freeSwapThreshold = lib.mkDefault 100;
+      freeSwapKillThreshold = lib.mkDefault 100;
+      enableNotifications = lib.mkDefault true;
       extraArgs = [
-        # 保护游戏/Wine/Proton 进程不被 earlyoom 误杀
         "--avoid"
-        "(^|/)(exe|steam|wine|gamescope|mangohud|proton)"
+        "(exe|steam|wine|gamescope|mangohud|proton)"
       ];
     };
     systemd.oomd.enable = lib.mkDefault false;
