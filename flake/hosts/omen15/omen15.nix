@@ -24,6 +24,7 @@
     ../../modules/features/performance.nix
     ../../modules/features/powersave.nix
     ../../modules/features/networking/proxy.nix
+    ../../modules/features/networking/proxy-nodes.nix
     ../../modules/features/preservation.nix
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix

@@ -8,7 +8,7 @@
 |---|---|
 | `modules.proxy.singbox.enable` | 启用 sing-box 作为代理后端。 |
 | `modules.proxy.singbox.tun` | 启用系统级 TUN 接管（`dns_mode=hijack`），而非仅本地 SOCKS/HTTP 代理(`mixed-in`)。TUN 关闭时，未显式配置走 `127.0.0.1:1080` 的应用不受任何分流规则影响，直接裸连——这是有意的降级路径，不是缺陷。 |
-| `boot.kernel.sysctl` rp_filter | TUN/dae 需要放松 `net.ipv4.conf.*.rp_filter` 到 `2`（loose）以支持非对称路由（如游戏 UDP）；用 `mkOverride 900` 显式盖过 `security.nix` 的 `mkOverride 950`（数字越小优先级越高）。 |
+| `boot.kernel.sysctl` rp_filter | TUN 需要放松 `net.ipv4.conf.*.rp_filter` 到 `2`（loose）以支持非对称路由（如游戏 UDP）；用 `mkOverride 900` 显式盖过 `security.nix` 的 `mkOverride 950`（数字越小优先级越高）。 |
 
 ## HTTP 客户端 (`http_clients`)
 
@@ -32,15 +32,14 @@
 
 | 顺序 | 规则 | Tradeoff |
 |---|---|---|
-| 1 | `adblock-dns` → reject | 广告域名在 DNS 阶段直接拒绝，不进入任何 outbound 判断。 |
-| 2 | mDNS 域名 → `dns-mdns` | `preferred_by` 触发本地发现协议特化处理。 |
-| 3 | 内网关键词/后缀/`geosite-private` → `dns-system` | 局域网/内网域名走网卡分配 DNS，不进 fakeip/探测管道。**排在顺序 4 前面是必须的**——`fakeip-filter.srs`（见下）里的 `+.msftconnecttest.com`/`+.msftncsi.com`/`+.linksys.com`/`+.linksyssmartwifi.com` 跟这条的 `domain_keyword` 逐字重复，顺序反了会导致这几个连通性检测/路由器域名从 `dns-system` 改判给 `dns-quad9`——msftconnecttest/msftncsi 这类强制门户检测域名本该看本地网络的真实返回（可能被门户劫持成跳转页），用加密解析器给出诚实答案反而让检测失灵。 |
-| 4 | `fakeip-filter` + `geosite-discord` → `dns-quad9` | 跳过 fakeip 直接吐真实 IP——STUN/主机游戏 NAT 探测/语音服务这几类协议要么拿"连接到的地址"本身做 NAT 类型探测/打洞，要么对往返时间戳敏感，命中 fakeip 不是分流不准，是直接连不上。`fakeip-filter`（`DustinWin/ruleset_geodata@sing-box-ruleset`）是这个用途社区里最权威、被抄得最多的列表——上游其实是 `ShellCrash/public/fake_ip_filter.list`，交叉核对过十几份"独立维护"的同类列表，内容逐条一致，说明都是抄自这份或更早的共同祖先，不是各自调研的结果。它覆盖 PlayStation/Xbox/Nintendo/Battle.net NAT 探测、NTP、英雄联盟语音、WiFi 通话（VoWiFi）等，比自己手工点名全面得多。**代价**：它的 STUN 覆盖用 `+.stun.*.*` 这类通配写法——任意网页只要把 WebRTC 探测指向一个带 `stun.` 字样的域名就会被放真实 IP，达不到"只放行可信服务"的精确效果；但查过整个社区（包括最大的分流规则项目 blackmatrix7/ios_rule_script，它反而没有 fakeip-filter 这个文件），没有任何一份列表在这一点上做得更精确——这是主流工具链一致接受的功能优先取舍，不是这里漏做了什么。列表里还混了一些跟这个机制无关但无害的国内 App 域名（网易云音乐、微信登录、招商银行等，这份配置的使用场景用不上，但都是固定域名不会被第三方利用，留着不影响安全）。`geosite-discord` 单独保留——`fakeip-filter` 没收录 Discord 专属媒体中继域名 `discord.media`；核对过 Zoom/Webex/Slack/WhatsApp/Signal 的 geosite 分类，都没有类似的独立媒体域名，大概率是中继地址由各自 API 响应直接下发字面量 IP、不经过客户端本地 DNS 解析，fakeip 机制对它们根本不适用，不是遗漏。IoT 云 API 类仍然没有可信通用清单，见下方已知空白表。 |
-| 5 | `tld-cn`/`geolocation-cn`/`cn`/`gfw`/`geolocation-!cn` + `🚦 i18n-service`/`🚦 finance`/`🚦 webrtc-bt-proxy`/`🚦 tailscale-out`/`game-platforms-download`（硬编码 direct）用到的全部域名类 `rule_set`（ai-chat-!cn/media/entertainment/emby/social-media-!cn/apple@cn/finance/cryptocurrency/ecommerce/category-pt/category-public-tracker/category-game-platforms-download/tailscale） → `fakeip` | 已分类域名跳过下面的探测，省一次往返。覆盖范围不止境内境外判断——`route.rules` 里这些规则的路由结果全靠 `rule_set` 域名匹配决定、且排在 `geoip-cn` 之前，真实 IP 对路由判断毫无意义，不管出站是走 selector 还是硬编码，都能省掉探测那次往返。未被这些列表覆盖的域名才进入下一步。`🚦 tailscale-out` 规则里 oracle 域名/IP 走的是 `_secret` 模板而非 `rule_set`，没有一并纳入——单独一个 secret 域名要塞进这条规则得改成 `rule_set`+`domain` 的逻辑或结构，为一个低频域名换来的收益太小，没做。 |
-| 6 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。 |
-| 7 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
-| 8 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
-| 9（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 7/8 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 5 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，DNS 响应本身永远不直接暴露真实境外 IP。 |
+| 1 | mDNS 域名 → `dns-mdns` | `preferred_by` 触发本地发现协议特化处理。 |
+| 2 | 内网关键词/后缀/`geosite-private` → `dns-system` | 局域网/内网域名走网卡分配 DNS，不进 fakeip/探测管道。**排在顺序 3 前面是必须的**——`fakeip-filter.srs`（见下）里的 `+.msftconnecttest.com`/`+.msftncsi.com`/`+.linksys.com`/`+.linksyssmartwifi.com` 跟这条的 `domain_keyword` 逐字重复，顺序反了会导致这几个连通性检测/路由器域名从 `dns-system` 改判给 `dns-quad9`——msftconnecttest/msftncsi 这类强制门户检测域名本该看本地网络的真实返回（可能被门户劫持成跳转页），用加密解析器给出诚实答案反而让检测失灵。 |
+| 3 | `fakeip-filter` + `geosite-discord` → `dns-quad9` | 跳过 fakeip 直接吐真实 IP——STUN/主机游戏 NAT 探测/语音服务这几类协议要么拿"连接到的地址"本身做 NAT 类型探测/打洞，要么对往返时间戳敏感，命中 fakeip 不是分流不准，是直接连不上。`fakeip-filter`（`DustinWin/ruleset_geodata@sing-box-ruleset`）是这个用途社区里最权威、被抄得最多的列表——上游其实是 `ShellCrash/public/fake_ip_filter.list`，交叉核对过十几份"独立维护"的同类列表，内容逐条一致，说明都是抄自这份或更早的共同祖先，不是各自调研的结果。它覆盖 PlayStation/Xbox/Nintendo/Battle.net NAT 探测、NTP、英雄联盟语音、WiFi 通话（VoWiFi）等，比自己手工点名全面得多。**代价**：它的 STUN 覆盖用 `+.stun.*.*` 这类通配写法——任意网页只要把 WebRTC 探测指向一个带 `stun.` 字样的域名就会被放真实 IP，达不到"只放行可信服务"的精确效果；但查过整个社区（包括最大的分流规则项目 blackmatrix7/ios_rule_script，它反而没有 fakeip-filter 这个文件），没有任何一份列表在这一点上做得更精确——这是主流工具链一致接受的功能优先取舍，不是这里漏做了什么。列表里还混了一些跟这个机制无关但无害的国内 App 域名（网易云音乐、微信登录、招商银行等，这份配置的使用场景用不上，但都是固定域名不会被第三方利用，留着不影响安全）。`geosite-discord` 单独保留——`fakeip-filter` 没收录 Discord 专属媒体中继域名 `discord.media`；核对过 Zoom/Webex/Slack/WhatsApp/Signal 的 geosite 分类，都没有类似的独立媒体域名，大概率是中继地址由各自 API 响应直接下发字面量 IP、不经过客户端本地 DNS 解析，fakeip 机制对它们根本不适用，不是遗漏。IoT 云 API 类仍然没有可信通用清单，见下方已知空白表。 |
+| 4 | `tld-cn`/`geolocation-cn`/`cn`/`gfw`/`geolocation-!cn` + `🚦 i18n-service`/`🚦 finance`/`🚦 webrtc-bt-proxy`/`🚦 tailscale-out`/`game-platforms-download`（硬编码 direct）用到的全部域名类 `rule_set`（ai-chat-!cn/media/entertainment/emby/social-media-!cn/apple@cn/finance/cryptocurrency/ecommerce/category-pt/category-public-tracker/category-game-platforms-download/tailscale） → `fakeip` | 已分类域名跳过下面的探测，省一次往返。覆盖范围不止境内境外判断——`route.rules` 里这些规则的路由结果全靠 `rule_set` 域名匹配决定、且排在 `geoip-cn` 之前，真实 IP 对路由判断毫无意义，不管出站是走 selector 还是硬编码，都能省掉探测那次往返。未被这些列表覆盖的域名才进入下一步。`🚦 tailscale-out` 规则里 oracle 域名/IP 走的是 `_secret` 模板而非 `rule_set`，没有一并纳入——单独一个 secret 域名要塞进这条规则得改成 `rule_set`+`domain` 的逻辑或结构，为一个低频域名换来的收益太小，没做。`adblock-dns` 也不在这条里——广告域名不再享受 DNS 阶段零查询优化，正常走完整条链路（多数落到下面顺序 6 的兜底 fakeip），block/direct-cn/oversea 的判断完全交给 route 层的 `🛡️ adblock` selector（见路由规则表顺序 3、下方分组 selector 表）。 |
+| 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。 |
+| 6 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
+| 7 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
+| 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，DNS 响应本身永远不直接暴露真实境外 IP。 |
 
 `dns.final = dns-quad9`；`strategy = prefer_ipv4`；`cache_capacity = 4096`；`optimistic = true`；`store_fakeip`/`store_dns` 持久化在 `cache_file`。`selector` 的当前选中状态也会自动持久化——`store_selected` 从 sing-box 1.8.0 起废弃，行为改成只要 `cache_file.enabled=true`（本配置一直是）就默认持久化，不需要也不能再单独配置这个字段；手动经 Clash API 选过一次之后，重启不会丢。
 
@@ -82,6 +81,7 @@
 | `🚦 webrtc-bt-proxy` | 节点能力轴 | `➡️ direct` → `🎯 isp` → `🎯 proxy` → `🎯 manual` → `🚫 block` | BT/PT/STUN 流量需要出口节点明确支持/不限速 P2P，与地区、风控无关，独立管理避免被通用海外节点的 ToS 限制。 |
 | `🎯 isp` / `🎯 proxy` / `🎯 manual` | 叶子池 | 各自候选见 Nix 源码 | 供上面几个 `🚦` 分组间接引用的实际出口候选池；`isp` 不含 `🧅 tor`，`proxy` 含 `🧅 tor`，`manual` 额外含 `➡️ direct`（供纯手动指定场景使用）。 |
 | `🚦 tailscale-out` | 自有基础设施，不适用上述三轴 | `➡️ direct` → `🎯 isp` → `🎯 proxy` → `🎯 manual` | 到达 Tailscale 协调域名/`oracle` 主机公网身份的路径选择；`tailscale-in`（`100.64.0.0/10`/`fd7a:...`）本身没有 selector，因为那段地址只能经 Tailscale-aware 出站到达，没有替代路径。 |
+| `🛡️ adblock` | 运行时开关，不落在上述三轴 | `🚫 block` → `🚦 cn` → `🚦 oversea` | 广告拦截从硬编码 DNS/route 层 `reject` 改成的可切换分组——默认拦截；候选是 `🚦 cn`/`🚦 oversea` 而不是单一 `➡️ direct`，因为命中 `adblock-dns` 的域名境内境外都有且规则引擎无法按域名再分流（见路由规则表顺序 3），选哪条链路得看你在排查哪个具体域名，手动挑更合适的那个。 |
 
 ## 路由规则 (`route.rules`，顺序敏感，first-match-wins)
 
@@ -89,7 +89,7 @@
 |---|---|---|---|
 | 1 | `sniff` | — | 对 `tun-in`(如启用)/`mixed-in` 做协议嗅探，300ms 超时；即使连接方自行做了 DNS 解析（如浏览器走 DoH 绕过下面的 `hijack-dns`），只要是 TLS 连接仍可从 ClientHello 的 SNI 恢复域名，用于后续按域名分类；HTTP/TLS 之外、且未经过 sing-box DNS 解析的连接无法恢复域名，只能落到 IP-based 规则（`geoip-cn`/`bypass`）。 |
 | 2 | port 53 / protocol dns | hijack-dns | 拦截传统 DNS 协议纳入 sing-box 的 `dns.rules` 管道；**拦不住 DoH**（DNS over HTTPS 用 443 端口，看起来是普通 HTTPS 流量），走 DoH 自行解析的应用不经过 fakeip/`dns-flymc`/`dns-alidns` 这套优化，域名分类仍可能靠 sniff 命中，但拨号用的是应用自己解析出的 IP。 |
-| 3 | `adblock-dns` | reject（drop） | 广告域名硬丢弃。 |
+| 3 | `adblock-dns` | `🛡️ adblock` selector | 默认候选 `🚫 block`（硬丢弃，跟改动前行为一致）；可经 Clash API 手动切到 `🚦 cn`/`🚦 oversea` 放行——三选一而非直接 `➡️ direct`，是因为广告域名本身境内境外都有，路由规则不能读取 selector 的运行时状态、无法在命中这条规则后"退回"给下面顺序 4 及之后的 cn/oversea/兜底规则重新判断，选哪条链路只能由用户手动指定。 |
 | 4 | `100.64.0.0/10`/`fd7a:115c:a1e0::/48` | `tailscale-in` | Tailscale/内部 CGNAT 地址段直接指定出站，无 selector。 |
 | 5 | `geosite-tailscale` / oracle 域名 / oracle IP（后两者 `_secret`） | `🚦 tailscale-out` | 到达 Tailscale 协调域名或 `oracle` 主机的路径选择。 |
 | 6 | `geoip-private`/`geosite-private` | bypass | 内网流量完全不进入代理判断（仅 Linux 可用此 action）。 |

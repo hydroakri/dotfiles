@@ -10,7 +10,7 @@
     inputs.sops-nix.nixosModules.sops
   ];
   options.modules.proxy = {
-    enable = lib.mkEnableOption "Enable customized proxy stack (Sing-box + Dae)";
+    enable = lib.mkEnableOption "Enable customized proxy stack (Sing-box)";
 
     adguardhome.enable = lib.mkOption {
       type = lib.types.bool;
@@ -32,30 +32,42 @@
         default = false;
         description = "Enable sing-box tun-in inbound.";
       };
-    };
 
-    dae = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable dae as the Tproxy backend.";
+      # 扩展点：供按需 import 的配套文件（如 proxy-nodes.nix）往里塞具体的代理
+      # 节点/endpoint，不在这个文件里出现就等于完全没有这些东西——不是靠布尔开
+      # 关关掉，是靠要不要 import 那份文件决定。internal = true 标记这几个不是
+      # 给用户手调的常规选项。
+      extraEndpoints = lib.mkOption {
+        type = lib.types.listOf lib.types.attrs;
+        default = [ ];
+        internal = true;
       };
-      interfaces.wan = lib.mkOption {
-        type = lib.types.str;
-        default = "auto";
-        description = "WAN interface for dae.";
+      extraOutbounds = lib.mkOption {
+        type = lib.types.listOf lib.types.attrs;
+        default = [ ];
+        internal = true;
       };
-      interfaces.lan = lib.mkOption {
-        type = lib.types.str;
-        default = "auto";
-        description = "LAN interface for dae.";
+      extraIspOutbounds = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        internal = true;
+      };
+      extraProxyOutbounds = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        internal = true;
+      };
+      extraManualOutbounds = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        internal = true;
       };
     };
 
     # 匿名后端：Tor 跑一个本地 SOCKS5 守护进程 (127.0.0.1:9050 回环地址),
     # 由 sing-box 的 selector outbounds 选取。回环方向（sing-box -> socks 端口）不
-    # 会经过 tun，无需特殊处理；反方向（tor 自己的对外连接）会被 tun/dae
-    # 拦截，必须用 exclude_uid_range / pname(must_direct) 放行，见下文。
+    # 会经过 tun，无需特殊处理；反方向（tor 自己的对外连接）会被 tun
+    # 拦截，必须用 exclude_uid_range 放行，见下文。
     tor = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -83,131 +95,20 @@
 
   config =
     with lib;
-    let
-      # 每个 vless-reality 流媒体节点只有这 6 个字段是每台服务器独有的敏感
-      # 信息，其余（type/flow/tls.enabled/utls/reality.enabled/packet_encoding）
-      # 是这批节点共用的客户端协议参数，写死在 nix 里，见 mkVlessOutbound。
-      vlessSecretFields = [
-        "server"
-        "port"
-        "uuid"
-        "sni"
-        "pbk"
-        "sid"
-      ];
-      vlessNodes = [
-        {
-          id = "us-05";
-          tag = "🇺🇸 美国 05 BGP IPv6 流媒体";
-        }
-        {
-          id = "jp-06";
-          tag = "🇯🇵 日本 06 BGP IPv6 流媒体";
-        }
-        {
-          id = "hk-08";
-          tag = "🇭🇰 香港 08 BGP IPv6 流媒体";
-        }
-        {
-          id = "sg-06";
-          tag = "🇸🇬 新加坡 06 BGP IPv6 流媒体";
-        }
-      ];
-      vlessSecretPath = id: field: config.sops.secrets."vless-${id}-${field}".path;
-      mkVlessOutbound =
-        { id, tag }:
-        {
-          type = "vless";
-          inherit tag;
-          server = {
-            _secret = vlessSecretPath id "server";
-          };
-          server_port = {
-            _secret = vlessSecretPath id "port";
-            quote = false;
-          };
-          uuid = {
-            _secret = vlessSecretPath id "uuid";
-          };
-          flow = "xtls-rprx-vision";
-          tls = {
-            enabled = true;
-            server_name = {
-              _secret = vlessSecretPath id "sni";
-            };
-            utls = {
-              enabled = true;
-              fingerprint = "edge";
-            };
-            reality = {
-              enabled = true;
-              public_key = {
-                _secret = vlessSecretPath id "pbk";
-              };
-              short_id = {
-                _secret = vlessSecretPath id "sid";
-              };
-            };
-          };
-          packet_encoding = "xudp";
-        };
-    in
     mkIf config.modules.proxy.enable {
       sops.secrets = {
         zerotrust.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_domain.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_ip.sopsFile = ../secrets/proxy-secrets.yaml;
         headscale-authkey.sopsFile = ../secrets/proxy-secrets.yaml;
-        warp-address.sopsFile = ../secrets/proxy-secrets.yaml;
-        warp-private-key.sopsFile = ../secrets/proxy-secrets.yaml;
-        warp-peer-address.sopsFile = ../secrets/proxy-secrets.yaml;
-        warp-peer-public-key.sopsFile = ../secrets/proxy-secrets.yaml;
-        warp-peer-reserved.sopsFile = ../secrets/proxy-secrets.yaml;
-      }
-      // listToAttrs (
-        concatMap (
-          n:
-          map (field: {
-            name = "vless-${n.id}-${field}";
-            value.sopsFile = ../secrets/proxy-secrets.yaml;
-          }) vlessSecretFields
-        ) vlessNodes
-      );
+      };
 
       # 开启透明代理 (TUN/TProxy) 时需放松 rp_filter 以支持非对称路由（如游戏 UDP）
       # mkOverride 900: intentionally overrides security.nix's mkOverride 950.
-      boot.kernel.sysctl = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) {
+      boot.kernel.sysctl = mkIf config.modules.proxy.singbox.tun {
         "net.ipv4.conf.all.rp_filter" = mkOverride 900 2;
         "net.ipv4.conf.default.rp_filter" = mkOverride 900 2;
       };
-
-      # ----------------------------------------------------------------------------
-      # start order
-      # 1. 配置 Sing-box 的启动顺序：如果在该机器上启用了 AdGuardHome，则等待其启动
-
-      # 2. 配置 Dae 的启动顺序：等待 Sing-box 和 AdGuardHome（如果它们存在）
-      # dnscrypt-proxy/unbound 现在是 core.nix 常驻服务,不用再按 enable 条件判断
-      systemd.services.dae = mkIf config.modules.proxy.dae.enable {
-        after = [
-          "network-online.target"
-          "unbound.service"
-          "dnscrypt-proxy.service"
-        ]
-        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
-
-        wants = [
-          "network-online.target"
-          "unbound.service"
-          "dnscrypt-proxy.service"
-        ]
-        ++ (lib.optional config.modules.proxy.singbox.enable "sing-box.service")
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service")
-        ++ (lib.optional config.modules.proxy.tor.enable "tor.service");
-      };
-      # start order
-      # ----------------------------------------------------------------------------
 
       # dnscrypt-proxy 是 core.nix 常驻服务,系统级 DNS 已经在那边指向 unbound 了
       networking.networkmanager.insertNameservers = mkIf config.modules.proxy.adguardhome.enable [
@@ -216,9 +117,7 @@
 
       networking.firewall = lib.mkMerge [
         {
-          checkReversePath = mkIf (config.modules.proxy.dae.enable || config.modules.proxy.singbox.tun) (
-            lib.mkDefault false
-          );
+          checkReversePath = mkIf config.modules.proxy.singbox.tun (lib.mkDefault false);
         }
         # AdGuardHome 的端口规则
         (mkIf config.modules.proxy.adguardhome.enable {
@@ -372,10 +271,6 @@
             ];
             rules = [
               {
-                rule_set = "adblock-dns";
-                action = "reject";
-              }
-              {
                 preferred_by = "dns-mdns";
                 server = "dns-mdns";
               }
@@ -495,38 +390,8 @@
               };
               control_url = "https://headscale.hydroakri.cc";
             }
-            {
-              type = "wireguard";
-              tag = "wg-cloudflare-warp";
-              mtu = 1280;
-              address = {
-                _secret = config.sops.secrets.warp-address.path;
-                quote = false;
-              };
-              private_key = {
-                _secret = config.sops.secrets.warp-private-key.path;
-              };
-              peers = [
-                {
-                  address = {
-                    _secret = config.sops.secrets.warp-peer-address.path;
-                  };
-                  port = 2408;
-                  public_key = {
-                    _secret = config.sops.secrets.warp-peer-public-key.path;
-                  };
-                  allowed_ips = [
-                    "0.0.0.0/0"
-                    "::/0"
-                  ];
-                  persistent_keepalive_interval = 25;
-                  reserved = {
-                    _secret = config.sops.secrets.warp-peer-reserved.path;
-                  };
-                }
-              ];
-            }
-          ];
+          ]
+          ++ config.modules.proxy.singbox.extraEndpoints;
 
           inbounds = [
             {
@@ -603,6 +468,15 @@
             }
             {
               type = "selector";
+              tag = "🛡️ adblock";
+              outbounds = [
+                "🚫 block"
+                "🚦 cn"
+                "🚦 oversea"
+              ];
+            }
+            {
+              type = "selector";
               tag = "🚦 cn";
               outbounds = [
                 "🇨🇳 direct-cn"
@@ -670,9 +544,8 @@
               tag = "🎯 isp";
               outbounds = [
                 "🔒 zerotrust"
-                "wg-cloudflare-warp"
               ]
-              ++ (map (n: n.tag) vlessNodes);
+              ++ config.modules.proxy.singbox.extraIspOutbounds;
             }
             {
               type = "selector";
@@ -680,9 +553,8 @@
               outbounds = [
                 "🧅 tor"
                 "🔒 zerotrust"
-                "wg-cloudflare-warp"
               ]
-              ++ (map (n: n.tag) vlessNodes);
+              ++ config.modules.proxy.singbox.extraProxyOutbounds;
             }
             {
               type = "selector";
@@ -692,12 +564,11 @@
                 "🇨🇳 direct-cn"
                 "🧅 tor"
                 "🔒 zerotrust"
-                "wg-cloudflare-warp"
               ]
-              ++ (map (n: n.tag) vlessNodes);
+              ++ config.modules.proxy.singbox.extraManualOutbounds;
             }
           ]
-          ++ (map mkVlessOutbound vlessNodes);
+          ++ config.modules.proxy.singbox.extraOutbounds;
 
           route = {
             rules = [
@@ -717,8 +588,7 @@
               }
               {
                 rule_set = "adblock-dns";
-                action = "reject";
-                method = "drop";
+                outbound = "🛡️ adblock";
               }
               {
                 ip_cidr = [
@@ -987,124 +857,6 @@
           UseBridges = true;
           Bridge = config.modules.proxy.tor.bridges;
         };
-      };
-
-      # ----------------------------------------------------------------------------
-
-      services.dae = mkIf config.modules.proxy.dae.enable {
-        enable = mkDefault true;
-        assetsPath = toString (
-          pkgs.symlinkJoin {
-            name = "dae-assets";
-            paths = [ "${inputs.geodb}" ];
-          }
-        );
-        config =
-          let
-            # dae 直连放行的本地代理进程；tor 自身的对外连接不能被
-            # dae 重新接管（否则选中 tor 出站时形成 tor→dae→tor 回路）。tor 不按
-            # tor.enable 判断——没开时进程根本不存在，这条 pname 规则只是空放行。
-            directPnames = lib.concatStringsSep ", " [
-              "NetworkManager"
-              "chronyd"
-              "dnscrypt-proxy"
-              "AdGuardHome"
-              "nekoray"
-              "nekobox_core"
-              "sing-box"
-              "verge-mihomo"
-              "clash-verge"
-              "clash-verge-service"
-              "tor"
-            ];
-          in
-          ''
-            global {
-              dial_mode: domain
-              lan_interface: ${config.modules.proxy.dae.interfaces.lan}
-              wan_interface: ${config.modules.proxy.dae.interfaces.wan}
-              log_level: info
-
-              # health check
-              tcp_check_url: 'http://cp.cloudflare.com,1.1.1.1,2606:4700:4700::1111'
-              tcp_check_http_method: HEAD
-              udp_check_dns: 'dns9.quad9.net:53,9.9.9.9,2620:fe::fe'
-              check_interval: 30s
-              check_tolerance: 50ms
-
-              # safety & security
-              mptcp: false
-              so_mark_from_dae: 0
-              allow_insecure: false
-              tls_implementation: utls
-              utls_imitate: chrome_auto
-              disable_waiting_network: false
-
-              # performance
-              pprof_port: 0
-              sniffing_timeout: 100ms
-              tproxy_port_protect: true
-              auto_config_kernel_parameter: true
-            }
-
-            node {
-              'socks5://localhost:1080'
-            }
-
-            dns {
-              ipversion_prefer: 4
-              upstream {
-                alih3: 'h3://dns.alidns.com:443/dns-query'
-                localdns: 'udp://127.0.0.1:53'
-                flymc: 'quic://dns.flymc.cc:853'
-              }
-              routing {
-                request {
-                  qname(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> alih3
-                  fallback: localdns
-                }
-                response {
-                  !qname(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) && qtype(aaaa) -> reject
-                  fallback: accept
-                }
-              }
-            }
-
-            group {
-                proxy {
-                    policy: min_moving_avg
-                }
-            }
-
-            routing {
-              pname(${directPnames}) -> must_direct
-              dip(224.0.0.0/3, 'ff00::/8', geoip:private) -> must_direct
-              domain(geosite:private) -> must_direct
-              domain(geosite:category-ads-all) -> block
-
-              # force abroad ipv6 proxy
-              ipversion(6) -> proxy
-
-              # bypass BT / PT (route through sing-box webrtc-bt-proxy selector)
-              dscp(0x4) -> direct
-              domain(keyword: tracker, announce, torrent) -> proxy
-              domain(geosite:category-pt, geosite:category-public-tracker) -> proxy
-
-              # set specific situation
-              domain(geosite:google-cn, geosite:google, tradingview.com) -> proxy
-              domain(geosite:apple@cn, geosite:category-games-cn, geosite:category-game-accelerator-cn, geosite:category-game-platforms-download, geosite:category-bank-cn, geosite:category-finance, geosite:category-securities-cn, geosite:category-cryptocurrency) -> direct
-
-              # set general abroad situation
-              domain(geosite:gfw, geosite:geolocation-!cn) -> proxy
-              !domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn) -> proxy
-
-              # set general domestic situation
-              domain(geosite:tld-cn, geosite:geolocation-cn, geosite:cn, geosite:china-list) -> direct
-              dip(geoip:cn) -> direct
-
-              fallback: proxy
-            }
-          '';
       };
 
       # ProxyChains configuration
