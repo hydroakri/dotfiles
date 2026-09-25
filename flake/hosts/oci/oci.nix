@@ -506,6 +506,11 @@
 
     services.ente.web = {
       enable = true;
+      # 26.05 钉的版本是 1.3.36，那条 fetchFromGitHub（tag photos-v1.3.36，
+      # sparseCheckout + submodule）的 hash 对不上了——上游同一个 tag 指向的内容
+      # 变了（nixpkgs 现在 master 已经是 1.3.61，是全新的 tag/hash，不受影响）。
+      # 跟 attic-server/ntfy-sh 同一个处理方式：钉到 unstable。
+      package = inputs.unstable.legacyPackages.${pkgs.system}.ente-web;
       domains = {
         photos = "ente-photos.hydroakri.cc";
         accounts = "ente-accounts.hydroakri.cc";
@@ -842,10 +847,29 @@
       commonHttpConfig = ''
         client_header_buffer_size 128k;
         large_client_header_buffers 8 128k;
-        http2_max_header_size 128k;
-        http2_max_field_size 128k;
         proxy_headers_hash_max_size 4096;
         proxy_headers_hash_bucket_size 256;
+
+        # 一组不改变渲染/请求行为的安全头，http 层的 add_header 会被所有
+        # server/location 自动继承——除非某个 vhost 自己也写了 add_header（那样父
+        # 层级全部不继承，按层级整体替换而非按头名字合并），目前只有
+        # cache.hydroakri.cc 是这种情况，那边单独复制了一份保持一致。
+        # CSP/COEP/CORP/COOP/完整版 Permissions-Policy 没有加——会挡掉未加白名单的
+        # 脚本/跨源请求/WebAuthn，这几个服务没法实测，不做。
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header X-Permitted-Cross-Domain-Policies none always;
+        add_header X-DNS-Prefetch-Control off always;
+        add_header Referrer-Policy no-referrer always;
+        # 不带 includeSubDomains——一旦被浏览器缓存很难撤销，会波及 *.hydroakri.cc
+        # 下所有子域，不只是这几个已知在用的，先只做本域名的强制 HTTPS。
+        add_header Strict-Transport-Security "max-age=31536000" always;
+
+        # recommendedTlsSettings 不含 OCSP stapling，这里手动补上
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        resolver 1.1.1.1 8.8.8.8 valid=300s;
+        resolver_timeout 5s;
 
         set_real_ip_from 127.0.0.1;
         set_real_ip_from ::1;
@@ -862,6 +886,57 @@
           max_size=15g
           inactive=30d
           use_temp_path=off;
+      '';
+
+      # headscale.hydroakri.cc/cache.hydroakri.cc 是仅有的两个直接绑 0.0.0.0、不
+      # 走 cloudflared 的 vhost（真实公网 IP 直接暴露）。没有这个兜底的话，SNI/
+      # Host 对不上任何已知域名的请求会落到文件里排第一个的 vhost 上（纯粹是声明
+      # 顺序决定的，不是有意为之）。复用现成的 hydroakri.cc 泛域名证书，不用另生成
+      # 一份自签证书。
+      virtualHosts."catchall-default" = {
+        default = true;
+        serverName = "_";
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        locations."/" = {
+          extraConfig = "return 444;";
+        };
+      };
+
+      # services.ente.web 给这四个前端自带一条 add_header（CORS），会让它们不再
+      # 继承上面的全局安全头（add_header 继承按层级整体替换，不按头名字合并）；
+      # extraConfig 是 types.lines，下面这份是追加，不是覆盖。
+      virtualHosts."ente-accounts.hydroakri.cc".locations."/".extraConfig = ''
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header X-Permitted-Cross-Domain-Policies none always;
+        add_header X-DNS-Prefetch-Control off always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+      '';
+      virtualHosts."ente-cast.hydroakri.cc".locations."/".extraConfig = ''
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header X-Permitted-Cross-Domain-Policies none always;
+        add_header X-DNS-Prefetch-Control off always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+      '';
+      virtualHosts."ente-photos.hydroakri.cc".locations."/".extraConfig = ''
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header X-Permitted-Cross-Domain-Policies none always;
+        add_header X-DNS-Prefetch-Control off always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+      '';
+      virtualHosts."ente-albums.hydroakri.cc".locations."/".extraConfig = ''
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options SAMEORIGIN always;
+        add_header X-Permitted-Cross-Domain-Policies none always;
+        add_header X-DNS-Prefetch-Control off always;
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
       '';
 
       # 故意不走 cloudflared tunnel：Cloudflare 边缘会剥掉 POST 请求的 Upgrade 头，
@@ -962,10 +1037,8 @@
         locations."/" = {
           index = "index.html";
           tryFiles = "$uri $uri/ /index.html";
-          extraConfig = ''
-            add_header X-Frame-Options "SAMEORIGIN";
-            add_header X-Content-Type-Options "nosniff";
-          '';
+          # 不要在这里加 add_header——会导致这个 location 不再继承全局
+          # commonHttpConfig 那一整组（按层级整体覆盖，不是按头名字合并）。
         };
       };
 
@@ -1025,6 +1098,18 @@
             proxy_cache_background_update on;
             proxy_no_cache $http_x_attic_no_cache;
             proxy_cache_bypass $http_x_attic_no_cache;
+
+            # 这个 vhost 自己写了 add_header，不会继承 commonHttpConfig 里的全局那份
+            # （按层级整体替换，不按头名字合并），所以复制一份保持一致；
+            # noindex/interest-cohort 是这个 vhost 才有的额外两条。
+            add_header X-Content-Type-Options nosniff always;
+            add_header X-Frame-Options SAMEORIGIN always;
+            add_header X-Permitted-Cross-Domain-Policies none always;
+            add_header X-DNS-Prefetch-Control off always;
+            add_header Referrer-Policy no-referrer always;
+            add_header Strict-Transport-Security "max-age=31536000" always;
+            add_header Permissions-Policy "interest-cohort=()" always;
+            add_header X-Robots-Tag "noindex, nofollow" always;
           '';
         };
       };
@@ -1040,9 +1125,11 @@
           extraConfig = ''
             proxy_buffering off;
             proxy_request_buffering off;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
           '';
+          # Upgrade/Connection 头不用手写——proxyWebsockets = true 已经设置了
+          # proxy_set_header Connection $connection_upgrade，只在真正带 Upgrade
+          # 头的请求上才是 "upgrade"，其余请求是 "close"；手写死会导致所有普通
+          # REST 请求也被发成 Connection: upgrade。
         };
       };
 
@@ -1054,11 +1141,10 @@
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
           proxyWebsockets = true; # AT Proto firehose 是长连接 websocket
+          # X-Forwarded-For/X-Forwarded-Proto/Host 不用手写——recommendedProxySettings
+          # 在同一个 location 里会用相同的值再设一遍，手写的这几行会被覆盖，是死代码
           extraConfig = ''
             client_max_body_size 0;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header Host $host;
           '';
         };
       };
@@ -1085,7 +1171,6 @@
     ];
 
     system.stateVersion = "25.11";
-
   };
 
 }
