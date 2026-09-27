@@ -767,7 +767,287 @@
       openFirewall = true;
       servers.myserver = {
         enable = true;
-        package = pkgs.neoforgeServers.neoforge-1_21_1-21_1_219;
+        # Mojang 目前最新版是 26.3。NeoForge 對 26.3 只有 beta,nix-minecraft 也還沒鎖;
+        # Fabric API 對 26.3 已經是穩定版(Mojang 發布後 3 天),`fabricServers` 也已鎖到
+        # 26.3——選 Fabric 才能真正貼齊最新版而不是次新版。取捨過程、雙 loader 平行審查
+        # 結果、mod 篩選標準全文位置,見 README 第 8 節。
+        # 寫死具體版本 attribute、不用 `fabricServers.fabric` 這個自動跟最新的裸指標——
+        # 下面 mods 是釘死特定 MC 版本的 jar,loader 自動跳版但 mod 沒跟上會導致啟動失敗/
+        # 崩潰,寧可每次手動一起升級。
+        #
+        # `.override { jre_headless = ... }` 是必要的:nix-minecraft 的
+        # fabric-servers/default.nix 沒有像 neoforge-servers 那樣明確傳
+        # `jre_headless = vanilla-server.java`,結果 mkTextileServer 透過
+        # callPackage 自動注入的是 nixpkgs 全域預設的 jre_headless(較舊版本),
+        # 對 26.3 這種需要 Java 25 的新版本直接啟動失敗:
+        # UnsupportedClassVersionError(class file 69.0 vs 65.0)。
+        # 實測(2026-09-27,live 崩潰 log 抓到的原始例外)確認 vanilla-26_3.java
+        # 就是 25.0.4.1,override 後驗證過可以正常評估出新的 derivation。
+        # 每次升版都要重新確認這個 override 還有沒有必要(未來 nix-minecraft
+        # 上游可能自己修好這個 default)。
+        package = pkgs.fabricServers.fabric-26_3.override {
+          jre_headless = pkgs.vanillaServers.vanilla-26_3.java;
+        };
+        # 用「MC Mod 篩選與滾動更新標準」(存在 memory,
+        # feedback_mc_mod_selection_standard.md)篩出的 Fabric+26.3 完整通過清單,
+        # 含遞迴解出的全部 required 依賴。清單/風險畫像細節見 README 第 8 節。
+        symlinks = {
+          # -- 效能/伺服器管理 --
+          "mods/lithium.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/gvQqBUqZ/versions/WXHRsMRl/lithium-fabric-0.26.1%2Bmc26.3.jar";
+            sha512 = "acbb9b037a203f005e03a20bf1d9866019384abb5ad27664808a12b919639a2501ecb52f8f0d77d27e1409935b0dbdbb70e01ac466480c0ae421ee403f649c59";
+          };
+          "mods/ferritecore.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/uXXizFIs/versions/d5ddUdiB/ferritecore-9.0.0-fabric.jar";
+            sha512 = "d81fa97e11784c19d42f89c2f433831d007603dd7193cee45fa177e4a6a9c52b384b198586e04a0f7f63cd996fed713322578bde9a8db57e1188854ae5cbe584";
+          };
+          "mods/c2me.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/VSNURh3q/versions/sSoXjAqP/c2me-fabric-mc26.3-0.4.2-alpha.0.88.jar";
+            sha512 = "bb741d118c88ea6d9577fed1affacc1f1f0a7b725a619ee933437cc5e403c8f1474a708ab9bd402d154efde3ce66ef4d83ed950c0cf4f7dc656e525837239226";
+          };
+          "mods/chunky.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/fALzjamp/versions/4Eotm6ov/Chunky-Fabric-1.5.3.jar";
+            sha512 = "b83bfe7b218d0aa6232af977ae741dc1f82b10e50cd12bb759f65cf416b8b62beccb543e587ef0b9670abe03815660f8e091bc6823624d65cf07300571573516";
+          };
+          "mods/packetfixer.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/c7m1mi73/versions/dTKbGYbb/PacketFixer-fabric-3.3.6.jar";
+            sha512 = "8d3139b150ef591c62b086f553be212bc72eb4a32b0b1f8bb5cc069a9b79a85046d31b1147e5aaff23e4b69bb92c76445d41884657a7b652def25e2b73d61613";
+          };
+
+          # -- 依賴函式庫(遞迴解出的 required deps,§5 條件 4)--
+          "mods/fabric-api.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/P7dR8mSH/versions/bNnaTiuM/fabric-api-0.161.0%2B26.3.jar";
+            sha512 = "ed6b2586d6fde11fde8472f5a527c51e99b67026e46f94d4bfd85e7e28ce5ee299173ee16ad576ceb51f39f98d30a811086a6deb1a86a524859cc16e12da109d";
+          };
+          "mods/glitchcore.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/s3dmwKy5/versions/aaUghyGp/GlitchCore-fabric-26.3-26.3.0.0.3.jar";
+            sha512 = "7fb606cf3de1463f6e3fc9a041a07e120ec652bc91d96edbdf55e13b626411840770468f3eb0f65a69eb10494b1ef2599627297cbbdf1ba863b92ec3f3945b39";
+          };
+          # Modrinth 上 Biomes O'Plenty 26.3.0.0.8 的 dependencies 欄位只列 GlitchCore,
+          # 但實際 fabric.mod.json 執行期檢查要求 TerraBlender>=26.3.0.0.6——metadata
+          # 跟真實行為不一致(標準文件 F1),2026-09-27 live 崩潰 log 才抓到,不是查
+          # Modrinth API 就能發現的
+          "mods/terrablender.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/kkmrDlKT/versions/wOaMFDM8/TerraBlender-fabric-26.3-26.3.0.0.7.jar";
+            sha512 = "761b9d45f40ad326044076c1aa0ba74c10f9549681978eeaab0fd45d0be8206d0f605130096abd15c1fbec7a7846fd24d33b09bfc5ed68910c3d90dfb0b8403a";
+          };
+          "mods/cloth-config.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/9s6osm5g/versions/fg2uyxOW/cloth-config-fabric-26.3.159.jar";
+            sha512 = "8924e19d41845096724fa10f3717bc51964a0edbbbcad0ff1e6c6187a398b08f356e49579a657c2dc44a7f92e3850771f3ca70bf8c1f654de60425163b91dbb1";
+          };
+          "mods/balm.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/MBAkmtvl/versions/WiU0dv7R/balm-fabric-26.3-26.3.0.2.jar";
+            sha512 = "20932c46420edbb18112410008cab41e52d05598e2dc15837753cd065807f79c69c109eceba5228f1c832bf0230698226e74f098e01f4964750a3f52dc787650";
+          };
+          "mods/shogi.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/bi4iCmsw/versions/9gkJoFhj/shogi-fabric-26.3-26.3.0.3.jar";
+            sha512 = "f050b6360b188a82ca7e3fbb0d00eff4c02b9b39bc991fbddcf4a3588f594887d15f6421e50d5a7452a53ec35d44ec9b325d7826f77393af9543fe3383cb142d";
+          };
+          "mods/fabric-language-kotlin.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/Ha28R6CL/versions/eRRZzGMc/fabric-language-kotlin-1.14.1%2Bkotlin.2.4.20.jar";
+            sha512 = "91404f87774466ce8604aafea791d8cc97b603bc310dce17c8188f94f7783cca6dc14fc726ce871ca317bfe9033c199d8d858d51284106a00754e952147703b8";
+          };
+          "mods/midnightlib.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/codAaoxh/versions/wJeXgIoa/midnightlib-fabric-1.9.3%2B26.3-rc-2.jar";
+            sha512 = "2b5c5ed195d44d97dd6fafdb8583d1d883f10303c0cde331da72c6004f88cf27207167aaf77f0c692113399db42f616d1174144671898a25dfa69e9525135b8b";
+          };
+          "mods/mezzconfig.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/7tEfOcA7/versions/jCLRqOAa/mezz_config-26.3-fabric-0.6.5.jar";
+            sha512 = "5b02eae5d29d47051867beffbb4fb72b9c182437b3b2928266cb1c574619be99431ebca4a7045f4aa6d61ce6f5665b17b0059e59cd5fb5d343d9f4f70d1ec1ce";
+          };
+          "mods/lithostitched.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/XaDC71GB/versions/FhKHD2LJ/lithostitched-2.0.4-fabric-26.3.jar";
+            sha512 = "cf0a2ce0f059f2e208600f7f4b86f49ec448c37070d4b71eff6900c97037c9013ab2f517d811433f397f8542fe18e0b04ed7f99f1677d491aab29ce5fc628ca1";
+          };
+
+          # -- 玩法/內容 mod --
+          "mods/jei.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/u6dRKJwZ/versions/c0AyylLw/jei-26.3-fabric-31.7.0.44.jar";
+            sha512 = "8b69bcbf381a85d859120d3d2a27ccc550571e5da8c3c8010e4dab1ebfd79954917ff612f15ebb78fbbc27397cd01ce225d2a4240950b68c5f14c5e377866aef";
+          };
+          "mods/biomesoplenty.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/HXF82T3G/versions/aPSIxaJR/BiomesOPlenty-fabric-26.3-26.3.0.0.8.jar";
+            sha512 = "2fbfdf0359e6f8ae192466331d5e58ea26a65b832ce0a1c44db6e93c44c7263acb4c77dd0b266a31148a30ab7267153338482ed7588810bab7be4ce766069ca6";
+          };
+          "mods/naturescompass.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/fPetb5Kh/versions/pHan4UQ9/NaturesCompass-26.3-2.5.1-fabric.jar";
+            sha512 = "3a6801d74a0427cb4a041b2bc15068e76858ecb0a4aaa221675b40eb2e26b3e20a25dfc00320802af33a0f9cc06e95dfd4b61805452aa33408056f94f664c475";
+          };
+          "mods/explorerscompass.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/RV1qfVQ8/versions/69AbLioc/ExplorersCompass-26.3-2.5.2-fabric.jar";
+            sha512 = "83e7b4217fee0eda42bf91ced65ea66135846a03e6cfc353067ccbbfab279e967d3c59887de286c90742d3ed95946398e4362d506092a34d0d99b39b502b6428";
+          };
+          "mods/alternatecurrent.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/r0v8vy1s/versions/nSBWPz6x/alternate-current-mc26.3-1.9.0.jar";
+            sha512 = "347fa8d0338a7e113c0cde70306d05037dbf9fc1e33c476159b4f5cf7b4fce8d3798d820ebf0e0dedd8450417802cb3a030bdcbecaf509961a83b2e43a469ad5";
+          };
+          "mods/waystones.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/LOpKHB2A/versions/UKjvFJAV/waystones-fabric-26.3-26.3.0.1.jar";
+            sha512 = "b9c09872b60f78dd6a37baa32a866821b84cd7386e2ea2eed641acdc31fd2635a70a22be8006c3f9ee5de495f563cb1915a2a1b6864bbaecb86c907c5b4c6ae2";
+          };
+          "mods/simplevoicechat.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/9eGKb6K1/versions/OLnMVWXy/voicechat-fabric-2.6.24%2B26.3.jar";
+            sha512 = "414eb51967305fe7740d34016bc8e3e4e2fa1590e1278ad06bcdfa0687f65007b825d345dc09f79a992704a51ec93baf01fe727e0bbc32fdf506828b5a65d85a";
+          };
+          "mods/veinminer.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/OhduvhIc/versions/G10nvigw/veinminer-fabric-2.12.2.jar";
+            sha512 = "5e31863298a36579d2eb66981709b9eed79ca0157531b44f8178977c421668010d36ef445c003215c283eacc0f6b213e7b2970c83902540144aad8dffb240fc0";
+          };
+          # farmingforblockheads 移除:它內建的 biomesoplenty 市集交易資料引用的物品 ID
+          # (biomesoplenty:origin_sapling/rainbow_birch_sapling/rose 等)在目前這版
+          # Biomes O'Plenty(26.3.0.0.8)裡不存在,註冊表載入直接失敗導致整個伺服器拒絕
+          # 啟動("Failed to load datapacks, can't proceed with server load")。這是
+          # mod 間資料相容性問題,metadata 層面完全過關、實測才會炸——2026-09-27 live
+          # 除錯抓到,標準文件已經記錄"metadata 通過≠能跑"這條,這是同一類問題的具體案例
+          "mods/repurposedstructures.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/muf0XoRe/versions/fl0s2Ue2/repurposed_structures-7.8.2%2B26.3-fabric.jar";
+            sha512 = "b6862c71f80f39898599bf5d172a3738ea477edada06096c5e79ebccf53c82cd23811ee96966e3a2603bab2e3955a5e3ceb3066ecaeae2547758d2c840079be9";
+          };
+          "mods/tectonic.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/lWDHr9jE/versions/irrtYKCq/tectonic-3.0.29-fabric-26.3.jar";
+            sha512 = "3fa046943f05d58b5dfc486d8dd7a073085b81aec5c96692e7626b87cb64ab295b5e6a3214f6ccc28746b1eddbcc16360d1c7adee9f97ad29126ac7daca0a257";
+          };
+          # 2026-09-28 §7 發現流水線新增(戰鬥/裝備分類補位)。Modrinth 顯示
+          # LicenseRef-Custom,但 GitHub repo 自己的 license metadata 跟 LICENSE 檔案
+          # 內容都是逐字 GPL-3.0,查過兩次——這是 Modrinth 分類標籤沒選準,不是真的閉源
+          "mods/advancednetherite.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/CFX9ftUJ/versions/Qxv1ndf9/advancednetherite-fabric-2.4.3-26.3.jar";
+            sha512 = "fcf5f0b58b4c879fd4c05c3a33d5e9df002e17761f6a1d09a8d39befdd17dec6d7ac74f5f3a47d0eb01c20822607fe842aa08fcfbba957a0847ab98c560521e4";
+          };
+          # 2026-09-28 明確破例:唯一的 26.3 build 是 5.0.0-rc.1(beta 型態),147萬
+          # 下載量也不到 1000萬門檻——條件1、條件9(強制門檻)都不過,使用者知情後
+          # 決定要,因為它解決的正是這次對話一直在手動處理的「伺服器/客戶端 mod
+          # 版本同步」問題。不是查證疏漏,是刻意的例外,見 minecraft.md
+          "mods/automodpack.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/k68glP2e/versions/qpeqKKkQ/automodpack-5.0.0-rc.1.jar";
+            sha512 = "88082d39c00369d086d9c90847f87f5807bfd1ae24968881fb3fbd9efeaff53daf974d5924a0c29aab463cbf2fb63580bb564387ae305c801274a65d0ba9993d";
+          };
+
+          # 2026-09-28 新增:Terralith 之前卡在 26.2(見 minecraft.md),26.3 已補上,
+          # 唯一依賴 lithostitched 已有
+          "mods/terralith.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/8oi3bsk5/versions/aGE3hYAA/Terralith_26.3_v2.6.5%2B26.3.jar";
+            sha512 = "918b232df7a855bae89c7fa85affb5ce134e236c4726fa14a5bdaa179eb1e010f040a9fa981f006a0e26e421a2a961bc29a75e99a4500fd18361a8ba81478071";
+          };
+          "mods/farmersdelightrefabricated.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/7vxePowz/versions/hTNvMewX/FarmersDelight-26.3-3.6.27%2Brefabricated.jar";
+            sha512 = "d7c66b883e3c900a5539b2fec91c8a81d73ad438437151019843b958584f4c45bcb29581846056ff83787efea53fe0cd244106b4856a9979d7088eebba54da44";
+          };
+          "mods/rightclickharvest.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/Cnejf5xM/versions/MTui9kST/rightclickharvest-fabric-4.6.2%2B26.3.x.jar";
+            sha512 = "a08edf8b52ba4197df1befcf6288dbd4292fe86b19c7f076c4f7ebfebda29a5f1b23530436b45c113ebe6db53409fa654acac0cdc403948e82fba22bfb8769c9";
+          };
+          "mods/jamlib.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/IYY9Siz8/versions/EbhilCj8/jamlib-fabric-2.3.1%2B26.3.x.jar";
+            sha512 = "4b739c16dd771ceae4a8a2dbf24ebba47955d69cde994f9b1b2f075c41757c5bad4f90324fd9aa417d6b6490f6f9f0e39225a9d305c7ef49fb72824479ec2e24";
+          };
+
+          # -- 純資料包(跟 loader 無關,放世界存檔 datapacks/ 而非 mods/;level-name 未設,
+          # 走 vanilla 預設的 "world") --
+          "world/datapacks/geophilic.zip" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/hl5OLM95/versions/SVRy1ecx/Geophilic%20v3.7.dp.zip";
+            sha512 = "7a361ddcc8d82a3d7a50611a8eb548f88e781fb856097ace222304558ccf06efcf99814872f2af3a0747b105467839ef6c557557c01caece2678ef4cf060161b";
+          };
+          "world/datapacks/incendium.zip" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/ZVzW5oNS/versions/2QitfRYN/Incendium_Legacy_v5.5.2%2B26.3.zip";
+            sha512 = "98befa8a3e01692acc14f8f51fc68419d66e38b1ff0a7644404e8572eeb616cb714baf4429fdb0e68362ddef36f7a6bac25f8d09b9a14bca1369a33954f3af16";
+          };
+          # 2026-09-28 §7 六渠道發現新增,完整通過/拒絕清單與集中度風險見 flake/hosts/oci/minecraft.md
+          # -- 新增:效能/伺服器管理 --
+          "mods/spark.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/l6YH9Als/versions/e3hsPc1o/spark-1.10.187-fabric.jar";
+            sha512 = "c74bf5d5a16b2445ec6ea717eac756412b272a8015e91f91a7bf5a27e6f2f99c4a11878d434510f941f37b0344b3a7d1ba0dd6c34e80642762c48fb6e9a93894";
+          };
+          "mods/servercore.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/4WWQxlQP/versions/LCG1Bm84/servercore-fabric-1.5.20%2B26.3.jar";
+            sha512 = "abe1f806ea587971faf7de826e18b07314a4a9e690f64a4c3a54e7f61c3e6f4792633b13a917252bd8de154cec39da6619110d83799cf533450c5b4cac7a8448";
+          };
+          "mods/fabric-carpet.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/TQTTVgYE/versions/yt9oDFOj/fabric-carpet-26.3%2Bv260915.jar";
+            sha512 = "7a479ba69eb5049cb94365d5044bd58c9f970c50b3484861fe3675f1917f7c99c1b1f50a5e01bdd9ded940d76a995539009a3656e05be2f513f20ec14de991a7";
+          };
+
+          # -- 新增:依賴函式庫 --
+          "mods/moogs-structure-lib.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/1oUDhxuy/versions/EYVYgogR/MoogsStructureLib-fabric-26.3-3.3.0.jar";
+            sha512 = "647bf42f04d160e8f775ccaacc1bb6caa5f62211c925d7a1b061f33457a69e6d8019c41b7643247ad8a7dd26977bc830b455aba14216ac65f9195c992dbfb238";
+          };
+          "mods/prickle.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/aaRl8GiW/versions/aPdekuq6/PrickleMC-fabric-MC26.3-26.3.0.2.jar";
+            sha512 = "8ac58d09d441e6c88c39b3e1f069ae674959c991389e35b27fa1f3e3a18ea1424d095697751e5618dd296b4eb120fe622ada7cd2214fd6bcfb2cafe398f9bffb";
+          };
+          "mods/forge-config-api-port.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/ohNO6lps/versions/JpKvrr9J/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar";
+            sha512 = "b9339c21e14beec2eae0ca215317284bcaacef72e1d1dee8b3dfbe2de0eefaa758a172446df85419b6534557c479abe972d7d21f4ec194f2d436f9ed4329cb9f";
+          };
+
+          # -- 新增:玩法/QoL mod(netherportalfix/kleeslabs/hardcore-revival/crafting-tweaks/
+          # trashslot/inventory-essentials/forgiving-void 皆為 BlayTheNinth,見 minecraft.md 集中度風險) --
+          "mods/netherportalfix.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/nPZr02ET/versions/RC1fmH8z/netherportalfix-fabric-26.3-26.3.0.1.jar";
+            sha512 = "3e30a398702f49e6336870951bc7d64a650a370190dbab058e927aeb6a3bf398947497ae8e1750a3b52cbcdf751d5d9b6a78896313d342d16cbe204613703bb1";
+          };
+          "mods/kleeslabs.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/7uh75ruZ/versions/kob8aIog/kleeslabs-fabric-26.3-26.3.0.2.jar";
+            sha512 = "1274cac1b05f029f244ed8cb229a9d0884637ea55b619dadeed66449946b287994a318090e69ff89270625a2d463057b538437f2917a7d39fd40b3de7f6aba41";
+          };
+          "mods/hardcore-revival.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/HqKoXaXz/versions/9d4cslv4/hardcorerevival-fabric-26.3-26.3.0.1.jar";
+            sha512 = "89df9da2716ef91234568123ab62bcc62f320956eb8355ea88e1eb5cbe317447b44e47c8a943a1735556b7e3a9a8a7b9989827d72f2b394c1cb9b776c1204638";
+          };
+          "mods/crafting-tweaks.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/DMu0oBKf/versions/EYGdRTcA/craftingtweaks-fabric-26.3-26.3.0.1.jar";
+            sha512 = "e980162e7a5c0e82f022e0b6a39ea289cab4e6e7c4bbaf726597e942f3b6521948214759ac8f5d34302bd67967f6bcb75271fc03d6ec9981d66f164a930a678f";
+          };
+          "mods/trashslot.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/vRYk0bv7/versions/aq0EjIas/trashslot-fabric-26.3-26.3.0.1.jar";
+            sha512 = "ccc3edbec11eb15bf6df1b7388b331328999a419a2068713d704865b17131f6911375593e2f835a9b278d8c13ecf8c007eae8344955c2676a669f598fb9010d2";
+          };
+          "mods/inventory-essentials.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/Boon8xwi/versions/tc43r9Ra/inventoryessentials-fabric-26.3-26.3.0.3.jar";
+            sha512 = "a1e363e67b9c8e5aa0b0251ee36a440e88202be1999b365b72022284d67b6d61d073462d224c9007f7a4dc58ce2cd104a5dcb325a2fc97763750bee13a4102d9";
+          };
+          "mods/forgiving-void.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/1vkzEZjE/versions/OOJw6DaH/forgivingvoid-fabric-26.3-26.3.0.2.jar";
+            sha512 = "a02c599ff4c59fc0f65bfbe29658a3c335d8daceb5698d4e1291503455aa75c2b7eaf8ddbdb853449ec504431c83fe4a771ee7fcdadbcd21127a41aaeeee6ee6";
+          };
+          "mods/appleskin.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/EsAfCjCV/versions/PHjDtQay/appleskin-fabric-mc26.3-3.0.10.jar";
+            sha512 = "17d257af419b7530aa8617c2e8c0e4bbfabcf888f26655790e0188e7957e0bcd931f85f9a4c69fd27e889dee5082cf7b2b8741a14a6ed4425e9ef4bfe13a8b8c";
+          };
+          "mods/attributefix.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/lOOpEntO/versions/zJLURVLx/AttributeFix-fabric-MC26.3-26.3.0.1.jar";
+            sha512 = "06658aee4c9943738663cb465ab0e68737c971d8544c2fd3e84aedb6a64a5f17949498492cafdacc9ba70185bae4e68d4825a390473c06eb8a3ed06bd983b202";
+          };
+          "mods/carry-on.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/joEfVgkn/versions/6kJQXHUF/carryon-fabric-26.3-2.12.0.jar";
+            sha512 = "92302e1815fe8b4d41517f001f667a348d4f1e5d0a07d9495b263076cd7a9a30183a0174d4f1a4d6b447161d9d68b08a649f48633583b5955dacd7736d5decc9";
+          };
+          "mods/toms-storage.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/XZNI4Cpy/versions/znUwcb7Z/toms_storage_fabric-26.3-2.12.1.jar";
+            sha512 = "1a66c99d8432678f28148e03b41358a697e96127c92464afb3272b704cb89e38c7063f6cf5ae0e4bb31d1d75eda2242472ce455a08152b7dccc7e6cefc9b739f";
+          };
+          "mods/travelers-backpack.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/rlloIFEV/versions/5rC23dXQ/travelersbackpack-fabric-26.3-11.4.0.jar";
+            sha512 = "6c98eddabd9ebe3a14387f5870302592bd8b176b3088a5378d986d129e9861cd1cd2b55c90b518039dbbc680d194fc6c56ca8223f804c56bc1e3050016f0e4e3";
+          };
+          "mods/lootr.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/EltpO5cN/versions/gVwn7m2v/lootr-fabric-26.3-1.25.42.124.jar";
+            sha512 = "290786fd4af4011c4f09c425d262bacc80f6ef47e23fbf6424193c719b6045a70cae70308c95d30c5ab78bf1f5a3d089cc3b01db8cc4dacc1a74c0f2d70c245d";
+          };
+          # client_side=required 但 client_side 端才有實際內容(潛影盒 tooltip),伺服器單裝
+          # 邊際效益低,見 minecraft.md
+          "mods/shulkerboxtooltip.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/2M01OLQq/versions/Cj9VEeGt/shulkerboxtooltip-fabric-5.4.2%2B26.3.jar";
+            sha512 = "737218bda3c35fe0753595e849850bb036eefd95181a542bdbdc8ab7c47795308be10b9aec45ca7880776c1711184536d0bf468fe76e94c674daac9ed73d8826";
+          };
+
+          # -- 結構 mod(非純資料包) --
+          "mods/mes-moogs-end-structures.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/r4PuRGfV/versions/S7bUhX4n/MoogsEndStructures-universal-1.21-2.1.1.jar";
+            sha512 = "5732c98bf3d1e6aa3c76cf23db77301065dd96f060fb9bf85e8af00769bc6a93e213aad7ff79a3116b3cfd5015fe98437bdadf9fdc0dd829eae1759e3c1fee96";
+          };
+        };
         jvmOpts = toString [
           "-Xms8G"
           "-Xmx8G"

@@ -123,3 +123,5 @@ Developer Services → Email Delivery:
 - sops-nix 的 secrets 渲染路徑是 `/run/secrets/<name>`,template 是 `/run/secrets/rendered/<name>`,兩個不一樣,不要搞混
 - `s3.b2-eu-cen` 這個 key 名字是 museum 寫死要找的(跟實際接的是不是 Backblaze B2 無關,改別的名字它認不到),我們接的其實是 R2,別被名字誤導去改
 - Ente 的上傳是客戶端(瀏覽器/手機)直接對著 `s3.b2-eu-cen.endpoint` 發 presigned URL 傳檔案,museum 只負責發 URL、不經手內容——這個地址**必須是客戶端連得到的**,不能是只有伺服器自己連得到的內部地址(這也是這裡直接用 R2、不用本機 S3 endpoint 的原因,見上方)
+
+Minecraft 伺服器(loader 決策、mod/資料包清單、客戶端建議清單、集中度風險、已知的坑、滾動更新流程)全部記在 `flake/hosts/oci/minecraft.md`,不在這份文件裡——那是持續維護的內容,跟這份文件「只記重新部署時要手動處理的東西」的用途不一樣。
