@@ -23,7 +23,7 @@
     "dnscrypt-blocklist": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-PSSuBgQbUc9TlCF3YSaoVdoHZKSAjycZQKlzjqUdK+o=",
+        "narHash": "sha256-yc7g/gcs/Oai/UtAVnki6aiCEncvgpojmh5aVaIj7EA=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
       },
@@ -142,11 +142,11 @@
     "geodb": {
       "flake": false,
       "locked": {
-        "lastModified": 1790208670,
-        "narHash": "sha256-g5mUoEQQy9FtWxybw98ixw2cxNn5agOCgzmirAF/WSY=",
+        "lastModified": 1790467650,
+        "narHash": "sha256-v9DrVBTpN6a2rh6qyLeV67BPNIV+amxKuLpyh8dLBiI=",
         "owner": "Loyalsoldier",
         "repo": "v2ray-rules-dat",
-        "rev": "1d37eb8034c0ab5a2a8037983645542945692d67",
+        "rev": "b86d05622067e96dcbb502c0f445904834452709",
         "type": "github"
       },
       "original": {
@@ -194,11 +194,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790240583,
-        "narHash": "sha256-ZTaVVw6R/zmjvWXhI6GJCn6n8+FseL6git+aofl7b/0=",
+        "lastModified": 1790477090,
+        "narHash": "sha256-dvq+OsKslGmJaQG4tCN3bUDm4mRRxJZcPSmNaNeT8RE=",
         "owner": "nousresearch",
         "repo": "hermes-agent",
-        "rev": "be59f0411e8fffa1e6f48425f7885c5c6badb705",
+        "rev": "a1d2a5bd571751ffea0968de149296cb231741eb",
         "type": "github"
       },
       "original": {
@@ -341,11 +341,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1790223794,
-        "narHash": "sha256-NMUY1IK1bAfCdYZAqsmgqN9gTdJGxaHHP+IPkaSQ7PY=",
+        "lastModified": 1790310854,
+        "narHash": "sha256-QuU33Sw5IjLKKq8xitpNSHnOUTgjTG9ZQdqOdIRz4F8=",
         "owner": "Infinidoge",
         "repo": "nix-minecraft",
-        "rev": "23ef278ce9e77686ee684db829f9f18fd115a917",
+        "rev": "8945905e42ce06b68464fcd7614937bb382a95f2",
         "type": "github"
       },
       "original": {
@@ -361,11 +361,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789978172,
-        "narHash": "sha256-FIRXajv1pPZ+l6On6ekkmcQ6le0Zi0ncRUoR3nB0vKA=",
+        "lastModified": 1790321948,
+        "narHash": "sha256-mZGHLGi217oLIwzDM4PNRZeCNa6g2WBXURyXbNMFs7Y=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "9ebcb7766700d7e006d9505247bd7ce0426f4232",
+        "rev": "30d48a0ec6035f8140d0125af274f0de95f1e9b5",
         "type": "github"
       },
       "original": {
@@ -430,11 +430,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1790113641,
-        "narHash": "sha256-DfkF+sEdKXCrvkg7olt82Q9cfP3p7Ro2R851fcTcSxI=",
-        "rev": "1bc55b9def8165e82073919945c3239903fe4dc2",
+        "lastModified": 1790450978,
+        "narHash": "sha256-GM0+sQwNfU1In6UEyBwpwjG3vX3g81kfKvcTlW2muL0=",
+        "rev": "5e2305d577ca00acbba631b05cb1094d172b29f3",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.10478.1bc55b9def81/nixexprs.tar.zst?lastModified=1790113641&rev=1bc55b9def8165e82073919945c3239903fe4dc2"
+        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.10718.5e2305d577ca/nixexprs.tar.zst"
       },
       "original": {
         "type": "tarball",
@@ -555,11 +555,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789890976,
-        "narHash": "sha256-GKwH3zpy7tartuJMG0Rv/xUsdetG1QLmTVv8UKgJLmA=",
+        "lastModified": 1790247521,
+        "narHash": "sha256-TNfgoHsqsYYvaJImlWctfRkh4PseTagzegU1Dgdbehw=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "7214124c20c1542c90deb54af50e2f53ae02711f",
+        "rev": "2bd00bd9bb35fe6d114888c8f1c2e946c541dd8f",
         "type": "github"
       },
       "original": {
@@ -613,11 +613,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790162167,
-        "narHash": "sha256-aEyxf9Nhbr9szYGYgM5YIwhCTRLZSXBV0GLvm3a4IU0=",
+        "lastModified": 1790249483,
+        "narHash": "sha256-g/0nGTQ8jjQHWFFyACnGt7T19epEtROYA7rOd+XKS8A=",
         "owner": "hydroakri",
         "repo": "trivalent-nix",
-        "rev": "da84e1d0e6adc8798785e4c95f0638267ba8076c",
+        "rev": "eaae3474836ced024564e7488164079e09cc1c57",
         "type": "github"
       },
       "original": {
@@ -628,11 +628,11 @@
     },
     "unstable": {
       "locked": {
-        "lastModified": 1790185690,
-        "narHash": "sha256-EZwz6sR6RLzbKiJJ9QQgXPZ/zA6P8ecfFr/6fwBRfes=",
-        "rev": "4975466d324710c576dc11ad614684e6bd8cad8e",
+        "lastModified": 1790323409,
+        "narHash": "sha256-m4DGo58Fza5ImOegtWOeE18nhpSO1IGzsVA6Lpsb4zw=",
+        "rev": "e94cb152ed51bd6e24eb4a41f1460252beb52cd2",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1078696.4975466d3247/nixexprs.tar.zst?lastModified=1790185690&rev=4975466d324710c576dc11ad614684e6bd8cad8e"
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1079315.e94cb152ed51/nixexprs.tar.zst"
       },
       "original": {
         "type": "tarball",
