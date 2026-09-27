@@ -47,20 +47,32 @@ jobs:
       - name: Check if Kernel (linuxPackages_latest) needs update and NixOS Status
         id: check_kernel
         run: |
-          # Check NixOS Status for nixpkgs-unstable
+          cd flake
+
+          # Resolve the flake.lock node the root "nixpkgs" input actually points
+          # to (not necessarily the node literally named "nixpkgs" — that key
+          # can be taken by an unrelated input's own unfollowed nixpkgs pin,
+          # e.g. nix-cachyos-kernel's). This also makes the channel name track
+          # whatever flake.nix's nixpkgs.url points at (stable release or
+          # nixos-unstable) instead of hardcoding one.
+          LOCKS=$(nix flake metadata . --json | jq '.locks')
+          NIXPKGS_NODE=$(echo "$LOCKS" | jq -r '.nodes.root.inputs.nixpkgs')
+          NIXPKGS_URL=$(echo "$LOCKS" | jq -r --arg n "$NIXPKGS_NODE" '.nodes[$n].original.url')
+          NIXPKGS_REV=$(echo "$LOCKS" | jq -r --arg n "$NIXPKGS_NODE" '.nodes[$n].locked.rev')
+          CHANNEL=$(echo "$NIXPKGS_URL" | grep -oE 'nixos-[a-zA-Z0-9.]+')
+          echo "追踪的 channel: $CHANNEL (lock node: $NIXPKGS_NODE, rev: $NIXPKGS_REV)"
+
           # Status 0 means no build problems (hydra_job_failed == 0)
-          NIX_STATUS=$(curl -s "https://prometheus.nixos.org/api/v1/query?query=hydra_job_failed%7Bchannel%3D%22nixos-unstable%22%7D" | sed -n 's/.*"value":\[[^,]*,"\([^"]*\)"\].*/\1/p')
+          NIX_STATUS=$(curl -s "https://prometheus.nixos.org/api/v1/query?query=hydra_job_failed%7Bchannel%3D%22${CHANNEL}%22%7D" | sed -n 's/.*"value":\[[^,]*,"\([^"]*\)"\].*/\1/p')
 
           if [ "$NIX_STATUS" != "0" ] && [ -n "$NIX_STATUS" ]; then
-            echo "NixOS nixpkgs-unstable channel 存在构建问题 (Build problem)，跳过更新。"
+            echo "NixOS $CHANNEL channel 存在构建问题 (Build problem)，跳过更新。"
             echo "should_update=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          cd flake
-          NIXPKGS_REV=$(nix flake metadata . --json | jq -r '.locks.nodes.nixpkgs.locked.rev')
           CURRENT_HASH=$(nix eval "github:NixOS/nixpkgs/${NIXPKGS_REV}#linuxPackages_latest.kernel.outPath" --raw)
-          REMOTE_HASH=$(nix eval github:NixOS/nixpkgs/nixos-unstable#linuxPackages_latest.kernel.outPath --raw)
+          REMOTE_HASH=$(nix eval "github:NixOS/nixpkgs/${CHANNEL}#linuxPackages_latest.kernel.outPath" --raw)
           echo "当前系统锁定的内核版本哈希: $CURRENT_HASH"
           echo "上游云端最新的内核版本哈希: $REMOTE_HASH"
 
