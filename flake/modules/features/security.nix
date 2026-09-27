@@ -244,13 +244,11 @@
     systemd.settings.Manager = {
       DefaultLimitNOFILE = "2048:2097152";
       DumpCore = false;
-      DefaultTimeoutStartSec = "15s";
       DefaultTimeoutStopSec = "10s";
     };
     systemd.user.settings.Manager = {
       DefaultLimitNOFILE = "1024:1048576";
       DumpCore = false;
-      DefaultTimeoutStartSec = "15s";
       DefaultTimeoutStopSec = "10s";
     };
     # systemd-pstore 没有对应的 NixOS 选项包装，直接写配置文件；关闭跨重启崩溃
