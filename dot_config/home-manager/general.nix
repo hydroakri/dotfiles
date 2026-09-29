@@ -26,7 +26,7 @@
     ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "cachix:eBbpHQpczbxhZ3j2D6n2SiPO5Jtwge/B85Ov550rGuc="
+      "cachix:RTT3Lx/HwP7OQwsaF6HpidQZvmpbu6xxa/Bc9CCp8zI="
       "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
     ];
   };

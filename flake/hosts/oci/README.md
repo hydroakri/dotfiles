@@ -123,5 +123,7 @@ Developer Services → Email Delivery:
 - sops-nix 的 secrets 渲染路徑是 `/run/secrets/<name>`,template 是 `/run/secrets/rendered/<name>`,兩個不一樣,不要搞混
 - `s3.b2-eu-cen` 這個 key 名字是 museum 寫死要找的(跟實際接的是不是 Backblaze B2 無關,改別的名字它認不到),我們接的其實是 R2,別被名字誤導去改
 - Ente 的上傳是客戶端(瀏覽器/手機)直接對著 `s3.b2-eu-cen.endpoint` 發 presigned URL 傳檔案,museum 只負責發 URL、不經手內容——這個地址**必須是客戶端連得到的**,不能是只有伺服器自己連得到的內部地址(這也是這裡直接用 R2、不用本機 S3 endpoint 的原因,見上方)
+- atticd 的簽名金鑰換過之後,`general.nix`、`omen15.nix`、`rpi4-switch.nix`、`rpi4-side-gateway.nix` 裡寫死的 `cachix:` 公鑰要一起換成 `attic cache info cachix` 的 `Public Key`;不換的話 nix 會靜默忽略 Attic 的 substitute(日誌裡是 `ignoring substitute … not signed by any of the keys`),表現為每次都從源碼編譯。CI 的公鑰是 `attic use` 動態取的,不用改
+- `cache.hydroakri.cc` 的 nginx 不做 `proxy_cache`(atticd 存儲是本機磁碟,見上面 `type = "local"`);從舊版本升級後,`/var/cache/nginx/attic` 可以手動刪掉
 
 Minecraft 伺服器(loader 決策、mod/資料包清單、客戶端建議清單、集中度風險、已知的坑、滾動更新流程)全部記在 `flake/hosts/oci/minecraft.md`,不在這份文件裡——那是持續維護的內容,跟這份文件「只記重新部署時要手動處理的東西」的用途不一樣。
