@@ -1142,13 +1142,6 @@
             ~^https://(.*)$ http://$1;
             default $http_destination;
         }
-
-        proxy_cache_path /var/cache/nginx/attic
-          levels=1:2
-          keys_zone=attic_cache:500m
-          max_size=15g
-          inactive=30d
-          use_temp_path=off;
       '';
 
       # headscale.hydroakri.cc/cache.hydroakri.cc 是仅有的两个直接绑 0.0.0.0、不
@@ -1353,14 +1346,8 @@
             proxy_busy_buffers_size 256k;
             proxy_request_buffering off;
 
-            proxy_cache attic_cache;
-            proxy_cache_key $scheme$proxy_host$uri$is_args$args;
-            proxy_cache_valid 200 30d;
-            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-            proxy_cache_lock on;
-            proxy_cache_background_update on;
-            proxy_no_cache $http_x_attic_no_cache;
-            proxy_cache_bypass $http_x_attic_no_cache;
+            # 不做 proxy_cache：存储是本机磁盘，缓存只会缓存过期的 narinfo/cache-config，
+            # 且缓存键不含 Authorization，私有缓存会对匿名请求可读。
 
             # 这个 vhost 自己写了 add_header，不会继承 commonHttpConfig 里的全局那份
             # （按层级整体替换，不按头名字合并），所以复制一份保持一致；
@@ -1425,7 +1412,6 @@
     };
 
     systemd.tmpfiles.rules = [
-      "d /var/cache/nginx/attic 0750 nginx nginx -"
       "d /var/lib/dav-storage 0750 nginx nginx -"
       # cscli machine add 启动时会读取 capi credentials 文件本身（不只是检查存不
       # 存在），空文件也能解析。先占位一个空文件，后面 cscli capi register 再把

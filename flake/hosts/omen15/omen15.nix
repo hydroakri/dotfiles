@@ -55,7 +55,7 @@
         "https://attic.xuyh0120.win/lantian"
       ];
       extraTrustedPublicKeys = [
-        "cachix:eBbpHQpczbxhZ3j2D6n2SiPO5Jtwge/B85Ov550rGuc="
+        "cachix:RTT3Lx/HwP7OQwsaF6HpidQZvmpbu6xxa/Bc9CCp8zI="
         "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
       ];
     };
