@@ -1059,12 +1059,14 @@
         serverProperties = {
           server-port = 25565;
           motd = ":3";
-          difficulty = "normal";
+          difficulty = "hard";
           gamemode = "survival";
+          white-list = false;
           max-players = 10;
           view-distance = 12;
           simulation-distance = 8;
-          online-mode = false;
+          spawn-protection = 0;
+          online-mode = true;
           level-seed = "0";
         };
       };
