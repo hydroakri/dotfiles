@@ -175,7 +175,7 @@ modules.amd.rocm = true;
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 nix shell nixpkgs#git nixpkgs#chezmoi -c chezmoi init --apply https://github.com/hydroakri/dotfiles
-nix run home-manager/master -- switch --flake ~/.config/home-manager#$USER --impure
+nix run home-manager/release-26.05 -- switch --flake ~/.config/home-manager#$USER --impure
 nh home switch -- --impure   # 之后再切换(注意结尾的 --,不是开头的 flag)
 ```
 

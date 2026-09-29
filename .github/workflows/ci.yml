@@ -28,7 +28,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # HM-only changes (bot lock bumps) skip the NixOS jobs; schedule/dispatch and
+  # any unresolvable diff range build everything.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      nixos: ${{ steps.filter.outputs.nixos }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Detect NixOS-relevant changes
+        id: filter
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_HEAD: ${{ github.sha }}
+        run: |
+          nixos=true
+          case "$EVENT" in
+            pull_request) range="$PR_BASE...$PR_HEAD" ;;
+            push) range="$PUSH_BEFORE $PUSH_HEAD" ;;
+            *) range="" ;;
+          esac
+          if [ -n "$range" ] && files=$(git diff --name-only $range 2>/dev/null); then
+            echo "$files"
+            grep -qE '^(flake/|\.github/workflows/ci\.yml$)' <<<"$files" || nixos=false
+          fi
+          echo "nixos=$nixos" >> "$GITHUB_OUTPUT"
+
   check:
+    needs: changes
+    if: needs.changes.outputs.nixos == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -47,6 +83,8 @@ jobs:
         run: nix flake check --accept-flake-config
 
   nix-matrix:
+    needs: changes
+    if: needs.changes.outputs.nixos == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}

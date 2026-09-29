@@ -7,7 +7,7 @@
   #   nix shell nixpkgs#git nixpkgs#chezmoi -c chezmoi init --apply https://github.com/hydroakri/dotfiles
   #   echo "trusted-users = root droid" | sudo tee -a /etc/nix/nix.conf
   #   sudo systemctl restart nix-daemon
-  #   nix run home-manager/master -- switch --flake ~/.config/home-manager#$USER --impure
+  #   nix run home-manager/release-26.05 -- switch --flake ~/.config/home-manager#$USER --impure
   #   nh home switch -- --impure   # note the trailing --, not a leading flag
   #
   # home-manager auto-resolves the flake output as $USER@$(hostname) first,
@@ -24,8 +24,9 @@
   inputs = {
     nixos-flake.url = "github:hydroakri/dotfiles?dir=flake";
     nixpkgs.follows = "nixos-flake/nixpkgs";
+    # Must match the release of the nixpkgs channel in flake/flake.nix (nixos-26.05).
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-index-database = {
