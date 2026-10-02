@@ -111,10 +111,12 @@
       };
     };
 
-    # Secret service (keyring) use keepassxc
+    # 只留 gnome-keyring 一个 org.freedesktop.secrets provider，避免跟别的 provider
+    # 抢同一个 D-Bus name；自动解锁要挂在 "ly"（实际图形登录用的 PAM service），
+    # 不是 "login"（裸终端用的）
     services.gnome.gnome-keyring.enable = lib.mkOverride 900 true;
-    security.pam.services.login.enableGnomeKeyring = lib.mkOverride 900 true;
-    services.passSecretService.enable = lib.mkOverride 900 true;
+    security.pam.services.ly.enableGnomeKeyring = lib.mkOverride 900 true;
+    services.passSecretService.enable = lib.mkOverride 900 false;
     services.gnome.gcr-ssh-agent.enable = lib.mkOverride 900 false; # disable ssh function managed by gnome-keyring
     services.dbus.packages = [ pkgs.gcr_4 ];
 
