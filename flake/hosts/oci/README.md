@@ -23,12 +23,13 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`dav` `cache` `vault` `tools` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy` `matrix` `element`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
 
 - `mail.hydroakri.cc` → oci 公網 IP(`curl ifconfig.me` 現查)——SMTP/IMAP 不是 HTTP(S),tunnel 天生不支援
 - `headscale.hydroakri.cc` → 同一個 oci 公網 IP——Cloudflare 會剝掉 POST 請求的 `Upgrade` 頭,TS2021 握手就是靠這個,搬去 tunnel 會導致節點全部掉線(headscale#3287,官方確認無解)。別手滑搬回 tunnel
+- `fed.hydroakri.cc` → 同一個 oci 公網 IP——Matrix 聯邦(8448)是裸 TLS,Cloudflare/tunnel 都代理不了;客戶端 API(`matrix.hydroakri.cc`)不受影響,繼續走 tunnel
 
 **其他**:
 
@@ -125,5 +126,30 @@ Developer Services → Email Delivery:
 - Ente 的上傳是客戶端(瀏覽器/手機)直接對著 `s3.b2-eu-cen.endpoint` 發 presigned URL 傳檔案,museum 只負責發 URL、不經手內容——這個地址**必須是客戶端連得到的**,不能是只有伺服器自己連得到的內部地址(這也是這裡直接用 R2、不用本機 S3 endpoint 的原因,見上方)
 - atticd 的簽名金鑰換過之後,`general.nix`、`omen15.nix`、`rpi4-switch.nix`、`rpi4-side-gateway.nix` 裡寫死的 `cachix:` 公鑰要一起換成 `attic cache info cachix` 的 `Public Key`;不換的話 nix 會靜默忽略 Attic 的 substitute(日誌裡是 `ignoring substitute … not signed by any of the keys`),表現為每次都從源碼編譯。CI 的公鑰是 `attic use` 動態取的,不用改
 - `cache.hydroakri.cc` 的 nginx 不做 `proxy_cache`(atticd 存儲是本機磁碟,見上面 `type = "local"`);從舊版本升級後,`/var/cache/nginx/attic` 可以手動刪掉
+
+## 8. Matrix / Element(`https://matrix.hydroakri.cc` / `https://element.hydroakri.cc`)
+
+`server_name` 已經寫死 `matrix.hydroakri.cc`,建號後不可更改。
+
+**建第一個帳號**(`enable_registration = false`,沒有開放註冊):
+
+```bash
+nix-shell -p matrix-synapse
+register_new_matrix_user -k <registration_shared_secret 的實際值> http://127.0.0.1:8008
+```
+
+跟著提示輸入 username/password,`Make admin [no]:` 選 `yes` 建管理員帳號。`registration_shared_secret` 就是 sops 裡隨便生成的那個強隨機值(見上方第 1 節),不依賴外部服務。
+
+**`/_synapse/admin` 故意不對外開放**(`oci.nix` 的 nginx vhost 只代理 `/_matrix/client` 跟 `/_synapse/client`),管理操作要在 oci 本機執行:
+
+```bash
+curl http://127.0.0.1:8008/_synapse/admin/v1/... -H "Authorization: Bearer <admin 帳號的 access_token>"
+```
+
+**聯邦委派**:`matrix.hydroakri.cc` 的 `/.well-known/matrix/server` 回應 `fed.hydroakri.cc:8448`,實際聯邦流量直連真實 IP(見上方 DNS 章節),不經過 cloudflared tunnel。
+
+**假設**(低風險,之後想改隨時改,不用重新部署其他東西):`element.hydroakri.cc` 的 `config.json`(`oci.nix` 檔案頂部 `elementWebConf`)目前 `disable_custom_urls = true`(鎖死单一 homeserver,登入頁不能手動換);`default_federate = true`(新建房間預設可聯邦,跟 homeserver 聯邦開關一致)。voice/video(Element Call)、ntfy 的 Matrix Push Gateway 支援都還沒接,見任務書原始 brief 的「已知未驗證清單」。
+
+## 9. Minecraft
 
 Minecraft 伺服器(loader 決策、mod/資料包清單、客戶端建議清單、集中度風險、已知的坑、滾動更新流程)全部記在 `flake/hosts/oci/minecraft.md`,不在這份文件裡——那是持續維護的內容,跟這份文件「只記重新部署時要手動處理的東西」的用途不一樣。

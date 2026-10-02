@@ -44,6 +44,42 @@
       enableUptime = true;
     };
 
+    # pkgs.element-web 的 wrapper 读 `config.element-web.conf`（nixpkgs 的全局 config 参数，
+    # 不是 NixOS 的 config）在构建期用 jq 合并进 config.json，见 nixpkgs
+    # pkgs/by-name/el/element-web/package.nix
+    nixpkgs.config.element-web.conf = {
+      default_server_config = {
+        "m.homeserver" = {
+          base_url = "https://matrix.hydroakri.cc";
+          server_name = "matrix.hydroakri.cc";
+        };
+      };
+      disable_custom_urls = true;
+      disable_guests = true;
+      disable_3pid_login = true;
+      enable_client_well_known_lookups = false;
+      show_labs_settings = false;
+      default_federate = true; # 跟 homeserver 的联邦设置一致
+      mobile_guide_toast = false;
+      integrations_ui_url = null;
+      integrations_rest_url = null;
+      integrations_widgets_urls = null;
+      element_call.disable = true; # 语音/视频暂不开放
+      setting_defaults = {
+        "UIFeature.urlPreviews" = false;
+        "UIFeature.feedback" = false;
+        "UIFeature.voip" = false;
+        "UIFeature.widgets" = false;
+        "UIFeature.identityServer" = false;
+        "UIFeature.thirdPartyId" = false;
+        "UIFeature.locationSharing" = false;
+        "UIFeature.shareQrCode" = false;
+        "UIFeature.shareSocial" = false;
+        "UIFeature.registration" = false;
+        "UIFeature.passwordReset" = false;
+      };
+    };
+
     nixpkgs.overlays = [
       inputs.nix-minecraft.overlay
       (_final: prev: {
@@ -99,6 +135,11 @@
         restic_stalwart_password = { }; # 邮件数据 restic 仓库加密密码
         restic_pds_password = { }; # bluesky-pds restic 仓库加密密码
         restic_ente_password = { }; # ente 数据库（E2EE 加密密钥材料所在）restic 仓库加密密码
+        restic_synapse_password = { }; # Matrix/Synapse 数据库 restic 仓库加密密码
+        # register_new_matrix_user 用；随便生成一个强随机值即可（openssl rand -base64 32），不依赖外部服务
+        synapse_registration_shared_secret = {
+          owner = "matrix-synapse"; # Synapse 以 User = "matrix-synapse" 直接读文件，不是 systemd LoadCredential
+        };
       };
       templates."vaultwarden.env" = {
         owner = config.users.users.vaultwarden.name;
@@ -167,6 +208,19 @@
           AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
           AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
           RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/ente-db-backup
+        '';
+      };
+      templates."synapse-db-backup.env" = {
+        content = ''
+          AWS_ACCESS_KEY_ID=${config.sops.placeholder.r2_access_key_id}
+          AWS_SECRET_ACCESS_KEY=${config.sops.placeholder.r2_secret_access_key}
+          RESTIC_REPOSITORY=s3:${config.sops.placeholder.r2_endpoint}/${config.sops.placeholder.r2_bucket}/synapse-backup
+        '';
+      };
+      templates."synapse-secrets.yaml" = {
+        owner = "matrix-synapse";
+        content = ''
+          registration_shared_secret: ${config.sops.placeholder.synapse_registration_shared_secret}
         '';
       };
       # 渲染完整的 TOML 配置文件
@@ -238,6 +292,7 @@
       allowedTCPPorts = [
         80
         443
+        8448 # Matrix 联邦（fed.hydroakri.cc），走直连真实 IP，不经 cloudflared tunnel
       ];
       # Simple Voice Chat 走獨立 UDP port,跟 MC 本身的 TCP 25565 分開協商,
       # services.minecraft-servers.openFirewall 不知道這個 mod 專屬 port 的存在
@@ -442,6 +497,42 @@
       initialize = true;
       timerConfig = {
         OnCalendar = "05:30";
+        Persistent = true;
+      };
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+    };
+
+    # dataDir 里同时有 signing.key（丢了等于丢了联邦身份，不可重建）和媒体文件，
+    # 跟 db dump 一起进同一个 restic 仓库备份
+    systemd.services.backup-synapse-db = {
+      after = [ "postgresql.service" ];
+      requires = [ "postgresql.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "postgres";
+        StateDirectory = "synapse-db-backup";
+      };
+      script = ''
+        ${config.services.postgresql.package}/bin/pg_dump matrix-synapse > /var/lib/synapse-db-backup/matrix-synapse.sql
+      '';
+    };
+
+    services.restic.backups.synapse = {
+      backupPrepareCommand = "systemctl start backup-synapse-db.service";
+      paths = [
+        "/var/lib/synapse-db-backup"
+        config.services.matrix-synapse.settings.media_store_path
+        config.services.matrix-synapse.settings.signing_key_path
+      ];
+      environmentFile = config.sops.templates."synapse-db-backup.env".path;
+      passwordFile = config.sops.secrets.restic_synapse_password.path;
+      initialize = true;
+      timerConfig = {
+        OnCalendar = "06:00";
         Persistent = true;
       };
       pruneOpts = [
@@ -661,6 +752,16 @@
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "map.hydroakri.cc";
           };
+          "matrix.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "matrix.hydroakri.cc";
+          };
+          "element.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "element.hydroakri.cc";
+          };
+          # fed.hydroakri.cc（联邦 8448）不进这里——直连真实 IP，不走 tunnel，见 oci.nix
+          # 里 services.matrix-synapse 旁边的注释
           # *.bsky.hydroakri.cc（未来多用户子网域 handle）先不加：originServerName 不能是
           # 字面量的 wildcard SNI，等真的开放注册、有第二个账号时再处理
         };
@@ -744,7 +845,71 @@
           name = "atticd";
           ensureDBOwnership = true;
         }
+        {
+          # 只建角色，不建库——Synapse 要求数据库是 C collation/C ctype，
+          # ensureDatabases/ensureDBOwnership 没法指定 locale/template，见下面的
+          # matrix-synapse-db-bootstrap（跟 nixos matrix-synapse 模块文档给的
+          # CREATE DATABASE 示例一致）
+          name = "matrix-synapse";
+        }
       ];
+    };
+
+    # Synapse 启动时自己检查数据库 locale，不是 C collation/C ctype 会直接拒绝跑
+    # （IncorrectDatabaseSetup）。幂等：数据库已存在就跳过，不会碰现有数据
+    systemd.services.matrix-synapse-db-bootstrap = {
+      after = [ "postgresql.service" ];
+      requires = [ "postgresql.service" ];
+      before = [ "matrix-synapse.service" ];
+      requiredBy = [ "matrix-synapse.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "postgres";
+      };
+      script = ''
+        if ! ${config.services.postgresql.package}/bin/psql -tAc "SELECT 1 FROM pg_database WHERE datname='matrix-synapse'" | grep -q 1; then
+          ${config.services.postgresql.package}/bin/createdb matrix-synapse \
+            --owner=matrix-synapse --template=template0 --lc-collate=C --lc-ctype=C
+        fi
+      '';
+    };
+
+    # server_name 建号后不可更改，见 flake/hosts/oci/README.md
+    #
+    # 联邦：matrix.hydroakri.cc 的 443 走 cloudflared tunnel（CDN 保护客户端 API），
+    # 但联邦端口 8448 是裸 TLS，Cloudflare/tunnel 都代理不了——用 .well-known/matrix/server
+    # 把联邦流量委派到 fed.hydroakri.cc:8448，那个子域名单独直连真实公网 IP（灰云 A 记录，
+    # 跟 mail./headscale. 同样的理由），不占用 matrix.hydroakri.cc 本身的 443
+    services.matrix-synapse = {
+      enable = true;
+      settings = {
+        server_name = "matrix.hydroakri.cc";
+        public_baseurl = "https://matrix.hydroakri.cc/";
+        listeners = [
+          {
+            port = 8008;
+            bind_addresses = [ "127.0.0.1" ];
+            type = "http";
+            tls = false;
+            x_forwarded = true;
+            resources = [
+              {
+                names = [
+                  "client"
+                  "federation"
+                ];
+                compress = false; # 已经在 nginx 层 gzip，这里再压一次没必要
+              }
+            ];
+          }
+        ];
+        enable_registration = false;
+        url_preview_enabled = false; # 官方给出的漏洞规避办法，见 GHSA-98px-6486-j7qc
+        report_stats = false;
+        presence.enabled = false;
+        max_upload_size = "50M"; # 要跟下面 nginx vhost 的 client_max_body_size 一致
+      };
+      extraConfigFiles = [ config.sops.templates."synapse-secrets.yaml".path ];
     };
 
     services.ntfy-sh = {
@@ -1440,6 +1605,147 @@
           proxyPass = "http://127.0.0.1:3001";
           proxyWebsockets = true;
         };
+      };
+
+      # server_name，走 cloudflared tunnel（客户端 API，CDN 保护源站 IP）。
+      # .well-known 把联邦指到 fed.hydroakri.cc:8448，见 services.matrix-synapse 旁边的注释
+      virtualHosts."matrix.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ];
+        # 跟 element.hydroakri.cc 同理：这两个 location 自己写了 add_header，
+        # 会丢掉全局安全头（按层级整体替换），复制一份保持一致
+        locations."= /.well-known/matrix/server".extraConfig = ''
+          default_type application/json;
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Access-Control-Allow-Origin *;
+          return 200 '${builtins.toJSON { "m.server" = "fed.hydroakri.cc:8448"; }}';
+        '';
+        locations."= /.well-known/matrix/client".extraConfig = ''
+          default_type application/json;
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Access-Control-Allow-Origin *;
+          return 200 '${
+            builtins.toJSON {
+              "m.homeserver"."base_url" = "https://matrix.hydroakri.cc";
+            }
+          }';
+        '';
+        locations."/_matrix/client" = {
+          proxyPass = "http://127.0.0.1:8008";
+          extraConfig = ''
+            client_max_body_size 50M;
+            # Cloudflare tunnel 边缘长连接大约 100s 空闲超时，/sync 长轮询不能超过这个值
+            proxy_read_timeout 95s;
+          '';
+        };
+        locations."/_synapse/client" = {
+          proxyPass = "http://127.0.0.1:8008";
+        };
+        # /_synapse/admin 故意不代理——管理接口只能在 oci 本机 curl 127.0.0.1:8008，见 README
+        locations."/" = {
+          extraConfig = "return 404;";
+        };
+      };
+
+      # 联邦端口（8448），裸 TLS，Cloudflare/tunnel 都代理不了，直连真实公网 IP（灰云 A
+      # 记录，跟 mail./headscale. 同样理由），只开 8448，不占 443
+      virtualHosts."fed.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        acmeRoot = null;
+        onlySSL = true; # 自定义 listen 绕过了 forceSSL/onlySSL 才会触发的证书自动挂载，必须手动开
+        listen = [
+          {
+            addr = "0.0.0.0";
+            port = 8448;
+            ssl = true;
+          }
+        ];
+        locations."/_matrix/federation" = {
+          proxyPass = "http://127.0.0.1:8008";
+          extraConfig = ''
+            client_max_body_size 50M;
+          '';
+        };
+        # 其它服务器联邦握手前先拿这个端点验证你的签名密钥，漏代理这条会导致对方连得上
+        # TLS 但拿不到 key，join/联邦请求卡死（实测：之前这里没加，curl 直接从 nginx 收到
+        # 404，根本没转发到 Synapse）
+        locations."/_matrix/key" = {
+          proxyPass = "http://127.0.0.1:8008";
+        };
+        locations."/" = {
+          extraConfig = "return 404;";
+        };
+      };
+
+      # Element Web 静态文件，走 cloudflared tunnel。config.json 在构建期已经注入
+      # （见上方 nixpkgs.config.element-web.conf）。下面每个 location 自己又写了
+      # add_header（设 Cache-Control），会导致这些 location 不再继承全局安全头
+      # （按层级整体替换，不按头名字合并）——跟 ente-accounts/cache.hydroakri.cc
+      # 同一个坑，复制一份保持一致。
+      virtualHosts."element.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ];
+        root = pkgs.element-web;
+        locations."/" = {
+          tryFiles = "$uri $uri/ /index.html";
+          extraConfig = ''
+            add_header X-Content-Type-Options nosniff always;
+            add_header X-Frame-Options SAMEORIGIN always;
+            add_header X-Permitted-Cross-Domain-Policies none always;
+            add_header X-DNS-Prefetch-Control off always;
+            add_header Referrer-Policy no-referrer always;
+            add_header Strict-Transport-Security "max-age=31536000" always;
+            add_header Cache-Control "no-cache";
+          '';
+        };
+        locations."/index.html".extraConfig = ''
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Cache-Control "no-cache";
+        '';
+        locations."/version".extraConfig = ''
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Cache-Control "no-cache";
+        '';
+        locations."/config.json".extraConfig = ''
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Cache-Control "no-cache";
+        '';
+        locations."/i18n/".extraConfig = ''
+          add_header X-Content-Type-Options nosniff always;
+          add_header X-Frame-Options SAMEORIGIN always;
+          add_header X-Permitted-Cross-Domain-Policies none always;
+          add_header X-DNS-Prefetch-Control off always;
+          add_header Referrer-Policy no-referrer always;
+          add_header Strict-Transport-Security "max-age=31536000" always;
+          add_header Cache-Control "no-cache";
+        '';
       };
 
     };
