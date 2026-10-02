@@ -15,7 +15,8 @@ instance 本身的 `mods/` 資料夾——本檔案只是給人看的清單快�
 ## 伺服器端(`oci.nix`)
 
 **效能/伺服器管理**:lithium、ferrite-core、c2me、chunky、packet-fixer、spark、
-ServerCore、fabric-carpet、Clumps
+ServerCore、fabric-carpet、Clumps、Krypton、ScalableLux(**待觀察**:唯一 build 是
+alpha,基於 Starlight 的光照引擎優化,可能跟 lithium 的光照優化重疊,未實測)
 
 **依賴函式庫**:fabric-api、fabric-language-kotlin、cloth-config、balm、shogi、
 midnightlib、mezzconfig、Moog's Structure Lib、Prickle、Forge Config API Port、
@@ -29,7 +30,8 @@ KleeSlabs、Hardcore Revival、Crafting Tweaks、TrashSlot、Inventory Essential
 Forgiving Void、AppleSkin、AttributeFix、Carry On、Tom's Storage、
 Traveler's Backpack、Lootr、ShulkerBoxTooltip、
 MES、Farmer's Delight Refabricated、RightClickHarvest、Advanced Netherite、
-Distant Horizons、Visual Workbench、Let Me Despawn、Geophilic
+Distant Horizons、Visual Workbench、Let Me Despawn、Geophilic、Pick Up Notifier、
+Easy Magic、FallingTree、Leaves Be Gone
 
 **已知不可用**:
 - AutoModpack——與本部署的 Nix symlink 分發機制結構性不相容,不要重新嘗試,除非
@@ -54,7 +56,14 @@ explorers-compass、natures-compass、waystones、AttributeFix、
 Carry On、Tom's Storage、Traveler's Backpack、Lootr、TrashSlot、
 Hardcore Revival、ShulkerBoxTooltip、Advanced Netherite、
 Farmer's Delight Refabricated、Clumps、Distant Horizons、
-Visual Workbench)+ 以下客戶端專屬項目:
+Visual Workbench、Pick Up Notifier、Easy Magic、JamLib)+ 以下客戶端專屬項目:
+
+*JamLib 是 RightClickHarvest 的必要依賴——RightClickHarvest 本身
+client_side=unsupported,但這個依賴庫是 required,一開始漏裝,後來補上。*
+
+**額外鏡射**(不是 client_side=required 觸發,是功能判斷):Simple Voice Chat——
+Modrinth 標 client_side=optional,但沒有客戶端裝等於功能完全沒用,metadata 不準確,
+判斷裝。
 
 渲染/效能:Sodium、Iris(**已停用**)、Sodium Extra、Reese's Sodium Options、
 Entity Culling、More Culling、ImmediatelyFast、Continuity、[ETF]/[EMF]、
@@ -97,11 +106,11 @@ build):Animatica(卡在 1.21.6)、Better Mount HUD(卡在 26.2)、MixinTrace
 
 | 分類 | 項目 | 裝在哪 |
 |---|---|---|
-| **效能/伺服器管理** | lithium、ferrite-core、c2me、chunky、packet-fixer、spark、ServerCore、fabric-carpet | 伺服器 |
+| **效能/伺服器管理** | lithium、ferrite-core、c2me、chunky、packet-fixer、spark、ServerCore、fabric-carpet、Krypton、ScalableLux(**alpha**) | 伺服器 |
 | | Clumps、Distant Horizons | 伺服器+客戶端 |
 | | Sodium、Sodium Extra、Reese's Sodium Options、ImmediatelyFast、Entity Culling、More Culling、Dynamic FPS、FastQuit、BadOptimizations | 客戶端 |
 | **探索/地形/結構** | repurposed-structures、mes-moogs-end-structures、Geophilic | 伺服器 |
-| **種田/料理** | farmers-delight-refabricated、RightClickHarvest | 伺服器 |
+| **種田/採集/料理** | farmers-delight-refabricated、RightClickHarvest、FallingTree、Leaves Be Gone | 伺服器 |
 | **儲存/物流** | Tom's Storage、Traveler's Backpack | 伺服器 |
 | **移動/傳送** | Waystones | 伺服器 |
 | **實體/掉落物管理** | Let Me Despawn(+ Almanac) | 伺服器 |
@@ -114,6 +123,7 @@ build):Animatica(卡在 1.21.6)、Better Mount HUD(卡在 26.2)、MixinTrace
 | | Jade、EnchantmentDescriptions、Controlling | 客戶端 |
 | **建築輔助** | Litematica、MiniHUD(+ MaLiLib) | 客戶端 |
 | **背包/物品管理** | TrashSlot、Inventory Essentials、Crafting Tweaks、Lootr、Carry On | 伺服器 |
+| | Pick Up Notifier、Easy Magic | 伺服器+客戶端 |
 | | Inventory Profiles Next | 客戶端 |
 | **聊天/社交/語音** | Simple Voice Chat | 伺服器 |
 | | Chat Heads、ChatAnimation、More Chat History、Ping Wheel | 客戶端 |

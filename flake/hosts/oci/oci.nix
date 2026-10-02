@@ -239,6 +239,11 @@
         80
         443
       ];
+      # Simple Voice Chat 走獨立 UDP port,跟 MC 本身的 TCP 25565 分開協商,
+      # services.minecraft-servers.openFirewall 不知道這個 mod 專屬 port 的存在
+      allowedUDPPorts = [
+        24454
+      ];
     };
 
     environment.systemPackages = [
@@ -943,6 +948,32 @@
           "mods/servercore.jar" = pkgs.fetchurl {
             url = "https://cdn.modrinth.com/data/4WWQxlQP/versions/LCG1Bm84/servercore-fabric-1.5.20%2B26.3.jar";
             sha512 = "abe1f806ea587971faf7de826e18b07314a4a9e690f64a4c3a54e7f61c3e6f4792633b13a917252bd8de154cec39da6619110d83799cf533450c5b4cac7a8448";
+          };
+          "mods/krypton.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/fQEb0iXm/versions/UugdIYJw/krypton-0.3.2.jar";
+            sha512 = "d1d57ebd41395b75b01f130cd9503eb8d208212424a399ff9f367f50be8fbc1c6472442b33c686e777c3148f6a609520e8fb732c755157c358cb207fd4d1123a";
+          };
+          "mods/pickupnotifier.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/ZX66K16c/versions/veV20ScD/pickupnotifier-v26.3.0-mc26.3.x%2Bfabric.jar";
+            sha512 = "fbf854580d3a9cbc3a91ca4d2f806aeb53c594d03a3a4dc677b23ab602948da75bcbb9d4665c7840f046417881df6d885bcf77105978228c387bae18e0a1e09c";
+          };
+          "mods/easymagic.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/9hx3AbJM/versions/JvKuwM5d/easymagic-v26.3.0-mc26.3.x%2Bfabric.jar";
+            sha512 = "58406feb2c26393a27c722fa21462ca3a90c1bbdec65cd43c83d67a28c6aadd6cfd9f4c047e918365b1267690c9f005e8dddf964bd1dba891830dbdb340776bc";
+          };
+          "mods/fallingtree.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/Fb4jn8m6/versions/AAGlDV9D/FallingTree-26.3-25.jar";
+            sha512 = "07134826f6d6e01232cf4c96ba1ffc529b43d93be3c18a215ba3af8572282a6b04e3175f7dc5831471f6722ad4a4f9161d43203507617c3b6c43908c50e7ef21";
+          };
+          "mods/leavesbegone.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/AVq17PqV/versions/Ttuy044k/leavesbegone-v26.3.0-mc26.3.x%2Bfabric.jar";
+            sha512 = "8b9ac3bd8fb28cf4c1c06ec3d1f4c33b86993461e298fc4517e017518d22b0588fb4ac8a1daa8d6f8f6a74406bc69dcdbc8f39714d7b303d03bdd17e4336ccc2";
+          };
+          # 待觀察:光照引擎優化,基於 Starlight,可能跟 lithium 的光照相關優化重疊,
+          # 沒實測過會不會衝突。唯一 build 是 alpha(查無 release),v1.9 規則下可接受
+          "mods/scalablelux.jar" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/Ps1zyz6x/versions/g4eqNSKd/ScalableLux-fabric-mc26.3-0.3.0-alpha.0.6-all.jar";
+            sha512 = "ded5a939fb20ab81c1f33b147ca9b98050773dbb28dff16df939c7d567b626809522994ec8dbfb99e7f498dc6a4e62f25e141a87d18efb43f73fc5ad1569ccc9";
           };
           "mods/fabric-carpet.jar" = pkgs.fetchurl {
             url = "https://cdn.modrinth.com/data/TQTTVgYE/versions/yt9oDFOj/fabric-carpet-26.3%2Bv260915.jar";
