@@ -33,6 +33,7 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    herdr-nix.url = "github:herdrdev/herdr-nix";
   };
 
   outputs =
