@@ -133,6 +133,8 @@
     users.users.unbound.uid = lib.mkDefault 977;
     services.unbound = {
       enable = lib.mkDefault true;
+      # 统计接口:unbound-control / prometheus exporter(utils.nix)
+      localControlSocketPath = lib.mkDefault "/run/unbound/unbound.ctl";
       package = pkgs.unbound.override {
         openssl = pkgs.libressl;
         stdenv = pkgs.clangStdenv;
@@ -163,12 +165,13 @@
           hide-version = lib.mkDefault true;
           hide-trustanchor = lib.mkDefault true;
           val-clean-additional = lib.mkDefault true;
-          harden-large-queries = lib.mkDefault true;
-          use-caps-for-id = lib.mkDefault true;
 
           auto-trust-anchor-file = lib.mkDefault "/var/lib/unbound/root.key";
           val-log-level = lib.mkDefault 2;
           aggressive-nsec = lib.mkDefault true;
+          harden-dnssec-stripped = lib.mkDefault true;
+          harden-below-nxdomain = lib.mkDefault true;
+          qname-minimisation = lib.mkDefault true;
 
           # DNS rebinding protection: refuse external answers resolving into LAN/link-local ranges.
           private-address = lib.mkDefault [
@@ -186,10 +189,14 @@
           edns-buffer-size = lib.mkDefault 1232;
           cache-min-ttl = lib.mkDefault 300;
           cache-max-ttl = lib.mkDefault 86400;
+          cache-max-negative-ttl = lib.mkDefault 3600;
           prefetch = lib.mkDefault true;
           prefetch-key = lib.mkDefault true;
           serve-expired = lib.mkDefault true;
           serve-expired-ttl = lib.mkDefault 3600;
+          # 先返回过期答案(400ms),后台刷新;否则上游慢时尾延迟不降
+          serve-expired-client-timeout = lib.mkDefault 400;
+          extended-statistics = lib.mkDefault true;
 
           so-reuseport = lib.mkDefault true;
           so-rcvbuf = lib.mkDefault "4m";
@@ -215,7 +222,8 @@
           {
             name = ".";
             forward-addr = [ "127.0.0.1@5353" ];
-            forward-first = true;
+            # 转发失败时返回 SERVFAIL,不回退到明文迭代
+            forward-first = false;
           }
         ];
       };
@@ -242,15 +250,15 @@
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
         block_ipv6 = false;
-        cache = true;
-        cache_size = 4096;
+        # 缓存与 TTL 策略统一交给 unbound,避免两层 TTL 叠加
+        cache = false;
         dnscrypt_servers = true;
         doh_servers = true;
         ipv4_servers = true;
         ipv6_servers = false;
         lb_strategy = "p2";
-        netprobe_timeout = 300;
-        odoh_servers = true;
+        # 单位秒;离线启动时 dnscrypt-proxy 要等满这个时间才开始监听
+        netprobe_timeout = 60;
         require_dnssec = false;
         require_nofilter = false;
         require_nolog = false;
