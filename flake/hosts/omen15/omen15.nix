@@ -106,6 +106,25 @@
     };
     preservation.enable = true;
   };
+
+  # Boot menu entry (limine) that fully cuts power to the nvidia dGPU.
+  # No nvidia/nouveau driver is bound, so generic PCI runtime PM + ACPI _PR3
+  # puts the card into D3cold (near-zero power draw) instead of just idling.
+  specialisation.nvidia-off.configuration = {
+    modules.nvidia.enable = lib.mkForce false;
+    boot.blacklistedKernelModules = [
+      "nvidia"
+      "nvidia_drm"
+      "nvidia_modeset"
+      "nvidia_uvm"
+      "nouveau"
+    ];
+    services.xserver.videoDrivers = lib.mkForce [ "amdgpu" ];
+    # nvidiaBusId "PCI:1@0:0:0" -> sysfs 0000:01:00.0
+    services.udev.extraRules = ''
+      ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:01:00.0", TEST=="power/control", ATTR{power/control}="auto"
+    '';
+  };
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {
     content = ''
