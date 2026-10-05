@@ -169,6 +169,9 @@
           auto-trust-anchor-file = lib.mkDefault "/var/lib/unbound/root.key";
           val-log-level = lib.mkDefault 2;
           aggressive-nsec = lib.mkDefault true;
+          harden-dnssec-stripped = lib.mkDefault true;
+          harden-below-nxdomain = lib.mkDefault true;
+          qname-minimisation = lib.mkDefault true;
 
           # DNS rebinding protection: refuse external answers resolving into LAN/link-local ranges.
           private-address = lib.mkDefault [
@@ -186,6 +189,7 @@
           edns-buffer-size = lib.mkDefault 1232;
           cache-min-ttl = lib.mkDefault 300;
           cache-max-ttl = lib.mkDefault 86400;
+          cache-max-negative-ttl = lib.mkDefault 3600;
           prefetch = lib.mkDefault true;
           prefetch-key = lib.mkDefault true;
           serve-expired = lib.mkDefault true;
@@ -215,7 +219,8 @@
           {
             name = ".";
             forward-addr = [ "127.0.0.1@5353" ];
-            forward-first = true;
+            # 转发失败时返回 SERVFAIL,不回退到明文迭代
+            forward-first = false;
           }
         ];
       };
@@ -242,15 +247,14 @@
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
         block_ipv6 = false;
-        cache = true;
-        cache_size = 4096;
+        # 缓存与 TTL 策略统一交给 unbound,避免两层 TTL 叠加
+        cache = false;
         dnscrypt_servers = true;
         doh_servers = true;
         ipv4_servers = true;
         ipv6_servers = false;
         lb_strategy = "p2";
         netprobe_timeout = 300;
-        odoh_servers = true;
         require_dnssec = false;
         require_nofilter = false;
         require_nolog = false;
