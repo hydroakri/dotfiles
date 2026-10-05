@@ -75,6 +75,17 @@
           "filesystem"
         ];
       };
+      exporters.unbound = lib.mkIf config.services.unbound.enable {
+        enable = lib.mkDefault true;
+        listenAddress = lib.mkDefault "127.0.0.1";
+        # unix socket 不走 TLS
+        unbound = {
+          host = lib.mkDefault "unix://${config.services.unbound.localControlSocketPath}";
+          ca = lib.mkDefault null;
+          certificate = lib.mkDefault null;
+          key = lib.mkDefault null;
+        };
+      };
       scrapeConfigs = [
         {
           job_name = "desktop-metrics";
@@ -94,7 +105,17 @@
             }
           ];
         }
-      ];
+      ]
+      ++ lib.optional config.services.prometheus.exporters.unbound.enable {
+        job_name = "unbound";
+        static_configs = [
+          {
+            targets = [
+              "127.0.0.1:${toString config.services.prometheus.exporters.unbound.port}"
+            ];
+          }
+        ];
+      };
     };
 
     services.grafana = lib.mkIf config.modules.utils.enableGrafana {
