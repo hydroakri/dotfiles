@@ -495,6 +495,13 @@
             (sloth.mkdir (sloth.concat' sloth.xdgCacheHome "/BraveSoftware"))
             (sloth.mkdir sloth.xdgDownloadDir)
           ];
+          # 摄像头设备节点不在默认沙箱绑定内 (nixpak bubblewrap.bind.dev 默认空),
+          # 否则 getUserMedia 在沙箱里找不到设备
+          bubblewrap.bind.dev = [
+            "/dev/video0"
+            "/dev/video1"
+            "/dev/media0"
+          ];
         };
 
         mullvad-browser.configuration = { pkgs, sloth, ... }: {
