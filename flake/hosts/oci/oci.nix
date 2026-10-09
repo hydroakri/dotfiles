@@ -1189,6 +1189,13 @@
             url = "https://cdn.modrinth.com/data/1vkzEZjE/versions/OOJw6DaH/forgivingvoid-fabric-26.3-26.3.0.2.jar";
             sha512 = "a02c599ff4c59fc0f65bfbe29658a3c335d8daceb5698d4e1291503455aa75c2b7eaf8ddbdb853449ec504431c83fe4a771ee7fcdadbcd21127a41aaeeee6ee6";
           };
+          # 純資料包(非 mod),放進預設 world save 的 datapacks/ 資料夾(level-name 未設,
+          # 用預設值 "world")。無 required 依賴;作者無公開 source link(MC Mod 篩選
+          # 標準條件5技術上不過,但單人開發、無舉報記錄、下載量尚可,使用者知情後決定保留)
+          "world/datapacks/keep_inventory_updated.zip" = pkgs.fetchurl {
+            url = "https://cdn.modrinth.com/data/SVVVm9Fz/versions/u5THQyjj/keep_inventory_updated.zip";
+            sha512 = "b148b05f2eaa67249088ea6200290c9cbac6634d3ad3bbc4db0fab0c21ed6995d8e6acb2e5791eae4154f1979e720dfe7ee86b0c40d57d4847e0c22246754025";
+          };
           "mods/appleskin.jar" = pkgs.fetchurl {
             url = "https://cdn.modrinth.com/data/EsAfCjCV/versions/PHjDtQay/appleskin-fabric-mc26.3-3.0.10.jar";
             sha512 = "17d257af419b7530aa8617c2e8c0e4bbfabcf888f26655790e0188e7957e0bcd931f85f9a4c69fd27e889dee5082cf7b2b8741a14a6ed4425e9ef4bfe13a8b8c";
