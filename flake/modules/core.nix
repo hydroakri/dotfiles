@@ -274,7 +274,6 @@
           "nextdns-ultralow"
           "controld-block-malware"
           "controld-block-malware-ad"
-          "controld-block-malware-ad-social"
           "controld-uncensored"
           "controld-unfiltered"
           "dns0"
