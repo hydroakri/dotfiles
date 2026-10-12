@@ -163,6 +163,10 @@
         (
           if isClang then
             config.boot.kernelPackages.zenpower.overrideAttrs (old: {
+              # 上游 Makefile 写死 GCC 专用的 -Wimplicit-fallthrough=3，clang 把未知警告选项当错误
+              postPatch = (old.postPatch or "") + ''
+                sed -i '/-Wimplicit-fallthrough=3/d' Makefile
+              '';
               makeFlags = (old.makeFlags or [ ]) ++ [
                 "CC=${kernel.stdenv.cc.cc}/bin/clang"
                 "LLVM=1"
