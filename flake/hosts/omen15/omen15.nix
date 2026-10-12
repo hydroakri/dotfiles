@@ -160,22 +160,33 @@
         isClang = kernel.stdenv.cc.isClang or false;
       in
       [
-        (
-          if isClang then
-            config.boot.kernelPackages.zenpower.overrideAttrs (old: {
-              # 上游 Makefile 写死 GCC 专用的 -Wimplicit-fallthrough=3，clang 把未知警告选项当错误
-              postPatch = (old.postPatch or "") + ''
+        (config.boot.kernelPackages.zenpower.overrideAttrs (
+          old:
+          {
+            # zenpower5's multi-file refactor dropped the <asm/cpuid/api.h> include
+            # that cpuid_ecx needs on kernel >=7.2; patch every .c file that calls it.
+            postPatch =
+              (old.postPatch or "")
+              + ''
+                for f in *.c; do
+                  grep -q 'cpuid_ecx' "$f" && sed -i '/#include <linux\/pci.h>/a\
+                #if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)\
+                #include <asm/cpuid/api.h>\
+                #endif' "$f"
+                done
+              ''
+              + lib.optionalString isClang ''
                 sed -i '/-Wimplicit-fallthrough=3/d' Makefile
               '';
-              makeFlags = (old.makeFlags or [ ]) ++ [
-                "CC=${kernel.stdenv.cc.cc}/bin/clang"
-                "LLVM=1"
-                "LLVM_IAS=1"
-              ];
-            })
-          else
-            config.boot.kernelPackages.zenpower
-        )
+          }
+          // lib.optionalAttrs isClang {
+            makeFlags = (old.makeFlags or [ ]) ++ [
+              "CC=${kernel.stdenv.cc.cc}/bin/clang"
+              "LLVM=1"
+              "LLVM_IAS=1"
+            ];
+          }
+        ))
       ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
