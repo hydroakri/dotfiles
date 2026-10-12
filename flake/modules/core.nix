@@ -249,7 +249,7 @@
       package = pkgs.pkgsMusl.dnscrypt-proxy;
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
-        block_ipv6 = false;
+        block_ipv6 = true;
         # 缓存与 TTL 策略统一交给 unbound,避免两层 TTL 叠加
         cache = false;
         dnscrypt_servers = true;
