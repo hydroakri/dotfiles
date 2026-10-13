@@ -25,6 +25,16 @@
       default = "";
       description = "Contents of /etc/u2f_mappings (pamu2fcfg -n format); leave empty to disable u2f PAM";
     };
+    usbguardRules = lib.mkOption {
+      type = lib.types.lines;
+      default = "";
+      description = ''
+        Static usbguard allow rules (e.g. for U2F keys) that must survive
+        unplug/replug without a reboot. Non-empty makes services.usbguard.rules
+        the policy (NixOS-managed, immutable via IPC); leave empty to keep the
+        default dynamic ruleFile.
+      '';
+    };
   };
 
   config = {
@@ -293,12 +303,12 @@
       # For fido2 security keys
       pkgs.pam_u2f
       pkgs.libfido2
-      pkgs.yubikey-manager
 
       # sudo → doas compatibility shim
       pkgs.doas-sudo-shim
 
     ];
+    hardware.nitrokey.enable = true;
     # libfido2 只装了 CLI 工具不会自动装它自带的 udev 规则，得显式注册
     services.udev.packages = [ pkgs.libfido2 ];
     security = {
@@ -345,6 +355,9 @@
         "root"
         config.mainUser
       ];
+      rules = lib.mkIf (
+        config.modules.security.usbguardRules != ""
+      ) config.modules.security.usbguardRules;
     };
 
     # secureblue 的 NetworkManager 沙箱；只上桌面机，oci/rpi4 还没实测过，先不动

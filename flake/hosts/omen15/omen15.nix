@@ -61,10 +61,13 @@
     };
     security = {
       authorizedKeys = [
-        "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIORKNKURAriDLXiBpCKeuc3aBcIkQJy32I+sOpwMaWUmAAAABHNzaDo= hydroakri"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE"
+        "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIAw4ah1WaneMXXpgSwKQ43GLuLDg+7FQOzg6+Sw0JgqIAAAABHNzaDo= nitrokey"
       ];
-      u2fMappings = "hydroakri:8dACAuprRl62N+Nc/J6V8teNz5bkcxosNp5fkvaHse/d3Msfl2w21MOhBMfgcuFD7YnEbuGhJF9kFel58RQRM6xX3e/Okqaxe01DzCa1sBOAD4jUNQzATZfAaRMGtOxuY0Y06JlV/WJzVWrw7MdEd/NBP5RJtFAs8WAaXXdrvOgqzB1CHBGzXwq7ieuX5LzSCnux8ajJI1ksUcaj2viuWNIyTS7N3XjG,I7BP8E3Oc98DkQuND+9J3MPilurDUdwaYdX9nDMuwNZFQoA/DZ1edgl1X9MZOMJoSEfgFr23HaCKzHVy6ulVTg==,es256,+presence\n";
+      u2fMappings = "hydroakri:owBYeHN6l0L7NTWQJ+iHn18m8CiXzAy2JggKsESzbEXtAXMcJ5fSTxANHwCFUtm7fJPta9SPXOZaHNr3pmIng2leqP7NyycxJ/wIhv03oJgNxgAWi4fNNtw3Y+uCP2hnjZ3VZay4oh2NkmXmSAm/164uQOi38OAbtHvFYgFM1EeLOtkZweoI3DmIAlC6TaQ0fkWthUGYVxTadelu,WBJenK89qfrOaCmV+dB+WVd2rBL+GzGp28r6X/NgRhLnKXvz2u8BEtUZ9ERbmfyXYkN9/pwi3llmoboiail86A==,es256,+presence\n";
+      usbguardRules = ''
+        allow id 20a0:42b2
+      '';
     };
     performance.vendor = "amd";
     nvidia = {
