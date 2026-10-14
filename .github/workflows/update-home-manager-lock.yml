@@ -7,10 +7,8 @@ env:
 on:
   workflow_dispatch:
   schedule:
-    # Runs daily; the check_stale gate below skips actually re-locking unless
-    # flake/flake.lock's nixpkgs moved (that only happens when
-    # update-flake-lock.yml's weekly PR merges to main), so this doesn't PR
-    # on every unrelated commit to main.
+    # Runs daily; the update_lock step sets changed=false when
+    # `nix flake update` didn't actually change the lock, so no PR is created.
     - cron: "0 2 * * *"
 
 concurrency:
@@ -48,45 +46,8 @@ jobs:
         run: |
           printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
 
-      - name: Check if upstream nixpkgs pin has moved
-        id: check_stale
-        run: |
-          # Resolve the node an "inputs.nixpkgs" actually locks to, following
-          # both the plain-string form and the indirect follows-path array
-          # form (home-manager's own nixpkgs.follows = "nixos-flake/nixpkgs"
-          # locks as ["nixos-flake","nixpkgs"] here). A bare `.nodes.nixpkgs`
-          # lookup is wrong in both files — that key belongs to
-          # nix-cachyos-kernel's own unfollowed nixpkgs pin, not the one
-          # either flake actually tracks, and it happens to be identical in
-          # both files, which made this check always report "unchanged".
-          resolve_nixpkgs_rev() {
-            local file="$1" cur="root" val
-            val=$(jq -c '.nodes.root.inputs.nixpkgs' "$file")
-            if [[ "$val" == \[*\] ]]; then
-              for key in $(jq -r '.nodes.root.inputs.nixpkgs[]' "$file"); do
-                cur=$(jq -r --arg c "$cur" --arg k "$key" '.nodes[$c].inputs[$k]' "$file")
-              done
-            else
-              cur=$(jq -r '.nodes.root.inputs.nixpkgs' "$file")
-            fi
-            jq -r --arg n "$cur" '.nodes[$n].locked.rev' "$file"
-          }
-
-          UPSTREAM_REV=$(resolve_nixpkgs_rev flake/flake.lock)
-          LOCKED_REV=$(resolve_nixpkgs_rev dot_config/home-manager/flake.lock)
-          echo "flake/flake.lock 的 nixpkgs: $UPSTREAM_REV"
-          echo "home-manager flake.lock 已鎖定的 nixpkgs: $LOCKED_REV"
-
-          if [ "$UPSTREAM_REV" == "$LOCKED_REV" ]; then
-            echo "nixpkgs 未變動，跳過本次更新。"
-            echo "should_update=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "偵測到上游 nixpkgs 變動，準備更新 home-manager lock。"
-            echo "should_update=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Update lock and build activation package before PR
-        if: steps.check_stale.outputs.should_update == 'true'
+        id: update_lock
         env:
           USER: runner
         run: |
@@ -101,13 +62,20 @@ jobs:
             exit 1
           fi
 
+          if git diff --quiet -- dot_config/home-manager/flake.lock; then
+            echo "lock 未變化，跳過本次更新。"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
           echo "== build home-manager activation package =="
           cd dot_config/home-manager
           nix build ".#homeConfigurations.${USER}.activationPackage" \
             --accept-flake-config --print-build-logs --fallback --cores 2 --impure
 
       - name: Create update PR
-        if: steps.check_stale.outputs.should_update == 'true'
+        if: steps.update_lock.outputs.changed == 'true'
         id: create_pr
         run: |
           BRANCH="bot/home-manager-update-$(date +%Y%m%d)"

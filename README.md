@@ -182,7 +182,7 @@ Works on **any** Linux with just Nix installed — not only my NixOS hosts
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 nix shell nixpkgs#git nixpkgs#chezmoi -c chezmoi init --apply https://github.com/hydroakri/dotfiles
-nix run home-manager/release-26.05 -- switch --flake ~/.config/home-manager#$USER --impure
+nix run home-manager/master -- switch --flake ~/.config/home-manager#$USER --impure
 nh home switch -- --impure   # subsequent switches (note the trailing --, not a leading flag)
 ```
 

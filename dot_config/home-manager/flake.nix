@@ -22,11 +22,9 @@
   #   grep -qxF "$ZSH_PATH" /etc/shells || echo "$ZSH_PATH" | sudo tee -a /etc/shells
   #   chsh -s "$ZSH_PATH"
   inputs = {
-    nixos-flake.url = "github:hydroakri/dotfiles?dir=flake";
-    nixpkgs.follows = "nixos-flake/nixpkgs";
-    # Must match the release of the nixpkgs channel in flake/flake.nix (nixos-26.05).
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-index-database = {
@@ -57,7 +55,8 @@
           modules = [
             nix-index-database.homeModules.nix-index
             ./general.nix
-          ] ++ extraModules;
+          ]
+          ++ extraModules;
         };
     in
     {
