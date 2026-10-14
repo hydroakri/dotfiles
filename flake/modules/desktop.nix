@@ -536,10 +536,6 @@
           };
           bubblewrap.tmpfs = [ (sloth.concat' sloth.homeDir "/.mullvad") ];
           bubblewrap.bind.rw = [ (sloth.mkdir sloth.xdgDownloadDir) ];
-          # WebAuthn/U2F 安全密钥需要 hidraw 节点 + /sys/class/hidraw（libudev
-          # 枚举用）；见 brave 配置里的注释
-          bubblewrap.bind.ro = [ "/sys/class/hidraw" ];
-          bubblewrap.bind.dev = builtins.genList (n: "/dev/hidraw${toString n}") 32;
         };
 
         tor-browser.configuration = { pkgs, sloth, ... }: {
@@ -563,10 +559,6 @@
           };
           bubblewrap.tmpfs = [ (sloth.concat' sloth.homeDir "/.tor project") ];
           bubblewrap.bind.rw = [ (sloth.mkdir sloth.xdgDownloadDir) ];
-          # WebAuthn/U2F 安全密钥需要 hidraw 节点 + /sys/class/hidraw（libudev
-          # 枚举用）；见 brave 配置里的注释
-          bubblewrap.bind.ro = [ "/sys/class/hidraw" ];
-          bubblewrap.bind.dev = builtins.genList (n: "/dev/hidraw${toString n}") 32;
         };
       };
     };

@@ -308,7 +308,7 @@
       pkgs.doas-sudo-shim
 
     ];
-    hardware.nitrokey.enable = true;
+    hardware.nitrokey.enable = lib.mkDefault config.services.displayManager.enable;
     # libfido2 只装了 CLI 工具不会自动装它自带的 udev 规则，得显式注册
     services.udev.packages = [ pkgs.libfido2 ];
     security = {
