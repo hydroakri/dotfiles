@@ -44,9 +44,8 @@
     modules.security = {
       authorizedKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYQdA9KBa2n2xrSk4cr5dYhbLgsUl3vPtc+qjdcIotE"
-        "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIAw4ah1WaneMXXpgSwKQ43GLuLDg+7FQOzg6+Sw0JgqIAAAABHNzaDo= nitrokey"
+        "verify-required sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIAw4ah1WaneMXXpgSwKQ43GLuLDg+7FQOzg6+Sw0JgqIAAAABHNzaDo= nitrokey"
       ];
-      u2fMappings = "hydroakri:owBYeHN6l0L7NTWQJ+iHn18m8CiXzAy2JggKsESzbEXtAXMcJ5fSTxANHwCFUtm7fJPta9SPXOZaHNr3pmIng2leqP7NyycxJ/wIhv03oJgNxgAWi4fNNtw3Y+uCP2hnjZ3VZay4oh2NkmXmSAm/164uQOi38OAbtHvFYgFM1EeLOtkZweoI3DmIAlC6TaQ0fkWthUGYVxTadelu,WBJenK89qfrOaCmV+dB+WVd2rBL+GzGp28r6X/NgRhLnKXvz2u8BEtUZ9ERbmfyXYkN9/pwi3llmoboiail86A==,es256,+presence\n";
     };
     modules.utils = {
       enable = true;

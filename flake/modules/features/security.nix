@@ -308,7 +308,7 @@
       pkgs.doas-sudo-shim
 
     ];
-    hardware.nitrokey.enable = true;
+    hardware.nitrokey.enable = lib.mkDefault config.services.displayManager.enable;
     # libfido2 只装了 CLI 工具不会自动装它自带的 udev 规则，得显式注册
     services.udev.packages = [ pkgs.libfido2 ];
     security = {
@@ -413,6 +413,8 @@
     security.pam = {
       u2f = {
         enable = lib.mkDefault (config.modules.security.u2fMappings != "");
+        # 作为第二因素（密码 + 触摸）；sufficient 会让单独触摸即可 doas/login
+        control = lib.mkDefault "required";
         settings = {
           cue = true;
           authfile = "/etc/u2f_mappings";
