@@ -28,12 +28,7 @@
     usbguardRules = lib.mkOption {
       type = lib.types.lines;
       default = "";
-      description = ''
-        Static usbguard allow rules (e.g. for U2F keys) that must survive
-        unplug/replug without a reboot. Non-empty makes services.usbguard.rules
-        the policy (NixOS-managed, immutable via IPC); leave empty to keep the
-        default dynamic ruleFile.
-      '';
+      description = "Static usbguard allow rules that survive unplug/replug; non-empty replaces the default dynamic ruleFile with this immutable policy";
     };
   };
 
@@ -311,6 +306,13 @@
     hardware.nitrokey.enable = lib.mkDefault config.services.displayManager.enable;
     # libfido2 只装了 CLI 工具不会自动装它自带的 udev 规则，得显式注册
     services.udev.packages = [ pkgs.libfido2 ];
+    # libfido2 规则里的 GROUP="plugdev" 在 NixOS 上无组可解析,会回退 root;
+    # 没这个组 FIDO 设备就只能靠 ACL,bubblewrap 新建的命名空间里看不到 ACL。
+    users.groups.plugdev = { };
+    # 保险：gid 授权在某些沙箱实现里仍可能拿不到；物理触摸确认仍是强制的。
+    services.udev.extraRules = ''
+      KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="20a0", ATTRS{idProduct}=="42b2", MODE="0666"
+    '';
     security = {
       sudo-rs.enable = lib.mkDefault false;
       sudo.enable = lib.mkDefault false;
@@ -485,7 +487,10 @@
       };
     };
     users.users.root.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
-    users.users.${config.mainUser}.openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
+    users.users.${config.mainUser} = {
+      openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
+      extraGroups = [ "plugdev" ];
+    };
     # =============================================================================
     # This machine can signing/control key from WHERE?
     programs.git.config = {

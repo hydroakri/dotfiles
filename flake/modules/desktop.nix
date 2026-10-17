@@ -488,9 +488,8 @@
             (sloth.concat' sloth.xdgConfigHome "/dconf")
             (sloth.concat' sloth.xdgConfigHome "/gtk-3.0")
             (sloth.concat' sloth.xdgConfigHome "/gtk-4.0")
-            # Chromium 用 libudev 按 subsystem="hidraw" 枚举设备，走的是
-            # /sys/class/hidraw/*，不是 /sys/devices 原始树；只绑 /dev/hidrawN
-            # 节点能打开文件，但枚举阶段找不到候选项，WebAuthn 还是看不到密钥
+            # Chromium 按 /sys/class/hidraw 枚举设备，不走 /sys/devices；缺这条
+            # 绑定的话枚举阶段就找不到任何候选项，WebAuthn 看不到密钥
             "/sys/class/hidraw"
           ];
           bubblewrap.bind.rw = [
@@ -502,11 +501,8 @@
           # 摄像头设备节点不在默认沙箱绑定内 (nixpak bubblewrap.bind.dev 默认空),
           # 否则 getUserMedia 在沙箱里找不到设备
           #
-          # WebAuthn/U2F 安全密钥同理需要绑定 hidraw 节点；hidraw 编号是内核按
-          # 探测顺序动态分配的，插拔顺序一变就漂移，无法写死单个路径，所以绑一个
-          # 足够宽的区间。安全性不受影响：只有被 logind 打了 uaccess 标签的安全
-          # 密钥节点才带用户 ACL，鼠标/键盘等其它 hidraw 节点仍是 root:root，Brave
-          # 在沙箱里即使看到路径也打不开。
+          # WebAuthn/U2F 同理需要 hidraw 节点；编号会随插拔顺序漂移,写死单个路径
+          # 不可靠,所以绑一个足够宽的区间；非安全密钥的 hidraw 节点仍是 root:root
           bubblewrap.bind.dev = [
             "/dev/video0"
             "/dev/video1"
