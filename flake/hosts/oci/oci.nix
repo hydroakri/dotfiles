@@ -1431,6 +1431,28 @@
           proxyPass = "http://127.0.0.1:8222";
           proxyWebsockets = true;
         };
+        # Bitwarden 桌面客户端 FIDO2 2FA：webauthn-connector.html 被嵌入
+        # file:// 源的 webview，http 层全局的 X-Frame-Options 会让加载直接
+        # ERR_BLOCKED_BY_RESPONSE（Electron 的 file:// 父页面不在 sameorigin
+        # 白名单里）。这个 location 有自己的 add_header（故意的：任何一级有
+        # add_header 就整体不继承上层），所以复制全局那组但去掉 XFO；其余
+        # 路径仍吃全局保护。CSP frame-ancestors 无法白名单 file:// 源，同理
+        # 不能加。
+        locations."= /webauthn-connector.html" = {
+          proxyPass = "http://127.0.0.1:8222";
+          extraConfig = ''
+            # XFO 得给一个"现代浏览器忽略"的值: gixy 的 add_header_redefinition
+            # 要求子级补齐父级全部头, 而 Chromium/Firefox 按规范只认 DENY/
+            # SAMEORIGIN, 其余值忽略——ALLOW-FROM 正好两头满足, 且 webview 端
+            # 无 frame 限制
+            add_header X-Frame-Options "ALLOW-FROM https://vault.hydroakri.cc" always;
+            add_header X-Content-Type-Options nosniff always;
+            add_header X-Permitted-Cross-Domain-Policies none always;
+            add_header X-DNS-Prefetch-Control off always;
+            add_header Referrer-Policy no-referrer always;
+            add_header Strict-Transport-Security "max-age=31536000" always;
+          '';
+        };
       };
 
       virtualHosts."map.hydroakri.cc" = {
