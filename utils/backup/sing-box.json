@@ -190,7 +190,7 @@
       "exclude_mptcp": true,
       "strict_route": true,
       "route_exclude_address_set": "geoip-private",
-      "stack": "mixed"
+      "stack": "system"
     }
   ],
   "outbounds": [
