@@ -111,6 +111,9 @@
       };
     };
 
+    # computer-use-linux: AT-SPI a11y bus (semantic tree) + wtype text input on Wayland
+    services.gnome.at-spi2-core.enable = lib.mkOverride 900 true;
+
     # 只留 gnome-keyring 一个 org.freedesktop.secrets provider，避免跟别的 provider
     # 抢同一个 D-Bus name；自动解锁要挂在 "ly"（实际图形登录用的 PAM service），
     # 不是 "login"（裸终端用的）
@@ -369,6 +372,7 @@
 
       # Wayland compositor
       pkgs.xwayland-satellite # niri
+      pkgs.wtype # computer-use-linux text input on Wayland
       pkgs.noctalia
       # pkgs.networkmanagerapplet
       pkgs.brightnessctl
