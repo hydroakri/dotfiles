@@ -213,6 +213,9 @@
         /Windows
             protocol: efi
             path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
+        /macOS (OpenCore)
+            protocol: efi
+            path: guid(a2410551-d3da-468a-a70d-2f9406029105):/EFI/BOOT/BOOTx64.efi
       '';
     };
   };
