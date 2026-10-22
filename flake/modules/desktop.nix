@@ -175,6 +175,16 @@
 
     # computer-use-linux: AT-SPI a11y bus (semantic tree) + wtype text input on Wayland
     services.gnome.at-spi2-core.enable = lib.mkOverride 900 true;
+    # niri 的 RemoteDesktop portal 不给输入，press_key/click 只能走 ydotool；per-user 守护进程
+    systemd.user.services.ydotoold = {
+      description = "ydotoold";
+      wantedBy = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.ydotool}/bin/ydotoold --socket-path=%t/.ydotool_socket --socket-own=%U:%G";
+        Restart = "on-failure";
+      };
+    };
 
     # 只留 gnome-keyring 一个 org.freedesktop.secrets provider，避免跟别的 provider
     # 抢同一个 D-Bus name；自动解锁要挂在 "ly"（实际图形登录用的 PAM service），
@@ -435,6 +445,7 @@
       # Wayland compositor
       pkgs.xwayland-satellite # niri
       pkgs.wtype # computer-use-linux text input on Wayland
+      pkgs.ydotool # computer-use-linux key/pointer input fallback
       pkgs.noctalia
       # pkgs.networkmanagerapplet
       pkgs.brightnessctl
@@ -547,6 +558,8 @@
             LANG = "en_US.UTF-8";
             LC_ALL = "en_US.UTF-8";
             FONTCONFIG_FILE = "${pkgs.mullvad-browser}/share/mullvad-browser/fonts/fonts.conf";
+            # 单实例 socket 落在 TMPDIR；沙箱私有 /tmp 会让第二次启动找不到首个实例
+            TMPDIR = sloth.concat' sloth.runtimeDir "/brave-tmp";
           };
           bubblewrap.bind.ro = [
             "/etc/brave"
@@ -562,6 +575,7 @@
             (sloth.mkdir (sloth.concat' sloth.xdgConfigHome "/BraveSoftware"))
             (sloth.mkdir (sloth.concat' sloth.xdgDataHome "/BraveSoftware"))
             (sloth.mkdir (sloth.concat' sloth.xdgCacheHome "/BraveSoftware"))
+            (sloth.mkdir (sloth.concat' sloth.runtimeDir "/brave-tmp"))
             (sloth.mkdir sloth.xdgDownloadDir)
           ];
           # 摄像头设备节点不在默认沙箱绑定内 (nixpak bubblewrap.bind.dev 默认空),

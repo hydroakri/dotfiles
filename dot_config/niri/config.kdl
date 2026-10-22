@@ -19,7 +19,7 @@ input {
 }
 
 output "eDP-1" {
-    scale 1.47
+    scale 1.49646 // scale = PPI/96
     background-color "#FFFCF0"
     position x=0 y=0
 }
