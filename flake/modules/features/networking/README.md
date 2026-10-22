@@ -132,3 +132,16 @@
 | `RestrictAddressFamilies` 条件性含 `AF_NETLINK` | 仅 `tun=true` 时授予，用于路由表操作。 |
 | `PrivateTmp = true` | `external_ui_download_url` 面板下载先落到 `/tmp` 再解压；`ProtectSystem=strict` 下 `/tmp` 默认只读，需要私有可写的 `/tmp`。 |
 | 其余（`NoNewPrivileges`/`ProtectSystem=strict`/`ProtectHome`/`ProtectClock`/`ProtectHostname`/`ProtectKernelLogs`/`ProtectKernelModules`/`ProtectControlGroups`/`LockPersonality`/`RestrictRealtime`/`RestrictSUIDSGID`/`MemoryDenyWriteExecute`/`SystemCallFilter=[@system-service,~@privileged]`） | 上游 nixpkgs 的 sing-box 模块未加任何 systemd 沙箱，这里补齐标准加固项。 |
+
+## captive portal (`captive-portal`，`desktop.nix`)
+
+| 设置 | Tradeoff |
+|---|---|
+| `networking.networkmanager.settings.connectivity` | 写进 `NetworkManager.conf`（NM 服务的 `restartTriggers`），`switch` 后自动重载；放 `conf.d` 不会触发重载，运行中的 NM 会对探测返回假结果（日志 `start fake request`）。`response` 必须非空——空串匹配任何回应，portal 的 307 也判成 FULL。204 无正文的端点（GrapheneOS、Cloudflare）不适用，故用 Arch 的 `nm-check.txt`，代价是 Arch 能看到出口 IP。 |
+| dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 |
+| `PORTAL` 时 unbound 转发改为 DHCP 下发的 DNS | dnscrypt 上游被封时对查询静默挂死，`forward-first` 的回退来不及（getent 约 45 秒后失败）。代价是 portal 态 DNS 为明文。还原值读自 `services.unbound.settings.forward-zone`，不另写一份。 |
+| 状态切换时 `flush_zone .` | `cache-min-ttl 300` 会留住 portal 态的 fakeip、劫持和失败答案。 |
+| 登录页经 `curl -4` 取探测网址的 307 `Location` 再开 | 浏览器会把 http 升级成 https，portal 拦不到；解析结果首选 IPv6 时该网络无路由。经 `systemd-run --user --machine=<user>@.host` 在用户会话里用默认浏览器打开，`xdg-open` 须用绝对路径（单元 PATH 里没有）。 |
+| `LIMITED` 不处理 | 探测失败不等于 portal，误判会把 DNS 降级为明文，代价高于收益。 |
+| `dns.rules` 的 `dns-system` 规则含 `ping.archlinux.org` | NM 探测域名走系统解析。未验证去掉后探测是否仍判成 `portal`。 |
+| 验证范围 | 仅在 `desktop.nix` 的主机生效（探测与 dispatcher 都在其中，服务器不探测）。仅在一家 Meraki 点击即过的 portal 上端到端验证。需要账号、拦截 HTTPS、丢弃外部 53 的 portal 未测。portal 按客户端 MAC 记录授权，`cloned-mac-address=random` 下每次连接都是新客户端，会被分流到店家的注册流程。该流程在笔电浏览器里于 `/guest` 得到 Azure 层的 403，而同一网络路径下 curl 带 cookie 与 Referer 访问 `/guest` 得到正常 302（手机也正常），证据偏向浏览器（Trivalent）；未用其他浏览器对照。 |

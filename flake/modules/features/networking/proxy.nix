@@ -295,6 +295,8 @@
                       "home"
                       "host"
                       "corp"
+                      # NM 探测域名走系统解析,不发 fakeip
+                      "ping.archlinux.org"
                     ];
                   }
                   {

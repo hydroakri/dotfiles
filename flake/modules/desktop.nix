@@ -53,7 +53,69 @@
     networking.networkmanager = {
       wifi.backend = lib.mkOverride 900 "iwd";
       settings."connection"."ipv6.ip6-privacy" = lib.mkOverride 900 2;
+      # 须写进 NetworkManager.conf(NM 服务的 restartTriggers)才会在 switch 后重载;
+      # response 须非空,空串匹配任何回应。详见 features/networking/README.md。
+      settings.connectivity = {
+        uri = "http://ping.archlinux.org/nm-check.txt";
+        response = "NetworkManager is online";
+        interval = 180;
+      };
     };
+
+    # NM 判定 portal:停 sing-box(若在运行)、unbound 临时转发 DHCP DNS、打开登录页;
+    # 取舍见 features/networking/README.md。
+    networking.networkmanager.dispatcherScripts =
+      let
+        fz = builtins.head config.services.unbound.settings.forward-zone;
+        fwdRestore = "${
+          lib.optionalString (fz.forward-first or false) "+i "
+        }${fz.name} ${lib.concatStringsSep " " fz.forward-addr}";
+      in
+      lib.mkIf (config.networking.networkmanager.enable && config.services.unbound.enable) [
+        {
+          source = pkgs.writeShellScript "captive-portal" ''
+            [ "$2" = "connectivity-change" ] || exit 0
+            UCTL="${config.services.unbound.package}/bin/unbound-control"
+            SYSTEMCTL="${pkgs.systemd}/bin/systemctl"
+            case "$CONNECTIVITY_STATE" in
+              PORTAL)
+                $SYSTEMCTL is-active --quiet sing-box.service && $SYSTEMCTL stop sing-box.service
+                $UCTL flush_zone . || true
+                # dnscrypt 上游被封时静默挂死
+                DEV=$(${pkgs.iproute2}/bin/ip -4 route show default \
+                  | ${pkgs.gawk}/bin/awk '{for(i=1;i<NF;i++) if($i=="dev" && $(i+1)!="tun0"){print $(i+1); exit}}')
+                DNS=$(${pkgs.networkmanager}/bin/nmcli -g IP4.DNS device show "$DEV" | ${pkgs.coreutils}/bin/tr -d '|')
+                if [ -n "$DNS" ]; then
+                  $UCTL forward_remove ${fz.name} || true
+                  $UCTL forward_add ${fz.name} $DNS || true
+                fi
+                # 浏览器会把 http 升级成 https 绕过拦截,故直接打开 307 的目标页
+                PROBE=${config.networking.networkmanager.settings.connectivity.uri}
+                # 首个查询可能超时;dispatcher 单脚本上限 15s,故最多 3 次
+                for _ in 1 2 3; do
+                  URL=$(${pkgs.curl}/bin/curl -4 -s -m 3 -o /dev/null -w '%{redirect_url}' "$PROBE")
+                  [ -n "$URL" ] && break
+                  ${pkgs.coreutils}/bin/sleep 1
+                done
+                [ -n "$URL" ] || URL=$PROBE
+                # root 无图形环境,经用户会话打开
+                for u in $(${pkgs.systemd}/bin/loginctl list-users --no-legend | ${pkgs.gawk}/bin/awk '{print $2}'); do
+                  ${pkgs.systemd}/bin/systemd-run --user --machine="$u@.host" --collect --quiet \
+                    ${pkgs.xdg-utils}/bin/xdg-open "$URL" || true
+                done
+                ;;
+              LIMITED) ;; # 探测失败不等于 portal,不处理
+              *)
+                $UCTL forward_remove ${fz.name} || true
+                $UCTL forward_add ${fwdRestore} || true
+                # cache-min-ttl 会留住 portal 态的劫持/fakeip/失败答案
+                [ "$CONNECTIVITY_STATE" = FULL ] && { $UCTL flush_zone . || true; }
+                $SYSTEMCTL is-enabled --quiet sing-box.service && $SYSTEMCTL start sing-box.service
+                ;;
+            esac
+          '';
+        }
+      ];
 
     # X Server and input
     services.gpm.enable = true; # mouse support on bare virtual consoles

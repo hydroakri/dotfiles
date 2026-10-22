@@ -185,6 +185,9 @@
             "::1/128"
             "::ffff:0:0/96"
           ];
+          # portal 把探测域名劫持成私网 IP,rebinding 防护会剥掉该答案;
+          # 只对 NM 探测域名放行。
+          private-domain = lib.mkDefault [ "ping.archlinux.org." ];
 
           edns-buffer-size = lib.mkDefault 1232;
           cache-min-ttl = lib.mkDefault 300;
@@ -222,7 +225,7 @@
           {
             name = ".";
             forward-addr = [ "127.0.0.1@5353" ];
-            # 转发失败时返回 SERVFAIL,不回退到明文迭代
+            # 转发失败返回 SERVFAIL,不回退明文迭代;portal 态见 captive-portal。
             forward-first = false;
           }
         ];
