@@ -1,5 +1,6 @@
 {
   config,
+  options,
   pkgs,
   lib,
   inputs,
@@ -258,6 +259,37 @@
       enable = lib.mkOverride 900 true;
       binfmt = lib.mkOverride 900 true;
     };
+
+    # Electron/Chromium runtime libs for AppImages run directly through nix-ld
+    programs.nix-ld.libraries =
+      options.programs.nix-ld.libraries.default
+      ++ (with pkgs; [
+        alsa-lib
+        at-spi2-atk
+        at-spi2-core
+        atk
+        cairo
+        cups
+        dbus
+        expat
+        glib
+        gtk3
+        libdrm
+        libgbm
+        libGL
+        libx11
+        libxcb
+        libxcomposite
+        libxdamage
+        libxext
+        libxfixes
+        libxkbcommon
+        libxrandr
+        nspr
+        nss
+        pango
+        vulkan-loader
+      ]);
 
     programs.niri.enable = lib.mkOverride 900 true;
     programs.kdeconnect.enable = lib.mkOverride 900 true;
