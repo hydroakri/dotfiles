@@ -1,0 +1,6 @@
+# Nitrokey plugged in: use only the sk key and skip the Bitwarden agent (querying it triggers an unlock prompt).
+# Not plugged in: fall through to the default agent (SSH_AUTH_SOCK).
+Match exec "grep -qsx 20a0 /sys/bus/usb/devices/*/idVendor"
+    IdentityAgent none
+    IdentityFile ~/.ssh/id_ed25519_sk
+    IdentitiesOnly yes
