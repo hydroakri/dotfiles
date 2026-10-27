@@ -175,6 +175,15 @@ binds {
     Mod+E { spawn "thunar"; }
     Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
 
+    Mod+B       { spawn "brave"; }
+    Mod+D       { spawn "flatpak" "run" "org.onlyoffice.desktopeditors"; }
+    Mod+G       { spawn "flatpak" "run" "com.valvesoftware.Steam"; }
+    Mod+Shift+G { spawn "flatpak" "run" "org.prismlauncher.PrismLauncher"; }
+
+    Mod+Y            { spawn "noctalia" "msg" "panel-toggle" "clipboard"; }
+    Mod+Escape       { spawn "noctalia" "msg" "session" "lock"; }
+    Mod+Shift+Escape { spawn "noctalia" "msg" "panel-toggle" "session"; }
+
     // You can also use a shell:
     // Mod+T { spawn "bash" "-c" "notify-send hello && exec alacritty"; }
 
@@ -333,8 +342,8 @@ binds {
     // Alternatively, there are commands to move just a single window:
     // Mod+Ctrl+1 { move-window-to-workspace 1; }
 
-    // Switches focus between the current and the previous workspace.
-    // Mod+Tab { focus-workspace-previous; }
+    Mod+Space repeat=false { toggle-overview; }
+    Mod+Tab { focus-window-previous; }
 
     Mod+Comma  { consume-window-into-column; }
     Mod+Period { expel-window-from-column; }
