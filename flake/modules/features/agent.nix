@@ -57,6 +57,7 @@ in
         "min-p" = 0.0;
         "presence-penalty" = 1.5;
         "n-predict" = 4096;
+        # Loopback-only; world-readable in the store, so not a secret.
         "api-key" = "184266d6bf1b835243203ccb9afccc7b3d276898a3de560f3e1315ca51564685";
       };
     };

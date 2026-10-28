@@ -70,6 +70,7 @@
     settings.PasswordAuthentication = true;
   };
 
+  # Install-time convenience only; change after first boot.
   users.users.root.initialPassword = "root";
   # users.users.root.openssh.authorizedKeys.keys = [ ];
 
