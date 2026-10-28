@@ -44,7 +44,9 @@
     # External modules
     inputs.sops-nix.nixosModules.sops
     inputs.disko.nixosModules.disko
+    inputs.owly.nixosModules.default
   ];
+  services.owly.enable = true;
   mainUser = "hydroakri";
   users.users.${config.mainUser}.hashedPasswordFile = config.sops.secrets.password.path;
 

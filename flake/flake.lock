@@ -462,6 +462,26 @@
         "type": "github"
       }
     },
+    "owly": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793013263,
+        "narHash": "sha256-QOmHCgKTB9Wh9idQ95Fm6QWbkSKZo4Y+sNjIjgIHJMk=",
+        "owner": "t4t5",
+        "repo": "owly",
+        "rev": "9a676e11d011c34ea32798a2541f2b1eeb66e731",
+        "type": "github"
+      },
+      "original": {
+        "owner": "t4t5",
+        "repo": "owly",
+        "type": "github"
+      }
+    },
     "preservation": {
       "locked": {
         "lastModified": 1757436102,
@@ -541,6 +561,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpak": "nixpak",
         "nixpkgs": "nixpkgs_2",
+        "owly": "owly",
         "preservation": "preservation",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",

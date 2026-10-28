@@ -177,6 +177,7 @@ binds {
 
     Mod+B       { spawn "brave"; }
     Mod+D       { spawn "flatpak" "run" "org.onlyoffice.desktopeditors"; }
+    Mod+A       { spawn "sh" "-c" "exec \"$HOME/.local/bin/owly-airdrop\""; }
     Mod+G       { spawn "flatpak" "run" "com.valvesoftware.Steam"; }
     Mod+Shift+G { spawn "flatpak" "run" "org.prismlauncher.PrismLauncher"; }
 

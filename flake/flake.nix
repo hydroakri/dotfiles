@@ -58,6 +58,10 @@
       url = "github:nixpak/nixpak";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    owly = {
+      url = "github:t4t5/owly";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     trivalent-nix = {
       url = "github:hydroakri/trivalent-nix";
       inputs.nixpkgs.follows = "nixpkgs";

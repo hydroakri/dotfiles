@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Toggle AirDrop receiving (owly radio + receiver). Wi-Fi drops while active on Intel cards.
+# --accept is used because a notification can't answer owly's prompt.
+dir=${OWLY_RECEIVE_DIR:-$HOME/Downloads}
+pidfile=${XDG_RUNTIME_DIR:-/tmp}/owly-airdrop.pid
+
+notify() {
+  gdbus call --session --dest org.freedesktop.Notifications \
+    --object-path /org/freedesktop/Notifications \
+    --method org.freedesktop.Notifications.Notify \
+    owly-airdrop 0 network-wireless "$1" "$2" '[]' '{}' 5000 >/dev/null
+}
+
+if [[ -f $pidfile ]] && kill -0 "$(<"$pidfile")" 2>/dev/null; then
+  kill "$(<"$pidfile")"
+  exit 0
+fi
+
+echo $$ >"$pidfile"
+stamp=$(mktemp)
+cleanup() {
+  trap - EXIT
+  kill "${receive_pid:-}" "${radio_pid:-}" 2>/dev/null
+  wait 2>/dev/null
+  rm -f "$pidfile" "$stamp"
+  notify "AirDrop off" "Radio stopped, Wi-Fi restoring"
+  exit 0
+}
+trap cleanup EXIT INT TERM
+
+owly radio up &
+radio_pid=$!
+for _ in {1..30}; do
+  ip link show awdl0 >/dev/null 2>&1 && break
+  kill -0 "$radio_pid" 2>/dev/null || { notify "AirDrop failed" "owly radio exited, see: owly doctor"; exit 1; }
+  sleep 1
+done
+ip link show awdl0 >/dev/null 2>&1 || { notify "AirDrop failed" "awdl0 did not appear, see: owly doctor"; exit 1; }
+
+owly receive --dir "$dir" --accept &
+receive_pid=$!
+notify "AirDrop on" "Receiving to $dir. Run again to stop."
+
+while kill -0 "$radio_pid" 2>/dev/null && kill -0 "$receive_pid" 2>/dev/null; do
+  while IFS= read -r -d '' f; do
+    notify "AirDrop received" "${f##*/}"
+  done < <(find "$dir" -maxdepth 1 -type f -newer "$stamp" -print0)
+  touch "$stamp"
+  sleep 2
+done
+notify "AirDrop stopped" "owly exited unexpectedly, see: owly doctor"

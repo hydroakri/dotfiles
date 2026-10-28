@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=AirDrop Receive
+Comment=Toggle owly AirDrop receiver
+Exec=sh -c 'exec "$HOME/.local/bin/owly-airdrop"'
+Icon=network-wireless
+Categories=Network;
