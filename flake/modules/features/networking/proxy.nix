@@ -18,12 +18,6 @@
       description = "Enable AdGuardHome as the DNS resolver backend.";
     };
 
-    lanInterfaces = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Interfaces on which the AdGuardHome and sing-box ports are opened; empty opens none.";
-    };
-
     # dnscrypt-proxy 在 core.nix 常驻配置，这里没有相应选项。
 
     singbox = {
@@ -122,40 +116,30 @@
         }
         # AdGuardHome 的端口规则
         (mkIf config.modules.proxy.adguardhome.enable {
-          interfaces = lib.genAttrs config.modules.proxy.lanInterfaces (_: {
-            allowedTCPPorts = [
-              53
-              80
-              443
-              3000
-            ];
-            allowedUDPPorts = [
-              53
-              1080
-              67
-              68
-              547
-              546
-            ];
-          });
+          allowedTCPPorts = [
+            53
+            80
+            443
+            3000
+          ];
+          allowedUDPPorts = [
+            53
+            1080
+            67
+            68
+            547
+            546
+          ];
         })
 
         # Sing-box 的端口规则
         (mkIf config.modules.proxy.singbox.enable {
-          interfaces = lib.genAttrs config.modules.proxy.lanInterfaces (_: {
-            allowedTCPPorts = [
-              1080
-              9090
-            ];
-            allowedUDPPorts = [ 1080 ];
-          });
+          allowedTCPPorts = [
+            1080
+            9090
+          ];
+          allowedUDPPorts = [ 1080 ];
         })
-      ];
-      assertions = [
-        {
-          assertion = config.modules.proxy.adguardhome.enable -> config.modules.proxy.lanInterfaces != [ ];
-          message = "modules.proxy.lanInterfaces must not be empty when AdGuardHome is enabled.";
-        }
       ];
 
       services.adguardhome.enable = mkIf config.modules.proxy.adguardhome.enable (mkDefault true);
