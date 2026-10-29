@@ -164,11 +164,11 @@
         gaming = ./modules/features/gaming.nix;
         preservation = ./modules/features/preservation.nix;
         utils = ./modules/features/utils.nix;
-        warp = ./modules/features/warp.nix;
         virtualisation = ./modules/features/virtualisation.nix;
         networking-router = ./modules/features/networking/router.nix;
         networking-sqm = ./modules/features/networking/sqm.nix;
         networking-tuning = ./modules/features/networking/tuning.nix;
+        networking-warp = ./modules/features/networking/warp.nix;
         # Hardware / filesystem helpers
         hardware-amd = ./modules/hardware/amd.nix;
         hardware-nvidia = ./modules/hardware/nvidia.nix;

@@ -23,7 +23,7 @@
     ../../modules/features/security.nix
     ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
-    ../../modules/features/warp.nix
+    ../../modules/features/networking/warp.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops

@@ -34,7 +34,7 @@
     ../../modules/features/virtualisation.nix
     ../../modules/features/gaming.nix
     ../../modules/features/agent.nix
-    ../../modules/features/warp.nix
+    ../../modules/features/networking/warp.nix
 
     # Filesystem modules
     ../../modules/filesystems/btrfs.nix

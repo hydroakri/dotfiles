@@ -15,7 +15,7 @@
     # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
     # never registers. Copy the secret into a real file before each start.
     sops.secrets."warp_mdm" = {
-      sopsFile = ./secrets/secrets.yaml;
+      sopsFile = ../secrets/secrets.yaml;
       owner = "root";
       group = "root";
       mode = "0400";
