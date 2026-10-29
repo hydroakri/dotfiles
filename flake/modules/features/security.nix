@@ -404,6 +404,7 @@
         RestartSec = 3;
       };
     };
+    # ===========================================================================
     # yescrypt 是 ENCRYPT_METHOD 默认值（nixpkgs shadow.nix），cost factor 默认 5，
     # 调高到 8（secureblue 值）增加密码 hash 泄露后的破解成本；只对之后新设的密码生效
     security.loginDefs.settings.YESCRYPT_COST_FACTOR = lib.mkDefault 8;
@@ -434,6 +435,7 @@
       text = config.modules.security.u2fMappings;
     };
 
+    # ===========================================================================
     # who can login in THIS machine
     # initialze security key: `ssh-keygen -t ed25519-sk -O resident -O verify-required`
     # add sk: `ssh-add -K`
@@ -486,10 +488,15 @@
       openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
       extraGroups = [ "plugdev" ];
     };
+    # =============================================================================
     # This machine can signing/control key from WHERE?
     programs.git.config = {
 
-      # git 签名默认关闭；非 root 用户自行 `git config --global commit.gpgsign true`，并设置 user.email 与 user.signingkey（公钥）。
+      # GIT Signing
+      # DISABLE Verified Signing by default
+      # non-root User should use `git config --global commit.gpgsign true`
+      # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
+      # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
       commit.gpgsign = lib.mkDefault false;
       gpg.format = lib.mkDefault "ssh";
 
