@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `flake/` — multi-host NixOS flake (4 hosts: `omen15` desktop, `oci` cloud server, `rpi4-side-gateway`, `rpi4-switch`). Excluded from chezmoi deployment (`.chezmoiignore`).
 - Everything else (`dot_config/`, `dot_zshrc`, `dot_zsh_plugins.txt`) — chezmoi-managed dotfiles.
-- `utils/` — provisioning scripts, excluded from chezmoi deployment; must be copied to `~/utils/` manually (WM configs hardcode this path).
+- `utils/` — static exports only (`backup/`: browser-extension settings, package lists), excluded from chezmoi deployment. Unrelated to `flake/modules/features/utils.nix` (monitoring module).
 
 Read `README.md` first for the module table and dotfile gotchas.
 

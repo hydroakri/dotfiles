@@ -250,7 +250,7 @@ utils/                    脚本(chezmoi 不部署,目前只有 backup/ 一个�
 | ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------- |
 | `omen15`            | x86_64  | desktop | 主力笔记本(AMD + NVIDIA 双显卡,锁定 CachyOS 内核)                                                        |
 | `oci`               | aarch64 | server  | Oracle Cloud——vaultwarden、atticd、headscale、一个 Minecraft 服务器,nginx 反代若干 `*.hydroakri.cc` 子域 |
-| `rpi4-side-gateway` | aarch64 | server  | 树莓派 4——透明代理(sing-box + dnscrypt-proxy),不管 DHCP/NAT                                        |
+| `rpi4-side-gateway` | aarch64 | server  | 树莓派 4——透明代理(sing-box + dnscrypt-proxy);导入 `router.nix` 只用于 WAN/MSS clamping,不做 DHCP/NAT                                        |
 | `rpi4-switch`       | aarch64 | server  | 树莓派 4——局域网路由:DHCP、NAT、SQM,不跑代理栈                                                           |
 
 还有两个 flake package 构建的是独立镜像,不是主机配置:
