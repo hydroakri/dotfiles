@@ -76,7 +76,7 @@ Three per-instance environment variables (Prism GUI → edit
 
 ```
 SDL_VIDEO_DRIVER=wayland
-__EGL_VENDOR_LIBRARY_FILENAMES=/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/10_nvidia_flatpak.json
+__EGL_VENDOR_LIBRARY_FILENAMES=/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/10_nvidia_flatpak.json:/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/50_mesa_flatpak.json
 __GL_THREADED_OPTIMIZATIONS=0
 ```
 
@@ -98,6 +98,25 @@ __GL_THREADED_OPTIMIZATIONS=0
 - The absolute `library_path` bypasses the sandbox's missing
   `LD_LIBRARY_PATH` entry for the extension lib dir (glvnd dlopens the path
   straight from the json).
+
+`~/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/50_mesa_flatpak.json`
+(Mesa vendor json, absolute `library_path`, independent of the NVIDIA driver version):
+
+```json
+{
+    "file_format_version" : "1.0.0",
+    "ICD" : {
+        "library_path" : "/usr/lib/x86_64-linux-gnu/GL/default/lib/libEGL_mesa.so.0"
+    }
+}
+```
+
+- Both jsons must be pinned. With only NVIDIA pinned, `eglGetDisplay` fails
+  (2026-10-28: `Could not get EGL display`, then the Vulkan backend fails
+  with missing `VK_KHR_surface`). The machine is AMD Cezanne iGPU + RTX 3060,
+  SDL's default display needs a Mesa fallback; NVIDIA on Wayland only
+  accepts an explicit platform.
+- NVIDIA is listed first so the context is still created on the dGPU.
 
 Verified `latest.log` after the fix:
 
@@ -122,10 +141,13 @@ Empirical results from 2026-10-22, recorded to save re-derivation:
   pinned down — either way, inject through Prism's own Environment
   Variables setting, not flatpak.
 - Hand-editing `instance.cfg` (`Env=…`, or `OverrideCommands=true` +
-  `WrapperCommand=env …`): silently discarded when the launcher exits; the
-  wrapper never executed (the game java's parent process was the launcher,
-  not `env`). Only the GUI's writer produces surviving values (it goes
-  through `settings->set("Env", Json::fromMap(...))`).
+  `WrapperCommand=env …`) **while Prism is running**: silently discarded when
+  the launcher exits; the wrapper never executed (the game java's parent
+  process was the launcher, not `env`). Editing `Env=…` **after Prism has
+  exited**, then launching with `flatpak run org.prismlauncher.PrismLauncher
+  --launch 26.3-alpha`: the values reach the game process (2026-10-28,
+  verified via `/proc/<pid>/environ`). Whether they survive the next exit is
+  untested.
 - Global `prismlauncher.cfg` `WrapperCommand=env …`: never executed either
   (removed afterwards).
 - The earlier hypothesis "SDL ignores the `SDL_VIDEO_DRIVER=wayland` env

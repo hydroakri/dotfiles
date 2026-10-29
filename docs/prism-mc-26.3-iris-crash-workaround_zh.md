@@ -70,7 +70,7 @@ com.mojang.renderpearl.api.device.BackendCreationException: OpenGL is not suppor
 
 ```
 SDL_VIDEO_DRIVER=wayland
-__EGL_VENDOR_LIBRARY_FILENAMES=/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/10_nvidia_flatpak.json
+__EGL_VENDOR_LIBRARY_FILENAMES=/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/10_nvidia_flatpak.json:/home/hydroakri/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/50_mesa_flatpak.json
 __GL_THREADED_OPTIMIZATIONS=0
 ```
 
@@ -90,6 +90,25 @@ __GL_THREADED_OPTIMIZATIONS=0
   这个应用的沙盒（permissions 只共享了特定路径），而 app-data 目录永远在。
 - `library_path` 用绝对路径，绕开沙盒里扩展 lib 目录缺失的
   `LD_LIBRARY_PATH` 条目（glvnd 直接按 json 里的路径 dlopen）。
+
+`~/.var/app/org.prismlauncher.PrismLauncher/data/glvnd/egl_vendor.d/50_mesa_flatpak.json`
+（Mesa 的 vendor json，`library_path` 同样写绝对路径，不随 NVIDIA 驱动版本变）：
+
+```json
+{
+    "file_format_version" : "1.0.0",
+    "ICD" : {
+        "library_path" : "/usr/lib/x86_64-linux-gnu/GL/default/lib/libEGL_mesa.so.0"
+    }
+}
+```
+
+- 两个 json 必须同时 pin。只 pin NVIDIA 时 `eglGetDisplay` 失败
+  （2026-10-28：`Could not get EGL display`，随后 Vulkan 后端也报
+  `VK_KHR_surface` 缺失）。机器是 AMD Cezanne 核显 + RTX 3060 双显卡，
+  SDL 取默认 display 时要能回落到 Mesa；NVIDIA 在 Wayland 上只接受显式
+  platform。
+- NVIDIA 排在前面，保证上下文仍建在独显上。
 
 修复后 `latest.log` 的验证：
 
@@ -111,10 +130,13 @@ __GL_THREADED_OPTIMIZATIONS=0
   在游戏进程的 environ 里（`/proc/<pid>/environ` 已验证），尽管启动器源码
   的 `CleanEnviroment()` 理论上会透传未知变量。机制没有完全钉死——总之，
   走 Prism 自己的 Environment Variables 设置注入，别走 flatpak。
-- 手写 `instance.cfg`（`Env=…`，或 `OverrideCommands=true` +
-  `WrapperCommand=env …`）：启动器退出时被静默丢弃；wrapper 从未执行（游
-  戏 java 的父进程是启动器，不是 `env`）。只有 GUI 的写入器能产生存活的
-  值（走 `settings->set("Env", Json::fromMap(...))`）。
+- 在 Prism **运行期间**手写 `instance.cfg`（`Env=…`，或
+  `OverrideCommands=true` + `WrapperCommand=env …`）：启动器退出时被静默
+  丢弃；wrapper 从未执行（游戏 java 的父进程是启动器，不是 `env`）。
+  Prism **已退出**时改 `Env=…`，再用 `flatpak run
+  org.prismlauncher.PrismLauncher --launch 26.3-alpha` 启动：值会到达游戏
+  进程（2026-10-28，`/proc/<pid>/environ` 已验证）。改后是否在下次退出时被
+  保留未测。
 - 全局 `prismlauncher.cfg` 的 `WrapperCommand=env …`：同样从未执行（事后已移除）。
 - 早期假设"SDL 无视 `SDL_VIDEO_DRIVER=wayland` env override"是错的：那些
   测试里 env 根本没到游戏。
