@@ -102,6 +102,9 @@
         }
       ];
 
+      # mkOverride 900: wins over server.nix's mkDefault "throughput-performance" by
+      # default when both are imported, but still yields to modules.server.tunedProfile.
+      environment.etc."tuned/active_profile".text = lib.mkOverride 900 "network-latency";
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = lib.mkOverride 950 1;
         "net.ipv6.conf.all.forwarding" = lib.mkOverride 950 1;

@@ -5,9 +5,9 @@
 }:
 {
   options.modules.server.tunedProfile = lib.mkOption {
-    type = lib.types.str;
-    default = "throughput-performance";
-    description = "tuned profile written to /etc/tuned/active_profile";
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "tuned profile for /etc/tuned/active_profile; null keeps the module default (router.nix may lower it to network-latency)";
   };
 
   config = {
@@ -49,7 +49,10 @@
     services.irqbalance.enable = lib.mkDefault true;
     services.fail2ban.enable = lib.mkDefault true;
     services.tuned.enable = lib.mkDefault true;
-    environment.etc."tuned/active_profile".text = config.modules.server.tunedProfile;
+    environment.etc."tuned/active_profile".text = lib.mkMerge [
+      (lib.mkDefault "throughput-performance")
+      (lib.mkIf (config.modules.server.tunedProfile != null) config.modules.server.tunedProfile)
+    ];
     environment.etc."tuned/profile_mode".text = lib.mkDefault "manual";
   };
 }
