@@ -779,6 +779,17 @@
               secret = "";
             };
           };
+          # services = [
+          #   {
+          #     type = "api";
+          #     listen = "127.0.0.1";
+          #     listen_port = 9090;
+          #     secret = "";
+          #     dashboard = {
+          #       enabled = true;
+          #     };
+          #   }
+          # ];
         };
       };
 
