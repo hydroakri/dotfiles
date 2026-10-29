@@ -21,7 +21,6 @@
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/privacy.nix
-    ../../modules/features/networking/proxy.nix
     ../../modules/features/utils.nix
     ../../modules/features/networking/router.nix
 
