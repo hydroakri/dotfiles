@@ -63,9 +63,7 @@ in
     };
 
     # $HOME is unset under DynamicUser, so Vulkan's shader cache tries to
-    # write to literal "//.cache", fails (read-only under ProtectSystem),
-    # $HOME is unset under DynamicUser, so Vulkan's shader cache tries to
-    # write to literal "//.cache", fails (read-only under ProtectSystem),
+    # write to literal "//.cache" and fails (read-only under ProtectSystem).
     systemd.services.llama-cpp.environment = lib.mkIf config.modules.agent."llama-cpp".enable {
       HOME = "/tmp";
     };
