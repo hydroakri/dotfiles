@@ -92,10 +92,10 @@
     nixpkgs.overlays = [
       inputs.nix-minecraft.overlay
       (_final: prev: {
-        # musl + libressl + clang: all three apply here — already off binary cache, so clang costs nothing extra
-        nginx = prev.pkgsMusl.nginx.override {
-          openssl = prev.pkgsMusl.libressl;
-          stdenv = prev.pkgsMusl.clangStdenv;
+        # libressl already takes nginx off binary cache, so clang costs nothing extra
+        nginx = prev.nginx.override {
+          openssl = prev.libressl;
+          stdenv = prev.clangStdenv;
         };
       })
     ];
@@ -311,7 +311,7 @@
     };
 
     environment.systemPackages = [
-      pkgs.pkgsMusl.rclone
+      pkgs.rclone
       pkgs.apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
 
@@ -752,7 +752,7 @@
         User = "nginx";
         Group = "nginx";
         Restart = "always";
-        ExecStart = "${pkgs.pkgsMusl.rclone}/bin/rclone serve webdav /var/lib/dav-storage --addr 127.0.0.1:8083";
+        ExecStart = "${pkgs.rclone}/bin/rclone serve webdav /var/lib/dav-storage --addr 127.0.0.1:8083";
       };
     };
 
@@ -769,7 +769,7 @@
         Group = "nginx";
       };
       script = ''
-        ${pkgs.pkgsMusl.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
+        ${pkgs.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
           --transfers 8 \
           --s3-upload-concurrency 8 \
           --s3-chunk-size 16M

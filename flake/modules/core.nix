@@ -247,7 +247,6 @@
     };
     services.dnscrypt-proxy = {
       enable = lib.mkDefault true;
-      package = pkgs.pkgsMusl.dnscrypt-proxy;
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
         block_ipv6 = true;
@@ -322,16 +321,14 @@
     };
 
     services.chrony = {
-      package = pkgs.pkgsMusl.chrony;
       enable = lib.mkDefault true;
       servers = [ ];
       enableMemoryLocking = lib.mkDefault false;
       # rtcsync（下方 extraConfig）与 enableRTCTrimming 二选一；选 rtcsync（每 11 分钟同步一次）
       enableRTCTrimming = lib.mkDefault false;
       extraFlags = lib.mkDefault [
-        # 不加 "-F"：chronyd 内建 seccomp 白名单假设 glibc/glibc malloc，与本仓库的
-        # musl + hardened_malloc 组合不兼容（触发白名单外系统调用，SIGSYS 崩溃）；
-        # systemd 层的 SystemCallFilter（NixOS chrony 模块自带）已提供等价过滤。
+        # 不加 "-F"：曾在 musl + hardened_malloc 下触发白名单外系统调用（SIGSYS），见 docs/known-breaking-settings.md；
+        # NixOS chrony 模块自带的 SystemCallFilter 已提供等价过滤。
         "-r" # 重启后复用 dumpdir 里存的历史测量数据,加快收敛
       ];
       extraConfig = ''
@@ -410,7 +407,7 @@
     };
 
     environment.systemPackages = [
-      pkgs.pkgsMusl.wget
+      pkgs.wget
       pkgs.curl
       pkgs.unar
       pkgs._7zz
