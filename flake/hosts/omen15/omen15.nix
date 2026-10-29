@@ -277,5 +277,13 @@
     capSysAdmin = true;
     openFirewall = true;
   };
+  services.udev.extraRules = ''
+    # ArbotiX-M robocontroller (FT232R USB-UART bridge) -> /dev/ttyUSB*
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"
+    # Intel RealSense D435 -- raw USB device plus its video4linux streams
+    SUBSYSTEM=="usb", ATTR{idVendor}=="8086", ATTR{idProduct}=="0b07", MODE="0666"
+    KERNEL=="video[0-9]*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b07", MODE="0666"
+  '';
+
   system.stateVersion = "25.11";
 }
