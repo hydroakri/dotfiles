@@ -27,11 +27,7 @@
   };
 
   config = lib.mkIf config.modules.utils.enable {
-    sops = {
-      secrets = {
-        grafana_secret_key = { };
-      };
-    };
+    sops.secrets.grafana_secret_key = lib.mkIf config.modules.utils.enableGrafana { };
 
     networking.firewall = lib.mkMerge [
       # grafana 的端口规则
