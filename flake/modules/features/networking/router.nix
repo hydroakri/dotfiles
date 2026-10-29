@@ -11,7 +11,6 @@
     wan = {
       interface = lib.mkOption {
         type = lib.types.str;
-        default = "end0";
         description = "WAN interface";
       };
       vlanId = lib.mkOption {
@@ -103,9 +102,6 @@
         }
       ];
 
-      # mkOverride 900: wins over server.nix's mkDefault "throughput-performance" by
-      # default when both are imported, but still yields to a plain user assignment.
-      environment.etc."tuned/active_profile".text = lib.mkOverride 900 "network-latency";
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = lib.mkOverride 950 1;
         "net.ipv6.conf.all.forwarding" = lib.mkOverride 950 1;

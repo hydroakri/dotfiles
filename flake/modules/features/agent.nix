@@ -17,6 +17,7 @@ in
   # llama-cpp's settings-based option is unstable-only; swap in unstable's module until it reaches 26.05.
   disabledModules = [ "services/misc/llama-cpp.nix" ];
   imports = [
+    ../options.nix
     inputs.hermes-agent.nixosModules.default
     inputs.sops-nix.nixosModules.sops
     "${inputs.unstable}/nixos/modules/services/misc/llama-cpp.nix"

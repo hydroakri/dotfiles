@@ -143,7 +143,6 @@ in
     boot.kernelParams = [
       "nowatchdog"
       "nmi_watchdog=0"
-      "amd_pstate=active"
       "iwlwifi.power_save=1"
       "pcie_aspm=force" # close when there is issue with idle
       "pcie_port_pm=force" # close when there is issue with idle
