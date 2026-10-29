@@ -30,8 +30,9 @@ nix fmt ./flake
 nix flake update --flake ./flake
 
 # Secrets (sops-nix) — run from flake/modules/features/secrets/
-sops secrets.yaml            # edit
-sops updatekeys secrets.yaml # re-encrypt after changing .sops.yaml recipients
+sops secrets.yaml            # edit (shared by all hosts)
+sops oci.yaml                # edit (oci only)
+sops updatekeys <file>.yaml  # re-encrypt after changing .sops.yaml recipients
 
 # Dotfiles
 chezmoi diff

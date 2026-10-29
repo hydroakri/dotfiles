@@ -2,9 +2,9 @@
 
 `oci.nix` 只管得到系統設定本身。這份文件記錄**重新部署(全新安裝/災難復原)時需要手動處理**的東西——secrets 的實際值、Cloudflare/OCI 主控台裡的設定、Stalwart 存在資料庫裡的物件。日常 `nh os switch` 不需要看這份文件,只有重建/搬家才用得到。
 
-## 1. Secrets(`flake/modules/features/secrets/secrets.yaml`)
+## 1. Secrets(`flake/modules/features/secrets/oci.yaml`;`warp_mdm` 在同目錄的 `secrets.yaml`)
 
-`sops secrets.yaml` 補值。大部分隨便生一組強密碼/random string 就行(`openssl rand -base64 24`),下面只列**需要額外步驟才拿得到值**的:
+`sops oci.yaml` 補值。大部分隨便生一組強密碼/random string 就行(`openssl rand -base64 24`),下面只列**需要額外步驟才拿得到值**的:
 
 | Secret                                                                    | 從哪拿                                                                                                                                                          |
 | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

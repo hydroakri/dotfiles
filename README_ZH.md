@@ -138,11 +138,12 @@ nixos-rebuild build --flake ./flake#omen15
 
 ```bash
 # 在 flake/modules/features/secrets/ 下执行
-sops secrets.yaml            # 所有主机共用的 secrets
+sops secrets.yaml            # 共用 secrets(omen15 + oci)
+sops oci.yaml                # 只给 oci 的 secrets
 sops proxy-secrets.yaml      # 只给 hydroakri + omen15 + rpi4(不含 oci)
 
 # 改了 .sops.yaml 里的 recipients 之后
-sops updatekeys secrets.yaml
+sops updatekeys <file>.yaml
 ```
 
 Recipients 绑定在各主机的 SSH ed25519 host key 上——**重装前一定要备份

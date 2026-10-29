@@ -99,6 +99,7 @@
       })
     ];
     sops = {
+      defaultSopsFile = lib.mkForce ../../modules/features/secrets/oci.yaml;
       secrets = {
         vault_token = { };
         cf_oracle = { };
@@ -398,6 +399,7 @@
     # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
     # never registers. Copy the secret into a real file before each start.
     sops.secrets."warp_mdm" = {
+      sopsFile = ../../modules/features/secrets/secrets.yaml;
       owner = "root";
       group = "root";
       mode = "0400";

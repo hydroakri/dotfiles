@@ -143,11 +143,12 @@ gets picked up automatically.
 
 ```bash
 # run from flake/modules/features/secrets/
-sops secrets.yaml            # all-hosts secrets
+sops secrets.yaml            # shared secrets (omen15 + oci)
+sops oci.yaml                # oci-only secrets
 sops proxy-secrets.yaml      # scoped to hydroakri + omen15 + rpi4 only (not oci)
 
 # after changing recipients in .sops.yaml
-sops updatekeys secrets.yaml
+sops updatekeys <file>.yaml
 ```
 
 Recipients are tied to each host's SSH ed25519 host key — **back up

@@ -48,6 +48,10 @@
   ];
   services.owly.enable = true;
   mainUser = "hydroakri";
+  sops.secrets = {
+    email = { };
+    password.neededForUsers = true;
+  };
   users.users.${config.mainUser}.hashedPasswordFile = config.sops.secrets.password.path;
 
   modules = {
