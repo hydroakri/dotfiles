@@ -33,6 +33,7 @@
     ../../modules/features/virtualisation.nix
     ../../modules/features/gaming.nix
     ../../modules/features/agent.nix
+    ../../modules/features/networking/warp.nix
 
     # Filesystem modules
     ../../modules/filesystems/btrfs.nix
@@ -150,6 +151,7 @@
   boot = {
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;
     # kernelPackages = pkgs.linuxPackages_xanmod_stable;
+    kernelParams = [ "amd_pstate=active" ];
     kernelModules = [
       "zenpower"
       "kvm-amd"
@@ -257,20 +259,7 @@
     pkgs.nbfc-linux
     # pkgs.winboat
   ];
-  services.cloudflare-warp.enable = true;
-  # sops-nix places secrets as symlinks; warp-svc opens its MDM policy file
-  # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
-  # never registers. Copy the secret into a real file before each start.
-  sops.secrets."warp_mdm" = {
-    owner = "root";
-    group = "root";
-    mode = "0400";
-    restartUnits = [ "cloudflare-warp.service" ];
-  };
-  systemd.services.cloudflare-warp.preStart = ''
-    install -m 0400 -o root -g root /run/secrets/warp_mdm /var/lib/cloudflare-warp/mdm.xml.tmp
-    mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
-  '';
+  modules.warp.enable = true;
   services.sunshine = {
     enable = false;
     autoStart = true;

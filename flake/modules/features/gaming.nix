@@ -6,6 +6,8 @@
 }:
 
 {
+  imports = [ ../options.nix ];
+
   boot.kernelModules = [ "ntsync" ];
   hardware.steam-hardware.enable = lib.mkDefault true;
   hardware.uinput.enable = lib.mkDefault true;

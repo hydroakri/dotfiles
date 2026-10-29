@@ -28,7 +28,7 @@
   ];
 
   powerManagement.cpuFreqGovernor = "performance";
-  environment.etc."tuned/active_profile".text = lib.mkDefault "network-latency";
+  modules.server.tunedProfile = lib.mkDefault "network-latency";
   services.irqbalance.enable = false;
 
   hardware = {

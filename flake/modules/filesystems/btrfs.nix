@@ -5,6 +5,10 @@
   ...
 }:
 let
+  preserved = config.modules.preservation.enable or false;
+  persistentPath = config.modules.preservation.persistentPath or "";
+  # preservation 开启时 "/" 是 tmpfs，btrfs 实际挂在 /nix
+  btrfsRoot = if preserved then "/nix" else "/";
   leanSnapperPolicy = {
     TIMELINE_CREATE = true;
     TIMELINE_CLEANUP = true;
@@ -19,13 +23,15 @@ let
   };
 in
 {
+  imports = [ ../options.nix ];
+
   environment.systemPackages = [ pkgs.btrfs-assistant ];
   services.btrfs.autoScrub = {
     enable = lib.mkDefault true;
     interval = lib.mkDefault "monthly";
     # preservation 开启时（tmpfs-on-root）"/" 不再是 btrfs，改用 /nix 触发
     # 同一个 btrfs 文件系统的 scrub（任意子卷挂载点都可以）
-    fileSystems = [ (if config.modules.preservation.enable or false then "/nix" else "/") ];
+    fileSystems = [ btrfsRoot ];
   };
   systemd = {
     services.btrfs-balance = {
@@ -40,15 +46,9 @@ in
         ExecStart = pkgs.writeShellScript "smart-balance" ''
           set -e
           echo "Starting smart Btrfs balance..."
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=0 -musage=0 ${
-            if config.modules.preservation.enable or false then "/nix" else "/"
-          } || true
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -musage=30 ${
-            if config.modules.preservation.enable or false then "/nix" else "/"
-          } || true
-          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=10 ${
-            if config.modules.preservation.enable or false then "/nix" else "/"
-          } || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=0 -musage=0 ${btrfsRoot} || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -musage=30 ${btrfsRoot} || true
+          ${pkgs.btrfs-progs}/bin/btrfs balance start -dusage=10 ${btrfsRoot} || true
           echo "Balance complete. SSD remains happy."
         '';
       };
@@ -73,11 +73,9 @@ in
     }
     // {
       # preservation 开启时 "/" 变成 tmpfs，改盯 /persistent
-      ${if config.modules.preservation.enable or false then "persistent" else "rootdir"} =
-        leanSnapperPolicy
-        // {
-          SUBVOLUME = if config.modules.preservation.enable or false then "/persistent" else "/";
-        };
+      ${if preserved then "persistent" else "rootdir"} = leanSnapperPolicy // {
+        SUBVOLUME = if preserved then persistentPath else "/";
+      };
     };
   };
 

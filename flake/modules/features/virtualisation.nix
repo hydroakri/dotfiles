@@ -5,6 +5,8 @@
   ...
 }:
 {
+  imports = [ ../options.nix ];
+
   options.modules.virtualisation.libvirtd.enable = lib.mkEnableOption "KVM/QEMU + libvirtd";
 
   config = {

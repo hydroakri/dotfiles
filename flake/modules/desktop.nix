@@ -10,6 +10,7 @@
   imports = [
     inputs.nixpak.nixosModules.default
     inputs.trivalent-nix.nixosModules.default
+    ./options.nix
   ];
 
   config = {

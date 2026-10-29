@@ -22,6 +22,7 @@
     ../../modules/features/security.nix
     ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
+    ../../modules/features/networking/warp.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
@@ -91,15 +92,15 @@
     nixpkgs.overlays = [
       inputs.nix-minecraft.overlay
       (_final: prev: {
-        # musl + libressl + clang: all three apply here — already off binary cache, so clang costs nothing extra
-        nginx = prev.pkgsMusl.nginx.override {
-          openssl = prev.pkgsMusl.libressl;
-          stdenv = prev.pkgsMusl.clangStdenv;
+        # libressl already takes nginx off binary cache, so clang costs nothing extra
+        nginx = prev.nginx.override {
+          openssl = prev.libressl;
+          stdenv = prev.clangStdenv;
         };
       })
     ];
     sops = {
-      defaultSopsFile = lib.mkForce ../../modules/features/secrets/oci.yaml;
+      defaultSopsFile = ../../modules/features/secrets/oci.yaml;
       secrets = {
         vault_token = { };
         cf_oracle = { };
@@ -268,7 +269,7 @@
     networking.hostName = "oci";
     # OCI 虚拟盘(virtio-blk)不支持 SMART，smartd 会一直探测失败
     services.smartd.enable = false;
-    environment.etc."tuned/active_profile".text = lib.mkForce "virtual-guest";
+    modules.server.tunedProfile = "virtual-guest";
     nixpkgs.hostPlatform = "aarch64-linux";
     # Boot loader configuration for RPi4
     boot.loader = {
@@ -310,7 +311,7 @@
     };
 
     environment.systemPackages = [
-      pkgs.pkgsMusl.rclone
+      pkgs.rclone
       pkgs.apacheHttpd # 为了方便以后在命令行生成 htpasswd
     ];
 
@@ -394,21 +395,7 @@
       };
     };
 
-    services.cloudflare-warp.enable = true;
-    # sops-nix places secrets as symlinks; warp-svc opens its MDM policy file
-    # with O_NOFOLLOW, so a symlinked mdm.xml fails with ELOOP and the client
-    # never registers. Copy the secret into a real file before each start.
-    sops.secrets."warp_mdm" = {
-      sopsFile = ../../modules/features/secrets/secrets.yaml;
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "cloudflare-warp.service" ];
-    };
-    systemd.services.cloudflare-warp.preStart = ''
-      install -m 0400 -o root -g root /run/secrets/warp_mdm /var/lib/cloudflare-warp/mdm.xml.tmp
-      mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
-    '';
+    modules.warp.enable = true;
 
     services.vaultwarden = {
       enable = true;
@@ -765,7 +752,7 @@
         User = "nginx";
         Group = "nginx";
         Restart = "always";
-        ExecStart = "${pkgs.pkgsMusl.rclone}/bin/rclone serve webdav /var/lib/dav-storage --addr 127.0.0.1:8083";
+        ExecStart = "${pkgs.rclone}/bin/rclone serve webdav /var/lib/dav-storage --addr 127.0.0.1:8083";
       };
     };
 
@@ -782,7 +769,7 @@
         Group = "nginx";
       };
       script = ''
-        ${pkgs.pkgsMusl.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
+        ${pkgs.rclone}/bin/rclone sync /var/lib/dav-storage r2:$R2_BUCKET_NAME/webdav-backup \
           --transfers 8 \
           --s3-upload-concurrency 8 \
           --s3-chunk-size 16M

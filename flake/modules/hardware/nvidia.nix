@@ -23,19 +23,26 @@
     };
 
     amdgpuBusId = lib.mkOption {
-      type = lib.types.str;
-      default = "PCI:7@0:0:0";
-      description = "Bus ID for the AMD iGPU (lspci | grep VGA, format PCI:bus:dev:func)";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Bus ID for the AMD iGPU (lspci | grep VGA, format PCI:bus@domain:dev:func); required when enabled";
     };
 
     nvidiaBusId = lib.mkOption {
-      type = lib.types.str;
-      default = "PCI:1@0:0:0";
-      description = "Bus ID for the NVIDIA dGPU (lspci | grep NVIDIA)";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Bus ID for the NVIDIA dGPU (lspci | grep NVIDIA); required when enabled";
     };
   };
 
   config = lib.mkIf config.modules.nvidia.enable {
+    assertions = [
+      {
+        assertion = config.modules.nvidia.amdgpuBusId != null && config.modules.nvidia.nvidiaBusId != null;
+        message = "modules.nvidia.{amdgpuBusId,nvidiaBusId} must be set when modules.nvidia.enable is true.";
+      }
+    ];
+
     services.xserver.videoDrivers =
       if config.modules.nvidia.variant == "nouveau" then
         [
@@ -128,8 +135,8 @@
           enableOffloadCmd = lib.mkOverride 900 true;
         };
         sync.enable = lib.mkDefault false;
-        amdgpuBusId = config.modules.nvidia.amdgpuBusId;
-        nvidiaBusId = config.modules.nvidia.nvidiaBusId;
+        amdgpuBusId = toString config.modules.nvidia.amdgpuBusId;
+        nvidiaBusId = toString config.modules.nvidia.nvidiaBusId;
       };
     };
 
@@ -142,10 +149,10 @@
       enable = lib.mkDefault true;
       enable32Bit = lib.mkDefault true;
       extraPackages = lib.optionals (
-        config.modules.nvidia.variant != "nouveau" && !config.modules.powersave.enable
+        config.modules.nvidia.variant != "nouveau" && !((config.modules.powersave or { }).enable or false)
       ) [ pkgs.nvidia-vaapi-driver ];
       extraPackages32 = lib.optionals (
-        config.modules.nvidia.variant != "nouveau" && !config.modules.powersave.enable
+        config.modules.nvidia.variant != "nouveau" && !((config.modules.powersave or { }).enable or false)
       ) [ pkgs.nvidia-vaapi-driver ];
     };
   };
