@@ -6,9 +6,9 @@ env:
 on:
   workflow_dispatch:
   schedule:
-    # Runs daily; the update_lock step sets changed=false when
-    # `nix flake update` didn't actually change the lock, so no PR is created.
-    - cron: "0 2 * * *"
+    # Weekly (Wed), offset from update-flake-lock (Sun) so their CI runs don't overlap;
+    # the update_lock step sets changed=false when the lock is unchanged, so no PR is created.
+    - cron: "0 2 * * 3"
 
 concurrency:
   group: update-home-manager-lock
