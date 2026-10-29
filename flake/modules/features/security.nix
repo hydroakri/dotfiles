@@ -6,8 +6,7 @@
   ...
 }:
 {
-  # systemd.user.settings not yet backported to 26.05's module tree (unstable-only as of
-  # this writing); swap in unstable's user.nix until it lands in stable.
+  # systemd.user.settings is unstable-only; swap in unstable's user.nix until it reaches 26.05.
   disabledModules = [ "system/boot/systemd/user.nix" ];
   imports = [
     ../options.nix
@@ -46,7 +45,7 @@
       # 死代码：内核未编 CONFIG_LATENT_ENTROPY（且是 clang 编译，与 GCC 插件机制不兼容）
       "extra_latent_entropy"
       "hash_pointers=always"
-      # 通用层严格 TLB 失效；不是 iommu=strict——那不是真实参数，之前从未生效
+      # 通用层严格 TLB 失效（iommu=strict 不是真实参数）
       "iommu.strict=1"
       # 编译默认是更严格的 always 档；这里降到 ptrace 档是刻意的兼容性考量
       "proc_mem.force_override=ptrace"
@@ -335,10 +334,8 @@
     networking.firewall = {
       enable = lib.mkDefault true;
       allowedTCPPorts = [ 22 ];
-      # 失效兜底：firewall.service 关机时因 conflicts=shutdown.target 被停,
-      # 会删掉 INPUT 跳转规则,而 INPUT 链自身默认策略是 ACCEPT,留出一段无
-      # 防护窗口（同 Tails #20536 对 ferm 的修复）。这里固定 INPUT 默认策略
-      # 为 DROP，跳转规则还在时不影响正常判决，规则被删时兜底拒绝
+      # 兜底：firewall.service 关机时被停会删掉 INPUT 跳转规则，而 INPUT 默认策略是 ACCEPT，留出无防护窗口
+      # （同 Tails #20536）；固定默认策略为 DROP，规则在时不影响判决，规则被删时兜底拒绝。
       extraCommands = ''
         ip46tables -P INPUT DROP
       '';
@@ -407,7 +404,6 @@
         RestartSec = 3;
       };
     };
-    # ===========================================================================
     # yescrypt 是 ENCRYPT_METHOD 默认值（nixpkgs shadow.nix），cost factor 默认 5，
     # 调高到 8（secureblue 值）增加密码 hash 泄露后的破解成本；只对之后新设的密码生效
     security.loginDefs.settings.YESCRYPT_COST_FACTOR = lib.mkDefault 8;
@@ -438,7 +434,6 @@
       text = config.modules.security.u2fMappings;
     };
 
-    # ===========================================================================
     # who can login in THIS machine
     # initialze security key: `ssh-keygen -t ed25519-sk -O resident -O verify-required`
     # add sk: `ssh-add -K`
@@ -491,15 +486,10 @@
       openssh.authorizedKeys.keys = config.modules.security.authorizedKeys;
       extraGroups = [ "plugdev" ];
     };
-    # =============================================================================
     # This machine can signing/control key from WHERE?
     programs.git.config = {
 
-      # GIT Signing
-      # DISABLE Verified Signing by default
-      # non-root User should use `git config --global commit.gpgsign true`
-      # signing need user's email dont't foget `git config --global user.email "THE EMAIL"`
-      # and add public key for each repo `git config --global user.signingkey "THE PUBLIC KEY"`
+      # git 签名默认关闭；非 root 用户自行 `git config --global commit.gpgsign true`，并设置 user.email 与 user.signingkey（公钥）。
       commit.gpgsign = lib.mkDefault false;
       gpg.format = lib.mkDefault "ssh";
 

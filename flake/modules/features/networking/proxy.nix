@@ -24,8 +24,7 @@
       description = "Interfaces on which the AdGuardHome and sing-box ports are opened; empty opens none.";
     };
 
-    # dnscrypt-proxy 本身现在是 core.nix 常驻服务(所有主机都跑,含 server_names/
-    # static 的固定条目),proxy.nix 这里不再有它自己的选项。
+    # dnscrypt-proxy 在 core.nix 常驻配置，这里没有相应选项。
 
     singbox = {
       enable = lib.mkOption {
@@ -39,10 +38,8 @@
         description = "Enable sing-box tun-in inbound.";
       };
 
-      # 扩展点：供按需 import 的配套文件（如 proxy-nodes.nix）往里塞具体的代理
-      # 节点/endpoint，不在这个文件里出现就等于完全没有这些东西——不是靠布尔开
-      # 关关掉，是靠要不要 import 那份文件决定。internal = true 标记这几个不是
-      # 给用户手调的常规选项。
+      # 扩展点：由按需 import 的文件（如 proxy-nodes.nix）注入节点/endpoint；不 import 即没有这些，不靠布尔开关。
+      # internal = 非用户常规选项。
       extraEndpoints = lib.mkOption {
         type = lib.types.listOf lib.types.attrs;
         default = [ ];
@@ -70,10 +67,8 @@
       };
     };
 
-    # 匿名后端：Tor 跑一个本地 SOCKS5 守护进程 (127.0.0.1:9050 回环地址),
-    # 由 sing-box 的 selector outbounds 选取。回环方向（sing-box -> socks 端口）不
-    # 会经过 tun，无需特殊处理；反方向（tor 自己的对外连接）会被 tun
-    # 拦截，必须用 exclude_uid_range 放行，见下文。
+    # Tor 本地 SOCKS5（127.0.0.1:9050）由 sing-box selector 选取；sing-box→socks 方向不经 tun，
+    # tor 自身的对外连接会被 tun 拦截，必须用 exclude_uid_range 放行（见下文）。
     tor = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -800,17 +795,6 @@
               secret = "";
             };
           };
-          # services = [
-          #   {
-          #     type = "api";
-          #     listen = "127.0.0.1";
-          #     listen_port = 9090;
-          #     secret = "";
-          #     dashboard = {
-          #       enabled = true;
-          #     };
-          #   }
-          # ];
         };
       };
 

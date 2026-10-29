@@ -11,8 +11,7 @@ let
   '';
 in
 {
-  # journald.settings not yet backported to 26.05's module tree (unstable-only as of this writing);
-  # swap in unstable's journald module until it lands in stable.
+  # journald.settings is unstable-only; swap in unstable's journald module until it reaches 26.05.
   disabledModules = [ "system/boot/systemd/journald.nix" ];
   imports = [ "${inputs.unstable}/nixos/modules/system/boot/systemd/journald.nix" ];
 

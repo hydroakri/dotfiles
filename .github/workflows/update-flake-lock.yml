@@ -50,12 +50,8 @@ jobs:
         run: |
           cd flake
 
-          # Resolve the flake.lock node the root "nixpkgs" input actually points
-          # to (not necessarily the node literally named "nixpkgs" — that key
-          # can be taken by an unrelated input's own unfollowed nixpkgs pin,
-          # e.g. nix-cachyos-kernel's). This also makes the channel name track
-          # whatever flake.nix's nixpkgs.url points at (stable release or
-          # nixos-unstable) instead of hardcoding one.
+          # Resolve the lock node that root "nixpkgs" points to (not necessarily the node named "nixpkgs";
+          # another input's unfollowed pin can take that key), so the channel tracks flake.nix's nixpkgs.url.
           LOCKS=$(nix flake metadata . --json | jq '.locks')
           NIXPKGS_NODE=$(echo "$LOCKS" | jq -r '.nodes.root.inputs.nixpkgs')
           NIXPKGS_URL=$(echo "$LOCKS" | jq -r --arg n "$NIXPKGS_NODE" '.nodes[$n].original.url')
@@ -102,10 +98,7 @@ jobs:
           echo "== nix flake check =="
           nix flake check ./flake --accept-flake-config
 
-          # No local toplevel build here: nix flake check only validates eval/
-          # assertions/formatting, not that any host actually builds. Full
-          # builds for all four hosts run in ci.yml's matrix once the PR is
-          # open; a build failure there rolls this PR back automatically.
+          # No toplevel build here: ci.yml builds all hosts once the PR is open; a failure there rolls this PR back.
 
       - name: Create update PR
         if: steps.check_kernel.outputs.should_update == 'true'

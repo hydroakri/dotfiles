@@ -48,10 +48,8 @@ let
     esac
   '';
 
-  # Pop!_OS 原版 usr/lib/iw-set-regdomain；按系统时区反查国家码，`iw reg set` 对应
-  # 监管域（信道可用性/最大发射功率按国家而定）。原脚本假设 /etc/localtime 指向
-  # /usr/share/zoneinfo/<Zone>，NixOS 上实际指向 tzdata 的 nix store 路径，这里改成
-  # 通配去掉 "share/zoneinfo/" 前缀，不依赖具体 store hash
+  # 移植自 Pop!_OS iw-set-regdomain：按时区反查国家码并 `iw reg set`。NixOS 的 /etc/localtime 指向 tzdata store 路径，
+  # 故用通配去掉 "share/zoneinfo/" 前缀，不依赖 store hash。
   iwSetRegdomain = pkgs.writeShellScript "iw-set-regdomain" ''
     set -e
     LOGGER="${pkgs.util-linux}/bin/logger -t iw-set-regdomain"
@@ -191,7 +189,6 @@ in
       # 新网卡插入时按时区设监管域
       SUBSYSTEM=="ieee80211", ACTION=="add", RUN+="${iwSetRegdomain}"
     '';
-    # services.auto-cpufreq.enable = true;
     services.power-profiles-daemon.enable = lib.mkDefault true;
     services.irqbalance.enable = lib.mkDefault true;
 

@@ -271,9 +271,6 @@
     capSysAdmin = true;
     openFirewall = true;
   };
-  # ============================================================================
-  # Custom Hardware Configuration
-  # ============================================================================
   # Enable DHCP by default for network interfaces
   networking.useDHCP = lib.mkDefault true;
 

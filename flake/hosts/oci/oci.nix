@@ -279,7 +279,6 @@
     };
     boot.plymouth.enable = false;
 
-    # boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
     boot.initrd.supportedFilesystems = [
       "vfat"
       "ext4"
@@ -372,9 +371,8 @@
     services.tailscale.enable = true;
     services.headscale = {
       enable = true;
-      # 26.05 ships 0.28.0; this host's db.sqlite was already migrated by unstable's 0.29.3
-      # (added a database_versions table) before the nixpkgs pin switch — 0.28.0's schema
-      # validator rejects it as unexpected. Pin forward to unstable until 26.05 catches up.
+      # Pinned to unstable: 26.05's headscale 0.28 rejects the db (0.29 added database_versions).
+      # Drop when 26.05 catches up.
       package = inputs.unstable.legacyPackages.${pkgs.system}.headscale;
       address = "127.0.0.1";
       port = 6313;
@@ -564,10 +562,8 @@
     # Museum（API server）+ web 前端（Photos/Accounts/Cast/Albums）。四个 web 子域名
     services.ente.api = {
       enable = true;
-      # 26.05 ships museum 1.3.36; its bundled migrations/ dir is missing files that postgres
-      # already recorded as applied by unstable's 1.3.63 before the nixpkgs pin switch —
-      # golang-migrate panics "file does not exist" in m.Up(). Pin forward to unstable until
-      # 26.05 catches up. Same failure class as atticd/headscale above.
+      # Pinned to unstable: 26.05's museum 1.3.36 panics in golang-migrate on migrations already
+      # applied by 1.3.63. Drop when 26.05 catches up.
       package = inputs.unstable.legacyPackages.${pkgs.system}.museum;
       nginx.enable = false; # 跟 stalwart JMAP 撞 127.0.0.1:8080，见 README
       domain = "ente-api.hydroakri.cc";
@@ -610,10 +606,7 @@
 
     services.ente.web = {
       enable = true;
-      # 26.05 钉的版本是 1.3.36，那条 fetchFromGitHub（tag photos-v1.3.36，
-      # sparseCheckout + submodule）的 hash 对不上了——上游同一个 tag 指向的内容
-      # 变了（nixpkgs 现在 master 已经是 1.3.61，是全新的 tag/hash，不受影响）。
-      # 跟 attic-server/ntfy-sh 同一个处理方式：钉到 unstable。
+      # 钉到 unstable：上游改写了 photos-v1.3.36 tag，26.05 的 fetchFromGitHub hash 对不上。
       package = inputs.unstable.legacyPackages.${pkgs.system}.ente-web;
       domains = {
         photos = "ente-photos.hydroakri.cc";
@@ -624,21 +617,9 @@
       };
     };
 
-    # mail.hydroakri.cc：SMTP/IMAP 没法走 Cloudflare Tunnel（它只代理 HTTP/HTTPS），
-    # 这个域名的 DNS 直接指向 oci 真实公网 IP（DNS-only，不走橘色云朵代理）。
-    #
-    # Stalwart 把 domain/账号/DKIM/outbound route/outbound strategy 这类「资源」存
-    # 数据库，不是这份 TOML 文件——即使在这里声明了同名 key，运行时也会被数据库那份
-    # 覆盖/忽略。这些一律不写在 nix 里，改用 Stalwart 自己的 web admin
-    # （fallback-admin 登录）设置，完整的手动步骤见 flake/hosts/oci/README.md。
-    #
-    # 25/587/465/993 直连真实 IP，没有 nginx/tunnel 挡在前面，靠 Stalwart 自带的
-    # auto-ban（web admin › Settings › Security › Settings，同样是数据库管理）按
-    # IP+账号追踪认证失败/RCPT 探测/端口扫描并丢连接。默认阈值（如 authBanRate
-    # 100 次/天）对个人域名偏松，建议登进 admin 收紧。
-    # TODO: nixpkgs 钉死 services.stalwart 在 0.15.5，stalwart_0_16 存在但官方标注
-    # 不兼容这个 module（0.16 管理层破坏性更新，邮件数据不受影响）。等 module 跟上
-    # 0.16 再评估升级
+    # mail.*：SMTP/IMAP 不能走 Cloudflare Tunnel，DNS-only 直指公网 IP。domain/账号/DKIM/路由存在 Stalwart 数据库而非此 TOML，
+    # 经 web admin 设置（步骤见 hosts/oci/README.md）；25/587/465/993 直接暴露，默认 auto-ban 阈值偏松，需在 admin 里收紧。
+    # TODO: services.stalwart 被钉在 0.15.5；stalwart_0_16 与此 module 不兼容，等 module 跟上再升级。
     services.stalwart = {
       enable = true;
       stateVersion = config.system.stateVersion; # 首次启用，跟系统本身对齐
@@ -768,10 +749,8 @@
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "element.hydroakri.cc";
           };
-          # fed.hydroakri.cc（联邦 8448）不进这里——直连真实 IP，不走 tunnel，见 oci.nix
-          # 里 services.matrix-synapse 旁边的注释
-          # *.bsky.hydroakri.cc（未来多用户子网域 handle）先不加：originServerName 不能是
-          # 字面量的 wildcard SNI，等真的开放注册、有第二个账号时再处理
+          # 不列入：fed.*（直连公网 IP，见 matrix-synapse 旁注释）；
+          # *.bsky.*（originServerName 不能是通配 SNI，有第二个账号时再处理）。
         };
       };
     };
@@ -817,10 +796,8 @@
 
     services.atticd = {
       enable = true;
-      # 26.05 ships the 2025-09-24 snapshot; this host's postgres db already has migrations
-      # applied by unstable's 2026-07-06 snapshot before the nixpkgs pin switch — the older
-      # binary's embedded migrator doesn't even contain those migration files. Pin forward to
-      # unstable until 26.05 catches up.
+      # Pinned to unstable: 26.05's snapshot lacks migrations already applied to this host's postgres
+      # by unstable's. Drop when 26.05 catches up.
       package = inputs.unstable.legacyPackages.${pkgs.system}.attic-server;
       environmentFile = config.sops.templates."attic-env".path;
     };
@@ -854,10 +831,7 @@
           ensureDBOwnership = true;
         }
         {
-          # 只建角色，不建库——Synapse 要求数据库是 C collation/C ctype，
-          # ensureDatabases/ensureDBOwnership 没法指定 locale/template，见下面的
-          # matrix-synapse-db-bootstrap（跟 nixos matrix-synapse 模块文档给的
-          # CREATE DATABASE 示例一致）
+          # 只建角色：Synapse 要求 C collation 的库，ensureDatabases 无法指定，见 matrix-synapse-db-bootstrap。
           name = "matrix-synapse";
         }
       ];
@@ -882,12 +856,8 @@
       '';
     };
 
-    # server_name 建号后不可更改，见 flake/hosts/oci/README.md
-    #
-    # 联邦：matrix.hydroakri.cc 的 443 走 cloudflared tunnel（CDN 保护客户端 API），
-    # 但联邦端口 8448 是裸 TLS，Cloudflare/tunnel 都代理不了——用 .well-known/matrix/server
-    # 把联邦流量委派到 fed.hydroakri.cc:8448，那个子域名单独直连真实公网 IP（灰云 A 记录，
-    # 跟 mail./headscale. 同样的理由），不占用 matrix.hydroakri.cc 本身的 443
+    # server_name 建号后不可更改，见 hosts/oci/README.md。联邦：443 走 tunnel，8448 是裸 TLS 无法代理，
+    # 故 fed.* 灰云直连公网 IP，经 .well-known/matrix/server 委派。
     services.matrix-synapse = {
       enable = true;
       settings = {
@@ -922,9 +892,8 @@
 
     services.ntfy-sh = {
       enable = true;
-      # 26.05 ships 2.26.0 (cache.db schema v8 reader); this host's cache.db was already
-      # migrated to schema v9 by unstable's 2.28.0 before the nixpkgs pin switch — pin
-      # forward to unstable until 26.05 catches up, or the service refuses to start.
+      # Pinned to unstable: 26.05's ntfy 2.26 refuses a cache.db already migrated to schema v9 by 2.28.
+      # Drop when 26.05 catches up.
       package = inputs.unstable.legacyPackages.${pkgs.system}.ntfy-sh;
       settings = {
         listen-http = "127.0.0.1:8084";
@@ -945,24 +914,9 @@
       openFirewall = true;
       servers.myserver = {
         enable = true;
-        # Mojang 目前最新版是 26.3。NeoForge 對 26.3 只有 beta,nix-minecraft 也還沒鎖;
-        # Fabric API 對 26.3 已經是穩定版(Mojang 發布後 3 天),`fabricServers` 也已鎖到
-        # 26.3——選 Fabric 才能真正貼齊最新版而不是次新版。取捨過程、雙 loader 平行審查
-        # 結果、mod 篩選標準全文位置,見 README 第 8 節。
-        # 寫死具體版本 attribute、不用 `fabricServers.fabric` 這個自動跟最新的裸指標——
-        # 下面 mods 是釘死特定 MC 版本的 jar,loader 自動跳版但 mod 沒跟上會導致啟動失敗/
-        # 崩潰,寧可每次手動一起升級。
-        #
-        # `.override { jre_headless = ... }` 是必要的:nix-minecraft 的
-        # fabric-servers/default.nix 沒有像 neoforge-servers 那樣明確傳
-        # `jre_headless = vanilla-server.java`,結果 mkTextileServer 透過
-        # callPackage 自動注入的是 nixpkgs 全域預設的 jre_headless(較舊版本),
-        # 對 26.3 這種需要 Java 25 的新版本直接啟動失敗:
-        # UnsupportedClassVersionError(class file 69.0 vs 65.0)。
-        # 實測(2026-09-27,live 崩潰 log 抓到的原始例外)確認 vanilla-26_3.java
-        # 就是 25.0.4.1,override 後驗證過可以正常評估出新的 derivation。
-        # 每次升版都要重新確認這個 override 還有沒有必要(未來 nix-minecraft
-        # 上游可能自己修好這個 default)。
+        # 选 Fabric 而非 NeoForge（后者 26.3 仅 beta），取舍见 README 第 8 节。写死版本 attribute 而非 fabricServers.fabric：
+        # mods 是钉死 MC 版本的 jar，loader 自动跳版会导致启动失败。.override jre_headless 必须保留：nix-minecraft 的
+        # fabric-servers 没传 vanilla-server.java，会注入全局较旧 JRE（26.3 需 Java 25，否则 UnsupportedClassVersionError）；升级时确认上游是否已修。
         package = pkgs.fabricServers.fabric-26_3.override {
           jre_headless = pkgs.vanillaServers.vanilla-26_3.java;
         };
@@ -1326,12 +1280,8 @@
         proxy_headers_hash_max_size 4096;
         proxy_headers_hash_bucket_size 256;
 
-        # 一组不改变渲染/请求行为的安全头，http 层的 add_header 会被所有
-        # server/location 自动继承——除非某个 vhost 自己也写了 add_header（那样父
-        # 层级全部不继承，按层级整体替换而非按头名字合并），目前只有
-        # cache.hydroakri.cc 是这种情况，那边单独复制了一份保持一致。
-        # CSP/COEP/CORP/COOP/完整版 Permissions-Policy 没有加——会挡掉未加白名单的
-        # 脚本/跨源请求/WebAuthn，这几个服务没法实测，不做。
+        # http 层统一安全头；任一 vhost/location 自带 add_header 会整体替换（而非合并）继承的头，故这类 location 需重复这组头。
+        # 未加 CSP/COEP/CORP/COOP/完整 Permissions-Policy：会挡掉未加白名单的脚本/跨源/WebAuthn，这些服务无法实测。
         add_header X-Content-Type-Options nosniff always;
         add_header X-Frame-Options SAMEORIGIN always;
         add_header X-Permitted-Cross-Domain-Policies none always;
@@ -1357,11 +1307,8 @@
         }
       '';
 
-      # headscale.hydroakri.cc/cache.hydroakri.cc 是仅有的两个直接绑 0.0.0.0、不
-      # 走 cloudflared 的 vhost（真实公网 IP 直接暴露）。没有这个兜底的话，SNI/
-      # Host 对不上任何已知域名的请求会落到文件里排第一个的 vhost 上（纯粹是声明
-      # 顺序决定的，不是有意为之）。复用现成的 hydroakri.cc 泛域名证书，不用另生成
-      # 一份自签证书。
+      # headscale./cache. 直接绑 0.0.0.0、不走 tunnel；无此兜底时，Host/SNI 不匹配的请求会落到声明顺序第一个 vhost。
+      # 复用 hydroakri.cc 泛域名证书。
       virtualHosts."catchall-default" = {
         default = true;
         serverName = "_";
@@ -1431,20 +1378,12 @@
           proxyPass = "http://127.0.0.1:8222";
           proxyWebsockets = true;
         };
-        # Bitwarden 桌面客户端 FIDO2 2FA：webauthn-connector.html 被嵌入
-        # file:// 源的 webview，http 层全局的 X-Frame-Options 会让加载直接
-        # ERR_BLOCKED_BY_RESPONSE（Electron 的 file:// 父页面不在 sameorigin
-        # 白名单里）。这个 location 有自己的 add_header（故意的：任何一级有
-        # add_header 就整体不继承上层），所以复制全局那组但去掉 XFO；其余
-        # 路径仍吃全局保护。CSP frame-ancestors 无法白名单 file:// 源，同理
-        # 不能加。
+        # Bitwarden 桌面端 FIDO2：webauthn-connector.html 被 file:// 源的 webview 嵌入，全局 X-Frame-Options 会使其被拦；
+        # 此 location 自带 add_header（整体替换继承），故复制全局头并去掉 XFO。CSP frame-ancestors 无法白名单 file://。
         locations."= /webauthn-connector.html" = {
           proxyPass = "http://127.0.0.1:8222";
           extraConfig = ''
-            # XFO 得给一个"现代浏览器忽略"的值: gixy 的 add_header_redefinition
-            # 要求子级补齐父级全部头, 而 Chromium/Firefox 按规范只认 DENY/
-            # SAMEORIGIN, 其余值忽略——ALLOW-FROM 正好两头满足, 且 webview 端
-            # 无 frame 限制
+            # XFO 用 ALLOW-FROM：现代浏览器忽略它（只认 DENY/SAMEORIGIN），又满足 gixy add_header_redefinition 要求补齐父级头。
             add_header X-Frame-Options "ALLOW-FROM https://vault.hydroakri.cc" always;
             add_header X-Content-Type-Options nosniff always;
             add_header X-Permitted-Cross-Domain-Policies none always;
@@ -1611,10 +1550,7 @@
             proxy_buffering off;
             proxy_request_buffering off;
           '';
-          # Upgrade/Connection 头不用手写——proxyWebsockets = true 已经设置了
-          # proxy_set_header Connection $connection_upgrade，只在真正带 Upgrade
-          # 头的请求上才是 "upgrade"，其余请求是 "close"；手写死会导致所有普通
-          # REST 请求也被发成 Connection: upgrade。
+          # 不手写 Upgrade/Connection：proxyWebsockets 已设 Connection $connection_upgrade，仅真正的 Upgrade 请求才是 upgrade。
         };
       };
 
@@ -1714,9 +1650,7 @@
             client_max_body_size 50M;
           '';
         };
-        # 其它服务器联邦握手前先拿这个端点验证你的签名密钥，漏代理这条会导致对方连得上
-        # TLS 但拿不到 key，join/联邦请求卡死（实测：之前这里没加，curl 直接从 nginx 收到
-        # 404，根本没转发到 Synapse）
+        # 对端联邦握手前取此端点验证签名密钥；不代理则 TLS 通但拿不到 key，join/联邦卡死。
         locations."/_matrix/key" = {
           proxyPass = "http://127.0.0.1:8008";
         };
@@ -1725,11 +1659,8 @@
         };
       };
 
-      # Element Web 静态文件，走 cloudflared tunnel。config.json 在构建期已经注入
-      # （见上方 nixpkgs.config.element-web.conf）。下面每个 location 自己又写了
-      # add_header（设 Cache-Control），会导致这些 location 不再继承全局安全头
-      # （按层级整体替换，不按头名字合并）——跟 ente-accounts/cache.hydroakri.cc
-      # 同一个坑，复制一份保持一致。
+      # Element Web 静态文件，走 tunnel；config.json 构建期已注入。各 location 自带 add_header（Cache-Control）会丢掉
+      # 全局安全头，故重复一份（同 ente-accounts/cache.）。
       virtualHosts."element.hydroakri.cc" = {
         useACMEHost = "hydroakri.cc";
         forceSSL = true;
