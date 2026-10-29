@@ -224,6 +224,8 @@
   environment.etc."nixos/nbfc.json".text = builtins.toJSON {
     SelectedConfigId = "HP OMEN Laptop 15-en0xxx";
   };
+  # Enable DHCP by default for network interfaces
+  networking.useDHCP = lib.mkDefault true;
   networking.networkmanager = {
     wifi.backend = "wpa_supplicant";
   };
@@ -271,11 +273,5 @@
     capSysAdmin = true;
     openFirewall = true;
   };
-  # ============================================================================
-  # Custom Hardware Configuration
-  # ============================================================================
-  # Enable DHCP by default for network interfaces
-  networking.useDHCP = lib.mkDefault true;
-
   system.stateVersion = "25.11";
 }

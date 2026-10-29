@@ -2,7 +2,6 @@ name: Update Flake Lock
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
 
 on:
   workflow_dispatch:
@@ -20,21 +19,23 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
 
       - name: Configure git authentication
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
         run: |
           gh auth setup-git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install Determinate Nix
-        uses: DeterminateSystems/determinate-nix-action@v3
+        uses: DeterminateSystems/determinate-nix-action@92957199488000b908fdad19f63711000965d8f3 # v3
 
       - name: Setup Attic Cache
-        uses: ryanccn/attic-action@5635a15ef0c5462194ffbd05d1daeddc74625c3a # v0.5.0
+        uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
           endpoint: https://cache.hydroakri.cc
           cache: cachix
@@ -49,12 +50,8 @@ jobs:
         run: |
           cd flake
 
-          # Resolve the flake.lock node the root "nixpkgs" input actually points
-          # to (not necessarily the node literally named "nixpkgs" — that key
-          # can be taken by an unrelated input's own unfollowed nixpkgs pin,
-          # e.g. nix-cachyos-kernel's). This also makes the channel name track
-          # whatever flake.nix's nixpkgs.url points at (stable release or
-          # nixos-unstable) instead of hardcoding one.
+          # Resolve the lock node that root "nixpkgs" points to (not necessarily the node named "nixpkgs";
+          # another input's unfollowed pin can take that key), so the channel tracks flake.nix's nixpkgs.url.
           LOCKS=$(nix flake metadata . --json | jq '.locks')
           NIXPKGS_NODE=$(echo "$LOCKS" | jq -r '.nodes.root.inputs.nixpkgs')
           NIXPKGS_URL=$(echo "$LOCKS" | jq -r --arg n "$NIXPKGS_NODE" '.nodes[$n].original.url')
@@ -101,14 +98,13 @@ jobs:
           echo "== nix flake check =="
           nix flake check ./flake --accept-flake-config
 
-          # No local toplevel build here: nix flake check only validates eval/
-          # assertions/formatting, not that any host actually builds. Full
-          # builds for all four hosts run in ci.yml's matrix once the PR is
-          # open; a build failure there rolls this PR back automatically.
+          # No toplevel build here: ci.yml builds all hosts once the PR is open; a failure there rolls this PR back.
 
       - name: Create update PR
         if: steps.check_kernel.outputs.should_update == 'true'
         id: create_pr
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
         run: |
           BRANCH="bot/flake-update-$(date +%Y%m%d)"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
@@ -145,6 +141,7 @@ jobs:
       - name: Wait for CI, merge or roll back
         if: steps.create_pr.outputs.pr_number != ''
         env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
           PR_NUM: ${{ steps.create_pr.outputs.pr_number }}
           BRANCH: ${{ steps.create_pr.outputs.branch }}
         run: |

@@ -262,7 +262,7 @@ gets copied into `$HOME`).
 | ------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `omen15`            | x86_64  | desktop | Primary laptop (AMD + NVIDIA hybrid, pinned CachyOS kernel)                                                               |
 | `oci`               | aarch64 | server  | Oracle Cloud — vaultwarden, atticd, headscale, a Minecraft server, nginx reverse-proxying several `*.hydroakri.cc` vhosts |
-| `rpi4-side-gateway` | aarch64 | server  | Raspberry Pi 4 — transparent proxy (sing-box + dnscrypt-proxy), no DHCP/NAT                                         |
+| `rpi4-side-gateway` | aarch64 | server  | Raspberry Pi 4 — transparent proxy (sing-box + dnscrypt-proxy); imports `router.nix` for WAN/MSS clamping only, no DHCP/NAT                                   |
 | `rpi4-switch`       | aarch64 | server  | Raspberry Pi 4 — LAN router: DHCP, NAT, SQM; no proxy stack                                                               |
 
 Two more flake packages build standalone images rather than a host config:

@@ -14,8 +14,7 @@ let
 in
 
 {
-  # llama-cpp's settings-based option not yet backported to 26.05's module tree
-  # (unstable-only as of this writing); swap in unstable's module until it lands in stable.
+  # llama-cpp's settings-based option is unstable-only; swap in unstable's module until it reaches 26.05.
   disabledModules = [ "services/misc/llama-cpp.nix" ];
   imports = [
     inputs.hermes-agent.nixosModules.default
@@ -57,14 +56,13 @@ in
         "min-p" = 0.0;
         "presence-penalty" = 1.5;
         "n-predict" = 4096;
+        # Loopback-only; world-readable in the store, so not a secret.
         "api-key" = "184266d6bf1b835243203ccb9afccc7b3d276898a3de560f3e1315ca51564685";
       };
     };
 
     # $HOME is unset under DynamicUser, so Vulkan's shader cache tries to
-    # write to literal "//.cache", fails (read-only under ProtectSystem),
-    # $HOME is unset under DynamicUser, so Vulkan's shader cache tries to
-    # write to literal "//.cache", fails (read-only under ProtectSystem),
+    # write to literal "//.cache" and fails (read-only under ProtectSystem).
     systemd.services.llama-cpp.environment = lib.mkIf config.modules.agent."llama-cpp".enable {
       HOME = "/tmp";
     };

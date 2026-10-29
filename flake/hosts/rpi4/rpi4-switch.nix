@@ -1,5 +1,5 @@
-# nixos-rebuild boot --flake .#rpi4 --target-host root@192.168.1.4 --install-bootloader |& nom
-# nh os switch -H rpi4 ./
+# nixos-rebuild boot --flake ./flake#rpi4-switch --target-host root@<ip> --install-bootloader |& nom
+# nh os switch -H rpi4-switch ./flake
 {
   lib,
   inputs,
@@ -21,7 +21,6 @@
     ../../modules/features/secrets/secrets.nix
     ../../modules/features/security.nix
     ../../modules/features/privacy.nix
-    ../../modules/features/networking/proxy.nix
     ../../modules/features/utils.nix
     ../../modules/features/networking/router.nix
 

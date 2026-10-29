@@ -11,8 +11,9 @@
     "net.ipv6.conf.all.use_tempaddr" = lib.mkOverride 900 0;
 
     # optimize bufferbloat
-    # 下面 6 行目前被 performance.nix 的 mkOverride 950 压制，从未生效；暂无
-    # 实测理由证明服务器场景需要更小缓冲区/backlog，保留但不提优先级
+    # 下面前 5 行（backlog/rmem_max/wmem_max/tcp_rmem/tcp_wmem）被 performance.nix 的
+    # mkOverride 950 压制，从未生效；暂无实测理由证明服务器场景需要更小缓冲区，保留作改动提醒，不提优先级。
+    # tcp_mem 与 netdev_budget* 无人覆盖，是实际生效的。
     "net.core.netdev_max_backlog" = lib.mkDefault 2000;
     "net.core.rmem_max" = lib.mkDefault 4194304;
     "net.core.wmem_max" = lib.mkDefault 4194304;

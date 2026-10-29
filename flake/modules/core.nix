@@ -56,10 +56,8 @@
         max-jobs = "auto";
         cores = 0;
         allowed-users = [ "@wheel" ];
-        trusted-users = [
-          "root"
-          "@wheel"
-        ];
+        # @wheel omitted: trusted users bypass doas via nix-daemon (unsigned imports, sandbox off).
+        trusted-users = [ "root" ];
       };
       registry.nixpkgs.flake = inputs.nixpkgs;
       optimise.automatic = true;

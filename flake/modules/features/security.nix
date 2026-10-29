@@ -6,8 +6,7 @@
   ...
 }:
 {
-  # systemd.user.settings not yet backported to 26.05's module tree (unstable-only as of
-  # this writing); swap in unstable's user.nix until it lands in stable.
+  # systemd.user.settings is unstable-only; swap in unstable's user.nix until it reaches 26.05.
   disabledModules = [ "system/boot/systemd/user.nix" ];
   imports = [
     ../options.nix
@@ -46,7 +45,7 @@
       # 死代码：内核未编 CONFIG_LATENT_ENTROPY（且是 clang 编译，与 GCC 插件机制不兼容）
       "extra_latent_entropy"
       "hash_pointers=always"
-      # 通用层严格 TLB 失效；不是 iommu=strict——那不是真实参数，之前从未生效
+      # 通用层严格 TLB 失效（iommu=strict 不是真实参数）
       "iommu.strict=1"
       # 编译默认是更严格的 always 档；这里降到 ptrace 档是刻意的兼容性考量
       "proc_mem.force_override=ptrace"
@@ -335,10 +334,8 @@
     networking.firewall = {
       enable = lib.mkDefault true;
       allowedTCPPorts = [ 22 ];
-      # 失效兜底：firewall.service 关机时因 conflicts=shutdown.target 被停,
-      # 会删掉 INPUT 跳转规则,而 INPUT 链自身默认策略是 ACCEPT,留出一段无
-      # 防护窗口（同 Tails #20536 对 ferm 的修复）。这里固定 INPUT 默认策略
-      # 为 DROP，跳转规则还在时不影响正常判决，规则被删时兜底拒绝
+      # 兜底：firewall.service 关机时被停会删掉 INPUT 跳转规则，而 INPUT 默认策略是 ACCEPT，留出无防护窗口
+      # （同 Tails #20536）；固定默认策略为 DROP，规则在时不影响判决，规则被删时兜底拒绝。
       extraCommands = ''
         ip46tables -P INPUT DROP
       '';
