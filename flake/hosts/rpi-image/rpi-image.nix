@@ -71,7 +71,7 @@
   };
 
   users.users.root.initialPassword = "root";
-  users.users.root.openssh.authorizedKeys.keys = [ ];
+  # users.users.root.openssh.authorizedKeys.keys = [ ];
 
   # Basic firewall
   networking.firewall.enable = true;
