@@ -21,13 +21,11 @@
       description = "Additional binary cache substituters appended after cache.nixos.org";
       # 参考备用源:
       # "https://mirrors.ustc.edu.cn/nix-channels/store"
-      # "https://ros.cachix.org"
     };
     extraTrustedPublicKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Trusted public keys for extra binary caches";
-      # "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo="
     };
   };
 
@@ -36,6 +34,12 @@
     boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
     hardware.enableRedistributableFirmware = lib.mkDefault true;
     nixpkgs.config.allowUnfree = lib.mkDefault true;
+    nixpkgs.overlays = [
+      # pkgs.unstable = pkgs.inputs.unstable.legacyPackages
+      (final: _: {
+        unstable = inputs.unstable.legacyPackages.${final.stdenv.hostPlatform.system};
+      })
+    ];
     nix = {
       package = pkgs.lix;
       settings = {
@@ -43,13 +47,9 @@
           "nix-command"
           "flakes"
         ];
-        substituters = [
-          "https://cache.nixos.org/"
-          "https://nix-community.cachix.org"
-        ]
-        ++ config.modules.core.extraSubstituters;
+        # cache.nixos.org and its key are appended by the nixos nix module.
+        substituters = [ "https://nix-community.cachix.org" ] ++ config.modules.core.extraSubstituters;
         trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         ]
         ++ config.modules.core.extraTrustedPublicKeys;
@@ -58,6 +58,11 @@
         allowed-users = [ "@wheel" ];
         # @wheel omitted: trusted users bypass doas via nix-daemon (unsigned imports, sandbox off).
         trusted-users = [ "root" ];
+        flake-registry = "";
+        keep-outputs = true;
+        keep-derivations = true;
+        builders-use-substitutes = true;
+        accept-flake-config = false;
       };
       registry.nixpkgs.flake = inputs.nixpkgs;
       optimise.automatic = true;
@@ -120,8 +125,7 @@
         # --- IPv6 组播规则 (可选，如果你需要 IPv6 通信) ---
         ip6tables -A nixos-fw -d ff00::/8 -p udp -j nixos-fw-accept
       '';
-      # 如果 ROS (Robot Operating System) 连不上机器人，可能需要在装了 ROS 的机器上启用这个
-      # checkReversePath = false;
+      checkReversePath = false;
     };
     networking.networkmanager = {
       enable = lib.mkDefault true;
@@ -229,18 +233,20 @@
         ];
       };
     };
-    systemd.services.unbound = {
-      after = [ "dnscrypt-proxy.service" ];
-      wants = [ "dnscrypt-proxy.service" ];
-    };
+    systemd.services.unbound =
+      lib.mkIf (config.services.unbound.enable && config.services.dnscrypt-proxy.enable)
+        {
+          after = [ "dnscrypt-proxy.service" ];
+          wants = [ "dnscrypt-proxy.service" ];
+        };
 
-    users.users.dnscrypt-proxy = {
+    users.users.dnscrypt-proxy = lib.mkIf config.services.dnscrypt-proxy.enable {
       isSystemUser = true;
       group = "dnscrypt-proxy";
       uid = lib.mkDefault 970;
     };
-    users.groups.dnscrypt-proxy = { };
-    systemd.services.dnscrypt-proxy.serviceConfig = {
+    users.groups.dnscrypt-proxy = lib.mkIf config.services.dnscrypt-proxy.enable { };
+    systemd.services.dnscrypt-proxy.serviceConfig = lib.mkIf config.services.dnscrypt-proxy.enable {
       DynamicUser = lib.mkForce false;
       User = "dnscrypt-proxy";
       Group = "dnscrypt-proxy";
@@ -296,7 +302,6 @@
           "flymc-doh"
           "flymc-doh-8443"
         ];
-        # blocked_names.blocked_names_file = "${inputs.dnscrypt-blocklist}";
         monitoring_ui = {
           enabled = true;
           listen_address = "127.0.0.1:9007";
@@ -362,10 +367,7 @@
       shell = pkgs.zsh;
       isNormalUser = true;
       description = "${config.mainUser}";
-      extraGroups = [
-        "networkmanager"
-        "wheel"
-      ];
+      extraGroups = [ "wheel" ] ++ lib.optional config.networking.networkmanager.enable "networkmanager";
     };
     programs.zsh.enable = lib.mkDefault true;
     programs.nh.enable = lib.mkDefault true;
@@ -409,6 +411,7 @@
     environment.systemPackages = [
       pkgs.wget
       pkgs.curl
+      pkgs.jq
       pkgs.unar
       pkgs._7zz
       # net utils

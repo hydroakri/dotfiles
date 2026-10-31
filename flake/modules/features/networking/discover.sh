@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run directly on the target machine (sudo recommended). Scans network
-# interfaces and suggests networking.sysfsTuning / networking.sqm settings.
+# interfaces and suggests modules.networking.sysfsTuning / modules.networking.sqm settings.
 # Usage: ssh host 'bash -s' < discover.sh   or copy it over and run locally.
 set -euo pipefail
 
@@ -116,14 +116,14 @@ done
 
 echo "==================== suggested nix snippet ===================="
 echo
-echo "    networking.sysfsTuning = {"
+echo "    modules.networking.sysfsTuning = {"
 echo "      enable = true;"
 echo "      interfaces = {"
 printf "%b" "$tuning_lines"
 echo "      };"
 echo "    };"
 echo
-echo "    networking.sqm = {"
+echo "    modules.networking.sqm = {"
 echo "      enable = true;"
 printf "%b" "$sqm_snippet"
 echo "      lanInterface = \"<pick one of the candidates above>\";"

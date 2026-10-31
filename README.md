@@ -235,12 +235,11 @@ details are in [Reference](#desktop-stack).
 ```
 flake/                  NixOS flake (multi-host, declarative)
 ├── hosts/               Per-machine entry points
-├── modules/              Shared modules imported by hosts
-│   ├── core.nix            Base layer for all hosts
-│   ├── desktop.nix         Desktop profile (latency-tuned)
-│   ├── server.nix          Server profile (throughput-tuned)
-│   └── features/            Opt-in capabilities
-└── templates/            Dev-shell templates (ros2)
+└── modules/              Shared modules imported by hosts
+    ├── core.nix            Base layer for all hosts
+    ├── desktop.nix         Desktop profile (latency-tuned)
+    ├── server.nix          Server profile (throughput-tuned)
+    └── features/            Opt-in capabilities
 
 dot_config/home-manager/  Standalone home-manager flake (portable CLI tooling)
 
@@ -337,8 +336,6 @@ nix flake update --flake ./flake
 
 nix build ./flake#packages.x86_64-linux.iso-installer
 nix build ./flake#packages.aarch64-linux.rpi-image
-
-nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2'   # ROS2 dev shell elsewhere
 ```
 
 <a id="ci-build-pipeline"></a>

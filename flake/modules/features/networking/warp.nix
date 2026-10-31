@@ -22,7 +22,7 @@
       restartUnits = [ "cloudflare-warp.service" ];
     };
     systemd.services.cloudflare-warp.preStart = ''
-      install -m 0400 -o root -g root /run/secrets/warp_mdm /var/lib/cloudflare-warp/mdm.xml.tmp
+      install -m 0400 -o root -g root ${config.sops.secrets.warp_mdm.path} /var/lib/cloudflare-warp/mdm.xml.tmp
       mv -f /var/lib/cloudflare-warp/mdm.xml.tmp /var/lib/cloudflare-warp/mdm.xml
     '';
   };

@@ -59,11 +59,11 @@
     core = {
       extraSubstituters = [
         "https://cache.hydroakri.cc/cachix"
-        "https://attic.xuyh0120.win/lantian"
+        "https://cache.lantian.pub/lantian"
       ];
       extraTrustedPublicKeys = [
         "cachix:RTT3Lx/HwP7OQwsaF6HpidQZvmpbu6xxa/Bc9CCp8zI="
-        "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+        "lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ="
       ];
     };
     security = {

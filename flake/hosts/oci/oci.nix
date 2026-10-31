@@ -375,7 +375,7 @@
       enable = true;
       # Pinned to unstable: 26.05's headscale 0.28 rejects the db (0.29 added database_versions).
       # Drop when 26.05 catches up.
-      package = inputs.unstable.legacyPackages.${pkgs.system}.headscale;
+      package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.headscale;
       address = "127.0.0.1";
       port = 6313;
       settings = {
@@ -553,7 +553,7 @@
       enable = true;
       # Pinned to unstable: 26.05's museum 1.3.36 panics in golang-migrate on migrations already
       # applied by 1.3.63. Drop when 26.05 catches up.
-      package = inputs.unstable.legacyPackages.${pkgs.system}.museum;
+      package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.museum;
       nginx.enable = false; # 跟 stalwart JMAP 撞 127.0.0.1:8080，见 README
       domain = "ente-api.hydroakri.cc";
       enableLocalDB = true;
@@ -596,7 +596,7 @@
     services.ente.web = {
       enable = true;
       # 钉到 unstable：上游改写了 photos-v1.3.36 tag，26.05 的 fetchFromGitHub hash 对不上。
-      package = inputs.unstable.legacyPackages.${pkgs.system}.ente-web;
+      package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.ente-web;
       domains = {
         photos = "ente-photos.hydroakri.cc";
         accounts = "ente-accounts.hydroakri.cc";
@@ -787,7 +787,7 @@
       enable = true;
       # Pinned to unstable: 26.05's snapshot lacks migrations already applied to this host's postgres
       # by unstable's. Drop when 26.05 catches up.
-      package = inputs.unstable.legacyPackages.${pkgs.system}.attic-server;
+      package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.attic-server;
       environmentFile = config.sops.templates."attic-env".path;
     };
     users.users.atticd = {
@@ -883,7 +883,7 @@
       enable = true;
       # Pinned to unstable: 26.05's ntfy 2.26 refuses a cache.db already migrated to schema v9 by 2.28.
       # Drop when 26.05 catches up.
-      package = inputs.unstable.legacyPackages.${pkgs.system}.ntfy-sh;
+      package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.ntfy-sh;
       settings = {
         listen-http = "127.0.0.1:8084";
         base-url = "https://ntfy.hydroakri.cc";

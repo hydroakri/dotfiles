@@ -33,11 +33,11 @@
     modules.core = {
       extraSubstituters = [
         "https://cache.hydroakri.cc/cachix"
-        "https://attic.xuyh0120.win/lantian"
+        "https://cache.lantian.pub/lantian"
       ];
       extraTrustedPublicKeys = [
         "cachix:RTT3Lx/HwP7OQwsaF6HpidQZvmpbu6xxa/Bc9CCp8zI="
-        "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+        "lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ="
       ];
     };
     modules.security = {
@@ -47,12 +47,6 @@
       ];
     };
     modules = {
-      utils = {
-        enable = false;
-        enableGrafana = false;
-        enablePrometheus = false;
-        enableGraphicTools = false;
-      };
       networking.sqm = {
         enable = true;
         wanInterface = "end0"; # 连路由器的口，控制上传

@@ -160,7 +160,7 @@
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
-        package = inputs.unstable.legacyPackages.${pkgs.system}.sing-box;
+        package = inputs.unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.sing-box;
         settings = {
           log = {
             level = "warn";

@@ -44,20 +44,22 @@
         "/etc/NetworkManager/system-connections"
         "/var/lib/unbound"
         "/var/lib/dnscrypt-proxy" # resolver-list cache, see cache_file in core.nix
-        {
-          directory = "/var/lib/tor";
-          user = "tor";
-          group = "tor";
-          mode = "0700";
-        }
-        {
-          # chronyd 没有 StateDirectory= 自我校正,默认 0755 root:root 会卡住写权限。
-          directory = "/var/lib/chrony";
-          user = "chrony";
-          group = "chrony";
-          mode = "0750";
-        }
-        "/var/lib/systemd/coredump"
+      ]
+      ++ lib.optional config.services.tor.enable {
+        directory = "/var/lib/tor";
+        user = "tor";
+        group = "tor";
+        mode = "0700";
+      }
+      ++ lib.optional config.services.chrony.enable {
+        # chronyd 没有 StateDirectory= 自我校正,默认 0755 root:root 会卡住写权限。
+        directory = "/var/lib/chrony";
+        user = "chrony";
+        group = "chrony";
+        mode = "0750";
+      }
+      ++ lib.optional config.systemd.coredump.enable "/var/lib/systemd/coredump"
+      ++ [
         "/var/lib/systemd/timers"
         "/var/lib/systemd/rfkill"
         "/var/log"
@@ -77,12 +79,14 @@
         "/var/lib/containers"
         "/var/lib/cni"
         "/var/lib/cloudflare-warp"
-        {
-          directory = "/var/lib/sing-box";
-          user = "sing-box";
-          group = "sing-box";
-          mode = "0700";
-        }
+      ]
+      ++ lib.optional config.services.sing-box.enable {
+        directory = "/var/lib/sing-box";
+        user = "sing-box";
+        group = "sing-box";
+        mode = "0700";
+      }
+      ++ [
         "/var/lib/docker"
         "/var/lib/libvirt"
         "/etc/libvirt"
