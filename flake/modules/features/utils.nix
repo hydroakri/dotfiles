@@ -6,32 +6,40 @@
 }:
 {
   options.modules.utils = {
-    enable = lib.mkEnableOption "enable some useful tools";
+    enable = lib.mkEnableOption "monitoring and diagnostic tools";
 
     enableGraphicTools = lib.mkOption {
       type = lib.types.bool;
       default = false;
+      description = "Install GPU/display diagnostic tools (nvtop, vulkan-tools, clinfo, ...).";
     };
     enableUptime = lib.mkOption {
       type = lib.types.bool;
       default = false;
+      description = "Run uptime-kuma (listens on port 3001).";
     };
     enableGrafana = lib.mkOption {
       type = lib.types.bool;
       default = false;
+      description = "Run Grafana on port 9006 with a Prometheus datasource and the Node Exporter dashboard; opens the port in the firewall.";
     };
     enablePrometheus = lib.mkOption {
       type = lib.types.bool;
       default = false;
+      description = "Run Prometheus on port 9005 with node-exporter and dnscrypt-proxy scrape jobs.";
     };
   };
 
   config = lib.mkIf config.modules.utils.enable {
-    sops.secrets.grafana_secret_key = lib.mkIf config.modules.utils.enableGrafana { };
+    sops.secrets.grafana_secret_key = lib.mkIf config.modules.utils.enableGrafana {
+      owner = "grafana";
+    };
 
     networking.firewall = lib.mkMerge [
       # grafana 的端口规则
-      (lib.mkIf config.modules.utils.enableGrafana { allowedTCPPorts = [ 9006 ]; })
+      (lib.mkIf config.modules.utils.enableGrafana {
+        allowedTCPPorts = [ config.services.grafana.settings.server.http_port ];
+      })
     ];
 
     environment.systemPackages = lib.mkIf config.modules.utils.enableGraphicTools [
@@ -96,7 +104,7 @@
     services.grafana = lib.mkIf config.modules.utils.enableGrafana {
       enable = lib.mkDefault true;
       settings = {
-        security.secret_key = config.sops.placeholder.grafana_secret_key;
+        security.secret_key = "$__file{${config.sops.secrets.grafana_secret_key.path}}";
         server = {
           http_addr = lib.mkDefault "0.0.0.0";
           http_port = lib.mkDefault 9006;
@@ -110,7 +118,7 @@
           {
             name = "Prometheus-Desktop";
             type = "prometheus";
-            url = "http://127.0.0.1:9005";
+            url = "http://127.0.0.1:${toString config.services.prometheus.port}";
           }
         ];
         dashboards.settings.providers = [

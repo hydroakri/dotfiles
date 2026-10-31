@@ -1,3 +1,18 @@
+let
+  btrfsOptions = [
+    "rw"
+    "ssd"
+    "space_cache=v2"
+    "noatime"
+    "commit=60"
+    "compress=zstd:3"
+    "discard=async"
+  ];
+  hardenedOptions = [
+    "nosuid"
+    "nodev"
+  ];
+in
 {
   disko.devices = {
     disk = {
@@ -28,57 +43,19 @@
               content = {
                 type = "btrfs";
                 device = "/dev/disk/by-uuid/4c72b10f-9921-4cf1-9038-2ca203dcee31";
-                mountOptions = [
-                  "rw"
-                  "ssd"
-                  "space_cache=v2"
-                  "noatime"
-                  "commit=60"
-                  "compress=zstd:3"
-                  "discard=async"
-                ];
+                mountOptions = btrfsOptions;
                 subvolumes = {
                   "nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [
-                      "rw"
-                      "ssd"
-                      "space_cache=v2"
-                      "noatime"
-                      "commit=60"
-                      "compress=zstd:3"
-                      "discard=async"
-                      "nosuid"
-                      "nodev"
-                    ];
+                    mountOptions = btrfsOptions ++ hardenedOptions;
                   };
                   "home" = {
                     mountpoint = "/home";
-                    mountOptions = [
-                      "rw"
-                      "ssd"
-                      "space_cache=v2"
-                      "noatime"
-                      "commit=60"
-                      "compress=zstd:3"
-                      "discard=async"
-                      "nosuid"
-                      "nodev"
-                    ];
+                    mountOptions = btrfsOptions ++ hardenedOptions;
                   };
                   "persistent" = {
                     mountpoint = "/persistent";
-                    mountOptions = [
-                      "rw"
-                      "ssd"
-                      "space_cache=v2"
-                      "noatime"
-                      "commit=60"
-                      "compress=zstd:3"
-                      "discard=async"
-                      "nosuid"
-                      "nodev"
-                    ];
+                    mountOptions = btrfsOptions ++ hardenedOptions;
                   };
                 };
               };

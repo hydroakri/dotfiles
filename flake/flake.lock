@@ -20,18 +20,6 @@
         "type": "github"
       }
     },
-    "dnscrypt-blocklist": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-poVDBOsN89QbwXolsJ4DhnsqrRzDKrJ38Y73+B0B0IU=",
-        "type": "file",
-        "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt"
-      }
-    },
     "flake-compat": {
       "locked": {
         "lastModified": 1767039857,
@@ -136,23 +124,6 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "geodb": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1792274813,
-        "narHash": "sha256-3mf4Krlps/6R3rDaavtzkm6y/BpNvGjdIek4nssUX3k=",
-        "owner": "Loyalsoldier",
-        "repo": "v2ray-rules-dat",
-        "rev": "a526f4f7fef9b334ab4ad202b84d519d82dcc13d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Loyalsoldier",
-        "ref": "release",
-        "repo": "v2ray-rules-dat",
         "type": "github"
       }
     },
@@ -550,8 +521,6 @@
     "root": {
       "inputs": {
         "disko": "disko",
-        "dnscrypt-blocklist": "dnscrypt-blocklist",
-        "geodb": "geodb",
         "hermes-agent": "hermes-agent",
         "nix-alien": "nix-alien",
         "nix-cachyos-kernel": "nix-cachyos-kernel",

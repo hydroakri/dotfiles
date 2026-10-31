@@ -25,7 +25,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # main builds populate the binary cache; only superseded PR runs are cancelled
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # HM-only changes (bot lock bumps) skip the NixOS jobs; schedule/dispatch and
@@ -154,7 +155,7 @@ jobs:
 
       - name: Setup LanTian Cache
         run: |
-          printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
+          printf '\nextra-substituters = https://cache.lantian.pub/lantian\nextra-trusted-public-keys = lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=\n' >> ~/.config/nix/nix.conf
 
       - name: Build System (${{ matrix.name }})
         working-directory: ./flake
@@ -189,7 +190,7 @@ jobs:
 
       - name: Setup LanTian Cache
         run: |
-          printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
+          printf '\nextra-substituters = https://cache.lantian.pub/lantian\nextra-trusted-public-keys = lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=\n' >> ~/.config/nix/nix.conf
 
       - name: Build Home Manager activation package
         working-directory: ./dot_config/home-manager

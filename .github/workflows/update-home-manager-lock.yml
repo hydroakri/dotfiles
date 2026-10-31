@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup LanTian Cache
         run: |
-          printf '\nextra-substituters = https://attic.xuyh0120.win/lantian\nextra-trusted-public-keys = lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=\n' >> ~/.config/nix/nix.conf
+          printf '\nextra-substituters = https://cache.lantian.pub/lantian\nextra-trusted-public-keys = lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=\n' >> ~/.config/nix/nix.conf
 
       - name: Update lock and build activation package before PR
         id: update_lock

@@ -178,7 +178,7 @@ in
       settings = {
         "zram0" = {
           # 封顶 16GB，避免大内存机器把过多内存分给 zram
-          "zram-size" = "min(ram/2, 16384)";
+          "zram-size" = "min(ram*3/4, 16384)";
           "compression-algorithm" = "zstd";
         };
       };

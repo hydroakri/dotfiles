@@ -31,11 +31,9 @@ in
   };
 
   config = {
-    sops = {
-      secrets = {
-        hermes_env = { };
-        telegram_bot_token = { };
-      };
+    sops.secrets = lib.mkIf config.modules.agent.hermes.enable {
+      hermes_env = { };
+      telegram_bot_token = { };
     };
 
     services.llama-cpp = lib.mkIf config.modules.agent."llama-cpp".enable {
@@ -68,8 +66,8 @@ in
       HOME = "/tmp";
     };
 
-    services.hermes-agent = {
-      enable = config.modules.agent.hermes.enable;
+    services.hermes-agent = lib.mkIf config.modules.agent.hermes.enable {
+      enable = true;
       container.enable = true;
       addToSystemPackages = true;
       container.hostUsers = [ "${config.mainUser}" ];

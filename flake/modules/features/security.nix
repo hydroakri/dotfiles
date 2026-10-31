@@ -2,16 +2,10 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 {
-  # systemd.user.settings is unstable-only; swap in unstable's user.nix until it reaches 26.05.
-  disabledModules = [ "system/boot/systemd/user.nix" ];
-  imports = [
-    ../options.nix
-    "${inputs.unstable}/nixos/modules/system/boot/systemd/user.nix"
-  ];
+  imports = [ ../options.nix ];
 
   options.modules.security = {
     authorizedKeys = lib.mkOption {
@@ -160,9 +154,9 @@
           "kernel.oops_limit" = lib.mkOverride 950 100;
           "kernel.warn_limit" = lib.mkOverride 950 100;
           "kernel.panic" = lib.mkOverride 950 (-1);
-          # 核心转储 piping 给 /bin/false 直接丢弃；systemd/coredump.nix 自己用
+          # 核心转储 piping 给 false 直接丢弃；systemd/coredump.nix 自己用
           # mkDefault "core" 设置同一 key，这也是本块整体用 950 而非 mkDefault 的原因
-          "kernel.core_pattern" = lib.mkOverride 950 "|/bin/false";
+          "kernel.core_pattern" = lib.mkOverride 950 "|${pkgs.coreutils}/bin/false";
           # 禁止加载新的 TTY 线路规程 (减少内核攻击面)
           "dev.tty.ldisc_autoload" = lib.mkOverride 950 0;
           # 禁止 kexec (防止在不经过 BIOS 自检的情况下热加载新内核)
@@ -177,12 +171,12 @@
           "kernel.perf_event_paranoid" = lib.mkOverride 950 2;
           # 限制 perf 最多占用 1% CPU，防止侧信道探测同时不破坏性能分析功能（ANSSI R9）
           "kernel.perf_cpu_time_max_percent" = lib.mkOverride 950 1;
-          # 限制非特权用户采样速率，进一步阻断计时侧信道（securix R9）
+          # 限制 perf 最大采样速率（对所有用户生效），进一步阻断计时侧信道（securix R9）
           "kernel.perf_event_max_sample_rate" = lib.mkOverride 950 1;
           # kernel.sysrq 已在 core.nix 设为 246（仅启用安全子集，非全量），不再重复定义
-          # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击)
-          "kernel.core_uses_pid" = lib.mkOverride 950 1;
           # Core dump 文件名带 PID，防止竞态覆盖攻击
+          "kernel.core_uses_pid" = lib.mkOverride 950 1;
+          # 禁止程序使用内存最低的 64KB 地址 (防止 NULL 指针解引用攻击)
           "vm.mmap_min_addr" = lib.mkOverride 950 65536;
           # 限制非特权用户使用 userfaultfd
           # 注意：极少数高性能虚拟机特性可能依赖此项，一般桌面使用无影响
@@ -250,11 +244,11 @@
       DumpCore = false;
       DefaultTimeoutStopSec = "10s";
     };
-    systemd.user.settings.Manager = {
-      DefaultLimitNOFILE = "1024:1048576";
-      DumpCore = false;
-      DefaultTimeoutStopSec = "10s";
-    };
+    # systemd.user.settings.Manager = {
+    #   DefaultLimitNOFILE = "1024:1048576";
+    #   DumpCore = false;
+    #   DefaultTimeoutStopSec = "10s";
+    # };
     # systemd-pstore 没有对应的 NixOS 选项包装，直接写配置文件；关闭跨重启崩溃
     # 信息持久化（EFI pstore/ACPI ERST），与已有的 "erst_disable" 内核参数呼应
     environment.etc."systemd/pstore.conf.d/hardening.conf".text = ''
@@ -272,7 +266,7 @@
       MemoryMin = "64M";
     };
     # sshd：提高文件描述符上限 + 崩溃后自动重启带退避（grapheneos-infra）
-    systemd.services.sshd.serviceConfig = {
+    systemd.services.sshd.serviceConfig = lib.mkIf config.services.openssh.enable {
       LimitNOFILE = 8192;
       Restart = "always";
       RestartSec = "100ms";
@@ -360,38 +354,40 @@
     };
 
     # secureblue 的 NetworkManager 沙箱；只上桌面机，oci/rpi4 还没实测过，先不动
-    systemd.services.NetworkManager.serviceConfig = lib.mkIf config.services.displayManager.enable {
-      CapabilityBoundingSet = "~CAP_AUDIT_WRITE CAP_BPF CAP_DAC_OVERRIDE CAP_KILL CAP_SYS_CHROOT CAP_SYS_MODULE";
-      DeviceAllow = "/dev/net/tun";
-      DevicePolicy = "closed";
-      # NM 需要能连 /run/dbus/
-      InaccessiblePaths = "/run/user/";
-      LockPersonality = true;
-      MemoryDenyWriteExecute = true;
-      PrivateTmp = "disconnected";
-      ProtectClock = true;
-      ProtectControlGroups = true;
-      ProtectHome = "read-only";
-      ProtectHostname = "private";
-      ProtectKernelLogs = true;
-      ProtectKernelModules = true;
-      ProtectKernelTunables = true;
-      ProtectProc = "invisible";
-      ProtectSystem = "strict";
-      ReadWritePaths = "/proc/sys/net/ /var/lib/NetworkManager/ /etc/NetworkManager/";
-      RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK AF_PACKET";
-      RestrictNamespaces = true;
-      RestrictRealtime = true;
-      RestrictSUIDSGID = true;
-      SystemCallArchitectures = "native";
-      SystemCallFilter = [
-        "@system-service @privileged"
-        "~@clock @module @mount @obsolete @swap @reboot @raw-io @module"
-        "~@resources @memlock @aio @keyring"
-      ];
-      UMask = "0077";
-      KillMode = "control-group";
-    };
+    systemd.services.NetworkManager.serviceConfig =
+      lib.mkIf (config.services.displayManager.enable && config.networking.networkmanager.enable)
+        {
+          CapabilityBoundingSet = "~CAP_AUDIT_WRITE CAP_BPF CAP_DAC_OVERRIDE CAP_KILL CAP_SYS_CHROOT CAP_SYS_MODULE";
+          DeviceAllow = "/dev/net/tun";
+          DevicePolicy = "closed";
+          # NM 需要能连 /run/dbus/
+          InaccessiblePaths = "/run/user/";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          PrivateTmp = "disconnected";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = "read-only";
+          ProtectHostname = "private";
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          ReadWritePaths = "/proc/sys/net/ /var/lib/NetworkManager/ /etc/NetworkManager/";
+          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK AF_PACKET";
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+          SystemCallFilter = [
+            "@system-service @privileged"
+            "~@clock @module @mount @obsolete @swap @reboot @raw-io @module"
+            "~@resources @memlock @aio @keyring"
+          ];
+          UMask = "0077";
+          KillMode = "control-group";
+        };
 
     systemd.user.services.usbguard-notifier = {
       description = "USBGuard device notifier";
@@ -445,6 +441,13 @@
 
     services.openssh = {
       enable = lib.mkDefault true;
+      # ed25519 only: sops (age.sshKeyPaths) and HostKeyAlgorithms use no other key type
+      hostKeys = lib.mkDefault [
+        {
+          type = "ed25519";
+          path = "/etc/ssh/ssh_host_ed25519_key";
+        }
+      ];
       settings = {
         PasswordAuthentication = lib.mkDefault false;
         KbdInteractiveAuthentication = lib.mkDefault false;
@@ -460,8 +463,6 @@
         TCPKeepAlive = lib.mkDefault false;
         PrintMotd = lib.mkDefault false;
         UsePAM = lib.mkDefault true;
-        # Only ever offer/generate-preferring the ed25519 host key, not RSA/ECDSA.
-        HostKey = lib.mkDefault "/etc/ssh/ssh_host_ed25519_key";
         HostKeyAlgorithms = lib.mkDefault "ssh-ed25519";
         PubkeyAcceptedAlgorithms = lib.mkDefault "ssh-ed25519,sk-ssh-ed25519@openssh.com";
         Ciphers = lib.mkDefault [

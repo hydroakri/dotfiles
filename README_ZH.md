@@ -224,12 +224,11 @@ chezmoi update                 # 拉取 + 应用
 ```
 flake/                  NixOS flake(多主机,声明式)
 ├── hosts/               各主机的入口文件
-├── modules/              主机共用的模块
-│   ├── core.nix            所有主机的基础层
-│   ├── desktop.nix         桌面 profile(低延迟调优)
-│   ├── server.nix          服务器 profile(吞吐量调优)
-│   └── features/            按需开启的功能模块
-└── templates/            开发环境模板(ros2)
+└── modules/              主机共用的模块
+    ├── core.nix            所有主机的基础层
+    ├── desktop.nix         桌面 profile(低延迟调优)
+    ├── server.nix          服务器 profile(吞吐量调优)
+    └── features/            按需开启的功能模块
 
 dot_config/home-manager/  独立的 home-manager flake(可移植的 CLI 工具集)
 
@@ -318,8 +317,6 @@ nix flake update --flake ./flake
 
 nix build ./flake#packages.x86_64-linux.iso-installer
 nix build ./flake#packages.aarch64-linux.rpi-image
-
-nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2'   # 在别处初始化 ROS2 开发环境
 ```
 
 <a id="ci-build-pipeline"></a>

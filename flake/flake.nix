@@ -21,15 +21,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     preservation.url = "github:nix-community/preservation";
-    geodb = {
-      url = "github:Loyalsoldier/v2ray-rules-dat/release";
-      flake = false;
-    };
-    dnscrypt-blocklist = {
-      type = "file";
-      url = "https://raw.githubusercontent.com/hydroakri/dnscrypt-proxy-blocklist/release/blocklist.txt";
-      flake = false;
-    };
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -83,6 +74,19 @@
       # Make inputs available to all modules
       specialArgsForAll = { inherit inputs; };
 
+      mkHost =
+        {
+          path,
+          system ? null,
+        }:
+        lib.nixosSystem (
+          {
+            specialArgs = specialArgsForAll;
+            modules = [ path ];
+          }
+          // lib.optionalAttrs (system != null) { inherit system; }
+        );
+
       # Each host's system closure, keyed by system then hostname —
       # the shape nix-github-actions needs to derive a build matrix.
       hostToplevels = lib.foldl' lib.recursiveUpdate { } (
@@ -110,22 +114,10 @@
     in
     {
       nixosConfigurations = {
-        omen15 = lib.nixosSystem {
-          specialArgs = specialArgsForAll;
-          modules = [ ./hosts/omen15/omen15.nix ];
-        };
-        rpi4-side-gateway = lib.nixosSystem {
-          specialArgs = specialArgsForAll;
-          modules = [ ./hosts/rpi4/rpi4-side-gateway.nix ];
-        };
-        rpi4-switch = lib.nixosSystem {
-          specialArgs = specialArgsForAll;
-          modules = [ ./hosts/rpi4/rpi4-switch.nix ];
-        };
-        oci = lib.nixosSystem {
-          specialArgs = specialArgsForAll;
-          modules = [ ./hosts/oci/oci.nix ];
-        };
+        omen15 = mkHost { path = ./hosts/omen15/omen15.nix; };
+        rpi4-side-gateway = mkHost { path = ./hosts/rpi4/rpi4-side-gateway.nix; };
+        rpi4-switch = mkHost { path = ./hosts/rpi4/rpi4-switch.nix; };
+        oci = mkHost { path = ./hosts/oci/oci.nix; };
       };
 
       packages = {
@@ -133,55 +125,55 @@
           # isolive.nix imports the graphical calamares ISO module directly,
           # so `config.system.build.isoImage` is already available natively.
           iso-installer =
-            (lib.nixosSystem {
+            (mkHost {
               system = "x86_64-linux";
-              specialArgs = specialArgsForAll;
-              modules = [ ./hosts/isolive/isolive.nix ];
+              path = ./hosts/isolive/isolive.nix;
             }).config.system.build.isoImage;
         };
         aarch64-linux = {
           # rpi-image.nix imports the sd-image-aarch64 module directly,
           # so `config.system.build.sdImage` is already available natively.
           rpi-image =
-            (lib.nixosSystem {
+            (mkHost {
               system = "aarch64-linux";
-              specialArgs = specialArgsForAll;
-              modules = [ ./hosts/rpi-image/rpi-image.nix ];
+              path = ./hosts/rpi-image/rpi-image.nix;
             }).config.system.build.sdImage;
         };
       };
 
-      nixosModules = {
-        # Base profiles (pick one per host)
-        core = ./modules/core.nix;
-        desktop = ./modules/desktop.nix;
-        server = ./modules/server.nix;
-        # Feature modules (opt-in)
-        performance = ./modules/features/performance.nix;
-        security = ./modules/features/security.nix;
-        privacy = ./modules/features/privacy.nix;
-        powersave = ./modules/features/powersave.nix;
-        gaming = ./modules/features/gaming.nix;
-        preservation = ./modules/features/preservation.nix;
-        utils = ./modules/features/utils.nix;
-        virtualisation = ./modules/features/virtualisation.nix;
-        networking-router = ./modules/features/networking/router.nix;
-        networking-sqm = ./modules/features/networking/sqm.nix;
-        networking-tuning = ./modules/features/networking/tuning.nix;
-        networking-warp = ./modules/features/networking/warp.nix;
-        # Hardware / filesystem helpers
-        hardware-amd = ./modules/hardware/amd.nix;
-        hardware-nvidia = ./modules/hardware/nvidia.nix;
-        filesystem-btrfs = ./modules/filesystems/btrfs.nix;
-      };
-
-      templates = {
-        ros2 = {
-          path = ./templates/ros2;
-          description = # use `nix flake init -t ~/dotfiles#ros2` OR `nix flake init -t 'github:hydroakri/dotfiles?dir=flake#ros2' --refresh` to init a ros project
-            "Robust ROS 2 Humble development environment with GUI and FHS support";
+      nixosModules =
+        lib.mapAttrs
+          (name: path: {
+            _class = "nixos";
+            _file = "${self.outPath}/flake.nix#nixosModules.${name}";
+            imports = [ path ];
+          })
+          {
+            # Base profiles (pick one per host)
+            core = ./modules/core.nix;
+            desktop = ./modules/desktop.nix;
+            server = ./modules/server.nix;
+            # Feature modules (opt-in)
+            performance = ./modules/features/performance.nix;
+            security = ./modules/features/security.nix;
+            privacy = ./modules/features/privacy.nix;
+            powersave = ./modules/features/powersave.nix;
+            gaming = ./modules/features/gaming.nix;
+            preservation = ./modules/features/preservation.nix;
+            utils = ./modules/features/utils.nix;
+            virtualisation = ./modules/features/virtualisation.nix;
+            networking-router = ./modules/features/networking/router.nix;
+            networking-sqm = ./modules/features/networking/sqm.nix;
+            networking-tuning = ./modules/features/networking/tuning.nix;
+            networking-warp = ./modules/features/networking/warp.nix;
+            # Hardware / filesystem helpers
+            hardware-amd = ./modules/hardware/amd.nix;
+            hardware-nvidia = ./modules/hardware/nvidia.nix;
+            filesystem-btrfs = ./modules/filesystems/btrfs.nix;
+          }
+        // {
+          default = self.nixosModules.core;
         };
-      };
 
       # Drives the CI matrix: `nix eval --json .#githubActions.matrix`
       githubActions = nix-github-actions.lib.mkGithubMatrix {
