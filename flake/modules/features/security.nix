@@ -43,8 +43,7 @@
       "iommu.strict=1"
       # 编译默认是更严格的 always 档；这里降到 ptrace 档是刻意的兼容性考量
       "proc_mem.force_override=ptrace"
-      # 死代码：内核未编 CONFIG_SECURITY_LOCKDOWN_LSM，没有注册解析器，值不会被读到
-      "lockdown=integrity"
+      # "lockdown=integrity" 停用：cachyos 7.3.0 内核编了 MODULE_SIG 但没有可信的模块签名密钥，lockdown 会拒绝全部模块；官方/xanmod 内核未编 lockdown，此参数无效
       # 死代码：CONFIG_CFI 没编（即使是 clang 编译也不够，还需要这个开关）
       "cfi=kcfi"
       "init_on_alloc=1"

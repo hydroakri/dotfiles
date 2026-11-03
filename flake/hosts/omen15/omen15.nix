@@ -80,7 +80,7 @@
     performance.vendor = "amd";
     nvidia = {
       enable = true;
-      variant = "open";
+      variant = "nouveau";
       amdgpuBusId = "PCI:7@0:0:0";
       nvidiaBusId = "PCI:1@0:0:0";
     };
@@ -136,6 +136,8 @@
       ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:01:00.0", TEST=="power/control", ATTR{power/control}="auto"
     '';
   };
+  # Boot menu entry (limine): nvidia-open driver instead of the default nouveau.
+  specialisation.nvidia.configuration.modules.nvidia.variant = lib.mkForce "open";
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {
     content = ''
@@ -152,10 +154,7 @@
     kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;
     # kernelPackages = pkgs.linuxPackages_xanmod_stable;
     kernelParams = [ "amd_pstate=active" ];
-    kernelModules = [
-      "zenpower"
-      "kvm-amd"
-    ];
+    kernelModules = [ "kvm-amd" ];
     initrd.kernelModules = [ "amdgpu" ];
     initrd.availableKernelModules = [
       "nvme"
@@ -165,41 +164,6 @@
       "usb_storage"
       "sd_mod"
     ];
-    blacklistedKernelModules = [ "k10temp" ];
-    extraModulePackages =
-      let
-        kernel = config.boot.kernelPackages.kernel;
-        isClang = kernel.stdenv.cc.isClang or false;
-      in
-      [
-        (config.boot.kernelPackages.zenpower.overrideAttrs (
-          old:
-          {
-            # zenpower5's multi-file refactor dropped the <asm/cpuid/api.h> include
-            # that cpuid_ecx needs on kernel >=7.2; patch every .c file that calls it.
-            postPatch =
-              (old.postPatch or "")
-              + ''
-                for f in *.c; do
-                  grep -q 'cpuid_ecx' "$f" && sed -i '/#include <linux\/pci.h>/a\
-                #if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)\
-                #include <asm/cpuid/api.h>\
-                #endif' "$f"
-                done
-              ''
-              + lib.optionalString isClang ''
-                sed -i '/-Wimplicit-fallthrough=3/d' Makefile
-              '';
-          }
-          // lib.optionalAttrs isClang {
-            makeFlags = (old.makeFlags or [ ]) ++ [
-              "CC=${kernel.stdenv.cc.cc}/bin/clang"
-              "LLVM=1"
-              "LLVM_IAS=1"
-            ];
-          }
-        ))
-      ];
     extraModprobeConfig = ''
       options snd_hda_intel power_save=1
     '';
