@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# One-shot: ask via notification, then allow every currently blocked USB device. Not persisted (rules are
+# immutable); to keep a device across replug add its rule to modules.security.usbguardRules.
+nd=(--session --dest org.freedesktop.Notifications)
+obj=/org/freedesktop/Notifications
+
+# $1 summary, $2 body, $3 actions (GVariant as), $4 hints, $5 timeout ms; prints the notification id
+notify() {
+  local reply
+  reply=$(gdbus call "${nd[@]}" --object-path $obj --method org.freedesktop.Notifications.Notify \
+    usb-allow 0 drive-removable-media "$1" "$2" "$3" "$4" "$5") || return 1
+  reply=${reply#*uint32 }
+  echo "${reply%%,*}"
+}
+
+out=$(usbguard list-devices -b) || { notify "USBGuard" "Cannot reach usbguard-daemon" '[]' '{}' 5000 >/dev/null; exit 1; }
+[[ -n $out ]] || { notify "USBGuard" "No blocked devices" '[]' '{}' 5000 >/dev/null; exit 0; }
+mapfile -t blocked <<<"$out"
+
+# GVariant strings are single-quoted; the daemon renders body as plain text
+list=$(printf '%s\n' "${blocked[@]}" | sed -E 's/^([0-9]+): block id ([^ ]+) .*name "([^"]*)".*/\2  \3/')
+list=${list//\\/}
+list=${list//\'/}
+
+# Monitor must be listening before Notify so a fast click is not missed.
+coproc mon { gdbus monitor "${nd[@]}"; }
+trap 'kill "$mon_PID" 2>/dev/null' EXIT
+read -r -u "${mon[0]}" _
+
+# noctalia stacks oldest-first regardless of urgency; clear usbguard-notifier's popup so this one is on top
+noctalia msg notification-clear-active >/dev/null 2>&1
+id=$(notify "Allow blocked USB devices?" "$list" "['allow','Allow','cancel','Cancel']" "{'urgency': <byte 2>}" 0) || exit 1
+
+allowed=0
+while read -r -t 120 -u "${mon[0]}" line; do
+  case $line in
+    *"ActionInvoked (uint32 $id, 'allow')"*) allowed=1; break ;;
+    *"ActionInvoked (uint32 $id,"* | *"NotificationClosed (uint32 $id,"*) break ;;
+  esac
+done
+[[ $allowed == 1 ]] || { gdbus call "${nd[@]}" --object-path $obj --method org.freedesktop.Notifications.CloseNotification "$id" >/dev/null 2>&1; exit 0; }
+
+for line in "${blocked[@]}"; do
+  usbguard allow-device "${line%%:*}"
+done
+notify "USBGuard" "Allowed ${#blocked[@]} device(s) until unplug" '[]' '{}' 5000 >/dev/null
