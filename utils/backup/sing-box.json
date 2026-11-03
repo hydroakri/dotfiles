@@ -189,8 +189,7 @@
       // "auto_redirect": true,
       "exclude_mptcp": true,
       "strict_route": true,
-      "route_exclude_address_set": "geoip-private",
-      "stack": "system"
+      "route_exclude_address_set": "geoip-private"
     }
   ],
   "outbounds": [
