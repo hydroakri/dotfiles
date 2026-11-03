@@ -579,10 +579,6 @@
             "ca.desrt.dconf" = "talk";
             "org.freedesktop.portal.*" = "talk";
           };
-          pasta = {
-            enable = true;
-            mode = "transparent";
-          };
           timeZone = {
             enable = true;
             provider = "bundle";
@@ -636,10 +632,6 @@
             enable = true;
             provider = "bundle";
           };
-          pasta = {
-            enable = true;
-            mode = "transparent";
-          };
           bubblewrap.env = {
             LANG = "en_US.UTF-8";
             LC_ALL = "en_US.UTF-8";
@@ -658,10 +650,6 @@
           timeZone = {
             enable = true;
             provider = "bundle";
-          };
-          pasta = {
-            enable = true;
-            mode = "transparent";
           };
           bubblewrap.env = {
             LANG = "en_US.UTF-8";

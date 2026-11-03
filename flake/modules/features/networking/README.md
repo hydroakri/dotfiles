@@ -188,4 +188,5 @@
 | 开关 | `modules.warp.enable`：启用 `services.cloudflare-warp`，MDM policy 来自 sops secret `warp_mdm`（`secrets.yaml`）。 |
 | 落盘方式 | warp-svc 以 `O_NOFOLLOW` 打开 `mdm.xml`，sops 的符号链接会 `ELOOP`；`preStart` 把 secret 复制为 `/var/lib/cloudflare-warp/mdm.xml` 真实文件。 |
 | 重启 | `warp_mdm` 变化时重启 `cloudflare-warp.service`。 |
+| 全局隧道 | `modules.warp.fullTunnel`（默认关）：`preStart` 把 `service_mode` 强制写成 `warp`，并把 unbound 收窄到回环（WARP DNS 代理要绑 `127.0.2.2/3:53`，通配 `:53` 会冲突）。oci 共用同一 secret，不开。 |
 | 与 sing-box 的关系 | 独立于 `proxy-nodes.nix` 里 sing-box 内置的 `wg-cloudflare-warp` WireGuard endpoint。 |

@@ -80,7 +80,7 @@
     performance.vendor = "amd";
     nvidia = {
       enable = true;
-      variant = "nouveau";
+      variant = "open";
       amdgpuBusId = "PCI:7@0:0:0";
       nvidiaBusId = "PCI:1@0:0:0";
     };
@@ -103,8 +103,8 @@
     proxy = {
       enable = true;
       singbox = {
-        enable = true;
-        tun = true;
+        enable = false;
+        tun = false;
       };
       tor.enable = true;
     };
@@ -223,7 +223,10 @@
     pkgs.nbfc-linux
     # pkgs.winboat
   ];
-  modules.warp.enable = true;
+  modules.warp = {
+    enable = true;
+    fullTunnel = true;
+  };
   services.sunshine = {
     enable = false;
     autoStart = true;
