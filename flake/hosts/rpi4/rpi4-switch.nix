@@ -23,6 +23,7 @@
     ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
     ../../modules/features/networking/router.nix
+    ../../modules/features/home-assistant.nix
 
     # External modules
     inputs.sops-nix.nixosModules.sops
@@ -84,6 +85,22 @@
         mssClamping.enable = true;
       };
     };
+
+    modules.homeAssistant = {
+      enable = true;
+      light = "light.color_1600";
+      nextAlarm = "sensor.sleep_as_android_next_alarm";
+      sleepEvent = "event.sleep_as_android_user_notification";
+    };
+    # HA's zeroconf binds 0.0.0.0:5353; while dnscrypt-proxy holds it the analytics component fails and onboarding cannot finish.
+    services.dnscrypt-proxy.settings.listen_addresses = [ "127.0.0.1:5300" ];
+    services.unbound.settings.forward-zone = [
+      {
+        name = ".";
+        forward-addr = [ "127.0.0.1@5300" ];
+        forward-first = false;
+      }
+    ];
 
     networking.hostName = "rpi4-switch";
     networking.firewall.allowedUDPPorts = [ 53 ];
