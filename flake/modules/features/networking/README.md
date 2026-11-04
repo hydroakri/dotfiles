@@ -167,7 +167,7 @@
 | 开关 | `modules.router.enable`（不在 `modules.networking` 下）；不由 `core.nix` 导入，主机需自行 import。 |
 | WAN | `wan.interface`；`vlanId` 非空时 VLAN 接口名为 `vlan<id>`，物理口 `useDHCP=false`；可选 `mtu`、`useDHCP`。 |
 | LAN | `lan.interfaces` 全部加入 `firewall.trustedInterfaces`；仅第一个接口配置 `ipv4Address`/`ipv4PrefixLength`（默认 `192.168.10.1/24`）。 |
-| DHCP | `dhcp.enable`：dnsmasq 仅做 DHCP/RA（`port=0`，不提供 DNS），绑定第一个 LAN 接口，默认范围 `<LAN 前缀>.10,.100,24h`；关闭 `resolved`。 |
+| DHCP | `dhcp.enable`：dnsmasq 仅做 DHCP/RA（`port=0`，不提供 DNS），绑定第一个 LAN 接口，默认范围 `<LAN 前缀>.10,.100,24h`；`port=0` 时 dnsmasq 不会把自己通告为 DNS，故显式下发 `option:dns-server,<lan.ipv4Address>`（指向本机解析器）；关闭 `resolved`。 |
 | NAT | `nat.enable`：`networking.nat`，外部接口为 WAN（VLAN 时为 VLAN 接口）。 |
 | MSS | `mssClamping.enable`：mangle `POSTROUTING` 加 `TCPMSS`；`mss = null` 时 `--clamp-mss-to-pmtu`。 |
 | 断言 | DHCP 或 NAT 启用时 `lan.interfaces` 不能为空。 |

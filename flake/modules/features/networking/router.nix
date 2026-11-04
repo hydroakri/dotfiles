@@ -165,6 +165,10 @@
             "::,constructor:${lanPrimaryInterface},ra-stateless"
           ];
           port = lib.mkDefault 0;
+          # port=0 stops dnsmasq advertising itself as DNS server, so announce the LAN address (the host's resolver) explicitly.
+          dhcp-option = lib.optional (
+            config.modules.router.lan.ipv4Address != null
+          ) "option:dns-server,${config.modules.router.lan.ipv4Address}";
         };
       };
 
