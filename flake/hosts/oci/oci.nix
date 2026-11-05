@@ -370,7 +370,11 @@
       };
     };
 
-    services.tailscale.enable = true;
+    services.tailscale = {
+      enable = true;
+      # Use the subnet route the rpi4-switch advertises (192.168.10.0/24); extraSetFlags re-applies on every boot.
+      extraSetFlags = [ "--accept-routes" ];
+    };
     services.headscale = {
       enable = true;
       # Pinned to unstable: 26.05's headscale 0.28 rejects the db (0.29 added database_versions).

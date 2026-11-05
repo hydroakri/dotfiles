@@ -1,6 +1,7 @@
 # nixos-rebuild boot --flake ./flake#rpi4-switch --target-host root@<ip> --install-bootloader |& nom
 # nh os switch -H rpi4-switch ./flake
 {
+  config,
   lib,
   inputs,
   ...
@@ -102,8 +103,24 @@
       }
     ];
 
+    # Subnet router: remote tailnet nodes reach the LAN (HA, LIFX). Routes need approval in headscale.
+    sops.secrets.headscale-authkey.sopsFile = ../../modules/features/secrets/proxy-secrets.yaml;
+    services.tailscale = {
+      enable = true;
+      openFirewall = true;
+      # Subnet router: forwarding sysctls no longer depend on router.nix alone.
+      useRoutingFeatures = "server";
+      authKeyFile = config.sops.secrets.headscale-authkey.path;
+      # extraUpFlags only run at login; extraSetFlags re-apply on every boot.
+      extraUpFlags = [ "--login-server=https://headscale.hydroakri.cc" ];
+      extraSetFlags = [
+        "--advertise-routes=192.168.10.0/24"
+        # The Pi is the LAN resolver; keep tailscaled away from /etc/resolv.conf.
+        "--accept-dns=false"
+      ];
+    };
+
     networking.hostName = "rpi4-switch";
-    networking.firewall.allowedUDPPorts = [ 53 ];
     modules.server.tunedProfile = "network-throughput";
     networking.networkmanager.unmanaged = [
       "end0"

@@ -89,6 +89,16 @@
   };
 
   config =
+    let
+      # base_domain and server_url of the headscale in hosts/oci/oci.nix
+      tailnetDomain = "ts.hydroakri.cc";
+      headscaleUrl = "https://headscale.hydroakri.cc";
+      tailscalePort = 41641; # tailscaled's default; fixed so the firewall can allow direct peer traffic
+      privateRuleSets = [
+        "geoip-private"
+        "geosite-private"
+      ];
+    in
     with lib;
     mkIf config.modules.proxy.enable {
       sops.secrets = {
@@ -138,11 +148,31 @@
             1080
             9090
           ];
-          allowedUDPPorts = [ 1080 ];
+          allowedUDPPorts = [
+            1080
+            tailscalePort
+          ];
         })
       ];
 
       services.adguardhome.enable = mkIf config.modules.proxy.adguardhome.enable (mkDefault true);
+
+      # System-wide MagicDNS: tailscale0 serves it at 100.100.100.100. A stub zone is used because
+      # core.nix owns the forward-zone list.
+      services.unbound.settings =
+        mkIf (config.modules.proxy.singbox.enable && config.services.unbound.enable)
+          {
+            server.domain-insecure = [ "${tailnetDomain}." ];
+            stub-zone = [
+              {
+                name = "${tailnetDomain}.";
+                stub-addr = "100.100.100.100";
+              }
+            ];
+          };
+      # Bare tailnet host names, as the official client sets up.
+      networking.search = mkIf config.modules.proxy.singbox.enable [ tailnetDomain ];
+
       systemd.services.adguardhome = mkIf config.modules.proxy.adguardhome.enable {
         after = [ "network-online.target" ];
         wants = [ "network-online.target" ];
@@ -201,6 +231,13 @@
               {
                 type = "mdns";
                 tag = "dns-mdns";
+              }
+              {
+                type = "tailscale";
+                tag = "dns-ts";
+                endpoint = "tailscale-in";
+                accept_default_resolvers = false;
+                accept_search_domain = true;
               }
               {
                 type = "h3";
@@ -265,6 +302,10 @@
               }
             ];
             rules = [
+              {
+                preferred_by = "dns-ts";
+                server = "dns-ts";
+              }
               {
                 preferred_by = "dns-mdns";
                 server = "dns-mdns";
@@ -385,7 +426,17 @@
               auth_key = {
                 _secret = config.sops.secrets.headscale-authkey.path;
               };
-              control_url = "https://headscale.hydroakri.cc";
+              control_url = headscaleUrl;
+              hostname = config.networking.hostName;
+              # auth_key is ignored once state exists, so the state must survive restarts.
+              state_directory = "/var/lib/sing-box/tailscale";
+              listen_port = tailscalePort;
+              # Kernel-visible tailnet like tailscale0 of the official client, so local processes need no proxy.
+              system_interface = true;
+              system_interface_name = "tailscale0";
+              taildrop_directory = "/var/lib/sing-box/Taildrop";
+              # Without it the control host lookup goes through the fakeip DNS router.
+              domain_resolver = "dns-zerotrust";
             }
           ]
           ++ config.modules.proxy.singbox.extraEndpoints;
@@ -583,6 +634,11 @@
                 action = "hijack-dns";
               }
               {
+                # Peer connections to this node would otherwise fall through to the final outbound.
+                inbound = [ "tailscale-in" ];
+                outbound = "➡️ direct";
+              }
+              {
                 rule_set = "adblock-dns";
                 outbound = "🛡️ adblock";
               }
@@ -591,6 +647,11 @@
                   "100.64.0.0/10"
                   "fd7a:115c:a1e0::/48"
                 ];
+                outbound = "tailscale-in";
+              }
+              {
+                # MagicDNS names reach the router as domains; the ip_cidr rule above never sees them.
+                preferred_by = [ "tailscale-in" ];
                 outbound = "tailscale-in";
               }
               {
@@ -607,11 +668,13 @@
                 outbound = "🚦 tailscale-out";
               }
               {
-                rule_set = [
-                  "geoip-private"
-                  "geosite-private"
-                ];
+                rule_set = privateRuleSets;
                 action = "bypass"; # Linux only option
+              }
+              {
+                # bypass only acts on the TUN inbound; on the mixed inbound private destinations would reach the final outbound.
+                rule_set = privateRuleSets;
+                outbound = "➡️ direct";
               }
               {
                 type = "logical";
@@ -778,17 +841,20 @@
               secret = "";
             };
           };
-          # services = [
-          #   {
-          #     type = "api";
-          #     listen = "127.0.0.1";
-          #     listen_port = 9090;
-          #     secret = "";
-          #     dashboard = {
-          #       enabled = true;
-          #     };
-          #   }
-          # ];
+          # gRPC API behind `sing-box api tailscale ...` and the dashboard (Taildrop, endpoint login); loopback, no secret.
+          # CORS is limited to the dashboard's own origin so other web pages cannot call it.
+          services = [
+            {
+              type = "api";
+              listen = "127.0.0.1";
+              listen_port = 9091;
+              access_control_allow_origin = [ "http://127.0.0.1:9091" ];
+              dashboard = {
+                enabled = true;
+                http_client = "spoofed-http";
+              };
+            }
+          ];
         };
       };
 
@@ -811,16 +877,20 @@
 
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
-          AmbientCapabilities = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
-          CapabilityBoundingSet = lib.optionals config.modules.proxy.singbox.tun [ "CAP_NET_ADMIN" ];
-          DeviceAllow = lib.optionals config.modules.proxy.singbox.tun [ "/dev/net/tun rw" ];
-          PrivateDevices = !config.modules.proxy.singbox.tun;
+          # The tailscale endpoint's system_interface creates a TUN device even when the sing-box TUN inbound is off.
+          AmbientCapabilities = [ "CAP_NET_ADMIN" ];
+          CapabilityBoundingSet = [ "CAP_NET_ADMIN" ];
+          # DeviceAllow only restricts under DevicePolicy=closed (default auto allows every device node).
+          DevicePolicy = "closed";
+          DeviceAllow = [ "/dev/net/tun rw" ];
+          PrivateDevices = false;
+          # Netlink is needed by the network manager and the tailscale endpoint even without TUN.
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_UNIX"
-          ]
-          ++ lib.optionals config.modules.proxy.singbox.tun [ "AF_NETLINK" ];
+            "AF_NETLINK"
+          ];
           NoNewPrivileges = true;
           ProtectSystem = "strict";
           ProtectHome = true;

@@ -23,6 +23,7 @@
 | `fakeip` | `198.18.0.0/15` + `64:ff9b:1::/48` | 已分类域名（境内境外皆可）优先命中，DNS 阶段零查询，真实 IP 推迟到拨号时由 outbound 的 `domain_resolver` 解析。 |
 | `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——在这台机器上 `type=local` 不经过 unbound/dnscrypt-proxy/RPZ 管道，走网卡分配的 DNS，只把它限制在本就该走本地网络解析的窄范围内。 |
 | `dns-mdns` | mDNS | 局域网设备发现优先命中。 |
+| `dns-ts` | `type=tailscale`，`endpoint=tailscale-in`，`accept_default_resolvers=false`，`accept_search_domain=true` | 解析 MagicDNS 名字（`*.ts.hydroakri.cc`，含裸名）。`accept_default_resolvers=false`：非 tailnet 名字返回 NXDOMAIN，不回落到 headscale 的全局解析器，公网解析仍走 `dns-quad9`/fakeip。 |
 | `dns-alidns` | h3，`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
 | `dns-flymc` | h3，`detour=🚦 cn`，无 utls | 用于 `match_response` 阶段对已确认 `geoip-cn` 的响应做二次查询，拿国内优化结果。QUIC/h3 传输与 utls 不兼容，DNS 类 h3 server 均不加 utls。 |
 | `dns-zerotrust` | h3，无 detour，`server_name` 走 `_secret` | 中立探测服务器：`➡️ direct`/多数 selector 的默认 `domain_resolver`，也是 `evaluate` 阶段对未分类域名探测真实 IP 的查询目标。 |
@@ -32,6 +33,7 @@
 
 | 顺序 | 规则 | Tradeoff |
 |---|---|---|
+| 0 | `preferred_by = dns-ts` → `dns-ts` | MagicDNS 主机名命中 tailnet 解析，排在最前，不会被 fakeip 接走（实测：经 Clash API 查 `oci.ts.hydroakri.cc` 得 tailnet 地址，`example.com` 得 fakeip）。 |
 | 1 | mDNS 域名 → `dns-mdns` | `preferred_by` 触发本地发现协议特化处理。 |
 | 2 | 内网关键词/后缀/`geosite-private` → `dns-system` | 局域网/内网域名走网卡分配 DNS，不进 fakeip/探测管道。**排在顺序 3 前面是必须的**——`fakeip-filter.srs`（见下）里的 `+.msftconnecttest.com`/`+.msftncsi.com`/`+.linksys.com`/`+.linksyssmartwifi.com` 跟这条的 `domain_keyword` 逐字重复，顺序反了会导致这几个连通性检测/路由器域名从 `dns-system` 改判给 `dns-quad9`——msftconnecttest/msftncsi 这类强制门户检测域名本该看本地网络的真实返回（可能被门户劫持成跳转页），用加密解析器给出诚实答案反而让检测失灵。 |
 | 3 | `fakeip-filter`（`query_type` A/AAAA） → `dns-quad9` | 跳过 fakeip 直接返回真实 IP——STUN/主机游戏 NAT 探测/语音服务依赖连接到的真实地址或对往返时间戳敏感，命中 fakeip 会直接连不上。列表来自 `DustinWin/ruleset_geodata@sing-box-ruleset`（上游 `ShellCrash/public/fake_ip_filter.list`），覆盖 PlayStation/Xbox/Nintendo/Battle.net NAT 探测、NTP、英雄联盟语音、VoWiFi 等。**代价**：STUN 部分用 `+.stun.*.*` 通配，任意含 `stun.` 的域名都会放真实 IP；列表另含与此机制无关的国内 App 域名（网易云音乐、微信登录、招商银行等），无副作用。`discord.media` 不在列表内，未单独处理。IoT 云 API 类无通用清单，见下方已知未覆盖表。 |
@@ -89,10 +91,13 @@
 |---|---|---|---|
 | 1 | `sniff` | — | 对 `tun-in`(如启用)/`mixed-in` 做协议嗅探，300ms 超时；即使连接方自行做了 DNS 解析（如浏览器走 DoH 绕过下面的 `hijack-dns`），只要是 TLS 连接仍可从 ClientHello 的 SNI 恢复域名，用于后续按域名分类；HTTP/TLS 之外、且未经过 sing-box DNS 解析的连接无法恢复域名，只能落到 IP-based 规则（`geoip-cn`/`bypass`）。 |
 | 2 | port 53 / protocol dns | hijack-dns | 拦截传统 DNS 协议纳入 sing-box 的 `dns.rules` 管道；**拦不住 DoH**（DNS over HTTPS 用 443 端口，看起来是普通 HTTPS 流量），走 DoH 自行解析的应用不经过 fakeip/`dns-flymc`/`dns-alidns` 这套优化，域名分类仍可能靠 sniff 命中，但拨号用的是应用自己解析出的 IP。 |
+| 2a | 入站 `tailscale-in` | `➡️ direct` | 别的 tailnet 节点连进本机的连接，否则会落到 `final`（`🚦 oversea`）。 |
 | 3 | `adblock-dns` | `🛡️ adblock` selector | 默认候选 `🚫 block`（硬丢弃，跟改动前行为一致）；可经 Clash API 手动切到 `🚦 cn`/`🚦 oversea` 放行——三选一而非直接 `➡️ direct`，是因为广告域名本身境内境外都有，路由规则不能读取 selector 的运行时状态、无法在命中这条规则后"退回"给下面顺序 4 及之后的 cn/oversea/兜底规则重新判断，选哪条链路只能由用户手动指定。 |
 | 4 | `100.64.0.0/10`/`fd7a:115c:a1e0::/48` | `tailscale-in` | Tailscale/内部 CGNAT 地址段直接指定出站，无 selector。 |
+| 4a | `preferred_by = tailscale-in` | `tailscale-in` | MagicDNS 主机名以域名形式进入路由，顺序 4 的 `ip_cidr` 匹配不到它们；没有这条会落到 `➡️ direct`，由其 `domain_resolver`（公网解析器）查不到。 |
 | 5 | `geosite-tailscale` / oracle 域名 / oracle IP（后两者 `_secret`） | `🚦 tailscale-out` | 到达 Tailscale 协调域名或 `oracle` 主机的路径选择。 |
-| 6 | `geoip-private`/`geosite-private` | bypass | 内网流量完全不进入代理判断（仅 Linux 可用此 action）。 |
+| 6 | `geoip-private`/`geosite-private` | bypass | 内网流量完全不进入代理判断（仅 Linux 可用此 action）。只对 TUN 入站生效。 |
+| 6a | `geoip-private`/`geosite-private` | `➡️ direct` | `bypass` 对 `mixed-in` 不起作用，私有目的地会落到 `final`；这条让两个入站行为一致。TUN 入站在顺序 6 已结束，不受影响。 |
 | 7 | protocol bittorrent/stun 或 `category-pt`/`category-public-tracker` | `🚦 webrtc-bt-proxy` | 节点能力轴，见上表。 |
 | 8 | `.onion` 域名后缀 | `🧅 tor` | 直接指定 `🧅 tor` 出站，不经过任何 selector——匿名性需求与"选哪个出口"无关。 |
 | 9 | `category-game-platforms-download` | `➡️ direct`（硬编码） | Steam/Blizzard 等下载 CDN，纯粹就近拉取，无换区/风控诉求，不占用任何可切换分组。 |
@@ -106,6 +111,62 @@
 
 `route.rule_set` 里的 MetaCubeX 条目由 tag 名派生 URL（`geoip-`/`geosite-` 前缀决定 `geo/{geoip|geosite}/` 路径段），避免手写重复；`adblock-dns` 单独指向自建 blocklist。`category-ai-!cn`/`category-ai-chat-!cn@!cn`/`category-social-media-!cn@cn`/`category-entertainment@!cn` 未收录——`ai-!cn` 与 `ai-chat-!cn` 字节级相同，其余三个是各自父列表（`ai-chat-!cn`/`social-media-!cn`/`entertainment`）的 100% 子集，父列表已在同一条规则里覆盖。`route.final = 🚦 oversea`；`default_http_client = spoofed-http`；`default_domain_resolver = dns-quad9`（`route.default_domain_resolver` 硬约束：只能指定单一 server，不经过 `dns.rules`，无法用 `evaluate`/`race` 竞速）。
 
+## Tailscale 端点 (`tailscale-in`)
+
+对象：sing-box 内置的 `tailscale` 端点，登录自建 headscale（`hosts/oci/oci.nix`，`base_domain = ts.hydroakri.cc`）。`tailnetDomain` 与 `control_url` 重复了 `oci.nix` 的值，改一边要同步另一边。
+
+### 配置
+
+| 设置 | Tradeoff |
+|---|---|
+| `auth_key`（sops `headscale-authkey`，预授权密钥可复用） | 状态存在后 `auth_key` 被忽略，所以 `state_directory = /var/lib/sing-box/tailscale` 必须跨重启保留；丢失后要重新注册。 |
+| `listen_port = 41641` + 防火墙放行 UDP | tailscaled 的默认 WireGuard 端口，放行后对端能主动连入。不放行时靠双向打洞也能直连（oci 到 Pi 实测用的是 NAT 映射端口）。保留放行的代价：笔记本在公共网络上多开一个 UDP 口。 |
+| `system_interface = true`（`tailscale0`） | 内核可见的网卡，本机进程不经代理就能访问 tailnet。代价见加固表（权限）；网关上与 TUN 共存未验证。 |
+| `domain_resolver = dns-zerotrust` | 否则控制面域名的查询会走 fakeip DNS 路由。 |
+| `taildrop_directory` | 收件箱 `/var/lib/sing-box/Taildrop`。 |
+| `ssh_server` 不开 | 开启后端点接管 tailnet 地址上的 22 端口（横幅 `SSH-2.0-sing-box`），宿主 sshd 在 tailnet 上不可达；无 root 时只能登录成 `sing-box` 用户；还需要 headscale 配 SSH 策略。 |
+| `accept_routes` 不开 | 主机在被宣告的网段内时会与本地网段冲突（omen15 在 `192.168.10.0/24`）；LAN 外的节点才需要。 |
+| 出口节点、`advertise_tags`、自有 DERP 不做 | 出口节点会绕开 sing-box 自己的分流；其余当前没有需求。 |
+
+### MagicDNS
+
+| 机制 | Tradeoff |
+|---|---|
+| `dns-ts` + DNS 规则 0 + 路由规则 4a | 经 sing-box 自己的解析和路由处理 tailnet 名字。 |
+| unbound `stub-zone` → `100.100.100.100` + `domain-insecure` | 让系统解析器也认 MagicDNS（`getent`、`ssh oci`）。`core.nix` 把根 `forward-zone` 设为 `mkDefault`，再写一份会整体覆盖，所以用 `stub-zone`。tailnet 内部名不做 DNSSEC 校验。 |
+| `networking.search = ts.hydroakri.cc` | 裸名可用；单标签查询先试这个后缀。 |
+| 名字的 AAAA | 官方客户端与内置端点都不返回 AAAA（headscale 未下发）；IPv6 地址字面量可用。 |
+
+### 与官方客户端的差异
+
+| 能力 | 官方 | 内置端点 |
+|---|---|---|
+| 登录、直连、IPv4/IPv6、`tailscale0` | 有 | 一致 |
+| 状态查看 | `status`、`ping`、`netcheck`、`whois` | `sing-box api tailscale status/peer/ping`，没有 `netcheck`、`whois` |
+| Taildrop | 收发需要 operator 或 root | 无需 root（`api tailscale taildrop`、dashboard） |
+| 系统 DNS | 自动改系统解析器 | 靠 unbound `stub-zone` 和搜索域 |
+| `tailscale0` 入站 | tailscaled 放行 | 受主机防火墙约束，未做对比测试 |
+| 版本 | 独立更新 | 跟随 sing-box 版本 |
+
+### 验证范围
+
+| 项 | 状态 |
+|---|---|
+| 登录、沿用旧节点、直连、三机 6 个方向 TCP 互通、IPv6 TCP | 已验证（omen15，WARP 关闭） |
+| 子网路由：oci 经 Pi 访问 HA、LIFX、LAN 主机 | 已验证（TCP；手机未测；ICMP 被 `security.nix` 禁用，只能用 TCP 和 `tailscale ping`） |
+| Taildrop 6 个方向 | 已验证；发往 omen15 的核对了内容，其余以对端 `tailscaled` 日志的 `peerapi: got put` 为准 |
+| 路由规则回归 | 已验证：相对基线只多 3 条路由规则和 1 条 DNS 规则 |
+| 重启后行为（`/var/lib/sing-box` 权限、服务顺序） | 未验证 |
+| 网关 TUN 共存、headscale 长中断 | 未验证 |
+
+### 运维
+
+| 项 | 说明 |
+|---|---|
+| `/var/lib/sing-box` 文件属主错位 | 现象 `open cache.db: permission denied` 循环重启；`chown -R sing-box:sing-box /var/lib/sing-box`。保留 `tailscale/` 目录可沿用旧节点身份。 |
+| selector 指向 `🔒 zerotrust`（`127.0.0.1:40000`） | 该端口是 WARP 代理模式的本地代理；全局隧道模式或 WARP 关闭时无人监听，经 Clash API 切到 `➡️ direct`（选择存在 `cache.db`）。 |
+| 部署顺序 | oci 的 `--accept-routes` 要求 headscale 已批准 Pi 的路由，否则不起作用。 |
+
 ## 已知未覆盖的失效模式
 
 | 场景 | 现状 |
@@ -113,6 +174,8 @@
 | sing-box 进程崩溃/被停止/系统重启时的 TUN 模式 | 无 kill switch——`networking.firewall` 只开放监听端口，没有"非 tun 出站一律丢弃"的强制规则。TUN 接口连带路由随进程消失，内核退回物理网卡默认路由，此前所有分流判断（fakeip/gfw/cn 分类）全部失效，流量静默直连。`mixed-in`（显式配置走 SOCKS 的应用）不受影响——连接直接失败而非裸连，是安全的失效模式。未提供 `networking.firewall.extraCommands` 形式的 iptables/ip6tables kill switch——它挂在 `OUTPUT` 链上，影响整机防火墙而不只是 sing-box 流量。该风险已知并接受。 |
 | 应用自行 DNS-over-HTTPS 解析 | 见路由规则表顺序 2。 |
 | 性能/延迟轴需求（游戏、实时语音视频） | 见 selector 表；已识别，未建 selector，接受默认行为的风险。 |
+| 网关（`tun=true`）上 `system_interface` 与 sing-box TUN 共存 | 未验证，没有机器运行过这份配置。首次部署建议用 `nh os test`（不写开机项，异常时重启回滚）。 |
+| headscale 长时间中断、节点改名/删除后内置端点是否跟随 | 未验证（上游 issue #4371 报告不会自动重连）；约 1 秒的重启实测不受影响。 |
 | IoT 云 API 把解析到的 IP 字面量嵌进负载 | STUN/TURN、主机游戏 NAT 探测、NTP 已在 DNS 规则表顺序 3 覆盖。IoT 云 API（智能家居设备向云端上报公网 IP 用于远程访问之类）无通用清单。遇到具体故障域名时，参照顺序 3 的写法加一条 `domain`/`domain_suffix` 匹配、`server = "dns-quad9"` 的 DNS 规则。 |
 
 ## `experimental`
@@ -121,6 +184,7 @@
 |---|---|
 | `cache_file.store_fakeip`/`store_dns` | 持久化 fakeip 映射和 DNS 缓存；不含 selector 选中状态（见 i18n-service 那行）。 |
 | `clash_api.secret = ""` | 面板控制器无鉴权——仅监听 `127.0.0.1:9090`，不对外暴露。 |
+| `services` 里的 `api`（`127.0.0.1:9091`，无 `secret`） | `sing-box api tailscale status/peer/ping/taildrop` 与 dashboard（Taildrop、端点登录）的后端。它注册的是 `StartedService`（42 个 RPC，含停止/重载服务、选出站、`SetTailscaleExitNode`、订阅日志和全部连接），`secret` 为空时本机任何进程可调用。`access_control_allow_origin` 限为 dashboard 自己的来源，其他网页的跨域请求被浏览器拒绝；本机进程仍不受限。要消除需要新增 sops 密钥作 `secret`，命令行此后要用 root 读取它。 |
 
 ## systemd 服务加固 (`systemd.services.sing-box`)
 
@@ -129,9 +193,9 @@
 | `after`/`wants` 含 `unbound`/`dnscrypt-proxy`（+ 条件性 `tor`（`tor.enable`）、`adguardhome`） | 启动顺序依赖，不代表运行时依赖这些服务的 DNS 解析结果（见 `dns-system` 那行，本机 `type=local` 不经过 unbound 管道）。 |
 | sops secret（`proxy.nix`/`proxy-nodes.nix`） | `restartUnits = sing-box.service`（`singbox.enable` 时）：secret 变化会重启 sing-box。 |
 | 断言 | 每个 selector 的候选必须是已有 outbound/endpoint 的 tag；`proxy.nix` 里 `rs` 的每个 rule-set 必须列入 `ruleSetTags`。 |
-| `AmbientCapabilities`/`CapabilityBoundingSet`/`DeviceAllow` 条件性含 `CAP_NET_ADMIN`/`/dev/net/tun` | 仅 `tun=true` 时授予——TUN 模式需要创建/配置虚拟网卡。 |
-| `PrivateDevices = !tun` | TUN 模式需要访问 `/dev/net/tun`，与 `PrivateDevices` 互斥。 |
-| `RestrictAddressFamilies` 条件性含 `AF_NETLINK` | 仅 `tun=true` 时授予，用于路由表操作。 |
+| `AmbientCapabilities`/`CapabilityBoundingSet` = `CAP_NET_ADMIN`，`DeviceAllow = /dev/net/tun rw` | 无条件授予：Tailscale 端点的 `system_interface` 在 `tun=false` 时也要创建 TUN 网卡。代价：所有开 sing-box 的主机不再有按 `tun` 区分的最小权限。 |
+| `DevicePolicy = closed`，`PrivateDevices = false` | `DeviceAllow` 只有在 `DevicePolicy=closed` 下才限制设备（默认 `auto` 放行所有设备节点）；TUN 需要 `/dev/net/tun`，与 `PrivateDevices` 互斥。 |
+| `RestrictAddressFamilies` 含 `AF_NETLINK` | 无条件授予：网络管理和 Tailscale 端点读路由/网卡信息都要。 |
 | `PrivateTmp = true` | `external_ui_download_url` 面板下载先落到 `/tmp` 再解压；`ProtectSystem=strict` 下 `/tmp` 默认只读，需要私有可写的 `/tmp`。 |
 | 其余（`NoNewPrivileges`/`ProtectSystem=strict`/`ProtectHome`/`ProtectClock`/`ProtectHostname`/`ProtectKernelLogs`/`ProtectKernelModules`/`ProtectControlGroups`/`LockPersonality`/`RestrictRealtime`/`RestrictSUIDSGID`/`MemoryDenyWriteExecute`/`SystemCallFilter=[@system-service,~@privileged]`） | 上游 nixpkgs 的 sing-box 模块未加任何 systemd 沙箱，这里补齐标准加固项。 |
 
@@ -144,6 +208,7 @@
 | `PORTAL` 时 unbound 转发改为 DHCP 下发的 DNS | dnscrypt 上游被封时对查询静默挂死，`forward-first` 的回退来不及（getent 约 45 秒后失败）。代价是 portal 态 DNS 为明文。还原值读自 `services.unbound.settings.forward-zone`，不另写一份。 |
 | 状态切换时 `flush_zone .` | `cache-min-ttl 300` 会留住 portal 态的 fakeip、劫持和失败答案。 |
 | 登录页经 `curl -4` 取探测网址的 307 `Location` 再开 | 浏览器会把 http 升级成 https，portal 拦不到；解析结果首选 IPv6 时该网络无路由。经 `systemd-run --user --machine=<user>@.host` 在用户会话里用默认浏览器打开，`xdg-open` 须用绝对路径（单元 PATH 里没有）。 |
+| `PORTAL` 停 sing-box 时 `tailscale0` 随之消失 | unbound 的 `stub-zone`（`ts.hydroakri.cc` → `100.100.100.100`）不可达，`networking.search` 使单标签名先试这个后缀，首次查询会多等。unbound 是否随后把不可达地址标记为 down 以缩短等待，未验证。 |
 | `LIMITED` 不处理 | 探测失败不等于 portal，误判会把 DNS 降级为明文，代价高于收益。 |
 | `dns.rules` 的 `dns-system` 规则含 `ping.archlinux.org` | NM 探测域名走系统解析。未验证去掉后探测是否仍判成 `portal`。 |
 | 验证范围 | 仅在 `desktop.nix` 的主机生效（探测与 dispatcher 都在其中，服务器不探测）。仅在一家 Meraki 点击即过的 portal 上端到端验证；需要账号、拦截 HTTPS、丢弃外部 53 的 portal 未测。portal 按客户端 MAC 记录授权，`cloned-mac-address=random` 下每次连接都是新客户端，会被分流到店家的注册流程。 |
@@ -173,6 +238,16 @@
 | 断言 | DHCP 或 NAT 启用时 `lan.interfaces` 不能为空。 |
 | sysctl/tuned | `ip_forward` 及 IPv6 forwarding 置 1（`mkOverride 950`）；tuned profile `network-latency`（`mkOverride 900`，仍可被 `modules.server.tunedProfile` 覆盖）；`checkReversePath` 为 `mkDefault false`。 |
 
+# tailscale（官方客户端：`rpi4-switch`、`oci`）
+
+| 项 | 事实 |
+|---|---|
+| `rpi4-switch` 子网路由器 | `services.tailscale`：`extraUpFlags` 只在登录时运行，所以只放 `--login-server`；`--advertise-routes=192.168.10.0/24` 和 `--accept-dns=false` 放 `extraSetFlags`（每次启动重放）；`useRoutingFeatures = "server"` 显式声明转发。路由要在 headscale 里 `approve-routes`。 |
+| `rpi4-switch` 防火墙 | 对 WAN 放行 TCP 22、UDP 41641（`openFirewall`）；LAN 接口信任。tailnet 入站**不被** NixOS 防火墙过滤（实测：TCP 53 不在放行列表中，tailnet 内两台机器仍能连上）；暴露面靠各服务自己的认证：sshd 只认公钥、unbound 的 `access-control` 拒绝 `100.64.0.0/10`、HA 自带登录。DHCPv6 回包由 NixOS 防火墙内置规则处理，未单独声明端口。 |
+| `oci` 的 `--accept-routes` | `extraSetFlags`，使 oci 能经 Pi 访问 `192.168.10.0/24`。不用 `useRoutingFeatures = "client"`：它把反向路径过滤放松为 `loose`，实测不需要。 |
+| 使用方 | 在 LAN 外的节点才开 accept-routes；LAN 内节点开启会与本地网段冲突。 |
+| 验证范围 | oci 到 HA（8123）、LIFX（`192.168.10.85`）、LAN 内另一台主机（22）TCP 通；手机未测。 |
+
 # sysfs tuning (`tuning.nix`)
 
 | 项 | 事实 |
@@ -190,3 +265,4 @@
 | 重启 | `warp_mdm` 变化时重启 `cloudflare-warp.service`。 |
 | 全局隧道 | `modules.warp.fullTunnel`（默认关）：`preStart` 把 `service_mode` 强制写成 `warp`，并把 unbound 收窄到回环（WARP DNS 代理要绑 `127.0.2.2/3:53`，通配 `:53` 会冲突）。oci 共用同一 secret，不开。 |
 | 与 sing-box 的关系 | 独立于 `proxy-nodes.nix` 里 sing-box 内置的 `wg-cloudflare-warp` WireGuard endpoint。 |
+| 与 Tailscale 的关系 | 全局隧道下不能共存：`inet cloudflare-warp` 的 `input`/`output` 链默认丢弃，只放行排除列表里的目的地；Tailscale 引擎的套接字绑定在物理网卡上，到对端公网地址和 DERP 的包被丢弃，只有控制面经隧道登录成功，数据面不通。同时 WARP 把 `/etc/resolv.conf` 改成 `127.0.2.2/3`，绕过 unbound，MagicDNS 失效。想共存需要把所有对端公网地址加进排除列表，不可行。 |

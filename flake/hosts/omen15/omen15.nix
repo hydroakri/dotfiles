@@ -103,7 +103,7 @@
     proxy = {
       enable = true;
       singbox = {
-        enable = false;
+        enable = true;
         tun = false;
       };
       tor.enable = true;
@@ -224,7 +224,7 @@
     # pkgs.winboat
   ];
   modules.warp = {
-    enable = true;
+    enable = false;
     fullTunnel = true;
   };
   services.sunshine = {
