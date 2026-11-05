@@ -489,6 +489,7 @@ in
         "lifx"
         "sleep_as_android"
         "mobile_app"
+        "homekit" # HomeKit Bridge: exposes the light to the Apple Home app
       ];
       config = {
         # Any key under homeassistant: makes HA lock location, time zone and URLs in the UI; null drops the module's time_zone default.
