@@ -223,10 +223,8 @@
     pkgs.nbfc-linux
     # pkgs.winboat
   ];
-  modules.warp = {
-    enable = false;
-    fullTunnel = true;
-  };
+  # Proxy mode (127.0.0.1:40000, the 🔒 zerotrust outbound); the full tunnel drops the Tailscale data plane.
+  modules.warp.enable = true;
   services.sunshine = {
     enable = false;
     autoStart = true;

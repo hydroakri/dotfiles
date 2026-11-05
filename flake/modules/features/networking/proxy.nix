@@ -858,6 +858,11 @@
         };
       };
 
+      # Dynamically allocated ids can change between boots and leave the state dir files owned by a stale uid
+      # (`open cache.db: permission denied`); core.nix pins unbound and dnscrypt-proxy the same way.
+      users.users.sing-box.uid = mkIf config.modules.proxy.singbox.enable (mkDefault 960);
+      users.groups.sing-box.gid = mkIf config.modules.proxy.singbox.enable (mkDefault 960);
+
       systemd.services.sing-box = mkIf config.modules.proxy.singbox.enable {
         after = [
           "network-online.target"

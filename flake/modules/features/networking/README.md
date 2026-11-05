@@ -38,7 +38,7 @@
 | 2 | 内网关键词/后缀/`geosite-private` → `dns-system` | 局域网/内网域名走网卡分配 DNS，不进 fakeip/探测管道。**排在顺序 3 前面是必须的**——`fakeip-filter.srs`（见下）里的 `+.msftconnecttest.com`/`+.msftncsi.com`/`+.linksys.com`/`+.linksyssmartwifi.com` 跟这条的 `domain_keyword` 逐字重复，顺序反了会导致这几个连通性检测/路由器域名从 `dns-system` 改判给 `dns-quad9`——msftconnecttest/msftncsi 这类强制门户检测域名本该看本地网络的真实返回（可能被门户劫持成跳转页），用加密解析器给出诚实答案反而让检测失灵。 |
 | 3 | `fakeip-filter`（`query_type` A/AAAA） → `dns-quad9` | 跳过 fakeip 直接返回真实 IP——STUN/主机游戏 NAT 探测/语音服务依赖连接到的真实地址或对往返时间戳敏感，命中 fakeip 会直接连不上。列表来自 `DustinWin/ruleset_geodata@sing-box-ruleset`（上游 `ShellCrash/public/fake_ip_filter.list`），覆盖 PlayStation/Xbox/Nintendo/Battle.net NAT 探测、NTP、英雄联盟语音、VoWiFi 等。**代价**：STUN 部分用 `+.stun.*.*` 通配，任意含 `stun.` 的域名都会放真实 IP；列表另含与此机制无关的国内 App 域名（网易云音乐、微信登录、招商银行等），无副作用。`discord.media` 不在列表内，未单独处理。IoT 云 API 类无通用清单，见下方已知未覆盖表。 |
 | 4 | `tld-cn`/`geolocation-cn`/`cn`/`gfw`/`geolocation-!cn` + `🚦 i18n-service`/`🚦 finance`/`🚦 webrtc-bt-proxy`/`🚦 tailscale-out`/`game-platforms-download`（硬编码 direct）用到的全部域名类 `rule_set`（ai-chat-!cn/media/entertainment/emby/social-media-!cn/apple@cn/finance/cryptocurrency/ecommerce/category-pt/category-public-tracker/category-game-platforms-download/tailscale） → `fakeip` | 已分类域名跳过下面的探测，省一次往返。覆盖范围不止境内境外判断——`route.rules` 里这些规则的路由结果全靠 `rule_set` 域名匹配决定、且排在 `geoip-cn` 之前，真实 IP 对路由判断毫无意义，不管出站是走 selector 还是硬编码，都能省掉探测那次往返。未被这些列表覆盖的域名才进入下一步。`🚦 tailscale-out` 规则里 oracle 域名/IP 走的是 `_secret` 模板而非 `rule_set`，没有一并纳入——单独一个 secret 域名要塞进这条规则得改成 `rule_set`+`domain` 的逻辑或结构，为一个低频域名换来的收益太小，没做。`adblock-dns` 也不在这条里——广告域名不再享受 DNS 阶段零查询优化，正常走完整条链路（多数落到下面顺序 6 的兜底 fakeip），block/direct-cn/oversea 的判断完全交给 route 层的 `🛡️ adblock` selector（见路由规则表顺序 3、下方分组 selector 表）。 |
-| 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。 |
+| 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。`disable_optimistic_cache=true`：这次查询的目的就是拿到当前的真实 IP 来判断地区，乐观缓存会先返回过期答案，GeoIP 判断随之不准；代价是缓存过期后重复访问要再等一次查询。`timeout=5s` 不要调低：冷查询（31 个未被规则集收录的域名）实测中位数约 0.4 到 0.6 秒，p90 约 1 到 2 秒，最大 2.9 秒（上游递归解析的时间）；超时会回落到最后的 fakeip 规则，国内站点会被当成海外。未覆盖：国内托管的未收录域名没有测。 |
 | 6 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
 | 7 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
 | 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，DNS 响应本身永远不直接暴露真实境外 IP。 |
@@ -163,7 +163,7 @@
 
 | 项 | 说明 |
 |---|---|
-| `/var/lib/sing-box` 文件属主错位 | 现象 `open cache.db: permission denied` 循环重启；`chown -R sing-box:sing-box /var/lib/sing-box`。保留 `tailscale/` 目录可沿用旧节点身份。 |
+| `/var/lib/sing-box` 文件属主错位 | 现象 `open cache.db: permission denied` 循环重启；`chown -R sing-box:sing-box /var/lib/sing-box`。保留 `tailscale/` 目录可沿用旧节点身份。`sing-box` 的 uid 和 gid 固定为 960（`proxy.nix`，和 `unbound`、`dnscrypt-proxy` 的做法一致），动态分配的 id 在重启后出现过变化（989 变成 992）；首次部署固定值后要执行一次上面的 `chown`，网关的 `/var/lib/sing-box` 同理。 |
 | selector 指向 `🔒 zerotrust`（`127.0.0.1:40000`） | 该端口是 WARP 代理模式的本地代理；全局隧道模式或 WARP 关闭时无人监听，经 Clash API 切到 `➡️ direct`（选择存在 `cache.db`）。 |
 | 部署顺序 | oci 的 `--accept-routes` 要求 headscale 已批准 Pi 的路由，否则不起作用。 |
 
@@ -265,4 +265,4 @@
 | 重启 | `warp_mdm` 变化时重启 `cloudflare-warp.service`。 |
 | 全局隧道 | `modules.warp.fullTunnel`（默认关）：`preStart` 把 `service_mode` 强制写成 `warp`，并把 unbound 收窄到回环（WARP DNS 代理要绑 `127.0.2.2/3:53`，通配 `:53` 会冲突）。oci 共用同一 secret，不开。 |
 | 与 sing-box 的关系 | 独立于 `proxy-nodes.nix` 里 sing-box 内置的 `wg-cloudflare-warp` WireGuard endpoint。 |
-| 与 Tailscale 的关系 | 全局隧道下不能共存：`inet cloudflare-warp` 的 `input`/`output` 链默认丢弃，只放行排除列表里的目的地；Tailscale 引擎的套接字绑定在物理网卡上，到对端公网地址和 DERP 的包被丢弃，只有控制面经隧道登录成功，数据面不通。同时 WARP 把 `/etc/resolv.conf` 改成 `127.0.2.2/3`，绕过 unbound，MagicDNS 失效。想共存需要把所有对端公网地址加进排除列表，不可行。 |
+| 与 Tailscale 的关系 | 代理模式（`fullTunnel` 关，`warp-cli settings` 显示 `WarpProxy on port 40000`）不创建 `CloudflareWARP` 网卡、策略路由和防火墙规则，omen15 上实测 Tailscale 直连、MagicDNS、HA 都正常，sing-box 的 `🔒 zerotrust`（`127.0.0.1:40000`）经它出去 `warp=on`。全局隧道下不能共存：`inet cloudflare-warp` 的 `input`/`output` 链默认丢弃，只放行排除列表里的目的地；Tailscale 引擎的套接字绑定在物理网卡上，到对端公网地址和 DERP 的包被丢弃，只有控制面经隧道登录成功，数据面不通。同时 WARP 把 `/etc/resolv.conf` 改成 `127.0.2.2/3`，绕过 unbound，MagicDNS 失效。想共存需要把所有对端公网地址加进排除列表，不可行。 |
