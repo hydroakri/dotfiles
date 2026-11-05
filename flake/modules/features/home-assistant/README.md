@@ -86,6 +86,13 @@ HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,�
 | 额定 1600 lm | 由型号名 `Color 1600` 推测,2200K 下实际更低 |
 | 闭眼时的眼睑衰减 | 未采用 |
 
+## 自动化的来源
+
+| 来源 | 位置 | 说明 |
+|---|---|---|
+| 本模块 | `configuration.yaml` 的 `automation manual`（只读，来自 Nix） | `lifx_*` 系列，改动走 Nix |
+| 网页 UI 创建 | `automation ui: !include automations.yaml`，文件在 HA 配置目录（`systemd.tmpfiles` 在不存在时创建 `[]`） | 如果 `automation:` 直接写成列表，UI 保存的自动化不会被加载，保存时报"初始化超时" |
+
 ## 复现
 
 ```bash

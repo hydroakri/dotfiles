@@ -550,7 +550,7 @@ in
           }
         ];
 
-        automation = [
+        "automation manual" = [
           {
             id = "lifx_circadian";
             alias = "LIFX follow the sun";
@@ -783,8 +783,15 @@ in
             }
           ];
         };
+        # Automations created in the HA UI are stored in automations.yaml; a plain `automation:` list would never load them.
+        "automation ui" = "!include automations.yaml";
       };
     };
+
+    # HA fails to load the include when the file is missing.
+    systemd.tmpfiles.rules = [
+      "f ${config.services.home-assistant.configDir}/automations.yaml 0644 hass hass - []"
+    ];
 
     # 8123 is reachable from the LAN only: router.nix trusts the LAN interfaces and not the WAN one.
   };

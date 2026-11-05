@@ -17,6 +17,9 @@ mkdir "$work/conf"
 nix eval --json "$attr.config" | python3 -I -c '
 import json, sys
 def drop_null(x):
+    # The NixOS module unquotes "!include ..." strings; an empty list stands in for the included file.
+    if isinstance(x, str) and x.startswith("!include "):
+        return []
     if isinstance(x, dict):
         return {k: drop_null(v) for k, v in x.items() if v is not None}
     if isinstance(x, list):
