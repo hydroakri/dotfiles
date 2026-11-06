@@ -39,6 +39,9 @@
           "libvirtd"
         ];
 
-    environment.systemPackages = [ pkgs.distrobox ];
+    environment.systemPackages = [
+      pkgs.distrobox
+    ]
+    ++ lib.optional config.modules.virtualisation.libvirtd.enable pkgs.looking-glass-client;
   };
 }
