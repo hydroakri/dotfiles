@@ -31,6 +31,7 @@
     ../../modules/features/privacy.nix
     ../../modules/features/utils.nix
     ../../modules/features/virtualisation.nix
+    ../../modules/features/vfio-passthrough.nix
     ../../modules/features/gaming.nix
     ../../modules/features/agent.nix
     ../../modules/features/networking/warp.nix
@@ -135,6 +136,40 @@
     services.udev.extraRules = ''
       ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:01:00.0", TEST=="power/control", ATTR{power/control}="auto"
     '';
+  };
+  # VM optimizations are on by default; the dGPU devices are declared here and only
+  # claimed in the `vfio` boot entry below (see README.md).
+  modules.vfio = {
+    gpuPassthrough.devices = [
+      {
+        id = "10de:2520";
+        address = "0000:01:00.0";
+      }
+      {
+        id = "10de:228e";
+        address = "0000:01:00.1";
+      }
+    ];
+    vm.disk.sizeGiB = 80;
+    vm.smbios = {
+      bios.vendor = "AMI";
+      system = {
+        manufacturer = "HP";
+        product = "OMEN Laptop 15-en1xxx";
+      };
+      baseBoard = {
+        manufacturer = "HP";
+        product = "88D1";
+      };
+      chassis.manufacturer = "HP";
+    };
+  };
+
+  # Boot menu entry (limine): dGPU bound to vfio-pci for the Windows VM.
+  specialisation.vfio.configuration = {
+    modules.nvidia.enable = lib.mkForce false;
+    services.xserver.videoDrivers = lib.mkForce [ "amdgpu" ];
+    modules.vfio.gpuPassthrough.enable = true;
   };
   # Boot menu entry (limine): nvidia-open driver instead of the default nouveau.
   specialisation.nvidia.configuration.modules.nvidia.variant = lib.mkForce "open";
