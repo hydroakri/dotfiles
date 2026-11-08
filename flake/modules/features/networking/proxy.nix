@@ -31,6 +31,15 @@
         default = false;
         description = "Enable sing-box tun-in inbound.";
       };
+      killSwitch.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Drop direct egress of normal users (uid 1000-59999) to public addresses while the
+          sing-box TUN is down. Requires `tun`. Stop `sing-box-killswitch.service` as well
+          to use the network with sing-box stopped.
+        '';
+      };
 
       # 扩展点：由按需 import 的文件（如 proxy-nodes.nix）注入节点/endpoint；不 import 即没有这些，不靠布尔开关。
       # internal = 非用户常规选项。
@@ -94,15 +103,40 @@
       tailnetDomain = "ts.hydroakri.cc";
       headscaleUrl = "https://headscale.hydroakri.cc";
       tailscalePort = 41641; # tailscaled's default; fixed so the firewall can allow direct peer traffic
-      privateRuleSets = [
-        "geoip-private"
-        "geosite-private"
+      privateCidrs = [
+        "0.0.0.0/8"
+        "10.0.0.0/8"
+        "100.64.0.0/10"
+        "127.0.0.0/8"
+        "169.254.0.0/16"
+        "172.16.0.0/12"
+        "192.0.0.0/24"
+        "192.0.2.0/24"
+        "192.31.196.0/24"
+        "192.52.193.0/24"
+        "192.88.99.0/24"
+        "192.168.0.0/16"
+        "198.51.100.0/24"
+        "203.0.113.0/24"
+        "224.0.0.0/3"
+        "::/127"
+        "64:ff9b::/96"
+        "100::/64"
+        "2001::/23"
+        "2001:db8::/32"
+        "2620:4f:8000::/48"
+        "3fff::/20"
+        "5f00::/16"
+        "fc00::/7"
+        "fe80::/10"
+        "ff00::/8"
       ];
     in
     with lib;
     mkIf config.modules.proxy.enable {
       sops.secrets = {
         zerotrust.sopsFile = ../secrets/proxy-secrets.yaml;
+        singbox-api-secret.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_domain.sopsFile = ../secrets/proxy-secrets.yaml;
         oracle_ip.sopsFile = ../secrets/proxy-secrets.yaml;
         headscale-authkey.sopsFile = ../secrets/proxy-secrets.yaml;
@@ -144,14 +178,7 @@
 
         # Sing-box 的端口规则
         (mkIf config.modules.proxy.singbox.enable {
-          allowedTCPPorts = [
-            1080
-            9090
-          ];
-          allowedUDPPorts = [
-            1080
-            tailscalePort
-          ];
+          allowedUDPPorts = [ tailscalePort ];
         })
       ];
 
@@ -315,7 +342,7 @@
                 mode = "or";
                 rules = [
                   {
-                    domain_keyword = [
+                    domain_suffix = [
                       "msftconnecttest.com"
                       "msftncsi.com"
                       "linksys.com"
@@ -340,6 +367,19 @@
                   }
                 ];
                 server = "dns-system";
+              }
+              {
+                domain_suffix = [ ".onion" ];
+                query_type = [
+                  "A"
+                  "AAAA"
+                ];
+                server = "fakeip";
+              }
+              {
+                domain_suffix = [ ".onion" ];
+                action = "predefined";
+                rcode = "NXDOMAIN";
               }
               {
                 rule_set = [
@@ -463,7 +503,7 @@
             auto_redirect = true;
             strict_route = true;
             exclude_mptcp = true;
-            route_exclude_address_set = [ "geoip-private" ];
+            route_exclude_address = privateCidrs;
             exclude_uid_range = [
               "${toString config.users.users.root.uid}:${toString config.users.users.root.uid}"
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
@@ -668,12 +708,13 @@
                 outbound = "🚦 tailscale-out";
               }
               {
-                rule_set = privateRuleSets;
-                action = "bypass"; # Linux only option
-              }
-              {
-                # bypass only acts on the TUN inbound; on the mixed inbound private destinations would reach the final outbound.
-                rule_set = privateRuleSets;
+                type = "logical";
+                mode = "or";
+                rules = [
+                  { ip_cidr = privateCidrs; }
+                  { rule_set = [ "geosite-private" ]; }
+                ];
+                action = "bypass";
                 outbound = "➡️ direct";
               }
               {
@@ -794,7 +835,6 @@
                 }
               )
               [
-                "geoip-private"
                 "geoip-cn"
                 "geosite-private"
                 "geosite-apple@cn"
@@ -836,19 +876,23 @@
             clash_api = {
               external_controller = "127.0.0.1:9090";
               external_ui = "ui";
-              external_ui_download_url = "https://github.com/MetaCubeX/metacubexd/archive/gh-pages.zip";
-              external_ui_download_detour = "➡️ direct";
-              secret = "";
+              access_control_allow_origin = [ "http://127.0.0.1:9090" ];
+              secret = {
+                _secret = config.sops.secrets.singbox-api-secret.path;
+              };
             };
           };
-          # gRPC API behind `sing-box api tailscale ...` and the dashboard (Taildrop, endpoint login); loopback, no secret.
-          # CORS is limited to the dashboard's own origin so other web pages cannot call it.
+          # gRPC API behind `sing-box api tailscale ...` and the dashboard (Taildrop, endpoint login); loopback.
+          # CORS only covers fetch; the gRPC-over-WebSocket transport skips the Origin check, so the secret is what protects it.
           services = [
             {
               type = "api";
               listen = "127.0.0.1";
               listen_port = 9091;
               access_control_allow_origin = [ "http://127.0.0.1:9091" ];
+              secret = {
+                _secret = config.sops.secrets.singbox-api-secret.path;
+              };
               dashboard = {
                 enabled = true;
                 http_client = "spoofed-http";
@@ -883,8 +927,19 @@
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
           # The tailscale endpoint's system_interface creates a TUN device even when the sing-box TUN inbound is off.
-          AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-          CapabilityBoundingSet = [ "CAP_NET_ADMIN" ];
+          # The leading "" resets the list: the packaged unit grants CAP_DAC_READ_SEARCH, CAP_SYS_PTRACE and
+          # CAP_NET_BIND_SERVICE, and systemd merges repeated assignments. NET_RAW stays for ICMP.
+          AmbientCapabilities = [
+            ""
+            "CAP_NET_ADMIN"
+            "CAP_NET_RAW"
+          ];
+          CapabilityBoundingSet = [
+            ""
+            "CAP_NET_ADMIN"
+            "CAP_NET_RAW"
+          ];
+          UMask = "0077";
           # DeviceAllow only restricts under DevicePolicy=closed (default auto allows every device node).
           DevicePolicy = "closed";
           DeviceAllow = [ "/dev/net/tun rw" ];
@@ -916,6 +971,52 @@
           ];
         };
       };
+
+      assertions = [
+        {
+          assertion = lib.hasInfix "\nsingbox-api-secret:" (builtins.readFile ../secrets/proxy-secrets.yaml);
+          message = "proxy-secrets.yaml has no singbox-api-secret key: a missing sops key makes sing-box fail to start. Add it with `sops proxy-secrets.yaml`.";
+        }
+        {
+          assertion = !config.modules.proxy.singbox.killSwitch.enable || config.modules.proxy.singbox.tun;
+          message = "modules.proxy.singbox.killSwitch needs modules.proxy.singbox.tun (the rules allow egress via tun0 only).";
+        }
+      ];
+
+      systemd.services.sing-box-killswitch =
+        mkIf (config.modules.proxy.singbox.enable && config.modules.proxy.singbox.killSwitch.enable)
+          {
+            description = "Drop direct egress of normal users while sing-box is down";
+            wantedBy = [ "multi-user.target" ];
+            wants = [ "network-pre.target" ];
+            before = [ "network-pre.target" ];
+            after = [ "systemd-modules-load.service" ];
+            reloadIfChanged = true;
+            serviceConfig =
+              let
+                rules = pkgs.writeText "sing-box-killswitch.nft" ''
+                  add table inet sing-box-killswitch
+                  delete table inet sing-box-killswitch
+                  table inet sing-box-killswitch {
+                    chain post {
+                      type filter hook postrouting priority filter; policy accept;
+                      oifname { "lo", "tun0", "tailscale0" } accept
+                      ip daddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 224.0.0.0/4, 255.255.255.255 } accept
+                      ip6 daddr { fc00::/7, fe80::/10, ff00::/8 } accept
+                      meta skuid 1000-59999 drop
+                    }
+                  }
+                '';
+                nft = "${pkgs.nftables}/bin/nft";
+              in
+              {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = "${nft} -f ${rules}";
+                ExecReload = "${nft} -f ${rules}";
+                ExecStop = "-${nft} delete table inet sing-box-killswitch";
+              };
+          };
 
       # ----------------------------------------------------------------------------
       # 匿名后端：tor 客户端守护进程。只暴露回环 SOCKS5 给 sing-box,

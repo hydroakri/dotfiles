@@ -8,6 +8,7 @@
 |---|---|
 | `modules.proxy.singbox.enable` | 启用 sing-box 作为代理后端。 |
 | `modules.proxy.singbox.tun` | 启用系统级 TUN 接管（`dns_mode=hijack`），而非仅本地 SOCKS/HTTP 代理(`mixed-in`)。TUN 关闭时，未显式配置走 `127.0.0.1:1080` 的应用不受任何分流规则影响，直接裸连——这是有意的降级路径，不是缺陷。 |
+| `modules.proxy.singbox.killSwitch.enable` | 独立 nft 表 `sing-box-killswitch`（`sing-box-killswitch.service`），对普通用户（uid 1000-59999）发往公网、且最终不经 `lo`/`tun0`/`tailscale0` 的包在 postrouting 钩子 drop。drop 规则正向匹配 uid（`meta skuid 1000-59999 drop`）：RST、TIME_WAIT 的 ACK/FIN 等无归属 socket 的包取不到 uid，规则不匹配，走默认放行（live 日志 150 条命中全是这类包，用反向 `skuid != ... accept` 写法它们会被丢掉）。必须是 postrouting：output 钩子里 `oifname` 是 sing-box 打标记重路由**之前**的网卡，TUN 流量和重定向到 127.0.0.1 的 TCP 都显示为物理网卡，会被误杀（实测：用 output 钩子部署后 TUN 正常运行时用户会话断网）。放行：私网/链路本地/多播（对应 `geoip-private` 绕过 TUN）、uid 范围外的进程（root/sing-box/unbound/dnscrypt-proxy/tor 本来就直连）。需要 `tun=true`（断言）。sing-box 停止期间用户会话无公网，TCP 表现为超时（postrouting 不能 reject），UDP 立即 EPERM；手动停 sing-box 要连 `sing-box-killswitch.service` 一起停。范围外的 uid（systemd DynamicUser、subuid 容器进程）和绑定物理网卡的程序不受保护。验证：真实 sing-box（auto_redirect + strict_route、双栈 TUN）在网络命名空间里、用 uid 1000 客户端测 IPv4/IPv6 的 TCP/UDP——运行时通过、停止时拦截、重启后恢复、私网豁免；未在 omen15 上实测。 |
 | `boot.kernel.sysctl` rp_filter | TUN 需要放松 `net.ipv4.conf.*.rp_filter` 到 `2`（loose）以支持非对称路由（如游戏 UDP）；用 `mkOverride 900` 显式盖过 `security.nix` 的 `mkOverride 950`（数字越小优先级越高）。 |
 
 ## HTTP 客户端 (`http_clients`)
@@ -41,16 +42,18 @@
 | 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。`disable_optimistic_cache=true`：这次查询的目的就是拿到当前的真实 IP 来判断地区，乐观缓存会先返回过期答案，GeoIP 判断随之不准；代价是缓存过期后重复访问要再等一次查询。`timeout=5s` 不要调低：冷查询（31 个未被规则集收录的域名）实测中位数约 0.4 到 0.6 秒，p90 约 1 到 2 秒，最大 2.9 秒（上游递归解析的时间）；超时会回落到最后的 fakeip 规则，国内站点会被当成海外。未覆盖：国内托管的未收录域名没有测。 |
 | 6 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
 | 7 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
-| 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，DNS 响应本身永远不直接暴露真实境外 IP。 |
+| 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，sing-box 自己回答的 DNS 响应永远不直接暴露真实境外 IP（系统解析器 unbound → dnscrypt-proxy 的应用不经过这里，拿到的是真实 IP，由嗅探到的域名路由）。 |
 
 `dns.final = dns-quad9`；`strategy = prefer_ipv4`；`cache_capacity = 4096`；`optimistic = true`；`store_fakeip`/`store_dns` 持久化在 `cache_file`。`selector` 的当前选中状态也会自动持久化——`store_selected` 从 sing-box 1.8.0 起废弃，行为改成只要 `cache_file.enabled=true`（本配置一直是）就默认持久化，不需要也不能再单独配置这个字段；手动经 Clash API 选过一次之后，重启不会丢。
+
+`.onion` 在 `dns-system` 规则之后有两条专用 DNS 规则：A/AAAA 返回 fakeip（让 `route.rules` 的 `.onion → 🧅 tor` 规则能命中），其余类型返回 NXDOMAIN；否则 `.onion` 查询会被 `evaluate` 发给上游解析器（实测返回真实递归解析器的 NXDOMAIN）。
 
 ## 入站 (`inbounds`)
 
 | 设置 | Tradeoff |
 |---|---|
 | `mixed-in`，`127.0.0.1:1080` | 始终开启，供显式配置走本地代理的应用使用，不受 `tun` 开关影响。 |
-| `tun-in`（`modules.proxy.singbox.tun=true` 时） | `dns_mode=hijack`+`auto_route`+`auto_redirect`+`strict_route` 系统级接管；`route_exclude_address_set=[geoip-private]` 排除内网网段；`exclude_uid_range` 放行 root/unbound/dnscrypt-proxy/tor 自身进程的对外连接，避免这些进程的流量被 tun 递归接管形成回路。`mtu=1280`——低于常见的 1500，代价是包头开销占比更高、大流量吞吐略降；换来的是这条 tun 是双栈（同时配置了 IPv4/IPv6 地址），1280 是 IPv6 规定的最小链路 MTU（RFC 8200），用它能保证隧道内部不需要对 IPv6 包做二次分片，不用去猜某个出站封装（WireGuard/Reality 等）还会再叠多少层开销。 |
+| `tun-in`（`modules.proxy.singbox.tun=true` 时） | `dns_mode=hijack`+`auto_route`+`auto_redirect`+`strict_route` 系统级接管；`route_exclude_address` 静态列表（MetaCubeX `geoip-private` 的 28 条快照，去掉 fakeip 池 `198.18.0.0/15` 和 `64:ff9b:1::/48`，与路由规则 6/6a 共用同一份 `privateCidrs`；该列表含这两段，用 `route_exclude_address_set` 引用会让 fakeip 连接不进 sing-box，实测：池内地址的包不被接管）。fakeip 池不得出现在此列表。列表是快照，不随上游更新；条目来自 IANA 特殊用途地址登记，很少变化；`exclude_uid_range` 放行 root/unbound/dnscrypt-proxy/tor 自身进程的对外连接，避免这些进程的流量被 tun 递归接管形成回路。`mtu=1280`——低于常见的 1500，代价是包头开销占比更高、大流量吞吐略降；换来的是这条 tun 是双栈（同时配置了 IPv4/IPv6 地址），1280 是 IPv6 规定的最小链路 MTU（RFC 8200），用它能保证隧道内部不需要对 IPv6 包做二次分片，不用去猜某个出站封装（WireGuard/Reality 等）还会再叠多少层开销。 |
 
 ## 出站与分组 (`outbounds`)
 
@@ -96,8 +99,9 @@
 | 4 | `100.64.0.0/10`/`fd7a:115c:a1e0::/48` | `tailscale-in` | Tailscale/内部 CGNAT 地址段直接指定出站，无 selector。 |
 | 4a | `preferred_by = tailscale-in` | `tailscale-in` | MagicDNS 主机名以域名形式进入路由，顺序 4 的 `ip_cidr` 匹配不到它们；没有这条会落到 `➡️ direct`，由其 `domain_resolver`（公网解析器）查不到。 |
 | 5 | `geosite-tailscale` / oracle 域名 / oracle IP（后两者 `_secret`） | `🚦 tailscale-out` | 到达 Tailscale 协调域名或 `oracle` 主机的路径选择。 |
-| 6 | `geoip-private`/`geosite-private` | bypass | 内网流量完全不进入代理判断（仅 Linux 可用此 action）。只对 TUN 入站生效。 |
-| 6a | `geoip-private`/`geosite-private` | `➡️ direct` | `bypass` 对 `mixed-in` 不起作用，私有目的地会落到 `final`；这条让两个入站行为一致。TUN 入站在顺序 6 已结束，不受影响。 |
+| 6 | 私有地址（`geoip-private` 的静态快照，见下）或 `geosite-private` | bypass + `➡️ direct` | 内网流量不进入代理判断（`bypass` 仅 Linux）。必须带 `outbound`：不带时 `bypass` 对 `mixed-in` 被跳过，私有目的地落到 `final`（实测：mixed-in 连私网被 block），带上后在所有入站上等同 route 到该出站。TUN 里私网段已被 `route_exclude_address` 排除，几乎不会走到这条。 |
+
+`geoip-private` 是 `proxy.nix` 里的静态快照 `privateCidrs`（26 条，去掉两段 fakeip 池），TUN 的 `route_exclude_address` 与路由规则 6/6a 共用；远程规则集里只剩 `geosite-private`（域名类，保持远程）。快照不随上游更新；条目来自 IANA 特殊用途登记，很少变化。
 | 7 | protocol bittorrent/stun 或 `category-pt`/`category-public-tracker` | `🚦 webrtc-bt-proxy` | 节点能力轴，见上表。 |
 | 8 | `.onion` 域名后缀 | `🧅 tor` | 直接指定 `🧅 tor` 出站，不经过任何 selector——匿名性需求与"选哪个出口"无关。 |
 | 9 | `category-game-platforms-download` | `➡️ direct`（硬编码） | Steam/Blizzard 等下载 CDN，纯粹就近拉取，无换区/风控诉求，不占用任何可切换分组。 |
@@ -171,7 +175,7 @@
 
 | 场景 | 现状 |
 |---|---|
-| sing-box 进程崩溃/被停止/系统重启时的 TUN 模式 | 无 kill switch——`networking.firewall` 只开放监听端口，没有"非 tun 出站一律丢弃"的强制规则。TUN 接口连带路由随进程消失，内核退回物理网卡默认路由，此前所有分流判断（fakeip/gfw/cn 分类）全部失效，流量静默直连。`mixed-in`（显式配置走 SOCKS 的应用）不受影响——连接直接失败而非裸连，是安全的失效模式。未提供 `networking.firewall.extraCommands` 形式的 iptables/ip6tables kill switch——它挂在 `OUTPUT` 链上，影响整机防火墙而不只是 sing-box 流量。该风险已知并接受。 |
+| sing-box 进程崩溃/被停止/系统重启时的 TUN 模式 | `killSwitch.enable=true` 的主机：用户会话直连被拒（见模块开关表），重启窗口、崩溃后的 10 秒 `Restart` 间隔、开机时 `network-online` 之前都覆盖。未启用的主机（`tun=true` 的网关等）：TUN 接口连带路由随进程消失，内核退回物理网卡默认路由，分流判断全部失效，流量静默直连。`mixed-in` 不受影响——连接直接失败而非裸连。开机时 `NetworkManager-wait-online` 超时（实测 60 秒）会把 sing-box 启动推迟到约 85 秒，kill switch 期间用户会话无网络。 |
 | 应用自行 DNS-over-HTTPS 解析 | 见路由规则表顺序 2。 |
 | 性能/延迟轴需求（游戏、实时语音视频） | 见 selector 表；已识别，未建 selector，接受默认行为的风险。 |
 | 网关（`tun=true`）上 `system_interface` 与 sing-box TUN 共存 | 未验证，没有机器运行过这份配置。首次部署建议用 `nh os test`（不写开机项，异常时重启回滚）。 |
@@ -182,9 +186,9 @@
 
 | 设置 | Tradeoff |
 |---|---|
-| `cache_file.store_fakeip`/`store_dns` | 持久化 fakeip 映射和 DNS 缓存；不含 selector 选中状态（见 i18n-service 那行）。 |
-| `clash_api.secret = ""` | 面板控制器无鉴权——仅监听 `127.0.0.1:9090`，不对外暴露。 |
-| `services` 里的 `api`（`127.0.0.1:9091`，无 `secret`） | `sing-box api tailscale status/peer/ping/taildrop` 与 dashboard（Taildrop、端点登录）的后端。它注册的是 `StartedService`（42 个 RPC，含停止/重载服务、选出站、`SetTailscaleExitNode`、订阅日志和全部连接），`secret` 为空时本机任何进程可调用。`access_control_allow_origin` 限为 dashboard 自己的来源，其他网页的跨域请求被浏览器拒绝；本机进程仍不受限。要消除需要新增 sops 密钥作 `secret`，命令行此后要用 root 读取它。 |
+| `cache_file.store_fakeip`/`store_dns` | 持久化 fakeip 映射和 DNS 缓存；不含 selector 选中状态（见 i18n-service 那行）。`cache.db` 记录访问过的域名；`UMask=0077` 让它只对 sing-box 用户可读。 |
+| `clash_api.secret`（sops `singbox-api-secret`）、`access_control_allow_origin = http://127.0.0.1:9090` | 留空时 CORS 为 `*`，任意网页都能调用控制器。`external_ui_download_url` 已移除：面板不再从 GitHub 分支自动下载（`ui/` 里已有的文件保留）。 |
+| `services` 里的 `api`（`127.0.0.1:9091`，`secret` = sops `singbox-api-secret`） | `sing-box api tailscale status/peer/ping/taildrop` 与 dashboard（Taildrop、端点登录）的后端。它注册的是 `StartedService`（42 个 RPC，含停止/重载服务、选出站、`SetTailscaleExitNode`、订阅日志和全部连接），`secret` 为空时本机任何进程可调用。`access_control_allow_origin` 限为 dashboard 自己的来源，其他网页的跨域请求被浏览器拒绝；本机进程仍不受限。要消除需要新增 sops 密钥作 `secret`，命令行此后要用 root 读取它。 | CORS 只约束 `fetch`；gRPC-over-WebSocket 不检查 Origin（源码 `InsecureSkipVerify`，实测伪造 Origin 握手 101），所以真正的保护是 `secret`。dashboard 默认每天从 SagerNet 的 gh-pages 分支自动更新，未固定版本。CLI 需要 `BOX_API_SECRET` 或 `--secret`。
 
 ## systemd 服务加固 (`systemd.services.sing-box`)
 
@@ -193,7 +197,7 @@
 | `after`/`wants` 含 `unbound`/`dnscrypt-proxy`（+ 条件性 `tor`（`tor.enable`）、`adguardhome`） | 启动顺序依赖，不代表运行时依赖这些服务的 DNS 解析结果（见 `dns-system` 那行，本机 `type=local` 不经过 unbound 管道）。 |
 | sops secret（`proxy.nix`/`proxy-nodes.nix`） | `restartUnits = sing-box.service`（`singbox.enable` 时）：secret 变化会重启 sing-box。 |
 | 断言 | 每个 selector 的候选必须是已有 outbound/endpoint 的 tag；`proxy.nix` 里 `rs` 的每个 rule-set 必须列入 `ruleSetTags`。 |
-| `AmbientCapabilities`/`CapabilityBoundingSet` = `CAP_NET_ADMIN`，`DeviceAllow = /dev/net/tun rw` | 无条件授予：Tailscale 端点的 `system_interface` 在 `tun=false` 时也要创建 TUN 网卡。代价：所有开 sing-box 的主机不再有按 `tun` 区分的最小权限。 |
+| `AmbientCapabilities`/`CapabilityBoundingSet` = `CAP_NET_ADMIN` + `CAP_NET_RAW`，`DeviceAllow = /dev/net/tun rw` | 无条件授予：Tailscale 端点的 `system_interface` 在 `tun=false` 时也要创建 TUN 网卡。列表首项为空串用来重置：上游 unit 自带 `CAP_DAC_READ_SEARCH`（能读 `/run/secrets`）、`CAP_SYS_PTRACE`、`CAP_NET_BIND_SERVICE`，systemd 对重复赋值是合并，不写空串就会保留（`systemctl show` 实测）。`CAP_NET_RAW` 为 ICMP 保留。代价：所有开 sing-box 的主机不再有按 `tun` 区分的最小权限。 |
 | `DevicePolicy = closed`，`PrivateDevices = false` | `DeviceAllow` 只有在 `DevicePolicy=closed` 下才限制设备（默认 `auto` 放行所有设备节点）；TUN 需要 `/dev/net/tun`，与 `PrivateDevices` 互斥。 |
 | `RestrictAddressFamilies` 含 `AF_NETLINK` | 无条件授予：网络管理和 Tailscale 端点读路由/网卡信息都要。 |
 | `PrivateTmp = true` | `external_ui_download_url` 面板下载先落到 `/tmp` 再解压；`ProtectSystem=strict` 下 `/tmp` 默认只读，需要私有可写的 `/tmp`。 |
@@ -204,7 +208,7 @@
 | 设置 | Tradeoff |
 |---|---|
 | `networking.networkmanager.settings.connectivity` | 写进 `NetworkManager.conf`（NM 服务的 `restartTriggers`），`switch` 后自动重载；放 `conf.d` 不会触发重载，运行中的 NM 会对探测返回假结果（日志 `start fake request`）。`response` 必须非空——空串匹配任何回应，portal 的 307 也判成 FULL。204 无正文的端点（GrapheneOS、Cloudflare）不适用，故用 Arch 的 `nm-check.txt`，代价是 Arch 能看到出口 IP。 |
-| dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 |
+| dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 `PORTAL` 先停 `sing-box-killswitch.service`（存在时），否则用户会话打不开登录页；`FULL`/`NONE` 先拉起 kill switch 再拉起 sing-box。 |
 | `PORTAL` 时 unbound 转发改为 DHCP 下发的 DNS | dnscrypt 上游被封时对查询静默挂死，`forward-first` 的回退来不及（getent 约 45 秒后失败）。代价是 portal 态 DNS 为明文。还原值读自 `services.unbound.settings.forward-zone`，不另写一份。 |
 | 状态切换时 `flush_zone .` | `cache-min-ttl 300` 会留住 portal 态的 fakeip、劫持和失败答案。 |
 | 登录页经 `curl -4` 取探测网址的 307 `Location` 再开 | 浏览器会把 http 升级成 https，portal 拦不到；解析结果首选 IPv6 时该网络无路由。经 `systemd-run --user --machine=<user>@.host` 在用户会话里用默认浏览器打开，`xdg-open` 须用绝对路径（单元 PATH 里没有）。 |

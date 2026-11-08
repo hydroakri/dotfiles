@@ -81,6 +81,8 @@
             SYSTEMCTL="${pkgs.systemd}/bin/systemctl"
             case "$CONNECTIVITY_STATE" in
               PORTAL)
+                # kill switch 先撤,否则用户会话打不开登录页;未启用该单元时跳过
+                $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL stop sing-box-killswitch.service
                 $SYSTEMCTL is-active --quiet sing-box.service && $SYSTEMCTL stop sing-box.service
                 $UCTL flush_zone . || true
                 # dnscrypt 上游被封时静默挂死
@@ -112,6 +114,8 @@
                 $UCTL forward_add ${fwdRestore} || true
                 # cache-min-ttl 会留住 portal 态的劫持/fakeip/失败答案
                 [ "$CONNECTIVITY_STATE" = FULL ] && { $UCTL flush_zone . || true; }
+                # kill switch 先于 sing-box 恢复,两者之间不留直连窗口
+                $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL start sing-box-killswitch.service
                 $SYSTEMCTL is-enabled --quiet sing-box.service && $SYSTEMCTL start sing-box.service
                 ;;
             esac
