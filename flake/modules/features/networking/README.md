@@ -268,5 +268,5 @@
 | 落盘方式 | warp-svc 以 `O_NOFOLLOW` 打开 `mdm.xml`，sops 的符号链接会 `ELOOP`；`preStart` 把 secret 复制为 `/var/lib/cloudflare-warp/mdm.xml` 真实文件。 |
 | 重启 | `warp_mdm` 变化时重启 `cloudflare-warp.service`。 |
 | 全局隧道 | `modules.warp.fullTunnel`（默认关）：`preStart` 把 `service_mode` 强制写成 `warp`，并把 unbound 收窄到回环（WARP DNS 代理要绑 `127.0.2.2/3:53`，通配 `:53` 会冲突）。oci 共用同一 secret，不开。 |
-| 与 sing-box 的关系 | 独立于 `proxy-nodes.nix` 里 sing-box 内置的 `wg-cloudflare-warp` WireGuard endpoint。 |
+| 与 sing-box 的关系 | 独立于 `proxy-nodes.nix` 里 sing-box 内置的 `warp-<设备名>` WireGuard endpoint。 |
 | 与 Tailscale 的关系 | 代理模式（`fullTunnel` 关，`warp-cli settings` 显示 `WarpProxy on port 40000`）不创建 `CloudflareWARP` 网卡、策略路由和防火墙规则，omen15 上实测 Tailscale 直连、MagicDNS、HA 都正常，sing-box 的 `🔒 zerotrust`（`127.0.0.1:40000`）经它出去 `warp=on`。全局隧道下不能共存：`inet cloudflare-warp` 的 `input`/`output` 链默认丢弃，只放行排除列表里的目的地；Tailscale 引擎的套接字绑定在物理网卡上，到对端公网地址和 DERP 的包被丢弃，只有控制面经隧道登录成功，数据面不通。同时 WARP 把 `/etc/resolv.conf` 改成 `127.0.2.2/3`，绕过 unbound，MagicDNS 失效。想共存需要把所有对端公网地址加进排除列表，不可行。 |

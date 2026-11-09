@@ -226,7 +226,6 @@
   ];
   # Proxy mode (127.0.0.1:40000, the 🔒 zerotrust outbound); the full tunnel drops the Tailscale data plane.
   modules.warp.enable = true;
-  modules.virtualisation.libvirtd.enable = true;
   services.sunshine = {
     enable = false;
     autoStart = true;

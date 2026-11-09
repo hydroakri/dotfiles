@@ -72,64 +72,75 @@ let
       packet_encoding = "xudp";
     };
   vlessTags = map (n: n.tag) vlessNodes;
+
+  # One registered WARP identity per device; the tag is `warp-<device>`.
+  warpDevices = [
+    "omen15"
+    "samsungpad"
+    "pixel10pro"
+    "iphonese3"
+  ];
+  warpSecretFields = [
+    "private-key"
+    "address"
+    "peer-address"
+    "peer-reserved"
+  ];
+  warpSecret = d: field: config.sops.secrets."warp-${d}-${field}".path;
+  mkWarpEndpoint = d: {
+    type = "wireguard";
+    tag = "warp-${d}";
+    mtu = 1280;
+    address = {
+      _secret = warpSecret d "address";
+      quote = false;
+    };
+    private_key._secret = warpSecret d "private-key";
+    peers = [
+      {
+        address._secret = warpSecret d "peer-address";
+        port = 2408;
+        # Cloudflare's shared WARP peer key (same for every device).
+        public_key = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=";
+        allowed_ips = [
+          "0.0.0.0/0"
+          "::/0"
+        ];
+        persistent_keepalive_interval = 25;
+        reserved._secret = warpSecret d "peer-reserved";
+      }
+    ];
+  };
+  warpTags = map (d: "warp-${d}") warpDevices;
 in
 {
   config = lib.mkIf config.modules.proxy.enable {
-    sops.secrets = {
-      warp-address.sopsFile = ../secrets/proxy-secrets.yaml;
-      warp-private-key.sopsFile = ../secrets/proxy-secrets.yaml;
-      warp-peer-address.sopsFile = ../secrets/proxy-secrets.yaml;
-      warp-peer-public-key.sopsFile = ../secrets/proxy-secrets.yaml;
-      warp-peer-reserved.sopsFile = ../secrets/proxy-secrets.yaml;
-    }
-    // lib.listToAttrs (
-      lib.concatMap (
-        n:
-        map (field: {
-          name = "vless-${n.id}-${field}";
-          value.sopsFile = ../secrets/proxy-secrets.yaml;
-        }) vlessSecretFields
-      ) vlessNodes
-    );
+    sops.secrets =
+      lib.listToAttrs (
+        lib.concatMap (
+          d:
+          map (field: {
+            name = "warp-${d}-${field}";
+            value.sopsFile = ../secrets/proxy-secrets.yaml;
+          }) warpSecretFields
+        ) warpDevices
+      )
+      // lib.listToAttrs (
+        lib.concatMap (
+          n:
+          map (field: {
+            name = "vless-${n.id}-${field}";
+            value.sopsFile = ../secrets/proxy-secrets.yaml;
+          }) vlessSecretFields
+        ) vlessNodes
+      );
 
-    modules.proxy.singbox.extraEndpoints = [
-      {
-        type = "wireguard";
-        tag = "wg-cloudflare-warp";
-        mtu = 1280;
-        address = {
-          _secret = config.sops.secrets.warp-address.path;
-          quote = false;
-        };
-        private_key = {
-          _secret = config.sops.secrets.warp-private-key.path;
-        };
-        peers = [
-          {
-            address = {
-              _secret = config.sops.secrets.warp-peer-address.path;
-            };
-            port = 2408;
-            public_key = {
-              _secret = config.sops.secrets.warp-peer-public-key.path;
-            };
-            allowed_ips = [
-              "0.0.0.0/0"
-              "::/0"
-            ];
-            persistent_keepalive_interval = 25;
-            reserved = {
-              _secret = config.sops.secrets.warp-peer-reserved.path;
-            };
-          }
-        ];
-      }
-    ];
+    modules.proxy.singbox.extraEndpoints = map mkWarpEndpoint warpDevices;
 
     modules.proxy.singbox.extraOutbounds = map mkVlessOutbound vlessNodes;
 
-    modules.proxy.singbox.extraIspOutbounds = [ "wg-cloudflare-warp" ] ++ vlessTags;
-    modules.proxy.singbox.extraProxyOutbounds = [ "wg-cloudflare-warp" ] ++ vlessTags;
-    modules.proxy.singbox.extraManualOutbounds = [ "wg-cloudflare-warp" ] ++ vlessTags;
+    modules.proxy.singbox.extraIspOutbounds = warpTags ++ vlessTags;
+    modules.proxy.singbox.extraProxyOutbounds = warpTags ++ vlessTags;
+    modules.proxy.singbox.extraManualOutbounds = warpTags ++ vlessTags;
   };
 }

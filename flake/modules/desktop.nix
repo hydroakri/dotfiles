@@ -114,9 +114,11 @@
                 $UCTL forward_add ${fwdRestore} || true
                 # cache-min-ttl 会留住 portal 态的劫持/fakeip/失败答案
                 [ "$CONNECTIVITY_STATE" = FULL ] && { $UCTL flush_zone . || true; }
+                # --no-block: 开机时第一个 connectivity-change 就走到这里,阻塞式 start 会等 network-online,而
+                # network-online 在等 NM 启动完成(NM 在等这个 dispatcher 返回),死锁到 wait-online 的 60 秒超时。
                 # kill switch 先于 sing-box 恢复,两者之间不留直连窗口
-                $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL start sing-box-killswitch.service
-                $SYSTEMCTL is-enabled --quiet sing-box.service && $SYSTEMCTL start sing-box.service
+                $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL start --no-block sing-box-killswitch.service
+                $SYSTEMCTL is-enabled --quiet sing-box.service && $SYSTEMCTL start --no-block sing-box.service
                 ;;
             esac
           '';
