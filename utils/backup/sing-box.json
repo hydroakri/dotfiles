@@ -186,34 +186,7 @@
       "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "dns_mode": "hijack",
       "auto_route": true,
-      "strict_route": true,
-      "route_exclude_address": [
-        "0.0.0.0/8",
-        "10.0.0.0/8",
-        "100.64.0.0/10",
-        "169.254.0.0/16",
-        "172.16.0.0/12",
-        "192.0.0.0/24",
-        "192.0.2.0/24",
-        "192.31.196.0/24",
-        "192.52.193.0/24",
-        "192.88.99.0/24",
-        "192.168.0.0/16",
-        "198.51.100.0/24",
-        "203.0.113.0/24",
-        "224.0.0.0/3",
-        "::/127",
-        "64:ff9b::/96",
-        "100::/64",
-        "2001::/23",
-        "2001:db8::/32",
-        "2620:4f:8000::/48",
-        "3fff::/20",
-        "5f00::/16",
-        "fc00::/7",
-        "fe80::/10",
-        "ff00::/8"
-      ]
+      "strict_route": true
     }
   ],
   "outbounds": [
@@ -243,6 +216,11 @@
   "route": {
     "rules": [
       {
+        "ip_is_private": true,
+        "action": "bypass",
+        "outbound": "direct"
+      },
+      {
         "inbound": ["tun-in", "mixed-in"],
         "action": "sniff",
         "timeout": "300ms"
@@ -266,11 +244,6 @@
         "method": "drop"
       },
       {
-        "rule_set": ["geoip-private", "geosite-private"],
-        "action": "bypass",
-        "outbound": "direct"
-      },
-      {
         "rule_set": "geoip-cn",
         "outbound": "direct-cn"
       },
@@ -290,12 +263,6 @@
         "type": "remote",
         "tag": "fakeip-filter",
         "url": "https://testingcf.jsdelivr.net/gh/DustinWin/ruleset_geodata@sing-box-ruleset/fakeip-filter.srs",
-        "update_interval": "24h0m0s"
-      },
-      {
-        "type": "remote",
-        "tag": "geoip-private",
-        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/private.srs",
         "update_interval": "24h0m0s"
       },
       {

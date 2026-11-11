@@ -103,34 +103,6 @@
       tailnetDomain = "ts.hydroakri.cc";
       headscaleUrl = "https://headscale.hydroakri.cc";
       tailscalePort = 41641; # tailscaled's default; fixed so the firewall can allow direct peer traffic
-      privateCidrs = [
-        "0.0.0.0/8"
-        "10.0.0.0/8"
-        "100.64.0.0/10"
-        "127.0.0.0/8"
-        "169.254.0.0/16"
-        "172.16.0.0/12"
-        "192.0.0.0/24"
-        "192.0.2.0/24"
-        "192.31.196.0/24"
-        "192.52.193.0/24"
-        "192.88.99.0/24"
-        "192.168.0.0/16"
-        "198.51.100.0/24"
-        "203.0.113.0/24"
-        "224.0.0.0/3"
-        "::/127"
-        "64:ff9b::/96"
-        "100::/64"
-        "2001::/23"
-        "2001:db8::/32"
-        "2620:4f:8000::/48"
-        "3fff::/20"
-        "5f00::/16"
-        "fc00::/7"
-        "fe80::/10"
-        "ff00::/8"
-      ];
     in
     with lib;
     mkIf config.modules.proxy.enable {
@@ -503,7 +475,6 @@
             auto_redirect = true;
             strict_route = true;
             exclude_mptcp = true;
-            route_exclude_address = privateCidrs;
             exclude_uid_range = [
               "${toString config.users.users.root.uid}:${toString config.users.users.root.uid}"
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
@@ -576,6 +547,7 @@
             {
               type = "selector";
               tag = "🚦 oversea";
+              default = "🚫 block";
               outbounds = [
                 "➡️ direct"
                 "🎯 isp"
@@ -587,6 +559,7 @@
             {
               type = "selector";
               tag = "🚦 i18n-service";
+              default = "🚫 block";
               outbounds = [
                 "➡️ direct"
                 "🎯 isp"
@@ -659,6 +632,25 @@
 
           route = {
             rules = [
+              # The next three rules precede sniff: TCP pre-match stops at sniff, which would turn a later bypass into a userspace route.
+              {
+                # Peer connections to this node would otherwise fall through to the final outbound.
+                inbound = [ "tailscale-in" ];
+                outbound = "➡️ direct";
+              }
+              {
+                # Before the private bypass: fd7a:115c:a1e0::/48 lies inside fc00::/7.
+                ip_cidr = [
+                  "100.64.0.0/10"
+                  "fd7a:115c:a1e0::/48"
+                ];
+                outbound = "tailscale-in";
+              }
+              {
+                ip_is_private = true;
+                action = "bypass";
+                outbound = "➡️ direct";
+              }
               {
                 inbound = (lib.optional config.modules.proxy.singbox.tun "tun-in") ++ [ "mixed-in" ];
                 action = "sniff";
@@ -674,23 +666,11 @@
                 action = "hijack-dns";
               }
               {
-                # Peer connections to this node would otherwise fall through to the final outbound.
-                inbound = [ "tailscale-in" ];
-                outbound = "➡️ direct";
-              }
-              {
                 rule_set = "adblock-dns";
                 outbound = "🛡️ adblock";
               }
               {
-                ip_cidr = [
-                  "100.64.0.0/10"
-                  "fd7a:115c:a1e0::/48"
-                ];
-                outbound = "tailscale-in";
-              }
-              {
-                # MagicDNS names reach the router as domains; the ip_cidr rule above never sees them.
+                # MagicDNS names reach the router as domains; the tailnet ip_cidr rule above never sees them.
                 preferred_by = [ "tailscale-in" ];
                 outbound = "tailscale-in";
               }
@@ -706,16 +686,6 @@
                   { ip_cidr = [ { _secret = config.sops.secrets.oracle_ip.path; } ]; }
                 ];
                 outbound = "🚦 tailscale-out";
-              }
-              {
-                type = "logical";
-                mode = "or";
-                rules = [
-                  { ip_cidr = privateCidrs; }
-                  { rule_set = [ "geosite-private" ]; }
-                ];
-                action = "bypass";
-                outbound = "➡️ direct";
               }
               {
                 type = "logical";
