@@ -48,6 +48,7 @@
     inputs.owly.nixosModules.default
   ];
   services.owly.enable = true;
+  i18n.inputMethod.fcitx5.addons = [ inputs.wowtype.packages.x86_64-linux.default ];
   mainUser = "hydroakri";
   sops.secrets = {
     email = { };

@@ -53,6 +53,10 @@
       url = "github:t4t5/owly";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    wowtype = {
+      url = "github:Gloridust/WowType/v0.3.10";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     trivalent-nix = {
       url = "github:hydroakri/trivalent-nix";
       inputs.nixpkgs.follows = "nixpkgs";
