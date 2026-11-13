@@ -434,7 +434,13 @@
       # nix utils
       pkgs.attic-client
       pkgs.nix-tree
-      inputs.nix-alien.packages.${pkgs.stdenv.hostPlatform.system}.default
+      # Built on the host pkgs: the flake's own packages.* would instantiate a second nixpkgs (~1.5s/host eval).
+      (pkgs.callPackage "${inputs.nix-alien}/nix-alien.nix" {
+        version = "0.1.0+git_${inputs.nix-alien.shortRev or "dirty"}";
+        nix-index = (import inputs.nix-index-database { inherit pkgs; }).nix-index-with-db;
+        nix-index-database-src = inputs.nix-index-database;
+        nixpkgs-src = inputs.nixpkgs;
+      })
       # system-wide
       (lib.hiPrio pkgs.uutils-coreutils-noprefix)
     ]

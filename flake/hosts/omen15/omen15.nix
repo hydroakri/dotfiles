@@ -11,6 +11,8 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   nixpkgs.overlays = [
     inputs.nix-cachyos-kernel.overlays.pinned
+    # Host-pkgs build; inputs.wowtype.packages would instantiate a second nixpkgs.
+    inputs.wowtype.overlays.default
   ];
   imports = [
     # Hardware configuration
@@ -48,7 +50,7 @@
     inputs.owly.nixosModules.default
   ];
   services.owly.enable = true;
-  i18n.inputMethod.fcitx5.addons = [ inputs.wowtype.packages.x86_64-linux.default ];
+  i18n.inputMethod.fcitx5.addons = [ pkgs.wowtype ];
   mainUser = "hydroakri";
   sops.secrets = {
     email = { };
