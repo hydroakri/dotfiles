@@ -110,12 +110,11 @@
       supportedLocales = [ "en_US.UTF-8/UTF-8" ];
     };
     # The options manual is rendered from every imported module (sops, disko, ...), so no
-    # binary cache has it; it dominates eval time. Man pages stay, only the apropos index goes.
+    # binary cache has it; evaluating it costs 1-2s per host. Man pages stay.
     documentation = {
       nixos.enable = lib.mkDefault false;
       doc.enable = lib.mkDefault false;
       info.enable = lib.mkDefault false;
-      man.cache.enable = lib.mkDefault false;
     };
     networking.firewall = {
       allowedUDPPortRanges = [

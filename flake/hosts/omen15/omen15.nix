@@ -138,8 +138,6 @@
       ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:01:00.0", TEST=="power/control", ATTR{power/control}="auto"
     '';
   };
-  # Boot menu entry (limine): nvidia-open driver instead of the default nouveau.
-  specialisation.nvidia.configuration.modules.nvidia.variant = lib.mkForce "open";
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {
     content = ''
