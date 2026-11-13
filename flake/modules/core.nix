@@ -55,6 +55,8 @@
         ++ config.modules.core.extraTrustedPublicKeys;
         max-jobs = "auto";
         cores = 0;
+        # More parallel narinfo lookups: the default 25 is latency-bound on a multi-thousand-path closure.
+        http-connections = 64;
         allowed-users = [ "@wheel" ];
         # @wheel omitted: trusted users bypass doas via nix-daemon (unsigned imports, sandbox off).
         trusted-users = [ "root" ];
