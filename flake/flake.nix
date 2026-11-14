@@ -44,6 +44,7 @@
     nix-alien = {
       url = "github:thiagokokada/nix-alien";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-index-database.follows = "nix-index-database";
     };
     nixpak = {
       url = "github:nixpak/nixpak";
