@@ -57,6 +57,8 @@
         cores = 0;
         # More parallel narinfo lookups: the default 25 is latency-bound on a multi-thousand-path closure.
         http-connections = 64;
+        # Default 5 attempts with backoff add ~5s per planning pass whenever a self-hosted cache is down.
+        download-attempts = 2;
         allowed-users = [ "@wheel" ];
         # @wheel omitted: trusted users bypass doas via nix-daemon (unsigned imports, sandbox off).
         trusted-users = [ "root" ];
