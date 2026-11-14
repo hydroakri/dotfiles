@@ -146,6 +146,7 @@
         restic_pds_password = { }; # bluesky-pds restic 仓库加密密码
         restic_ente_password = { }; # ente 数据库（E2EE 加密密钥材料所在）restic 仓库加密密码
         restic_synapse_password = { }; # Matrix/Synapse 数据库 restic 仓库加密密码
+        miniflux_admin_password = { }; # Miniflux 初始管理员密码（>= 6 位），仅首次建库时生效，见 README
         # register_new_matrix_user 用；随便生成一个强随机值即可（openssl rand -base64 32），不依赖外部服务
         synapse_registration_shared_secret = {
           owner = "matrix-synapse"; # Synapse 以 User = "matrix-synapse" 直接读文件，不是 systemd LoadCredential
@@ -157,6 +158,10 @@
           ADMIN_TOKEN=${config.sops.placeholder.vault_token}
         '';
       };
+      templates."miniflux-admin.env".content = ''
+        ADMIN_USERNAME=admin
+        ADMIN_PASSWORD=${config.sops.placeholder.miniflux_admin_password}
+      '';
       templates."cf_oracle.env" = {
         owner = config.users.users.acme.name;
         content = ''
@@ -665,6 +670,16 @@
       };
     };
 
+    services.miniflux = {
+      enable = true;
+      createDatabaseLocally = true;
+      adminCredentialsFile = config.sops.templates."miniflux-admin.env".path;
+      config = {
+        LISTEN_ADDR = "127.0.0.1:8085";
+        BASE_URL = "https://rss.hydroakri.cc";
+      };
+    };
+
     # cloudflared tunnel：统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
@@ -725,6 +740,10 @@
           "bsky.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
             originRequest.originServerName = "bsky.hydroakri.cc";
+          };
+          "rss.hydroakri.cc" = {
+            service = "https://127.0.0.1:443";
+            originRequest.originServerName = "rss.hydroakri.cc";
           };
           "uptime.hydroakri.cc" = {
             service = "https://127.0.0.1:443";
@@ -1561,6 +1580,13 @@
             client_max_body_size 0;
           '';
         };
+      };
+
+      virtualHosts."rss.hydroakri.cc" = {
+        useACMEHost = "hydroakri.cc";
+        forceSSL = true;
+        listenAddresses = [ "127.0.0.1" ];
+        locations."/".proxyPass = "http://127.0.0.1:8085";
       };
 
       virtualHosts."uptime.hydroakri.cc" = {

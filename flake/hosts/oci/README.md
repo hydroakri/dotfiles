@@ -16,6 +16,7 @@
 | `ente_jwt_secret`                                                         | 本機生成,32 bytes random,但要 **URL-safe base64**(不是 standard!見下方第 7 節):`openssl rand -base64 32 \| tr '+/' '-_'`:**建第一個帳號後就不能換**             |
 | `cloudflared_tunnel_credentials`                                          | `cloudflared tunnel create` 在本機產生的 `credentials.json` 原文(classic tunnel,tunnel ID:`901e5935-3f36-4609-9bb3-9a204bf7f79a`)                               |
 | `oci_email_delivery_username` / `oci_email_delivery_password`             | OCI Console → Identity & Security → Users → 你的使用者 → Resources → SMTP credentials → Generate(同一組憑證 stalwart outbound relay 和 ente 登入驗證碼信都在用) |
+| `miniflux_admin_password`                                                 | 本機生成,>= 6 位;`admin` 帳號首次建庫時讀它,之後改密碼走 Miniflux 網頁,改 sops 不會生效                                                                           |
 | `pds_plc_rotation_key`                                                    | Bluesky PDS 官方文件的 keygen 流程                                                                                                                              |
 | `warp_mdm`                                                                | Cloudflare Zero Trust WARP 的 MDM policy XML                                                                                                                    |
 | `webdav_htpasswd`                                                         | `htpasswd -nb user pass` 產生(`apacheHttpd` 已在 `environment.systemPackages` 裡)                                                                               |
@@ -23,7 +24,7 @@
 ## 2. Cloudflare DNS
 
 **走 cloudflared tunnel(CNAME → `901e5935-3f36-4609-9bb3-9a204bf7f79a.cfargotunnel.com`,橘雲代理)**:
-`dav` `cache` `vault` `tools` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy` `matrix` `element`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
+`rss` `dav` `cache` `vault` `tools` `ente-photos` `ente-accounts` `ente-cast` `ente-albums` `ente-api` `stalwart` `mta-sts` `ntfy` `matrix` `element`,以及 `bsky`(+ `*.bsky` 手動保留,見 `oci.nix` 註解)
 
 **直連真實 IP(A 記錄,灰雲/DNS-only,沒法走 tunnel)**:
 
