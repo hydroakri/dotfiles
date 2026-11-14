@@ -55,6 +55,10 @@
         ++ config.modules.core.extraTrustedPublicKeys;
         max-jobs = "auto";
         cores = 0;
+        # More parallel narinfo lookups: the default 25 is latency-bound on a multi-thousand-path closure.
+        http-connections = 64;
+        # Default 5 attempts with backoff add ~5s per planning pass whenever a self-hosted cache is down.
+        download-attempts = 2;
         allowed-users = [ "@wheel" ];
         # @wheel omitted: trusted users bypass doas via nix-daemon (unsigned imports, sandbox off).
         trusted-users = [ "root" ];
@@ -108,6 +112,13 @@
     i18n = {
       defaultLocale = "en_US.UTF-8";
       supportedLocales = [ "en_US.UTF-8/UTF-8" ];
+    };
+    # The options manual is rendered from every imported module (sops, disko, ...), so no
+    # binary cache has it; evaluating it costs 1-2s per host. Man pages stay.
+    documentation = {
+      nixos.enable = lib.mkDefault false;
+      doc.enable = lib.mkDefault false;
+      info.enable = lib.mkDefault false;
     };
     networking.firewall = {
       allowedUDPPortRanges = [
@@ -427,7 +438,13 @@
       # nix utils
       pkgs.attic-client
       pkgs.nix-tree
-      inputs.nix-alien.packages.${pkgs.stdenv.hostPlatform.system}.default
+      # Built on the host pkgs: the flake's own packages.* would instantiate a second nixpkgs (~1.5s/host eval).
+      (pkgs.callPackage "${inputs.nix-alien}/nix-alien.nix" {
+        version = "0.1.0+git_${inputs.nix-alien.shortRev or "dirty"}";
+        nix-index = (import inputs.nix-index-database { inherit pkgs; }).nix-index-with-db;
+        nix-index-database-src = inputs.nix-index-database;
+        nixpkgs-src = inputs.nixpkgs;
+      })
       # system-wide
       (lib.hiPrio pkgs.uutils-coreutils-noprefix)
     ]

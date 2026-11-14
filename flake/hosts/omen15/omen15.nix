@@ -11,6 +11,8 @@
   nixpkgs.hostPlatform = "x86_64-linux";
   nixpkgs.overlays = [
     inputs.nix-cachyos-kernel.overlays.pinned
+    # Host-pkgs build; inputs.wowtype.packages would instantiate a second nixpkgs.
+    inputs.wowtype.overlays.default
   ];
   imports = [
     # Hardware configuration
@@ -48,7 +50,7 @@
     inputs.owly.nixosModules.default
   ];
   services.owly.enable = true;
-  i18n.inputMethod.fcitx5.addons = [ inputs.wowtype.packages.x86_64-linux.default ];
+  i18n.inputMethod.fcitx5.addons = [ pkgs.wowtype ];
   mainUser = "hydroakri";
   sops.secrets = {
     email = { };
@@ -138,8 +140,6 @@
       ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:01:00.0", TEST=="power/control", ATTR{power/control}="auto"
     '';
   };
-  # Boot menu entry (limine): nvidia-open driver instead of the default nouveau.
-  specialisation.nvidia.configuration.modules.nvidia.variant = lib.mkForce "open";
   # SSH signing key for git commit verification
   sops.templates."ssh/allowed_signers" = {
     content = ''
