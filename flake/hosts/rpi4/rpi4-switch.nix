@@ -3,6 +3,7 @@
 {
   config,
   lib,
+  pkgs,
   inputs,
   ...
 }:
@@ -118,6 +119,46 @@
         # The Pi is the LAN resolver; keep tailscaled away from /etc/resolv.conf.
         "--accept-dns=false"
       ];
+    };
+
+    # Feeds that block datacenter IPs are fetched from this home WAN IP and pushed into Miniflux on oci.
+    sops.secrets.miniflux_api_key.sopsFile = ../../modules/features/secrets/rpi4.yaml;
+    systemd.services.miniflux-push-blocked = {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        DynamicUser = true;
+        StateDirectory = "miniflux-push-blocked";
+        LoadCredential = "miniflux_api_key:${config.sops.secrets.miniflux_api_key.path}";
+        # FEED_ID is the Miniflux feed id: 14 = The Quietus, 20 = iFixit News
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.python3}/bin/python3 ${./miniflux-push-blocked.py}"
+          "--key-file %d/miniflux_api_key"
+          "--state-dir %S/miniflux-push-blocked"
+          "14=https://thequietus.com/feed/"
+          "20=https://www.ifixit.com/News/rss"
+        ];
+        TimeoutStartSec = "3min";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectControlGroups = true;
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+      };
+    };
+    systemd.timers.miniflux-push-blocked = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "5min";
+        OnUnitActiveSec = "30min";
+        RandomizedDelaySec = "3min";
+      };
     };
 
     networking.hostName = "rpi4-switch";
