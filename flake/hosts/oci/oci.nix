@@ -680,6 +680,44 @@
       };
     };
 
+    # ovo.st/club/* 的组没有 RSS：定时转成 Atom，放在 rss 域名的 /ovo/ 下给 Miniflux 订阅
+    users.users.ovo-feeds = {
+      isSystemUser = true;
+      group = "ovo-feeds";
+    };
+    users.groups.ovo-feeds = { };
+    systemd.services.ovo-club-feeds = {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "ovo-feeds";
+        Group = "ovo-feeds";
+        StateDirectory = "ovo-feeds";
+        StateDirectoryMode = "0755"; # nginx 用另一个用户读取
+        ExecStart = "${pkgs.python3}/bin/python3 ${./ovo-club-feeds.py} /var/lib/ovo-feeds poll runrunrun worldboard board savemoney";
+        TimeoutStartSec = "2min";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectControlGroups = true;
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+      };
+    };
+    systemd.timers.ovo-club-feeds = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitActiveSec = "20min";
+        RandomizedDelaySec = "2min";
+      };
+    };
+
     # cloudflared tunnel：统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
@@ -1587,6 +1625,7 @@
         forceSSL = true;
         listenAddresses = [ "127.0.0.1" ];
         locations."/".proxyPass = "http://127.0.0.1:8085";
+        locations."/ovo/".alias = "/var/lib/ovo-feeds/"; # ovo-club-feeds 生成的 Atom
       };
 
       virtualHosts."uptime.hydroakri.cc" = {

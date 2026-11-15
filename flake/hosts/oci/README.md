@@ -154,3 +154,22 @@ curl http://127.0.0.1:8008/_synapse/admin/v1/... -H "Authorization: Bearer <admi
 ## 9. Minecraft
 
 Minecraft 伺服器(loader 決策、mod/資料包清單、客戶端建議清單、集中度風險、已知的坑、滾動更新流程)全部記在 `flake/hosts/oci/minecraft.md`,不在這份文件裡——那是持續維護的內容,跟這份文件「只記重新部署時要手動處理的東西」的用途不一樣。
+
+## 10. ovo.st 組的 Atom 轉換(`ovo-club-feeds`)
+
+`ovo.st/club/*` 的組沒有 RSS。`oci.nix` 裡的 `ovo-club-feeds` 每 20 分鐘抓一次頁面,轉成 Atom 放在 `/var/lib/ovo-feeds/<組>.xml`,由 `https://rss.hydroakri.cc/ovo/<組>.xml` 對外提供(腳本:`flake/hosts/oci/ovo-club-feeds.py`)。
+
+部署後在 Miniflux 手動訂閱(這部分不受 nix 管理):
+
+```
+https://rss.hydroakri.cc/ovo/poll.xml
+https://rss.hydroakri.cc/ovo/runrunrun.xml
+https://rss.hydroakri.cc/ovo/worldboard.xml
+https://rss.hydroakri.cc/ovo/board.xml
+https://rss.hydroakri.cc/ovo/savemoney.xml
+```
+
+- 每個組只有頁面上最近約 20 條,純文字,沒有圖片
+- 抓取失敗或頁面結構變了(找不到 `近期活动` 區塊)時,腳本保留上一版檔案並讓服務失敗;原因看 `journalctl -u ovo-club-feeds`
+- 組列表寫在 `oci.nix` 的 `ExecStart` 裡,加組時要同時加 Miniflux 訂閱
+- 部署後不想等 2 分鐘的首次定時,執行 `systemctl start ovo-club-feeds`
