@@ -172,7 +172,7 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+Return { spawn "wezterm"; }
-    Mod+E { spawn "thunar"; }
+    Mod+E { spawn "strata"; }
     Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
 
     Mod+B       { spawn "brave"; }

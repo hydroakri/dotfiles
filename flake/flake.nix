@@ -54,6 +54,10 @@
       url = "github:t4t5/owly";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    strata = {
+      url = "github:lgse/strata";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     wowtype = {
       url = "github:Gloridust/WowType/v0.3.10";
       inputs.nixpkgs.follows = "nixpkgs";
