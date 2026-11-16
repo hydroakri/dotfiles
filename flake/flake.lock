@@ -492,6 +492,7 @@
         "owly": "owly",
         "preservation": "preservation",
         "sops-nix": "sops-nix",
+        "strata": "strata",
         "treefmt-nix": "treefmt-nix",
         "trivalent-nix": "trivalent-nix",
         "unstable": "unstable",
@@ -515,6 +516,26 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "strata": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794590073,
+        "narHash": "sha256-i4WKuhxCVRa0sSmWEDVAxelBCJ69/HXopzBqrGv1qW8=",
+        "owner": "lgse",
+        "repo": "strata",
+        "rev": "6eb4bf60104d416171b72cefc8db7a8116b58d43",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lgse",
+        "repo": "strata",
         "type": "github"
       }
     },

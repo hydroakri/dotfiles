@@ -223,6 +223,8 @@
   };
   environment.systemPackages = [
     pkgs.nbfc-linux
+    # Unstable pkgs: strata needs rustc >= 1.96, 26.05 ships 1.95. Not inputs.strata.packages (second nixpkgs).
+    (pkgs.unstable.callPackage "${inputs.strata}/package.nix" { })
     # pkgs.winboat
   ];
   # Proxy mode (127.0.0.1:40000, the 🔒 zerotrust outbound); the full tunnel drops the Tailscale data plane.
