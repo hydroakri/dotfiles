@@ -25,10 +25,10 @@
 | `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——在这台机器上 `type=local` 不经过 unbound/dnscrypt-proxy/RPZ 管道，走网卡分配的 DNS，只把它限制在本就该走本地网络解析的窄范围内。 |
 | `dns-mdns` | mDNS | 局域网设备发现优先命中。 |
 | `dns-ts` | `type=tailscale`，`endpoint=tailscale-in`，`accept_default_resolvers=false`，`accept_search_domain=true` | 解析 MagicDNS 名字（`*.ts.hydroakri.cc`，含裸名）。`accept_default_resolvers=false`：非 tailnet 名字返回 NXDOMAIN，不回落到 headscale 的全局解析器，公网解析仍走 `dns-quad9`/fakeip。 |
-| `dns-alidns` | h3，`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
-| `dns-flymc` | h3，`detour=🚦 cn`，无 utls | 用于 `match_response` 阶段对已确认 `geoip-cn` 的响应做二次查询，拿国内优化结果。QUIC/h3 传输与 utls 不兼容，DNS 类 h3 server 均不加 utls。 |
-| `dns-zerotrust` | h3，无 detour，`server_name` 走 `_secret` | 中立探测服务器：`➡️ direct`/多数 selector 的默认 `domain_resolver`，也是 `evaluate` 阶段对未分类域名探测真实 IP 的查询目标。 |
-| `dns-quad9` | h3，`detour=🚦 oversea` | `dns.final` 兜底，以及 `route.default_domain_resolver`——WireGuard 出站解析域名走这个，不经过 `dns.rules` 匹配链（sing-box 硬约束：该字段只能指定单一 server，无法用 `evaluate`/`race` 竞速）。 |
+| `dns-alidns` | DoH（https），`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
+| `dns-flymc` | DoH（https），`detour=🚦 cn`，无 utls | 用于 `match_response` 阶段对已确认 `geoip-cn` 的响应做二次查询，拿国内优化结果。DoH 走 TCP+TLS，不受 QUIC 按 SNI 封锁影响；utls 与 DoH 兼容，目前 DNS server 均未启用。 |
+| `dns-zerotrust` | DoH（https），无 detour，`server_name` 走 `_secret` | 中立探测服务器：`➡️ direct`/多数 selector 的默认 `domain_resolver`，也是 `evaluate` 阶段对未分类域名探测真实 IP 的查询目标。 |
+| `dns-quad9` | DoH（https），`detour=🚦 oversea` | `dns.final` 兜底，以及 `route.default_domain_resolver`——WireGuard 出站解析域名走这个，不经过 `dns.rules` 匹配链（sing-box 硬约束：该字段只能指定单一 server，无法用 `evaluate`/`race` 竞速）。 |
 
 ## DNS 规则 (`dns.rules`，顺序敏感)
 

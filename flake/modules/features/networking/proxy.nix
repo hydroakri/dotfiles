@@ -239,7 +239,7 @@
                 accept_search_domain = true;
               }
               {
-                type = "h3";
+                type = "https";
                 tag = "dns-alidns";
                 server = "223.6.6.6";
                 detour = "🚦 cn";
@@ -254,7 +254,7 @@
                 };
               }
               {
-                type = "h3";
+                type = "https";
                 tag = "dns-flymc";
                 server = "43.154.154.162";
                 detour = "🚦 cn";
@@ -269,7 +269,7 @@
                 };
               }
               {
-                type = "h3";
+                type = "https";
                 tag = "dns-zerotrust";
                 server = "172.64.36.2";
                 tls = {
@@ -285,7 +285,7 @@
                 };
               }
               {
-                type = "h3";
+                type = "https";
                 tag = "dns-quad9";
                 server = "149.112.112.11";
                 detour = "🚦 oversea";
