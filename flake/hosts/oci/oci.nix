@@ -925,6 +925,7 @@
                 names = [
                   "client"
                   "federation"
+                  "media" # 上传走 /_matrix/media/v3/upload，只有 media 资源服务
                 ];
                 compress = false; # 已经在 nginx 层 gzip，这里再压一次没必要
               }
@@ -1678,6 +1679,12 @@
             client_max_body_size 50M;
             # Cloudflare tunnel 边缘长连接大约 100s 空闲超时，/sync 长轮询不能超过这个值
             proxy_read_timeout 95s;
+          '';
+        };
+        locations."/_matrix/media" = {
+          proxyPass = "http://127.0.0.1:8008";
+          extraConfig = ''
+            client_max_body_size 50M;
           '';
         };
         locations."/_synapse/client" = {
