@@ -30,9 +30,7 @@ let
       cfg.nightBrightness
     else
       clamp 1 255 (builtins.floor (255 * maxFraction cfg.limits.sleepMelLux lamp.eyeHeightM.lying));
-  preAlarm = if cfg.preAlarmBrightness != null then cfg.preAlarmBrightness else night;
   nightPct = toString (night * 100.0 / 255.0);
-  preAlarmPct = toString (preAlarm * 100.0 / 255.0);
 
   points =
     field: lib.concatMapStringsSep ", " (p: "(${toString p.elevation}, ${toString p.${field}})");
@@ -44,9 +42,58 @@ let
     );
 
   asleep = "is_state('input_boolean.lifx_asleep', 'on')";
-  preAlarmOn = "is_state('binary_sensor.lifx_pre_alarm_dawn', 'on')";
+  leadSeconds = toString (tm.wakeLeadMinutes * 60);
+  noAlarm = "['unknown', 'unavailable', 'none', '']";
+
+  # Dawn: asleep, sun above dawnStartElevation and rising, alarm further than wakeLeadMinutes away (and within alarmWindowHours).
+  dawnTemplate =
+    if cfg.nextAlarm == null then
+      "{{ false }}"
+    else
+      ''
+        {% set e = state_attr('sun.sun', 'elevation') | float(-90) %}
+        {% set al = states('${cfg.nextAlarm}') %}
+        {% if al in ${noAlarm} %}{{ false }}{% else %}
+        {% set d = (as_datetime(al) - now()).total_seconds() %}
+        {{ ${asleep} and state_attr('sun.sun', 'rising') and e >= ${toString tm.dawnStartElevation} and ${leadSeconds} < d < ${
+          toString (tm.alarmWindowHours * 3600)
+        } }}
+        {% endif %}
+      '';
+
+  # Phase of the wake-up profile, evaluated transitionSeconds ahead so the bulb arrives on schedule:
+  #   dawn: from the moment the dawn sensor turned on to alarm - wakeLeadMinutes, lowest level to the night level (exponential)
+  #   wake: alarm - wakeLeadMinutes to the alarm, night level to 100% (exponential)
+  #   hand: handoverMinutes after the alarm, 100% back to the sun-following value (cosine)
+  # ph.q runs 0..1 within the phase.
+  wakePrelude = ''
+    {% set tt = now() + timedelta(seconds=${toString tm.transitionSeconds}) %}
+    ${
+      if cfg.nextAlarm == null then
+        "{% set A = none %}"
+      else
+        "{% set al = states('${cfg.nextAlarm}') %}{% set A = none if al in ${noAlarm} else as_datetime(al) %}"
+    }
+    {% set ho = states.input_boolean.lifx_handover %}
+    {% set bd = states.binary_sensor.lifx_dawn %}
+    {% set ph = namespace(name='none', q=0) %}
+    {% if ho is not none and ho.state == 'on' %}
+      {% set ph.name = 'hand' %}
+      {% set ph.q = [[(tt - ho.last_changed).total_seconds() / ${
+        toString (tm.handoverMinutes * 60)
+      }, 0] | max, 1] | min %}
+    {% elif ${asleep} and A is not none and now() < A + timedelta(minutes=1) and tt >= A - timedelta(seconds=${leadSeconds}) %}
+      {% set ph.name = 'wake' %}
+      {% set ph.q = [[1 - (A - tt).total_seconds() / ${leadSeconds}, 0] | max, 1] | min %}
+    {% elif bd is not none and bd.state == 'on' and A is not none %}
+      {% set span = (A - timedelta(seconds=${leadSeconds}) - bd.last_changed).total_seconds() %}
+      {% set ph.name = 'dawn' %}
+      {% set ph.q = [[(tt - bd.last_changed).total_seconds() / span, 0] | max, 1] | min if span > 0 else 1 %}
+    {% endif %}
+  '';
 
   kelvinTemplate = ''
+    ${wakePrelude}
     {% set pts = [${points "kelvin" cfg.kelvinCurve}] %}
     {% set e = state_attr('sun.sun', 'elevation') | float(-90) %}
     {% set ns = namespace(v=(pts[0][1] if e < pts[0][0] else pts[-1][1])) %}
@@ -56,15 +103,18 @@ let
       {% endif %}
     {% endfor %}
     {% set ns.v = [[ns.v, ${toString cfg.floorKelvin}] | max, ${toString cfg.ceilingKelvin}] | min %}
-    {% if ${asleep} and not ${preAlarmOn} %}{% set ns.v = ${toString cfg.nightKelvin} %}{% endif %}
+    {% set ksun = ns.v %}
+    {% if ${asleep} %}{% set ns.v = ${toString cfg.nightKelvin} %}{% endif %}
+    {% if ph.name == 'wake' %}{% set ns.v = ${toString cfg.nightKelvin} + (ksun - ${toString cfg.nightKelvin}) * ph.q %}{% endif %}
     {{ ns.v | round(0) | int }}
   '';
 
   # Awake: brightness follows the log illuminance of the sun at its elevation. From the earlier of sunset and eveningWindowHours before
   # sleepAt it eases (cosine) to the evening level over duskMinutes. While the sun is below the horizon and descending, next_setting is
   # tomorrow's, so today's sunset is a day earlier; only today_at depends on the configured time zone.
-  # Asleep: the night level, or while the pre-alarm dawn sensor is on the sun's value capped at the pre-alarm level.
+  # Asleep: the night level, or the dawn/wake/hand phase of the wake-up profile (wakePrelude).
   brightnessTemplate = ''
+    ${wakePrelude}
     {% set pl = [${points "lux" cfg.luxCurve}] %}
     {% set lo = log(${toString cfg.lowLux}, 10) %}
     {% set hi = log(${toString cfg.highLux}, 10) %}
@@ -90,22 +140,13 @@ let
       {% set top = ${toString cfg.highPct} if start < sunset else res.sunset %}
       {% set ns.v = ${toString evening} + (top - ${toString evening}) * (1 + cos(pi * (1 - u))) / 2 %}
     {% endif %}
-    {% if ${asleep} %}{% set ns.v = ([res.cur, ${preAlarmPct}] | min) if ${preAlarmOn} else ${nightPct} %}{% endif %}
-    {{ ns.v | round(1) }}
+    {% if ${asleep} %}{% set ns.v = ${nightPct} %}{% endif %}
+    {% if ph.name == 'dawn' %}{% set ns.v = ${toString night} ** ph.q * 100 / 255 %}
+    {% elif ph.name == 'wake' %}{% set ns.v = ${toString night} * (255 / ${toString night}) ** ph.q * 100 / 255 %}
+    {% elif ph.name == 'hand' %}{% set ns.v = ns.v + (100 - ns.v) * (1 + cos(pi * ph.q)) / 2 %}
+    {% endif %}
+    {{ ns.v | round(2) }}
   '';
-
-  # Asleep, the sun has passed dawnStartElevation and the next alarm is within alarmWindowHours: the light may start dawning.
-  preAlarmTemplate =
-    if cfg.nextAlarm == null then
-      "{{ false }}"
-    else
-      ''
-        {% set e = state_attr('sun.sun', 'elevation') | float(-90) %}
-        {% set t = states('${cfg.nextAlarm}') %}
-        {{ ${asleep} and state_attr('sun.sun', 'rising') and e >= ${toString tm.dawnStartElevation} and t not in ['unknown', 'unavailable'] and 0 < (as_datetime(t) - now()).total_seconds() < ${
-          toString (tm.alarmWindowHours * 3600)
-        } }}
-      '';
 
   # An event entity fires on every event type; let the time triggers through and filter the event trigger by type.
   onlyEventType = type: {
@@ -131,6 +172,28 @@ let
   sleepStepSeconds = tm.sleepFadeMinutes * 60 / sleepSteps;
   at = t: "${t}:00";
   hhmm = types.strMatching "[0-2][0-9]:[0-5][0-9]";
+  lightOffAndFree = [
+    {
+      condition = "state";
+      entity_id = cfg.light;
+      state = "off";
+    }
+    {
+      condition = "state";
+      entity_id = "input_boolean.lifx_manual";
+      state = "off";
+    }
+  ];
+  # Lowest level, warm: the sun-following update then continues from here.
+  lowestOn = {
+    action = "light.turn_on";
+    target.entity_id = cfg.light;
+    data = {
+      brightness = 1;
+      color_temp_kelvin = cfg.nightKelvin;
+      transition = 0;
+    };
+  };
   # light.turn_on takes brightness 0-255; the sensor is a percentage
   sensorBrightness = "{{ [(states('sensor.circadian_brightness') | float(1) * 255 / 100) | round(0) | int, 1] | max }}";
   sensorKelvin = "{{ states('sensor.circadian_kelvin') | int }}";
@@ -230,11 +293,6 @@ in
       default = null;
       description = "light.turn_on brightness (0-255) at the end of the wind-down and whenever the light is on during the night.";
     };
-    preAlarmBrightness = mkOption {
-      type = types.nullOr (types.ints.between 1 255);
-      default = null;
-      description = "light.turn_on brightness (0-255) that the dawn light before an alarm never exceeds while asleep.";
-    };
 
     sleepAt = mkOption {
       type = hhmm;
@@ -254,12 +312,12 @@ in
     nextAlarm = mkOption {
       type = types.nullOr types.str;
       default = null;
-      description = "Timestamp sensor with the next alarm (Sleep as Android 'Next alarm'); the light starts following the sun wakeLeadMinutes before it.";
+      description = "Timestamp sensor with the next alarm (Sleep as Android 'Next alarm'); while asleep the light dawns from the lowest level once the sun passes dawnStartElevation, reaches the night level wakeLeadMinutes before the alarm and 100% at the alarm.";
     };
     wakeEvent = mkOption {
       type = types.nullOr types.str;
       default = null;
-      description = "Event entity (Sleep as Android alarm) that starts the same when it fires, for alarms that nextAlarm does not cover.";
+      description = "Event entity (Sleep as Android alarm) that ends sleep mode and starts the hand-over to the sun curve when it fires, for alarms that nextAlarm does not cover.";
     };
     wakeEventType = mkOption {
       type = types.str;
@@ -269,7 +327,7 @@ in
     wakeAt = mkOption {
       type = types.nullOr hhmm;
       default = null;
-      description = "Fixed fallback wake time; null means the light only switches on for an alarm.";
+      description = "Fixed fallback time that ends sleep mode and starts the hand-over to the sun curve; null means only an alarm does.";
     };
 
     timing = {
@@ -291,22 +349,27 @@ in
       wakeLeadMinutes = mkOption {
         type = types.ints.positive;
         default = 30;
-        description = "Minutes before the alarm that the pre-alarm cap is lifted and the light starts to follow the sun.";
+        description = "Length of the last ramp before the alarm, from the night level to 100%; brightness rises exponentially, colour temperature linearly.";
+      };
+      handoverMinutes = mkOption {
+        type = types.ints.positive;
+        default = 10;
+        description = "Length of the cosine ease from 100% at the alarm back to the sun-following value.";
       };
       dawnStartElevation = mkOption {
         type = types.numbers.between (-90) 90;
-        default = -10;
-        description = "Solar elevation (degrees) from which the light may start dawning while an alarm is pending.";
+        default = -6;
+        description = "Solar elevation (degrees) at which the dawn ramp starts while an alarm is pending: lowest level up to the night level, reached wakeLeadMinutes before the alarm.";
+      };
+      alarmWindowHours = mkOption {
+        type = types.ints.positive;
+        default = 12;
+        description = "A next alarm further away than this is ignored: no dawn ramp, and sleep mode ends in daylight as without an alarm.";
       };
       dayResetElevation = mkOption {
         type = types.numbers.between (-90) 90;
         default = 5;
         description = "Solar elevation (degrees) above which sleep mode is left even without an alarm.";
-      };
-      alarmWindowHours = mkOption {
-        type = types.ints.positive;
-        default = 12;
-        description = "A next alarm further away than this does not start the dawn light.";
       };
       updateMinutes = mkOption {
         type = types.ints.positive;
@@ -315,8 +378,8 @@ in
       };
       transitionSeconds = mkOption {
         type = types.ints.unsigned;
-        default = 60;
-        description = "Transition of each sun-following update.";
+        default = 120;
+        description = "Transition of each sun-following update; equal to updateMinutes * 60 the bulb glides without pauses. The wake-up profile is evaluated this far ahead.";
       };
     };
 
@@ -522,13 +585,19 @@ in
         # On from the start of the wind-down until wake; no initial so it survives a restart.
         input_boolean.lifx_asleep.name = "LIFX asleep";
 
+        # On from the alarm for handoverMinutes; its last_changed is the alarm time the hand-over counts from.
+        input_boolean.lifx_handover = {
+          name = "LIFX hand-over to the sun curve";
+          initial = false;
+        };
+
         template = [
           {
             binary_sensor = [
               {
-                name = "LIFX pre-alarm dawn";
-                unique_id = "lifx_pre_alarm_dawn";
-                state = preAlarmTemplate;
+                name = "LIFX dawn";
+                unique_id = "lifx_dawn";
+                state = dawnTemplate;
               }
             ];
           }
@@ -669,39 +738,9 @@ in
             ];
           }
           {
-            id = "lifx_dawn_before_alarm";
-            alias = "LIFX dawn light before the alarm";
-            # The binary sensor turns on once the sun passes dawnStartElevation while an alarm is pending; the circadian automation keeps it going.
-            triggers = [
-              {
-                trigger = "state";
-                entity_id = "binary_sensor.lifx_pre_alarm_dawn";
-                to = "on";
-              }
-            ];
-            conditions = [
-              {
-                condition = "state";
-                entity_id = "input_boolean.lifx_manual";
-                state = "off";
-              }
-            ];
-            actions = [
-              {
-                action = "light.turn_on";
-                target.entity_id = cfg.light;
-                data = {
-                  brightness = sensorBrightness;
-                  color_temp_kelvin = sensorKelvin;
-                  transition = tm.transitionSeconds;
-                };
-              }
-            ];
-          }
-          {
             id = "lifx_day_reset";
             alias = "LIFX leave sleep mode in daylight";
-            # Safety net for days without an alarm, so the asleep state cannot hold the light at its night level.
+            # Safety net for days without an alarm, so the asleep state cannot hold the light at its night level; a pending alarm ends it itself.
             triggers = [
               {
                 trigger = "numeric_state";
@@ -709,7 +748,25 @@ in
                 attribute = "elevation";
                 above = tm.dayResetElevation;
               }
-            ];
+            ]
+            ++ lib.optional (cfg.nextAlarm != null) {
+              trigger = "state";
+              entity_id = cfg.nextAlarm;
+            };
+            conditions = [
+              {
+                condition = "numeric_state";
+                entity_id = "sun.sun";
+                attribute = "elevation";
+                above = tm.dayResetElevation;
+              }
+            ]
+            ++ lib.optional (cfg.nextAlarm != null) {
+              condition = "template";
+              value_template = "{% set al = states('${cfg.nextAlarm}') %}{{ al in ${noAlarm} or not (0 < (as_datetime(al) - now()).total_seconds() < ${
+                toString (tm.alarmWindowHours * 3600)
+              }) }}";
+            };
             actions = [
               {
                 action = "input_boolean.turn_off";
@@ -718,10 +775,44 @@ in
             ];
           }
         ]
+        ++ lib.optionals (cfg.nextAlarm != null) [
+          {
+            id = "lifx_dawn_start";
+            alias = "LIFX switch on at the start of the dawn";
+            # From here the brightness sensor carries the light up from the lowest level (wakePrelude).
+            triggers = [
+              {
+                trigger = "state";
+                entity_id = "binary_sensor.lifx_dawn";
+                to = "on";
+              }
+            ];
+            conditions = lightOffAndFree;
+            actions = [ lowestOn ];
+          }
+          {
+            id = "lifx_wake_start";
+            alias = "LIFX switch on wakeLeadMinutes before the alarm";
+            triggers = [
+              {
+                trigger = "time";
+                # offset is only valid inside the at: mapping that names the entity
+                at = {
+                  entity_id = cfg.nextAlarm;
+                  offset = "-${lib.fixedWidthString 2 "0" (toString (tm.wakeLeadMinutes / 60))}:${
+                    lib.fixedWidthString 2 "0" (toString (lib.mod tm.wakeLeadMinutes 60))
+                  }:00";
+                };
+              }
+            ];
+            conditions = lightOffAndFree;
+            actions = [ lowestOn ];
+          }
+        ]
         ++ lib.optional wakeEnabled {
-          id = "lifx_wake_fade";
-          alias = "LIFX start following the sun at wake";
-          mode = "single";
+          id = "lifx_alarm_handover";
+          alias = "LIFX alarm: hand over to the sun curve";
+          # The light is at 100% now; the brightness sensor eases it back to the sun-following value over handoverMinutes.
           triggers =
             lib.optional (cfg.wakeAt != null) {
               trigger = "time";
@@ -729,13 +820,7 @@ in
             }
             ++ lib.optional (cfg.nextAlarm != null) {
               trigger = "time";
-              # offset is only valid inside the at: mapping that names the entity
-              at = {
-                entity_id = cfg.nextAlarm;
-                offset = "-${lib.fixedWidthString 2 "0" (toString (tm.wakeLeadMinutes / 60))}:${
-                  lib.fixedWidthString 2 "0" (toString (lib.mod tm.wakeLeadMinutes 60))
-                }:00";
-              };
+              at = cfg.nextAlarm;
             }
             ++ lib.optional (cfg.wakeEvent != null) {
               trigger = "state";
@@ -748,41 +833,32 @@ in
               action = "input_boolean.turn_off";
               target.entity_id = "input_boolean.lifx_asleep";
             }
-            # let the sensors re-render with daytime values
-            { delay.seconds = 2; }
-            # Start from 1/255 when off so the first step does not begin at the bulb's last brightness; a dawn light already on keeps its level.
             {
-              "if" = [
-                {
-                  condition = "state";
-                  entity_id = cfg.light;
-                  state = "off";
-                }
-              ];
-              "then" = [
-                {
-                  action = "light.turn_on";
-                  target.entity_id = cfg.light;
-                  data = {
-                    brightness = 1;
-                    color_temp_kelvin = sensorKelvin;
-                    transition = 0;
-                  };
-                }
-              ];
-            }
-            # From here the circadian automation follows the sun.
-            {
-              action = "light.turn_on";
-              target.entity_id = cfg.light;
-              data = {
-                brightness = sensorBrightness;
-                color_temp_kelvin = sensorKelvin;
-                transition = tm.transitionSeconds;
-              };
+              action = "input_boolean.turn_on";
+              target.entity_id = "input_boolean.lifx_handover";
             }
           ];
-        };
+        }
+        ++ [
+          {
+            id = "lifx_handover_end";
+            alias = "LIFX end the hand-over to the sun curve";
+            triggers = [
+              {
+                trigger = "state";
+                entity_id = "input_boolean.lifx_handover";
+                to = "on";
+                "for".minutes = tm.handoverMinutes;
+              }
+            ];
+            actions = [
+              {
+                action = "input_boolean.turn_off";
+                target.entity_id = "input_boolean.lifx_handover";
+              }
+            ];
+          }
+        ];
         # Automations created in the HA UI are stored in automations.yaml; a plain `automation:` list would never load them.
         "automation ui" = "!include automations.yaml";
       };

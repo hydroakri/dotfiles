@@ -1,6 +1,6 @@
 # home-assistant (`modules.homeAssistant`)
 
-HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,睡前对数衰减,夜里和闹钟前的亮度受论文上限约束。亮度上限由灯的几何位置算出,所有设计常数都是选项。数值的来源和假设都在这里;`derive_curve.py` 可重新生成。
+HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,睡前对数衰减,夜里亮度受论文上限约束;睡着时灯关闭,太阳过 `dawnStartElevation` 后从最低亮度渐亮到夜间亮度,闹钟前 `wakeLeadMinutes` 刚好到夜间亮度,闹钟响时到 100%,之后 `handoverMinutes` 内平滑交回太阳曲线。亮度上限由灯的几何位置算出,所有设计常数都是选项。数值的来源和假设都在这里;`derive_curve.py` 可重新生成。
 
 ## 来源
 
@@ -28,10 +28,26 @@ HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,�
 | `floorKelvin`、`ceilingKelvin`、`nightKelvin` | 2200、5000、1800 | 设计选择 |
 | `limits.eveningMelLux`、`limits.sleepMelLux`、`limits.eveningWindowHours` | 10、1、3 | Brown 2022:睡前至少 3 h 起 ≤10 lx,睡眠 ≤1 lx,夜间活动 ≤10 lx |
 | `eveningPct` | 空 = 由几何算出(34) | 坐姿眼睛处黑视素等效照度 ≤`eveningMelLux` |
-| `nightBrightness`、`preAlarmBrightness` | 空 = 由几何算出(9/255,约 3.5%) | 躺姿眼睛处黑视素等效照度 ≤`sleepMelLux` |
+| `nightBrightness` | 空 = 由几何算出(9/255,约 3.5%) | 躺姿眼睛处黑视素等效照度 ≤`sleepMelLux` |
 | `sleepAt` | 23:00 | 用户作息;也是晚间窗口倒推的起点 |
-| `timing.duskMinutes`、`sleepFadeMinutes`、`sleepStepMinutes`、`wakeLeadMinutes` | 30、60、5、30 | 设计选择。对数等比衰减参考 Zeitzer 的对数剂量-反应 |
-| `timing.dawnStartElevation`、`dayResetElevation`、`alarmWindowHours`、`updateMinutes`、`transitionSeconds` | -10°、5°、12 h、2 min、60 s | 设计选择。-10° 是 `luxCurve` 亮度降到下限的位置 |
+| `timing.duskMinutes`、`sleepFadeMinutes`、`sleepStepMinutes`、`wakeLeadMinutes`、`handoverMinutes` | 30、60、5、30、10 | 设计选择。对数等比衰减参考 Zeitzer 的对数剂量-反应;起床渐亮同样按等比,色温从 `nightKelvin` 线性升到太阳值;交回太阳曲线按余弦缓动 |
+| `timing.dawnStartElevation` | -6° | 民用暮光的边界,即"天蒙蒙亮",HA 的 `next_dawn` 也用它;此阶段 `elevation` 每 2 分钟刷新。中纬度约在日出前 30–40 分钟,纬度越高、越接近夏至越长。日出的标准定义是 -0.833°;-10° 约早 15 分钟,户外约 0.1 lx |
+| `timing.dayResetElevation`、`alarmWindowHours`、`updateMinutes`、`transitionSeconds` | 5°、12 h、2 min、120 s | 设计选择。离现在超过 `alarmWindowHours` 的闹钟视为没设;`transitionSeconds` = `updateMinutes` × 60 时灯不停顿,起床曲线按这个时长提前求值 |
+
+## 起床曲线
+
+睡着(`lifx_asleep` 开)且有闹钟时,亮度由 `sensor.circadian_brightness` 按时间算出,`lifx_circadian` 每 `updateMinutes` 写入灯:
+
+| 阶段 | 时间 | 亮度 | 色温 |
+|---|---|---|---|
+| dawn | `binary_sensor.lifx_dawn` 开(太阳升过 `dawnStartElevation`、闹钟比 `wakeLeadMinutes` 远)到闹钟前 `wakeLeadMinutes` | 1/255 到夜间亮度,等比 | `nightKelvin` |
+| wake | 闹钟前 `wakeLeadMinutes` 到闹钟 | 夜间亮度到 100%,等比 | `nightKelvin` 线性升到太阳值 |
+| hand | 闹钟起 `handoverMinutes`(`lifx_handover` 开) | 100% 到太阳曲线值,余弦 | 太阳值 |
+
+- 夜间亮度由灯具几何算出(见下),所以黎明段不超过睡眠上限。
+- 闹钟响在太阳升过 `dawnStartElevation` 之前,或之后不到 `wakeLeadMinutes` 时,没有 dawn 阶段,灯在闹钟前 `wakeLeadMinutes` 以 1/255 开启,直接进入 wake。
+- 太阳时刻由 HA 的 `sun` 集成按经纬度计算,`elevation` 在航海暮光里每 4 分钟刷新一次,dawn 的开始时刻有约 4 分钟误差。
+- 闹钟时间取自 `nextAlarm`,即 Sleep as Android 里设置的时间;智能唤醒提前响铃时传感器是否变化未验证。`wakeAt`、`wakeEvent` 只触发交回太阳曲线,没有 dawn 和 wake 阶段。
 
 ## 亮度上限的公式
 
@@ -40,7 +56,7 @@ HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,�
     E/Φ = downwardFraction / beamSolidAngleSr / (dz² + horizontalOffsetM²) + utilisation / roomAreaM2
     dz = ceilingHeightM − eyeHeightM
 
-直射按"眼睛看着灯"取最坏情况。允许的亮度比例 = 限值 ÷ (E/Φ × melanopicRatio × ratedLumens)。亮度与光输出线性。`evening` 用坐姿眼高,`night` 和 `preAlarm` 用躺姿眼高;结果向下取整。
+直射按"眼睛看着灯"取最坏情况。允许的亮度比例 = 限值 ÷ (E/Φ × melanopicRatio × ratedLumens)。亮度与光输出线性。`evening` 用坐姿眼高,`night` 用躺姿眼高;结果向下取整。
 
 | 输入 | 默认值 | 来源 |
 |---|---|---|
