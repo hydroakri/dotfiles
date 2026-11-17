@@ -23,8 +23,8 @@ nixos-rebuild build --flake ./flake#omen15
 # Check flake evaluates for all hosts (cheap sanity check, no build)
 nix flake check ./flake
 
-# Format nix files
-nix fmt ./flake
+# Format nix files (run from flake/, pass file paths; `nix fmt ./flake` from the repo root errors)
+(cd flake && nix fmt hosts/oci/oci.nix)
 
 # Update flake inputs
 nix flake update --flake ./flake
@@ -51,6 +51,7 @@ No test suite. Correctness = `nixos-rebuild build` succeeding + CI building all 
 - Never present a fix as root-caused until it's tested against live behavior, not just judged plausible from source. Two wrong "confident" fixes in a row on the same symptom = stop guessing, reproduce directly (run the binary by hand, curl the endpoint) before a third attempt.
 - Debug with safe, non-mutating commands first (logs, status, dry-run, read-only checks) to gather evidence before changing any config or state — don't jump straight to an edit-and-see fix loop.
 - A check that doesn't exercise the actual failure mode isn't verification. E.g. `restic check --read-data-subset` only proves a backup repo isn't corrupted, not that a restore produces usable data — for anything claimed "verified," confirm against the real thing it needs to survive (actually restore it, actually run the binary, actually hit the endpoint).
+- Failover/fallback claims ("falls back to X when every member is down"): the test must start healthy, then break everything. A cold-start run takes a different code path (nothing selected yet) and proves nothing about the live steady state.
 - On a branch used for external device/hardware testing: don't commit or push a fix until the user explicitly confirms the overall test passed. A reported test *failure* is not permission to commit.
 - Destructive verification steps (restore → inspect → cleanup): separate commands, never bundled — cleanup must not run before the result is inspected.
 
