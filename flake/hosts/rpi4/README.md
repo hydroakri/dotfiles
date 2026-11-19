@@ -21,5 +21,6 @@ oci 的 Miniflux 抓不到的訂閱(站點對數據中心 IP 做機器人檢測)
 
 **加訂閱 / 維護:**
 
-- `rpi4-switch.nix` 的 `ExecStart` 裡每個 `FEED_ID=URL` 對應一個 Miniflux 訂閱,`FEED_ID` 是 Miniflux 資料庫裡的 id(現在:14 = The Quietus,20 = iFixit News)。重建訂閱後要同步改
+- `rpi4-switch.nix` 的 `ExecStart` 裡每個 `FEED_ID=URL` 對應一個 Miniflux 訂閱,`FEED_ID` 是 Miniflux 資料庫裡的 id(現在:14 = The Quietus,20 = iFixit News,31 = Solidot,66 = 酒神少女)。重建訂閱後要同步改
+- 66 酒神少女:RSS 代理 `feed.xyzfm.space` 有 IP 白名單(家裡 403,oci 報無法解析格式),腳本改為直接解析小宇宙節目頁內嵌的資料,只有最近 15 集;網址是 `https://www.xiaoyuzhoufm.com/podcast/<id>`,不是 RSS
 - 被推進來的訂閱本身在 Miniflux 裡仍會嘗試自己抓取並報錯;報錯不影響推送進來的條目是否可見這一點尚未驗證

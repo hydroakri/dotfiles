@@ -15,7 +15,7 @@ import sys
 import tempfile
 import urllib.request
 from datetime import datetime, timedelta, timezone
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, quoteattr
 
 BASE = os.environ.get("OVO_CLUB_BASE", "https://ovo.st/club/")
 TZ = timezone(timedelta(hours=8))  # page timestamps are UTC+8
@@ -86,7 +86,7 @@ def to_atom(group, page, items):
         out += [
             "<entry>",
             f"<title>{escape(title)}</title>",
-            f'<link rel="alternate" href="{escape(i["url"])}"/>',
+            f'<link rel="alternate" href={quoteattr(i["url"])}/>',
             f"<id>{escape(i['url'])}</id>",
             f"<updated>{i['when'].isoformat()}</updated>",
             f"<author><name>{escape(clean(i['author']) or 'unknown')}</name></author>",

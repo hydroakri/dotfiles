@@ -3,13 +3,17 @@
 Run from a home network. For each FEED_ID=URL pair the original RSS/Atom feed
 is fetched here and every new item is POSTed to Miniflux's Import Entry
 endpoint, so the entries appear under the existing Miniflux feed FEED_ID.
+A https://www.xiaoyuzhoufm.com/podcast/ID URL is read from the embedded page
+data (latest 15 episodes) because the podcast's own RSS proxy has an IP whitelist.
 
 usage: miniflux-push-blocked --key-file F --state-dir D [--base-url U] [--dry-run] FEED_ID=URL ...
 """
 
 import argparse
+import html
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -83,8 +87,8 @@ def parse_feed(data):
             a = child(el, "author")
             author = text_of(child(a, "name")) if a is not None else ""
             when = parse_date(text_of(child(el, "published", "updated")))
-        if not link:
-            continue
+        if not link.startswith(("http://", "https://")):
+            continue  # the import API does not validate url; drop javascript: and similar
         items.append(
             {
                 "guid": guid,
@@ -93,6 +97,36 @@ def parse_feed(data):
                 "author": author,
                 "content": content,
                 "when": when,
+            }
+        )
+    items.sort(key=lambda i: i["when"] or datetime.fromtimestamp(0, timezone.utc))
+    return items
+
+
+XYZ_PREFIX = "https://www.xiaoyuzhoufm.com/podcast/"
+XYZ_DATA = re.compile(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', re.S)
+
+
+def parse_xiaoyuzhou(data):
+    m = XYZ_DATA.search(data.decode("utf-8", "replace"))
+    if not m:
+        raise ValueError("no embedded page data")
+    pod = json.loads(m.group(1))["props"]["pageProps"]["podcast"]
+    items = []
+    for ep in pod.get("episodes", []):
+        url = f"https://www.xiaoyuzhoufm.com/episode/{ep['eid']}"
+        body = html.escape(ep.get("description") or "").replace("\n", "<br>")
+        audio = (ep.get("enclosure") or {}).get("url")
+        if audio:
+            body += f'<p><a href="{html.escape(audio)}">audio</a></p>'
+        items.append(
+            {
+                "guid": ep["eid"],
+                "url": url,
+                "title": ep.get("title") or url,
+                "author": pod.get("author") or "",
+                "content": body,
+                "when": parse_date(ep.get("pubDate")),
             }
         )
     items.sort(key=lambda i: i["when"] or datetime.fromtimestamp(0, timezone.utc))
@@ -185,7 +219,8 @@ def main(argv):
             failed += 1
             continue
         try:
-            items = parse_feed(fetch(url))
+            parse = parse_xiaoyuzhou if url.startswith(XYZ_PREFIX) else parse_feed
+            items = parse(fetch(url))
         except Exception as e:
             print(f"feed {fid}: fetch/parse failed ({e})", file=sys.stderr)
             failed += 1

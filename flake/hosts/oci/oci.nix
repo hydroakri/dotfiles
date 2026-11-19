@@ -718,6 +718,44 @@
       };
     };
 
+    # GitHub 已没有仓库 issues 的 Atom，公共 RSSHub 又有机器人检测：轮询 issues API，放在 rss 域名的 /gh/ 下给 Miniflux 订阅
+    users.users.gh-feeds = {
+      isSystemUser = true;
+      group = "gh-feeds";
+    };
+    users.groups.gh-feeds = { };
+    systemd.services.github-issues-feeds = {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "gh-feeds";
+        Group = "gh-feeds";
+        StateDirectory = "gh-feeds";
+        StateDirectoryMode = "0755"; # nginx 用另一个用户读取
+        ExecStart = "${pkgs.python3}/bin/python3 ${./github-issues-feed.py} /var/lib/gh-feeds net4people/bbs";
+        TimeoutStartSec = "2min";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectControlGroups = true;
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+      };
+    };
+    systemd.timers.github-issues-feeds = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitActiveSec = "30min"; # 未认证 API 限 60 次/小时（按出口 IP 计）
+        RandomizedDelaySec = "2min";
+      };
+    };
+
     # cloudflared tunnel：统一藏住 oci 的源站 IP
     # tunnel 是 `cloudflared tunnel create` 在本机建的（经典 credentials.json + 宣告式 ingress）
     services.cloudflared = {
@@ -1627,6 +1665,7 @@
         listenAddresses = [ "127.0.0.1" ];
         locations."/".proxyPass = "http://127.0.0.1:8085";
         locations."/ovo/".alias = "/var/lib/ovo-feeds/"; # ovo-club-feeds 生成的 Atom
+        locations."/gh/".alias = "/var/lib/gh-feeds/"; # github-issues-feeds 生成的 Atom
       };
 
       virtualHosts."uptime.hydroakri.cc" = {

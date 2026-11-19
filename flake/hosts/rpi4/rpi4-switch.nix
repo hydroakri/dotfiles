@@ -131,13 +131,15 @@
         DynamicUser = true;
         StateDirectory = "miniflux-push-blocked";
         LoadCredential = "miniflux_api_key:${config.sops.secrets.miniflux_api_key.path}";
-        # FEED_ID is the Miniflux feed id: 14 = The Quietus, 20 = iFixit News
+        # FEED_ID is the Miniflux feed id: 14 = The Quietus, 20 = iFixit News, 31 = Solidot, 66 = 酒神少女
         ExecStart = lib.concatStringsSep " " [
           "${pkgs.python3}/bin/python3 ${./miniflux-push-blocked.py}"
           "--key-file %d/miniflux_api_key"
           "--state-dir %S/miniflux-push-blocked"
           "14=https://thequietus.com/feed/"
           "20=https://www.ifixit.com/News/rss"
+          "31=https://solidot.org/index.rss"
+          "66=https://www.xiaoyuzhoufm.com/podcast/6298c2cc2a2a179b3bb95082"
         ];
         TimeoutStartSec = "3min";
         NoNewPrivileges = true;

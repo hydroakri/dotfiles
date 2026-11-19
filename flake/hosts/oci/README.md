@@ -173,3 +173,19 @@ https://rss.hydroakri.cc/ovo/savemoney.xml
 - 抓取失敗或頁面結構變了(找不到 `近期活动` 區塊)時,腳本保留上一版檔案並讓服務失敗;原因看 `journalctl -u ovo-club-feeds`
 - 組列表寫在 `oci.nix` 的 `ExecStart` 裡,加組時要同時加 Miniflux 訂閱
 - 部署後不想等 2 分鐘的首次定時,執行 `systemctl start ovo-club-feeds`
+
+## 11. GitHub issues 的 Atom 轉換(`github-issues-feeds`)
+
+GitHub 已沒有倉庫 issues 的 Atom,公共 RSSHub 實例又有機器人檢測。`oci.nix` 裡的 `github-issues-feeds` 每 30 分鐘輪詢 issues API,轉成 Atom 放在 `/var/lib/gh-feeds/<owner>-<repo>.xml`,由 `https://rss.hydroakri.cc/gh/<owner>-<repo>.xml` 對外提供(腳本:`flake/hosts/oci/github-issues-feed.py`)。
+
+部署後在 Miniflux 把原訂閱的 URL 改成(這部分不受 nix 管理):
+
+```
+https://rss.hydroakri.cc/gh/net4people-bbs.xml
+```
+
+- 每個倉庫最近 30 條 issue(含已關閉),不含留言;PR 被濾掉
+- 未認證 API 限 60 次/小時,按 oci 出口 IP 計;每加一個倉庫就多一次請求
+- 抓取失敗時保留上一版檔案並讓服務失敗;原因看 `journalctl -u github-issues-feeds`
+- 倉庫列表寫在 `oci.nix` 的 `ExecStart` 裡,加倉庫時要同時在 Miniflux 訂閱
+- 部署後不想等 2 分鐘的首次定時,執行 `systemctl start github-issues-feeds`
