@@ -1702,6 +1702,7 @@
         useACMEHost = "hydroakri.cc";
         acmeRoot = null;
         onlySSL = true; # 自定义 listen 绕过了 forceSSL/onlySSL 才会触发的证书自动挂载，必须手动开
+        http2 = false; # 8448 直连公网，关 HTTP/2 挡 CVE-2026-123007/123633；联邦走 HTTP/1.1 即可
         listen = [
           {
             addr = "0.0.0.0";
