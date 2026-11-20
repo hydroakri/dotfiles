@@ -777,7 +777,7 @@
               {
                 type = "remote";
                 tag = "adblock-dns";
-                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs";
+                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist-mini.srs";
                 update_interval = "24h0m0s";
               }
               {
