@@ -354,6 +354,11 @@
                 rcode = "NXDOMAIN";
               }
               {
+                # fakeip only answers A/AAAA and errors on other types; keep HTTPS (ECH config) out of it.
+                query_type = [ "HTTPS" ];
+                server = "dns-quad9";
+              }
+              {
                 rule_set = [
                   "fakeip-filter"
                 ];
