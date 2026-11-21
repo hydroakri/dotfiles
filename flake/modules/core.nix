@@ -266,7 +266,7 @@
       enable = lib.mkDefault true;
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
-        block_ipv6 = true;
+        # 不设 block_ipv6:它的 AAAA 空答案没有 DNSSEC 证明,unbound 判为 bogus 回 SERVFAIL,Chromium 因此拿不到 ECH 记录。
         # 缓存与 TTL 策略统一交给 unbound,避免两层 TTL 叠加
         cache = false;
         dnscrypt_servers = true;

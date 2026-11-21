@@ -354,6 +354,14 @@
                 rcode = "NXDOMAIN";
               }
               {
+                # fakeip only answers A/AAAA and errors on other types; keep HTTPS (ECH config) out of it.
+                # No optimistic cache: expired answers carry rotated-out ECH keys.
+                query_type = [ "HTTPS" ];
+                action = "route";
+                server = "dns-quad9";
+                disable_optimistic_cache = true;
+              }
+              {
                 rule_set = [
                   "fakeip-filter"
                 ];
@@ -652,7 +660,17 @@
                 outbound = "➡️ direct";
               }
               {
-                inbound = (lib.optional config.modules.proxy.singbox.tun "tun-in") ++ [ "mixed-in" ];
+                # Only sniff when no domain is known yet: for fakeip/SOCKS-domain connections sing-box <= 1.14.4
+                # replaces the real domain with the ECH outer SNI (public_name) and misroutes them.
+                type = "logical";
+                mode = "and";
+                rules = [
+                  { inbound = (lib.optional config.modules.proxy.singbox.tun "tun-in") ++ [ "mixed-in" ]; }
+                  {
+                    domain_regex = ".*";
+                    invert = true;
+                  }
+                ];
                 action = "sniff";
                 timeout = "300ms";
               }
@@ -777,7 +795,7 @@
               {
                 type = "remote";
                 tag = "adblock-dns";
-                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist-mini.srs";
+                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs";
                 update_interval = "24h0m0s";
               }
               {
