@@ -354,6 +354,11 @@
                 rcode = "NXDOMAIN";
               }
               {
+                # fakeip only answers A/AAAA and errors on other types; keep HTTPS (ECH config) out of it.
+                query_type = [ "HTTPS" ];
+                server = "dns-quad9";
+              }
+              {
                 rule_set = [
                   "fakeip-filter"
                 ];
@@ -777,7 +782,7 @@
               {
                 type = "remote";
                 tag = "adblock-dns";
-                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist-mini.srs";
+                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs";
                 update_interval = "24h0m0s";
               }
               {
