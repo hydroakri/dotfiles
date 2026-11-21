@@ -106,6 +106,10 @@
         "server": "dns-system"
       },
       {
+        "query_type": ["HTTPS"],
+        "server": "dns-quad9"
+      },
+      {
         "rule_set": "fakeip-filter",
         "query_type": ["A", "AAAA"],
         "server": "dns-quad9"
