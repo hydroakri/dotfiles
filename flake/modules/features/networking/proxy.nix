@@ -354,6 +354,14 @@
                 rcode = "NXDOMAIN";
               }
               {
+                # fakeip only answers A/AAAA and errors on other types; keep HTTPS (ECH config) out of it.
+                # No optimistic cache: expired answers carry rotated-out ECH keys.
+                query_type = [ "HTTPS" ];
+                action = "route";
+                server = "dns-quad9";
+                disable_optimistic_cache = true;
+              }
+              {
                 rule_set = [
                   "fakeip-filter"
                 ];
@@ -777,7 +785,7 @@
               {
                 type = "remote";
                 tag = "adblock-dns";
-                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist-mini.srs";
+                url = "https://cdn.jsdelivr.net/gh/hydroakri/dnscrypt-proxy-blocklist@release/blocklist.srs";
                 update_interval = "24h0m0s";
               }
               {

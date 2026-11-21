@@ -64,6 +64,16 @@
       };
     };
 
+    # Chromium 内置解析器遇到 nsswitch 的未知服务(mymachines)会回退 getaddrinfo,不发 HTTPS 查询,系统 DNS 下无 ECH。
+    system.nssDatabases.hosts = lib.mkForce [
+      "files"
+      "myhostname"
+      "dns"
+    ];
+
+    # AAAA 已放开(core.nix),IPv4 优先交给 glibc 地址排序;IPv6 不通时 getaddrinfo 类应用仍先试 IPv4。
+    networking.getaddrinfo.precedence."::ffff:0:0/96" = 100;
+
     # NM 判定 portal:停 sing-box(若在运行)、unbound 临时转发 DHCP DNS、打开登录页;
     # 取舍见 features/networking/README.md。
     networking.networkmanager.dispatcherScripts =
