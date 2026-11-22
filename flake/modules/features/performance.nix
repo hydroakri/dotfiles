@@ -13,7 +13,7 @@ in
 {
   # journald.settings is unstable-only; swap in unstable's journald module until it reaches 26.05.
   disabledModules = [ "system/boot/systemd/journald.nix" ];
-  imports = [ "${inputs.unstable}/nixos/modules/system/boot/systemd/journald.nix" ];
+  imports = [ "${inputs.unstable-frozen}/nixos/modules/system/boot/systemd/journald.nix" ];
 
   options.modules.performance.vendor = lib.mkOption {
     type = lib.types.enum [

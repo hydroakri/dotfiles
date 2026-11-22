@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "https://channels.nixos.org/nixos-26.05/nixexprs.tar.zst";
     unstable.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
+    # Frozen rev for packages held until nixos-26.11 (DB-migrated services, borrowed modules); `unstable` floats for sing-box.
+    unstable-frozen.url = "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1125864.2786a2a72088/nixexprs.tar.zst";
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";

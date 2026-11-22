@@ -20,7 +20,7 @@ in
     ../options.nix
     inputs.hermes-agent.nixosModules.default
     inputs.sops-nix.nixosModules.sops
-    "${inputs.unstable}/nixos/modules/services/misc/llama-cpp.nix"
+    "${inputs.unstable-frozen}/nixos/modules/services/misc/llama-cpp.nix"
   ];
 
   options.modules.agent = {

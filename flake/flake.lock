@@ -496,6 +496,7 @@
         "treefmt-nix": "treefmt-nix",
         "trivalent-nix": "trivalent-nix",
         "unstable": "unstable",
+        "unstable-frozen": "unstable-frozen",
         "wowtype": "wowtype"
       }
     },
@@ -608,6 +609,18 @@
       "original": {
         "type": "tarball",
         "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst"
+      }
+    },
+    "unstable-frozen": {
+      "locked": {
+        "lastModified": 315532800,
+        "narHash": "sha256-pAEASBc6wof0S58XcSEdZoQ2iFQDkCnZwH+wFLrkd1Q=",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1125864.2786a2a72088/nixexprs.tar.zst"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1125864.2786a2a72088/nixexprs.tar.zst"
       }
     },
     "uv2nix": {
