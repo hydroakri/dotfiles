@@ -172,7 +172,8 @@ let
   sleepStepSeconds = tm.sleepFadeMinutes * 60 / sleepSteps;
   at = t: "${t}:00";
   hhmm = types.strMatching "[0-2][0-9]:[0-5][0-9]";
-  lightOffAndFree = [
+  # zone.home counts the persons at home; with nobody there the dawn and wake automations leave the light off.
+  mayAutoSwitchOn = [
     {
       condition = "state";
       entity_id = cfg.light;
@@ -182,6 +183,11 @@ let
       condition = "state";
       entity_id = "input_boolean.lifx_manual";
       state = "off";
+    }
+    {
+      condition = "numeric_state";
+      entity_id = "zone.home";
+      above = 0;
     }
   ];
   # Lowest level, warm: the sun-following update then continues from here.
@@ -787,7 +793,7 @@ in
                 to = "on";
               }
             ];
-            conditions = lightOffAndFree;
+            conditions = mayAutoSwitchOn;
             actions = [ lowestOn ];
           }
           {
@@ -805,7 +811,7 @@ in
                 };
               }
             ];
-            conditions = lightOffAndFree;
+            conditions = mayAutoSwitchOn;
             actions = [ lowestOn ];
           }
         ]

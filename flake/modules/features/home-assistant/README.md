@@ -47,6 +47,7 @@ HA + LIFX 灯泡:亮度和色温跟随太阳高度,日落后降到晚间亮度,�
 - 夜间亮度由灯具几何算出(见下),所以黎明段不超过睡眠上限。
 - 闹钟响在太阳升过 `dawnStartElevation` 之前,或之后不到 `wakeLeadMinutes` 时,没有 dawn 阶段,灯在闹钟前 `wakeLeadMinutes` 以 1/255 开启,直接进入 wake。
 - 太阳时刻由 HA 的 `sun` 集成按经纬度计算,`elevation` 在航海暮光里每 4 分钟刷新一次,dawn 的开始时刻有约 4 分钟误差。
+- 开灯只发生在 `zone.home`(在家人数)大于 0 且灯关着、`lifx_manual` 关着时,涉及 `lifx_dawn_start` 和 `lifx_wake_start`。无人在家时这两条不开灯,灯保持由"出门关灯"关掉的状态。
 - 闹钟时间取自 `nextAlarm`,即 Sleep as Android 里设置的时间;智能唤醒提前响铃时传感器是否变化未验证。`wakeAt`、`wakeEvent` 只触发交回太阳曲线,没有 dawn 和 wake 阶段。
 
 ## 亮度上限的公式
