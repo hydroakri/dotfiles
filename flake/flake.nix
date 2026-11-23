@@ -60,6 +60,10 @@
       url = "github:lgse/strata";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    claude-desktop = {
+      url = "github:k3d3/claude-desktop-linux-flake";
+      flake = false;
+    };
     wowtype = {
       url = "github:Gloridust/WowType/v0.3.10";
       inputs.nixpkgs.follows = "nixpkgs";

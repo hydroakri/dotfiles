@@ -225,6 +225,11 @@
     pkgs.nbfc-linux
     # Unstable pkgs: strata needs rustc >= 1.96, 26.05 ships 1.95. Not inputs.strata.packages (second nixpkgs).
     (pkgs.unstable.callPackage "${inputs.strata}/package.nix" { })
+    # Source-only input (flake = false): upstream's own flake would instantiate a second nixpkgs; its nodePackages.asar no longer exists.
+    (pkgs.callPackage "${inputs.claude-desktop}/pkgs/claude-desktop.nix" {
+      nodePackages.asar = pkgs.asar;
+      patchy-cnb = pkgs.callPackage "${inputs.claude-desktop}/pkgs/patchy-cnb.nix" { };
+    })
     # pkgs.winboat
   ];
   # Proxy mode (127.0.0.1:40000, the 🔒 zerotrust outbound); the full tunnel drops the Tailscale data plane.
