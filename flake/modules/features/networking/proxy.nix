@@ -683,6 +683,17 @@
                 outbound = "tailscale-in";
               }
               {
+                # Private ranges were bypassed and tailnet routed above, so only public plaintext HTTP reaches here.
+                type = "logical";
+                mode = "or";
+                rules = [
+                  { port = 80; }
+                  { protocol = "http"; }
+                ];
+                action = "reject";
+                method = "drop";
+              }
+              {
                 type = "logical";
                 mode = "or";
                 rules = [

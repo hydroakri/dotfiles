@@ -245,6 +245,20 @@
         "action": "hijack-dns"
       },
       {
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "port": 80
+          },
+          {
+            "protocol": "http"
+          }
+        ],
+        "action": "reject",
+        "method": "drop"
+      },
+      {
         "rule_set": "adblock-dns",
         "action": "reject",
         "method": "drop"
