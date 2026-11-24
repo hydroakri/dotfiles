@@ -95,6 +95,30 @@
         '';
       };
     };
+
+    # 本地 xray 客户端桥：单进程、仅 VLESS+XHTTP 出站、无路由无 DNS、非 tun；回环 SOCKS5 由 sing-box selector 选取。
+    # 自身对外连接必须绕开 tun（exclude_uid_range），uid 必须 <1000：kill switch 丢弃 1000-59999 的直连。
+    xrayClient = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Run a local xray client exposing SOCKS5 on 127.0.0.1:<port> for sing-box to select.";
+      };
+      sopsFile = lib.mkOption {
+        type = lib.types.path;
+        description = "sops binary-format file holding the complete xray client JSON (decrypted to /run/secrets, never into the store).";
+      };
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 10808;
+        description = "Loopback SOCKS5 port; must match the inbound in the client JSON.";
+      };
+      uid = lib.mkOption {
+        type = lib.types.ints.between 100 999;
+        default = 961;
+        description = "Fixed system uid, referenced by the tun exclusion.";
+      };
+    };
   };
 
   config =
@@ -113,6 +137,30 @@
         oracle_ip.sopsFile = ../secrets/proxy-secrets.yaml;
         headscale-authkey.sopsFile = ../secrets/proxy-secrets.yaml;
       };
+      # 非 root 服务读取 → owner 必须显式设置（sops-nix 默认 root:root 0400）。
+      sops.secrets.xray-client = mkIf config.modules.proxy.xrayClient.enable {
+        sopsFile = config.modules.proxy.xrayClient.sopsFile;
+        format = "binary";
+        owner = "xray-client";
+        group = "xray-client";
+        mode = "0400";
+        restartUnits = [ "xray-client.service" ];
+      };
+      modules.proxy.singbox.extraOutbounds = mkIf config.modules.proxy.xrayClient.enable [
+        {
+          type = "socks";
+          tag = "🛰️ xhttp";
+          server = "127.0.0.1";
+          server_port = config.modules.proxy.xrayClient.port;
+          network = "tcp"; # 与 tor 同理：只走 TCP，避免 UDP ASSOCIATE 静默丢包。
+        }
+      ];
+      modules.proxy.singbox.extraProxyOutbounds = mkIf config.modules.proxy.xrayClient.enable [
+        "🛰️ xhttp"
+      ];
+      modules.proxy.singbox.extraManualOutbounds = mkIf config.modules.proxy.xrayClient.enable [
+        "🛰️ xhttp"
+      ];
 
       # 开启透明代理 (TUN/TProxy) 时需放松 rp_filter 以支持非对称路由（如游戏 UDP）
       # mkOverride 900: intentionally overrides security.nix's mkOverride 950.
@@ -488,7 +536,8 @@
               "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
               "${toString config.users.users.dnscrypt-proxy.uid}:${toString config.users.users.dnscrypt-proxy.uid}"
             ]
-            ++ (lib.optional config.modules.proxy.tor.enable "${toString config.users.users.tor.uid}:${toString config.users.users.tor.uid}");
+            ++ (lib.optional config.modules.proxy.tor.enable "${toString config.users.users.tor.uid}:${toString config.users.users.tor.uid}")
+            ++ (lib.optional config.modules.proxy.xrayClient.enable "${toString config.modules.proxy.xrayClient.uid}:${toString config.modules.proxy.xrayClient.uid}");
           };
 
           outbounds = [
@@ -1036,6 +1085,62 @@
         settings = mkIf (config.modules.proxy.tor.bridges != [ ]) {
           UseBridges = true;
           Bridge = config.modules.proxy.tor.bridges;
+        };
+      };
+
+      # ----------------------------------------------------------------------------
+      # 本地 xray 客户端桥（见 options.modules.proxy.xrayClient）。配置是运行时文件，不进 store；日志全部丢弃。
+      users.groups.xray-client.gid = mkIf config.modules.proxy.xrayClient.enable config.modules.proxy.xrayClient.uid;
+      users.users.xray-client = mkIf config.modules.proxy.xrayClient.enable {
+        isSystemUser = true;
+        uid = config.modules.proxy.xrayClient.uid;
+        group = "xray-client";
+      };
+      systemd.services.xray-client = mkIf config.modules.proxy.xrayClient.enable {
+        description = "Local SOCKS5 bridge";
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          User = "xray-client";
+          Group = "xray-client";
+          # -format json：sops 解密路径没有 .json 后缀
+          ExecStart = "${lib.getExe pkgs.xray} run -format json -c ${config.sops.secrets.xray-client.path}";
+          Restart = "always";
+          RestartSec = 5;
+          StandardOutput = "null";
+          StandardError = "null";
+          NoNewPrivileges = true;
+          CapabilityBoundingSet = "";
+          AmbientCapabilities = "";
+          PrivateTmp = true;
+          PrivateDevices = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          ProtectKernelTunables = true;
+          ProtectKernelModules = true;
+          ProtectKernelLogs = true;
+          ProtectControlGroups = true;
+          ProtectClock = true;
+          ProtectHostname = true;
+          ProtectProc = "invisible";
+          ProcSubset = "pid";
+          LockPersonality = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          RestrictNamespaces = true;
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_UNIX"
+          ];
+          SystemCallArchitectures = "native";
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged @resources @mount @debug @cpu-emulation @obsolete"
+          ];
+          MemoryDenyWriteExecute = true;
+          UMask = "0077";
         };
       };
 

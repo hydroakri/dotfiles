@@ -111,6 +111,10 @@
         killSwitch.enable = true;
       };
       tor.enable = true;
+      xrayClient = {
+        enable = true;
+        sopsFile = ../../modules/features/secrets/xray-client.enc;
+      };
     };
     powersave = {
       enable = true;
