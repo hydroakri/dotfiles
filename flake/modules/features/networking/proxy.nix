@@ -1007,6 +1007,25 @@
               };
           };
 
+      # tun0 宣告 v6 默认路由(表 2022);上行无 v6 时 connect 先被 tun 接住再被 direct 断开,Happy Eyeballs 不回退。
+      # main 表无 v6 路由时让 connect 直接 ENETUNREACH;有 v6 上行的网络命中 main,不受影响。
+      systemd.services.v6-unreachable-without-uplink =
+        mkIf (config.modules.proxy.singbox.enable && config.modules.proxy.singbox.tun)
+          {
+            description = "Fail IPv6 connects fast while the uplink has no IPv6 route";
+            wantedBy = [ "multi-user.target" ];
+            path = [ pkgs.iproute2 ];
+            script = ''
+              ip -6 rule del priority 32767 2>/dev/null || true
+              ip -6 rule add priority 32767 unreachable
+            '';
+            preStop = "ip -6 rule del priority 32767 || true";
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+            };
+          };
+
       # ----------------------------------------------------------------------------
       # 匿名后端：tor 客户端守护进程。只暴露回环 SOCKS5 给 sing-box,
       # 不开防火墙端口。持久化在 preservation.nix 处理（/var/lib/tor）。
