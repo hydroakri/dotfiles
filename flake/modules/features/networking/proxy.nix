@@ -292,12 +292,7 @@
                 detour = "🚦 cn";
                 tls = {
                   enabled = true;
-                  record_fragment = true;
                   server_name = "dns.alidns.com";
-                  curve_preferences = [
-                    "X25519MLKEM768"
-                    "X25519"
-                  ];
                 };
               }
               {
@@ -307,12 +302,7 @@
                 detour = "🚦 cn";
                 tls = {
                   enabled = true;
-                  record_fragment = true;
                   server_name = "dns.flymc.cc";
-                  curve_preferences = [
-                    "X25519MLKEM768"
-                    "X25519"
-                  ];
                 };
               }
               {
@@ -321,14 +311,9 @@
                 server = "172.64.36.2";
                 tls = {
                   enabled = true;
-                  record_fragment = true;
                   server_name = {
                     _secret = config.sops.secrets.zerotrust.path;
                   };
-                  curve_preferences = [
-                    "X25519MLKEM768"
-                    "X25519"
-                  ];
                 };
               }
               {
@@ -338,12 +323,7 @@
                 detour = "🚦 oversea";
                 tls = {
                   enabled = true;
-                  record_fragment = true;
                   server_name = "dns11.quad9.net";
-                  curve_preferences = [
-                    "X25519MLKEM768"
-                    "X25519"
-                  ];
                 };
               }
             ];
