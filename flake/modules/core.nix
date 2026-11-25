@@ -203,15 +203,6 @@
           private-domain = lib.mkDefault [ "ping.archlinux.org." ];
 
           edns-buffer-size = lib.mkDefault 1232;
-          cache-min-ttl = lib.mkDefault 300;
-          cache-max-ttl = lib.mkDefault 86400;
-          cache-max-negative-ttl = lib.mkDefault 3600;
-          prefetch = lib.mkDefault true;
-          prefetch-key = lib.mkDefault true;
-          serve-expired = lib.mkDefault true;
-          serve-expired-ttl = lib.mkDefault 3600;
-          # 先返回过期答案(400ms),后台刷新;否则上游慢时尾延迟不降
-          serve-expired-client-timeout = lib.mkDefault 400;
           extended-statistics = lib.mkDefault true;
 
           so-reuseport = lib.mkDefault true;
@@ -219,8 +210,6 @@
           so-sndbuf = lib.mkDefault "4m";
           outgoing-range = lib.mkDefault 8192;
           num-queries-per-thread = lib.mkDefault 4096;
-          msg-cache-size = lib.mkDefault "50m";
-          rrset-cache-size = lib.mkDefault "100m";
           module-config = lib.mkDefault ''"respip validator iterator"'';
 
           do-not-query-localhost = lib.mkDefault false;

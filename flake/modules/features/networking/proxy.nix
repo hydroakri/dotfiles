@@ -152,7 +152,6 @@
           tag = "🛰️ xhttp";
           server = "127.0.0.1";
           server_port = config.modules.proxy.xrayClient.port;
-          network = "tcp"; # 与 tor 同理：只走 TCP，避免 UDP ASSOCIATE 静默丢包。
         }
       ];
       modules.proxy.singbox.extraProxyOutbounds = mkIf config.modules.proxy.xrayClient.enable [

@@ -212,7 +212,7 @@
 | `networking.networkmanager.settings.connectivity` | 写进 `NetworkManager.conf`（NM 服务的 `restartTriggers`），`switch` 后自动重载；放 `conf.d` 不会触发重载，运行中的 NM 会对探测返回假结果（日志 `start fake request`）。`response` 必须非空——空串匹配任何回应，portal 的 307 也判成 FULL。204 无正文的端点（GrapheneOS、Cloudflare）不适用，故用 Arch 的 `nm-check.txt`，代价是 Arch 能看到出口 IP。 |
 | dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 `PORTAL` 先停 `sing-box-killswitch.service`（存在时），否则用户会话打不开登录页；`FULL`/`NONE` 先拉起 kill switch 再拉起 sing-box。 |
 | `PORTAL` 时 unbound 转发改为 DHCP 下发的 DNS | dnscrypt 上游被封时对查询静默挂死，`forward-first` 的回退来不及（getent 约 45 秒后失败）。代价是 portal 态 DNS 为明文。还原值读自 `services.unbound.settings.forward-zone`，不另写一份。 |
-| 状态切换时 `flush_zone .` | `cache-min-ttl 300` 会留住 portal 态的 fakeip、劫持和失败答案。 |
+| 状态切换时 `flush_zone .` | 清掉 portal 态残留答案。 |
 | 登录页经 `curl -4` 取探测网址的 307 `Location` 再开 | 浏览器会把 http 升级成 https，portal 拦不到；解析结果首选 IPv6 时该网络无路由。经 `systemd-run --user --machine=<user>@.host` 在用户会话里用默认浏览器打开，`xdg-open` 须用绝对路径（单元 PATH 里没有）。 |
 | `PORTAL` 停 sing-box 时 `tailscale0` 随之消失 | unbound 的 `stub-zone`（`ts.hydroakri.cc` → `100.100.100.100`）不可达，`networking.search` 使单标签名先试这个后缀，首次查询会多等。unbound 是否随后把不可达地址标记为 down 以缩短等待，未验证。 |
 | `LIMITED` 不处理 | 探测失败不等于 portal，误判会把 DNS 降级为明文，代价高于收益。 |
