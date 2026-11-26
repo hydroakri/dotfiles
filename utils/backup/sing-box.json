@@ -26,9 +26,7 @@
         "server": "223.6.6.6",
         "tls": {
           "enabled": true,
-          "server_name": "dns.alidns.com",
-          "curve_preferences": ["X25519MLKEM768", "X25519"],
-          "record_fragment": true
+          "server_name": "dns.alidns.com"
         }
       },
       {
@@ -38,9 +36,7 @@
         "server": "43.154.154.162",
         "tls": {
           "enabled": true,
-          "server_name": "dns.flymc.cc",
-          "curve_preferences": ["X25519MLKEM768", "X25519"],
-          "record_fragment": true
+          "server_name": "dns.flymc.cc"
         }
       },
       {
@@ -49,9 +45,7 @@
         "server": "172.64.36.2",
         "tls": {
           "enabled": true,
-          "server_name": "frd4wvnobp.cloudflare-gateway.com",
-          "curve_preferences": ["X25519MLKEM768", "X25519"],
-          "record_fragment": true
+          "server_name": "frd4wvnobp.cloudflare-gateway.com"
         }
       },
       {
@@ -61,9 +55,7 @@
         "server": "149.112.112.11",
         "tls": {
           "enabled": true,
-          "server_name": "dns11.quad9.net",
-          "curve_preferences": ["X25519MLKEM768", "X25519"],
-          "record_fragment": true
+          "server_name": "dns11.quad9.net"
         }
       }
     ],
