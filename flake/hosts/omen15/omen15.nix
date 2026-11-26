@@ -108,6 +108,7 @@
       singbox = {
         enable = true;
         tun = true;
+        dns = true;
         killSwitch.enable = true;
       };
       tor.enable = true;

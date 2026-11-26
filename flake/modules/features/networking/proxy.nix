@@ -12,12 +12,6 @@
   options.modules.proxy = {
     enable = lib.mkEnableOption "Enable customized proxy stack (Sing-box)";
 
-    adguardhome.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Enable AdGuardHome as the DNS resolver backend.";
-    };
-
     # dnscrypt-proxy 在 core.nix 常驻配置，这里没有相应选项。
 
     singbox = {
@@ -30,6 +24,15 @@
         type = lib.types.bool;
         default = false;
         description = "Enable sing-box tun-in inbound.";
+      };
+      dns = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Put sing-box in front of the system resolver: resolv.conf keeps the DHCP DNS and the tun hijack sends
+          normal users' port-53 queries to sing-box (fakeip, DNS rules). unbound and dnscrypt-proxy stay enabled
+          but are no longer the system resolver and sing-box does not use them. Requires `tun`.
+        '';
       };
       killSwitch.enable = lib.mkOption {
         type = lib.types.bool;
@@ -168,40 +171,15 @@
         "net.ipv4.conf.default.rp_filter" = mkOverride 900 2;
       };
 
-      # dnscrypt-proxy 是 core.nix 常驻服务,系统级 DNS 已经在那边指向 unbound 了
-      networking.networkmanager.insertNameservers = mkIf config.modules.proxy.adguardhome.enable [
-        "127.0.0.1"
-      ];
-
       networking.firewall = lib.mkMerge [
         {
           checkReversePath = mkIf config.modules.proxy.singbox.tun (lib.mkDefault false);
         }
-        # AdGuardHome 的端口规则
-        (mkIf config.modules.proxy.adguardhome.enable {
-          allowedTCPPorts = [
-            53
-            80
-            443
-            3000
-          ];
-          allowedUDPPorts = [
-            53
-            1080
-            67
-            68
-            547
-            546
-          ];
-        })
-
         # Sing-box 的端口规则
         (mkIf config.modules.proxy.singbox.enable {
           allowedUDPPorts = [ tailscalePort ];
         })
       ];
-
-      services.adguardhome.enable = mkIf config.modules.proxy.adguardhome.enable (mkDefault true);
 
       # System-wide MagicDNS: tailscale0 serves it at 100.100.100.100. A stub zone is used because
       # core.nix owns the forward-zone list.
@@ -218,21 +196,10 @@
           };
       # Bare tailnet host names, as the official client sets up.
       networking.search = mkIf config.modules.proxy.singbox.enable [ tailnetDomain ];
-
-      systemd.services.adguardhome = mkIf config.modules.proxy.adguardhome.enable {
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        serviceConfig = {
-          AmbientCapabilities = [
-            "CAP_NET_BIND_SERVICE"
-            "CAP_NET_RAW"
-          ];
-          CapabilityBoundingSet = [
-            "CAP_NET_BIND_SERVICE"
-            "CAP_NET_RAW"
-          ];
-        };
-      };
+      # resolv.conf then holds the DHCP DNS (NetworkManager); the tun hijack sends port-53 queries to sing-box.
+      # The dnscrypt-proxy module adds 127.0.0.1 to networking.nameservers on its own.
+      services.unbound.resolveLocalQueries = mkIf config.modules.proxy.singbox.dns false;
+      networking.nameservers = mkIf config.modules.proxy.singbox.dns (mkForce [ ]);
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
@@ -726,7 +693,7 @@
                 mode = "or";
                 rules = [
                   { rule_set = [ "geosite-tailscale" ]; }
-                  # tailscaleDirectIps needs the full CIDR in the secret itself
+                  # oracle_ip needs the full CIDR in the secret itself
                   # (e.g. "<ip>/32") — can't be appended in Nix since the value
                   # is only known at activation time.
                   { domain = [ { _secret = config.sops.secrets.oracle_domain.path; } ]; }
@@ -930,16 +897,14 @@
           "unbound.service"
           "dnscrypt-proxy.service"
           "tor.service"
-        ]
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ];
 
         wants = [
           "network-online.target"
           "unbound.service"
           "dnscrypt-proxy.service"
           "tor.service"
-        ]
-        ++ (lib.optional config.modules.proxy.adguardhome.enable "adguardhome.service");
+        ];
 
         serviceConfig = {
           # sing-box 上游模块未加任何 systemd 沙箱；这里补上。
@@ -990,6 +955,10 @@
       };
 
       assertions = [
+        {
+          assertion = !config.modules.proxy.singbox.dns || config.modules.proxy.singbox.tun;
+          message = "modules.proxy.singbox.dns needs modules.proxy.singbox.tun.";
+        }
         {
           assertion = lib.hasInfix "\nsingbox-api-secret:" (builtins.readFile ../secrets/proxy-secrets.yaml);
           message = "proxy-secrets.yaml has no singbox-api-secret key: a missing sops key makes sing-box fail to start. Add it with `sops proxy-secrets.yaml`.";

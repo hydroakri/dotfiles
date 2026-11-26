@@ -8,6 +8,7 @@
 |---|---|
 | `modules.proxy.singbox.enable` | 启用 sing-box 作为代理后端。 |
 | `modules.proxy.singbox.tun` | 启用系统级 TUN 接管（`dns_mode=hijack`），而非仅本地 SOCKS/HTTP 代理(`mixed-in`)。TUN 关闭时，未显式配置走 `127.0.0.1:1080` 的应用不受任何分流规则影响，直接裸连——这是有意的降级路径，不是缺陷。 |
+| `modules.proxy.singbox.dns` | sing-box 放在系统解析器前面：`services.unbound.resolveLocalQueries = false` 且 `networking.nameservers` 清空（dnscrypt-proxy 模块会自己加 `127.0.0.1`），`resolv.conf` 保持 NetworkManager 写入的 DHCP DNS；普通用户发往任何公网 DNS 的 53 端口包被 tun 的 `hijack-dns` 接管，按 `dns.rules` 应答（fakeip、按分类选上游）。sing-box 的设置在 `dns` 开关两种状态下完全相同，不使用 unbound。unbound 和 dnscrypt-proxy 仍然启用，但在 omen15 上没有使用者（不再是系统解析器），只剩监听端口和 `access-control` 允许的局域网来源。需要 `tun`，默认关；`rpi4-side-gateway` 也引入本模块，保持关。root 进程（NM、系统服务）在 `exclude_uid_range` 内，DNS 直连 DHCP DNS，NM 探测和 portal 检测因此拿到真实结果。已验证：显式 `dig @<校园公网DNS>` 返回 fakeip（被拦截）。私网 DNS：同子网的私网地址被 nft 的 `dnat` 拦进 sing-box（实测 `@172.23.159.253` 返回 fakeip，计数器 +1）；跨网段的私网地址不进 sing-box（实测 `@192.168.1.1` 超时，`dnat` 计数器不增加），直连该私网 DNS，原因未查清。有意接受：要求只是 DNS 不出到公网，私网 DNS 在 LAN 内。sing-box 停止时：公网 DHCP DNS 被 kill switch 丢弃（读规则推断，未实测）；私网 DHCP DNS 不在 kill switch 范围内，直连，同样接受。 |
 | `modules.proxy.singbox.killSwitch.enable` | 独立 nft 表 `sing-box-killswitch`（`sing-box-killswitch.service`），对普通用户（uid 1000-59999）发往公网、且最终不经 `lo`/`tun0`/`tailscale0` 的包在 postrouting 钩子 drop。drop 规则正向匹配 uid（`meta skuid 1000-59999 drop`）：RST、TIME_WAIT 的 ACK/FIN 等无归属 socket 的包取不到 uid，规则不匹配，走默认放行（live 日志 150 条命中全是这类包，用反向 `skuid != ... accept` 写法它们会被丢掉）。必须是 postrouting：output 钩子里 `oifname` 是 sing-box 打标记重路由**之前**的网卡，TUN 流量和重定向到 127.0.0.1 的 TCP 都显示为物理网卡，会被误杀（实测：用 output 钩子部署后 TUN 正常运行时用户会话断网）。放行：私网/链路本地/多播（对应 `geoip-private` 绕过 TUN）、uid 范围外的进程（root/sing-box/unbound/dnscrypt-proxy/tor 本来就直连）。需要 `tun=true`（断言）。sing-box 停止期间用户会话无公网，TCP 表现为超时（postrouting 不能 reject），UDP 立即 EPERM；手动停 sing-box 要连 `sing-box-killswitch.service` 一起停。范围外的 uid（systemd DynamicUser、subuid 容器进程）和绑定物理网卡的程序不受保护。验证：真实 sing-box（auto_redirect + strict_route、双栈 TUN）在网络命名空间里、用 uid 1000 客户端测 IPv4/IPv6 的 TCP/UDP——运行时通过、停止时拦截、重启后恢复、私网豁免；未在 omen15 上实测。 |
 | `boot.kernel.sysctl` rp_filter | TUN 需要放松 `net.ipv4.conf.*.rp_filter` 到 `2`（loose）以支持非对称路由（如游戏 UDP）；用 `mkOverride 900` 显式盖过 `security.nix` 的 `mkOverride 950`（数字越小优先级越高）。 |
 
@@ -22,7 +23,7 @@
 | Tag | 类型/上游 | Tradeoff |
 |---|---|---|
 | `fakeip` | `198.18.0.0/15` + `64:ff9b:1::/48` | 已分类域名（境内境外皆可）优先命中，DNS 阶段零查询，真实 IP 推迟到拨号时由 outbound 的 `domain_resolver` 解析。 |
-| `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——在这台机器上 `type=local` 不经过 unbound/dnscrypt-proxy/RPZ 管道，走网卡分配的 DNS，只把它限制在本就该走本地网络解析的窄范围内。 |
+| `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——只把它限制在本就该走本地网络解析的窄范围内。`local` 读 `/etc/resolv.conf`：`dns=false` 时是 unbound→dnscrypt-proxy，`dns=true` 时是 DHCP DNS（sing-box 自己的包不进 tun，直达校园 DNS），所以 LAN 名字和 NM 探测域名能解析。 |
 | `dns-mdns` | mDNS | 局域网设备发现优先命中。 |
 | `dns-ts` | `type=tailscale`，`endpoint=tailscale-in`，`accept_default_resolvers=false`，`accept_search_domain=true` | 解析 MagicDNS 名字（`*.ts.hydroakri.cc`，含裸名）。`accept_default_resolvers=false`：非 tailnet 名字返回 NXDOMAIN，不回落到 headscale 的全局解析器，公网解析仍走 `dns-quad9`/fakeip。 |
 | `dns-alidns` | h3，`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
@@ -43,7 +44,7 @@
 | 5 | `evaluate` action，`dns-zerotrust`，`disable_optimistic_cache=true` | `evaluate` 本身不路由——它只查询并挂起一个响应，不直接返回给客户端；后面带 `match_response=true` 的规则才检查这个挂起响应的内容并决定去向。这里用它探测未分类域名的真实 IP，供下一步 GeoIP 判断。`disable_optimistic_cache=true`：这次查询的目的就是拿到当前的真实 IP 来判断地区，乐观缓存会先返回过期答案，GeoIP 判断随之不准；代价是缓存过期后重复访问要再等一次查询。`timeout=5s` 不要调低：冷查询（31 个未被规则集收录的域名）实测中位数约 0.4 到 0.6 秒，p90 约 1 到 2 秒，最大 2.9 秒（上游递归解析的时间）；超时会回落到最后的 fakeip 规则，国内站点会被当成海外。未覆盖：国内托管的未收录域名没有测。 |
 | 6 | `geoip-cn` + `match_response=true` → `dns-flymc` | 挂起的响应经 GeoIP 判断是国内 IP 时，改用 `dns-flymc` 重新查询换取国内优化响应。 |
 | 7 | `match_response` + `NXDOMAIN`/`SERVFAIL` → respond | 挂起响应本身是失败结果时直接透传，不再往下走。 |
-| 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，sing-box 自己回答的 DNS 响应永远不直接暴露真实境外 IP（系统解析器 unbound → dnscrypt-proxy 的应用不经过这里，拿到的是真实 IP，由嗅探到的域名路由）。 |
+| 8（`final` 前的最后一条） | 兜底 → `fakeip` | 挂起响应是境外真实 IP（未命中顺序 6/7 任一分支）时也走到这里：不直接把探测到的真实 IP 返回给客户端，仍然统一返回 fakeip。fakeip 是几乎所有查询的最终归宿，不只是顺序 4 已分类域名的特例——真实 IP 只在拨号那一刻由 outbound 的 `domain_resolver` 按需解析，sing-box 自己回答的 DNS 响应永远不直接暴露真实境外 IP（`dns=false` 时系统解析器 unbound → dnscrypt-proxy 的应用不经过这里，拿到的是真实 IP，由嗅探到的域名路由；`dns=true` 时系统查询也走这里）。 |
 
 `dns.final = dns-quad9`；`strategy = prefer_ipv4`；`cache_capacity = 4096`；`optimistic = true`；`store_fakeip`/`store_dns` 持久化在 `cache_file`。`selector` 的当前选中状态也会自动持久化——`store_selected` 从 sing-box 1.8.0 起废弃，行为改成只要 `cache_file.enabled=true`（本配置一直是）就默认持久化，不需要也不能再单独配置这个字段；手动经 Clash API 选过一次之后，重启不会丢。
 
@@ -67,6 +68,7 @@
 | `🇨🇳 direct-cn` | 国内优化直连，`domain_resolver=dns-alidns`；`🚦 cn` 分组的默认候选。 |
 | `🔒 zerotrust` | 本地 SOCKS5(`127.0.0.1:40000`)，`network=tcp`——本地 SOCKS5 不支持 UDP ASSOCIATE，显式禁掉避免静默丢包。 |
 | `🧅 tor` | 本地 SOCKS5(`127.0.0.1:9050`)，`network=tcp`——Tor 协议本身不支持 UDP。 |
+| `🛰️ xhttp` | 本地 xray 桥 SOCKS5(`127.0.0.1:10808`，客户端入站 `udp=true`)。**UDP 不通**：oci 服务端的出站是 WARP 代理模式的 SOCKS(`127.0.0.1:40000`)，对 UDP ASSOCIATE 返回 `command not supported`（oci 上实测）；经它的 UDP 包（QUIC、语音、WebRTC）超时，浏览器回退到 TCP。接受此限制，不加路由规则。客户端到 Cloudflare 的 `alpn` 与此无关。 |
 
 ### 分组 selector
 
@@ -138,7 +140,7 @@
 | 机制 | Tradeoff |
 |---|---|
 | `dns-ts` + DNS 规则 0 + 路由规则 4a | 经 sing-box 自己的解析和路由处理 tailnet 名字。 |
-| unbound `stub-zone` → `100.100.100.100` + `domain-insecure` | 让系统解析器也认 MagicDNS（`getent`、`ssh oci`）。`core.nix` 把根 `forward-zone` 设为 `mkDefault`，再写一份会整体覆盖，所以用 `stub-zone`。tailnet 内部名不做 DNSSEC 校验。 |
+| unbound `stub-zone` → `100.100.100.100` + `domain-insecure` | 让系统解析器也认 MagicDNS（`getent`、`ssh oci`）。`core.nix` 把根 `forward-zone` 设为 `mkDefault`，再写一份会整体覆盖，所以用 `stub-zone`。tailnet 内部名不做 DNSSEC 校验。`dns=true` 时系统查询先进 sing-box，MagicDNS 由 `dns-ts` 解析，`stub-zone` 只服务直接查 unbound 的场景。 |
 | `networking.search = ts.hydroakri.cc` | 裸名可用；单标签查询先试这个后缀。 |
 | 名字的 AAAA | 官方客户端与内置端点都不返回 AAAA（headscale 未下发）；IPv6 地址字面量可用。 |
 
@@ -149,7 +151,7 @@
 | 登录、直连、IPv4/IPv6、`tailscale0` | 有 | 一致 |
 | 状态查看 | `status`、`ping`、`netcheck`、`whois` | `sing-box api tailscale status/peer/ping`，没有 `netcheck`、`whois` |
 | Taildrop | 收发需要 operator 或 root | 无需 root（`api tailscale taildrop`、dashboard） |
-| 系统 DNS | 自动改系统解析器 | 靠 unbound `stub-zone` 和搜索域 |
+| 系统 DNS | 自动改系统解析器 | `dns=false` 靠 unbound `stub-zone` 和搜索域；`dns=true` 靠 `dns-ts` 和搜索域（sing-box 在前） |
 | `tailscale0` 入站 | tailscaled 放行 | 受主机防火墙约束，未做对比测试 |
 | 版本 | 独立更新 | 跟随 sing-box 版本 |
 
@@ -196,7 +198,7 @@
 
 | 设置 | Tradeoff |
 |---|---|
-| `after`/`wants` 含 `unbound`/`dnscrypt-proxy`（+ 条件性 `tor`（`tor.enable`）、`adguardhome`） | 启动顺序依赖，不代表运行时依赖这些服务的 DNS 解析结果（见 `dns-system` 那行，本机 `type=local` 不经过 unbound 管道）。 |
+| `after`/`wants` 含 `unbound`/`dnscrypt-proxy`（+ 条件性 `tor`（`tor.enable`）） | 启动顺序依赖，不代表运行时依赖这些服务的 DNS 解析结果（见 `dns-system` 那行，本机 `type=local` 不经过 unbound 管道）。 |
 | sops secret（`proxy.nix`/`proxy-nodes.nix`） | `restartUnits = sing-box.service`（`singbox.enable` 时）：secret 变化会重启 sing-box。 |
 | 断言 | 每个 selector 的候选必须是已有 outbound/endpoint 的 tag；`proxy.nix` 里 `rs` 的每个 rule-set 必须列入 `ruleSetTags`。 |
 | `AmbientCapabilities`/`CapabilityBoundingSet` = `CAP_NET_ADMIN` + `CAP_NET_RAW`，`DeviceAllow = /dev/net/tun rw` | 无条件授予：Tailscale 端点的 `system_interface` 在 `tun=false` 时也要创建 TUN 网卡。列表首项为空串用来重置：上游 unit 自带 `CAP_DAC_READ_SEARCH`（能读 `/run/secrets`）、`CAP_SYS_PTRACE`、`CAP_NET_BIND_SERVICE`，systemd 对重复赋值是合并，不写空串就会保留（`systemctl show` 实测）。`CAP_NET_RAW` 为 ICMP 保留。代价：所有开 sing-box 的主机不再有按 `tun` 区分的最小权限。 |
@@ -210,13 +212,11 @@
 | 设置 | Tradeoff |
 |---|---|
 | `networking.networkmanager.settings.connectivity` | 写进 `NetworkManager.conf`（NM 服务的 `restartTriggers`），`switch` 后自动重载；放 `conf.d` 不会触发重载，运行中的 NM 会对探测返回假结果（日志 `start fake request`）。`response` 必须非空——空串匹配任何回应，portal 的 307 也判成 FULL。204 无正文的端点（GrapheneOS、Cloudflare）不适用，故用 Arch 的 `nm-check.txt`，代价是 Arch 能看到出口 IP。 |
-| dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 `PORTAL` 先停 `sing-box-killswitch.service`（存在时），否则用户会话打不开登录页；`FULL`/`NONE` 先拉起 kill switch 再拉起 sing-box。 |
-| `PORTAL` 时 unbound 转发改为 DHCP 下发的 DNS | dnscrypt 上游被封时对查询静默挂死，`forward-first` 的回退来不及（getent 约 45 秒后失败）。代价是 portal 态 DNS 为明文。还原值读自 `services.unbound.settings.forward-zone`，不另写一份。 |
-| 状态切换时 `flush_zone .` | 清掉 portal 态残留答案。 |
+| dispatcher `PORTAL` 分支停 `sing-box` | portal 态出口不通，tun 会给 portal 域名发 fakeip。代价是认证前的流量直连、无 tun 保护。`FULL`/`NONE` 时拉起，因此手动停掉的 sing-box 会在下次 `FULL` 被重新拉起。 `PORTAL` 先停 `sing-box-killswitch.service`（存在时），否则用户会话打不开登录页；`FULL`/`NONE` 先拉起 kill switch 再拉起 sing-box。 脚本不再碰 unbound：依赖 `dns=true` 的系统 DNS 布局（`resolv.conf` 是 DHCP DNS，停 sing-box 后直达校园 DNS）；`dns=false` 时 portal 态 DNS 走 unbound→dnscrypt，上游被封会挂死。该流程未在 portal 网络实测。 |
 | 登录页经 `curl -4` 取探测网址的 307 `Location` 再开 | 浏览器会把 http 升级成 https，portal 拦不到；解析结果首选 IPv6 时该网络无路由。经 `systemd-run --user --machine=<user>@.host` 在用户会话里用默认浏览器打开，`xdg-open` 须用绝对路径（单元 PATH 里没有）。 |
-| `PORTAL` 停 sing-box 时 `tailscale0` 随之消失 | unbound 的 `stub-zone`（`ts.hydroakri.cc` → `100.100.100.100`）不可达，`networking.search` 使单标签名先试这个后缀，首次查询会多等。unbound 是否随后把不可达地址标记为 down 以缩短等待，未验证。 |
-| `LIMITED` 不处理 | 探测失败不等于 portal，误判会把 DNS 降级为明文，代价高于收益。 |
-| `dns.rules` 的 `dns-system` 规则含 `ping.archlinux.org` | NM 探测域名走系统解析。未验证去掉后探测是否仍判成 `portal`。 |
+| `PORTAL` 停 sing-box 时 `tailscale0` 随之消失 | MagicDNS 名字不可解析（`dns-ts` 在 sing-box 内）；`networking.search` 使单标签名先试 `ts.hydroakri.cc`，该查询发给校园 DNS，多等一次 NXDOMAIN。等待时长未验证。 |
+| `LIMITED` 不处理 | 探测失败不等于 portal，误判会停掉 sing-box 和 kill switch、让流量直连，代价高于收益。 |
+| `dns.rules` 的 `dns-system` 规则含 `ping.archlinux.org` | 普通用户的查询走系统解析、不发 fakeip。NM 以 root 运行，在 `exclude_uid_range` 内，它的 DNS 不经 sing-box，探测不依赖这条规则（推断，未单独测）。 |
 | 验证范围 | 仅在 `desktop.nix` 的主机生效（探测与 dispatcher 都在其中，服务器不探测）。仅在一家 Meraki 点击即过的 portal 上端到端验证；需要账号、拦截 HTTPS、丢弃外部 53 的 portal 未测。portal 按客户端 MAC 记录授权，`cloned-mac-address=random` 下每次连接都是新客户端，会被分流到店家的注册流程。 |
 
 # sqm (`sqm.nix`)
