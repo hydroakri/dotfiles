@@ -143,7 +143,7 @@
       dns = lib.mkDefault "default";
     };
 
-    users.users.unbound.uid = lib.mkDefault 977;
+    users.users.unbound = lib.mkIf config.services.unbound.enable { uid = lib.mkDefault 977; };
     services.unbound = {
       enable = lib.mkDefault true;
       # 统计接口:unbound-control / prometheus exporter(utils.nix)

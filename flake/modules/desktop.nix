@@ -74,8 +74,8 @@
     # AAAA 已放开(core.nix),IPv4 优先交给 glibc 地址排序;IPv6 不通时 getaddrinfo 类应用仍先试 IPv4。
     networking.getaddrinfo.precedence."::ffff:0:0/96" = 100;
 
-    # NM 判定 portal:停 kill switch 和 sing-box、打开登录页;系统 DNS 本来就是 DHCP DNS(proxy.nix 的 `dns`)。
-    # 取舍见 features/networking/README.md。
+    # NM 判定 portal:停 kill switch 和 sing-box、打开登录页;proxy.nix 的 `dns` 下 resolv.conf 是静态 127.0.0.1,
+    # sing-box 停止后无人应答,故 portal 态临时写成 DHCP DNS,恢复时 resolvconf -u 还原。取舍见 features/networking/README.md。
     networking.networkmanager.dispatcherScripts = lib.mkIf config.networking.networkmanager.enable [
       {
         source = pkgs.writeShellScript "captive-portal" ''
@@ -86,6 +86,11 @@
               # kill switch 先撤,否则用户会话打不开登录页;未启用该单元时跳过
               $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL stop sing-box-killswitch.service
               $SYSTEMCTL is-active --quiet sing-box.service && $SYSTEMCTL stop sing-box.service
+              ${lib.optionalString (config.modules.proxy.singbox.dns or false) ''
+                DEV=$(${pkgs.iproute2}/bin/ip -4 route show default | ${pkgs.gawk}/bin/awk '{for(i=1;i<NF;i++) if($i=="dev"){print $(i+1); exit}}')
+                DNS=$(${pkgs.networkmanager}/bin/nmcli -g IP4.DNS device show "$DEV" | ${pkgs.coreutils}/bin/tr -d '|' | ${pkgs.coreutils}/bin/head -n1)
+                [ -n "$DNS" ] && echo "nameserver $DNS" > /etc/resolv.conf
+              ''}
               # 浏览器会把 http 升级成 https 绕过拦截,故直接打开 307 的目标页
               PROBE=${config.networking.networkmanager.settings.connectivity.uri}
               # 首个查询可能超时;dispatcher 单脚本上限 15s,故最多 3 次
@@ -106,6 +111,8 @@
               # --no-block: 开机时第一个 connectivity-change 就走到这里,阻塞式 start 会等 network-online,而
               # network-online 在等 NM 启动完成(NM 在等这个 dispatcher 返回),死锁到 wait-online 的 60 秒超时。
               # kill switch 先于 sing-box 恢复,两者之间不留直连窗口
+              ${lib.optionalString (config.modules.proxy.singbox.dns or false
+              ) "${config.networking.resolvconf.package}/bin/resolvconf -u"}
               $SYSTEMCTL is-enabled --quiet sing-box-killswitch.service && $SYSTEMCTL start --no-block sing-box-killswitch.service
               $SYSTEMCTL is-enabled --quiet sing-box.service && $SYSTEMCTL start --no-block sing-box.service
               ;;

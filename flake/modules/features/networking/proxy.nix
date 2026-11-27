@@ -29,9 +29,9 @@
         type = lib.types.bool;
         default = false;
         description = ''
-          Put sing-box in front of the system resolver: resolv.conf keeps the DHCP DNS and the tun hijack sends
-          normal users' port-53 queries to sing-box (fakeip, DNS rules). unbound and dnscrypt-proxy stay enabled
-          but are no longer the system resolver and sing-box does not use them. Requires `tun`.
+          Make sing-box the system resolver: resolv.conf is the static 127.0.0.1, served by a `dns-in` inbound on
+          port 53 (fakeip, DNS rules); NetworkManager does not touch resolv.conf and unbound is disabled to free
+          port 53. LAN and probe names resolve through the `dhcp` server (`dns-system`). Requires `tun`.
         '';
       };
       killSwitch.enable = lib.mkOption {
@@ -179,6 +179,10 @@
         (mkIf config.modules.proxy.singbox.enable {
           allowedUDPPorts = [ tailscalePort ];
         })
+        # The dhcp DNS server (dns-system) reads the DHCP reply on UDP 68.
+        (mkIf config.modules.proxy.singbox.dns {
+          allowedUDPPorts = [ 68 ];
+        })
       ];
 
       # System-wide MagicDNS: tailscale0 serves it at 100.100.100.100. A stub zone is used because
@@ -196,10 +200,10 @@
           };
       # Bare tailnet host names, as the official client sets up.
       networking.search = mkIf config.modules.proxy.singbox.enable [ tailnetDomain ];
-      # resolv.conf then holds the DHCP DNS (NetworkManager); the tun hijack sends port-53 queries to sing-box.
-      # The dnscrypt-proxy module adds 127.0.0.1 to networking.nameservers on its own.
-      services.unbound.resolveLocalQueries = mkIf config.modules.proxy.singbox.dns false;
-      networking.nameservers = mkIf config.modules.proxy.singbox.dns (mkForce [ ]);
+      # sing-box's dns-in owns 127.0.0.1:53, so unbound (0.0.0.0:53) must be off; NM would add the DHCP DNS beside it.
+      services.unbound.enable = mkIf config.modules.proxy.singbox.dns false;
+      networking.networkmanager.dns = mkIf config.modules.proxy.singbox.dns "none";
+      networking.nameservers = mkIf config.modules.proxy.singbox.dns (mkForce [ "127.0.0.1" ]);
 
       services.sing-box = mkIf config.modules.proxy.singbox.enable {
         enable = mkDefault true;
@@ -238,7 +242,8 @@
                 inet6_range = "64:ff9b:1::/48";
               }
               {
-                type = "local";
+                # `local` would read resolv.conf, which is sing-box itself under `dns`.
+                type = if config.modules.proxy.singbox.dns then "dhcp" else "local";
                 tag = "dns-system";
               }
               {
@@ -463,6 +468,12 @@
               listen_port = 1080;
             }
           ]
+          ++ lib.optional config.modules.proxy.singbox.dns {
+            type = "direct";
+            tag = "dns-in";
+            listen = "127.0.0.1";
+            listen_port = 53;
+          }
           ++ lib.optional config.modules.proxy.singbox.tun {
             type = "tun";
             tag = "tun-in";
@@ -479,9 +490,9 @@
             exclude_mptcp = true;
             exclude_uid_range = [
               "${toString config.users.users.root.uid}:${toString config.users.users.root.uid}"
-              "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}"
               "${toString config.users.users.dnscrypt-proxy.uid}:${toString config.users.users.dnscrypt-proxy.uid}"
             ]
+            ++ (lib.optional config.services.unbound.enable "${toString config.users.users.unbound.uid}:${toString config.users.users.unbound.uid}")
             ++ (lib.optional config.modules.proxy.tor.enable "${toString config.users.users.tor.uid}:${toString config.users.users.tor.uid}")
             ++ (lib.optional config.modules.proxy.xrayClient.enable "${toString config.modules.proxy.xrayClient.uid}:${toString config.modules.proxy.xrayClient.uid}");
           };
@@ -635,6 +646,11 @@
 
           route = {
             rules = [
+              {
+                # First: the private-IP bypass below would otherwise take loopback DNS. Inert without the dns-in inbound.
+                inbound = [ "dns-in" ];
+                action = "hijack-dns";
+              }
               # The next three rules precede sniff: TCP pre-match stops at sniff, which would turn a later bypass into a userspace route.
               {
                 # Peer connections to this node would otherwise fall through to the final outbound.
@@ -915,12 +931,14 @@
             ""
             "CAP_NET_ADMIN"
             "CAP_NET_RAW"
-          ];
+          ]
+          ++ lib.optional config.modules.proxy.singbox.dns "CAP_NET_BIND_SERVICE"; # dns-in on :53, dhcp on :68
           CapabilityBoundingSet = [
             ""
             "CAP_NET_ADMIN"
             "CAP_NET_RAW"
-          ];
+          ]
+          ++ lib.optional config.modules.proxy.singbox.dns "CAP_NET_BIND_SERVICE";
           UMask = "0077";
           # DeviceAllow only restricts under DevicePolicy=closed (default auto allows every device node).
           DevicePolicy = "closed";

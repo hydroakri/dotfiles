@@ -8,7 +8,7 @@
 |---|---|
 | `modules.proxy.singbox.enable` | 启用 sing-box 作为代理后端。 |
 | `modules.proxy.singbox.tun` | 启用系统级 TUN 接管（`dns_mode=hijack`），而非仅本地 SOCKS/HTTP 代理(`mixed-in`)。TUN 关闭时，未显式配置走 `127.0.0.1:1080` 的应用不受任何分流规则影响，直接裸连——这是有意的降级路径，不是缺陷。 |
-| `modules.proxy.singbox.dns` | sing-box 放在系统解析器前面：`services.unbound.resolveLocalQueries = false` 且 `networking.nameservers` 清空（dnscrypt-proxy 模块会自己加 `127.0.0.1`），`resolv.conf` 保持 NetworkManager 写入的 DHCP DNS；普通用户发往任何公网 DNS 的 53 端口包被 tun 的 `hijack-dns` 接管，按 `dns.rules` 应答（fakeip、按分类选上游）。sing-box 的设置在 `dns` 开关两种状态下完全相同，不使用 unbound。unbound 和 dnscrypt-proxy 仍然启用，但在 omen15 上没有使用者（不再是系统解析器），只剩监听端口和 `access-control` 允许的局域网来源。需要 `tun`，默认关；`rpi4-side-gateway` 也引入本模块，保持关。root 进程（NM、系统服务）在 `exclude_uid_range` 内，DNS 直连 DHCP DNS，NM 探测和 portal 检测因此拿到真实结果。已验证：显式 `dig @<校园公网DNS>` 返回 fakeip（被拦截）。私网 DNS：同子网的私网地址被 nft 的 `dnat` 拦进 sing-box（实测 `@172.23.159.253` 返回 fakeip，计数器 +1）；跨网段的私网地址不进 sing-box（实测 `@192.168.1.1` 超时，`dnat` 计数器不增加），直连该私网 DNS，原因未查清。有意接受：要求只是 DNS 不出到公网，私网 DNS 在 LAN 内。sing-box 停止时：公网 DHCP DNS 被 kill switch 丢弃（读规则推断，未实测）；私网 DHCP DNS 不在 kill switch 范围内，直连，同样接受。 |
+| `modules.proxy.singbox.dns` | sing-box 作为系统解析器：`resolv.conf` 是静态 `127.0.0.1`，由 `dns-in` 入站（`127.0.0.1:53`）应答（fakeip、`dns.rules`）；NetworkManager `dns=none`，不写 `resolv.conf`；unbound 关闭以腾出 53 端口（`core.nix` 的 unbound 用户随之不再创建）；sing-box 服务加 `CAP_NET_BIND_SERVICE`（绑 53、68），防火墙放行 UDP 68。局域网和探测域名由 `dns-system`（`type=dhcp`，向网卡所在 DHCP 取 DNS）解析。需要 `tun`，默认关；`rpi4-side-gateway` 也引入本模块，保持关。 sing-box 停止时系统 DNS 无应答，无回退；captive portal 态（`desktop.nix` dispatcher）停 sing-box 前把 `resolv.conf` 临时写成 DHCP DNS，恢复时 `resolvconf -u`。 排除在 tun 之外的 uid（xray-client、tor）的系统 DNS 查询同样进入 `dns-in` 并得到 fakeip，其出站不进 tun，所以这类进程不能用主机名形式的解析器：xray 的 `echConfigList` 解析器写 `udp://127.0.0.1`，查询落到 `dns.rules` 的 HTTPS 规则（`dns-quad9`，真实 ECH 配置）。 已验证：重启后 `dig www.wikipedia.org @127.0.0.1` 返回 fakeip，`ping.archlinux.org` 经 `dns-system` 返回真实地址，NM 连通性 `full`，经 xray 出站访问 `cdn-cgi/trace` 得 `warp=on`。未验证：换 Wi-Fi 后 `dhcp` 服务器是否重新取 DNS、captive portal 实际流程。 `dhcp` 服务器的 DHCP 回复发往 UDP 68，不放行则超时（实测：放行前 `context deadline exceeded`，放行后取得网关 DNS）。 |
 | `modules.proxy.singbox.killSwitch.enable` | 独立 nft 表 `sing-box-killswitch`（`sing-box-killswitch.service`），对普通用户（uid 1000-59999）发往公网、且最终不经 `lo`/`tun0`/`tailscale0` 的包在 postrouting 钩子 drop。drop 规则正向匹配 uid（`meta skuid 1000-59999 drop`）：RST、TIME_WAIT 的 ACK/FIN 等无归属 socket 的包取不到 uid，规则不匹配，走默认放行（live 日志 150 条命中全是这类包，用反向 `skuid != ... accept` 写法它们会被丢掉）。必须是 postrouting：output 钩子里 `oifname` 是 sing-box 打标记重路由**之前**的网卡，TUN 流量和重定向到 127.0.0.1 的 TCP 都显示为物理网卡，会被误杀（实测：用 output 钩子部署后 TUN 正常运行时用户会话断网）。放行：私网/链路本地/多播（对应 `geoip-private` 绕过 TUN）、uid 范围外的进程（root/sing-box/unbound/dnscrypt-proxy/tor 本来就直连）。需要 `tun=true`（断言）。sing-box 停止期间用户会话无公网，TCP 表现为超时（postrouting 不能 reject），UDP 立即 EPERM；手动停 sing-box 要连 `sing-box-killswitch.service` 一起停。范围外的 uid（systemd DynamicUser、subuid 容器进程）和绑定物理网卡的程序不受保护。验证：真实 sing-box（auto_redirect + strict_route、双栈 TUN）在网络命名空间里、用 uid 1000 客户端测 IPv4/IPv6 的 TCP/UDP——运行时通过、停止时拦截、重启后恢复、私网豁免；未在 omen15 上实测。 |
 | `boot.kernel.sysctl` rp_filter | TUN 需要放松 `net.ipv4.conf.*.rp_filter` 到 `2`（loose）以支持非对称路由（如游戏 UDP）；用 `mkOverride 900` 显式盖过 `security.nix` 的 `mkOverride 950`（数字越小优先级越高）。 |
 
@@ -23,7 +23,7 @@
 | Tag | 类型/上游 | Tradeoff |
 |---|---|---|
 | `fakeip` | `198.18.0.0/15` + `64:ff9b:1::/48` | 已分类域名（境内境外皆可）优先命中，DNS 阶段零查询，真实 IP 推迟到拨号时由 outbound 的 `domain_resolver` 解析。 |
-| `dns-system` | `type=local` | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底——只把它限制在本就该走本地网络解析的窄范围内。`local` 读 `/etc/resolv.conf`：`dns=false` 时是 unbound→dnscrypt-proxy，`dns=true` 时是 DHCP DNS（sing-box 自己的包不进 tun，直达校园 DNS），所以 LAN 名字和 NM 探测域名能解析。 |
+| `dns-system` | `type=dhcp`（`singbox.dns` 关闭时 `type=local`） | 仅服务 mDNS 探测域名和内网后缀（`wlan`/`intranet`/`private`/`domain`/`home`/`host`/`corp`/`geosite-private`），不是通用兜底。`dns` 开启时 `local` 会读 `resolv.conf`（即 sing-box 自己）而成环，故用 `dhcp`。 |
 | `dns-mdns` | mDNS | 局域网设备发现优先命中。 |
 | `dns-ts` | `type=tailscale`，`endpoint=tailscale-in`，`accept_default_resolvers=false`，`accept_search_domain=true` | 解析 MagicDNS 名字（`*.ts.hydroakri.cc`，含裸名）。`accept_default_resolvers=false`：非 tailnet 名字返回 NXDOMAIN，不回落到 headscale 的全局解析器，公网解析仍走 `dns-quad9`/fakeip。 |
 | `dns-alidns` | h3，`detour=🚦 cn` | `🇨🇳 direct-cn` outbound 的 `domain_resolver`——已知国内域名走 fakeip 后，真正解析用这个而非中立的 `dns-zerotrust`。选它而非 `dns-flymc` 是因为阿里 DNS 在境外的 CDN 调度表现也更好，不只是境内优化。 |
@@ -55,6 +55,7 @@
 | 设置 | Tradeoff |
 |---|---|
 | `mixed-in`，`127.0.0.1:1080` | 始终开启，供显式配置走本地代理的应用使用，不受 `tun` 开关影响。 |
+| `dns-in`，`direct`，`127.0.0.1:53`（`singbox.dns=true` 时） | 系统解析器入口。对应路由规则 0 必须排在最前：后面的私网 `bypass` 会匹配目标 `127.0.0.1`，DNS 请求会被直连放行而不进 `dns.rules`。规则 0 在没有该入站时不匹配任何连接（`sing-box check` 接受不存在的入站标签）。 |
 | `tun-in`（`modules.proxy.singbox.tun=true` 时） | `dns_mode=hijack`+`auto_route`+`auto_redirect`+`strict_route` 系统级接管；`route_exclude_address` 静态列表（MetaCubeX `geoip-private` 的 28 条快照，去掉 fakeip 池 `198.18.0.0/15` 和 `64:ff9b:1::/48`，与路由规则 6/6a 共用同一份 `privateCidrs`；该列表含这两段，用 `route_exclude_address_set` 引用会让 fakeip 连接不进 sing-box，实测：池内地址的包不被接管）。fakeip 池不得出现在此列表。列表是快照，不随上游更新；条目来自 IANA 特殊用途地址登记，很少变化；`exclude_uid_range` 放行 root/unbound/dnscrypt-proxy/tor 自身进程的对外连接，避免这些进程的流量被 tun 递归接管形成回路。`mtu=1280`——低于常见的 1500，代价是包头开销占比更高、大流量吞吐略降；换来的是这条 tun 是双栈（同时配置了 IPv4/IPv6 地址），1280 是 IPv6 规定的最小链路 MTU（RFC 8200），用它能保证隧道内部不需要对 IPv6 包做二次分片，不用去猜某个出站封装（WireGuard/Reality 等）还会再叠多少层开销。 |
 
 ## 出站与分组 (`outbounds`)
@@ -95,6 +96,7 @@
 
 | 顺序 | 规则 | 去向 | Tradeoff |
 |---|---|---|---|
+| 0 | `inbound = dns-in` | hijack-dns | 见入站表 `dns-in`。 |
 | 1 | `sniff` | — | 对 `tun-in`(如启用)/`mixed-in` 做协议嗅探，300ms 超时。已知缺陷：ECH 的 TLS 连接会被 sing-box ≤ 1.14.4 用外层 SNI（`public_name`，如 `cloudflare-ech.com`）覆盖域名，ECH 握手本身不受影响，但按域名的分组（`🚦 finance`/`🚦 i18n-service` 等）对这些连接失效；曾试过「仅在域名未知时 sniff」，会让域名连接丢失 `protocol: bittorrent/stun` 识别，补回需再加一条 UDP sniff，复杂度不值得，已放弃。即使连接方自行做了 DNS 解析（如浏览器走 DoH 绕过下面的 `hijack-dns`），只要是 TLS 连接仍可从 ClientHello 的 SNI 恢复域名，用于后续按域名分类；HTTP/TLS 之外、且未经过 sing-box DNS 解析的连接无法恢复域名，只能落到 IP-based 规则（`geoip-cn`/`bypass`）。 |
 | 2 | port 53 / protocol dns | hijack-dns | 拦截传统 DNS 协议纳入 sing-box 的 `dns.rules` 管道；**拦不住 DoH**（DNS over HTTPS 用 443 端口，看起来是普通 HTTPS 流量），走 DoH 自行解析的应用不经过 fakeip/`dns-flymc`/`dns-alidns` 这套优化，域名分类仍可能靠 sniff 命中，但拨号用的是应用自己解析出的 IP。 |
 | 2a | 入站 `tailscale-in` | `➡️ direct` | 别的 tailnet 节点连进本机的连接，否则会落到 `final`（`🚦 oversea`）。 |
